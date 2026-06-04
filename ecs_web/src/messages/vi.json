@@ -1,0 +1,88 @@
+{
+  "brand": "Eye Clinic Support System",
+  "common": {
+    "login": "Đăng nhập",
+    "requestDemo": "Yêu cầu Demo",
+    "getStarted": "Bắt đầu",
+    "learnMore": "Tìm hiểu thêm",
+    "viewMore": "Xem thêm",
+    "viewTour": "Xem Demo"
+  },
+  "nav": {
+    "solutions": "Giải pháp",
+    "features": "Tính năng",
+    "forDoctors": "Dành cho Bác sĩ",
+    "forPatients": "Dành cho Bệnh nhân",
+    "login": "Đăng nhập",
+    "requestDemo": "Yêu cầu Demo"
+  },
+  "hero": {
+    "badge": "Nền tảng Nhãn khoa Thế hệ mới",
+    "title1": "Chăm sóc Tầm nhìn Chính xác, ",
+    "title2": "Được hỗ trợ bởi Dữ liệu.",
+    "subtitle": "Số hóa quy trình nhãn khoa từ đăng ký đến phẫu thuật. Trải nghiệm hệ điều hành lâm sàng được xây dựng cho độ chính xác, sự thoải mái của bệnh nhân và hiệu quả vận hành.",
+    "clinicEfficiency": "Hiệu quả Phòng khám",
+    "throughput": "Thông lượng thời gian thực tăng trên 12 địa điểm trung tâm.",
+    "bookAppointment": "Đặt lịch khám",
+    "viewTour": "Xem Demo"
+  },
+  "features": {
+    "title": "Công cụ Chuyên biệt cho Phòng khám Hiện đại",
+    "subtitle": "Được thiết kế bởi bác sĩ nhãn khoa cho bác sĩ nhãn khoa. Mỗi module được tinh chỉnh cho các yêu cầu độc đáo của việc chăm sóc sức khỏe mắt.",
+    "multiClinic": {
+      "title": "Trung tâm Đa Phòng khám",
+      "description": "Quản lý nhiều địa điểm từ một cổng thông tin trung tâm. Đồng bộ hóa lịch trình, danh sách nhân viên và hàng tồn kho trên toàn bộ mạng lưới của bạn.",
+      "locations": "Địa điểm được kết nối",
+      "connected": "địa điểm được kết nối"
+    },
+    "queue": {
+      "title": "Hệ thống Xếp hàng Thông minh",
+      "description": "Quản lý luồng bệnh nhân theo thời gian thực. Tự động hướng dẫn bệnh nhân đến trạm sàng lọc hoặc giãn đồng tử tiếp theo có sẵn."
+    },
+    "emr": {
+      "title": "Hồ sơ Y tế Điện tử Chuyên biệt",
+      "description": "Hồ sơ y tế điện tử dành riêng cho nhãn khoa với trình xem DICOM gốc cho hình ảnh OCT, đáy mắt và đo thị trường."
+    },
+    "portal": {
+      "title": "Cổng thông tin Bệnh nhân",
+      "description": "Đặt lịch dễ dàng và truy cập đơn thuốc trực tiếp. Bệnh nhân có thể xem lịch sử thị lực và hướng dẫn chăm sóc sau phẫu thuật từ bất kỳ thiết bị nào.",
+      "nextAppointment": "Lịch hẹn tiếp theo"
+    }
+  },
+  "testimonial": {
+    "quote": "Nền tảng này đã thay đổi cách chúng tôi quản lý phòng khám. Hiệu quả đạt được thật đáng chú ý, và bệnh nhân của chúng tôi rất thích trải nghiệm liền mạch.",
+    "name": "BS. Elena Sterling, MD",
+    "role": "Trưởng khoa Nhãn khoa, Trung tâm Mắt Thành phố"
+  },
+  "cta": {
+    "title": "Sẵn sàng Mở rộng Phòng khám của bạn?",
+    "subtitle": "Tham gia cùng hơn 450 phòng khám sử dụng OcularLink để cung cấp dịch vụ chăm sóc mắt đẳng cấp thế giới với hiệu quả vận hành.",
+    "startTrial": "Bắt đầu Dùng thử miễn phí",
+    "speakExpert": "Nói chuyện với Chuyên gia"
+  },
+  "footer": {
+    "tagline": "Độ chính xác trong Tầm nhìn. Hệ điều hành tiên tiến nhất thế giới cho mạng lưới nhãn khoa.",
+    "hipaa": "TUÂN THỦ HIPAA",
+    "soc2": "SOC2 TYPE II",
+    "product": "Sản phẩm",
+    "company": "Công ty",
+    "legal": "Pháp lý",
+    "features": "Tính năng",
+    "integrations": "Tích hợp",
+    "pricing": "Bảng giá",
+    "changelog": "Nhật ký thay đổi",
+    "aboutUs": "Về chúng tôi",
+    "careers": "Tuyển dụng",
+    "contact": "Liên hệ",
+    "partners": "Đối tác",
+    "privacy": "Chính sách bảo mật",
+    "terms": "Điều khoản dịch vụ",
+    "hipaaCompliance": "Tuân thủ HIPAA",
+    "accessibility": "Hỗ trợ tiếp cận",
+    "copyright": "© 2024 OcularLink Medical Systems. Độ chính xác trong Tầm nhìn."
+  },
+  "about": {
+    "title": "Về Chúng Tôi",
+    "description": "Chúng tôi xây dựng hệ điều hành nhãn khoa tiên tiến nhất."
+  }
+}

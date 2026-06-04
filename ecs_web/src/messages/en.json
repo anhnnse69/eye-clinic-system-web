@@ -1,0 +1,88 @@
+{
+  "brand": "Eye Clinic Support System",
+  "common": {
+    "login": "Login",
+    "requestDemo": "Request a Demo",
+    "getStarted": "Get Started",
+    "learnMore": "Learn More",
+    "viewMore": "View More",
+    "viewTour": "View Platform Tour"
+  },
+  "nav": {
+    "solutions": "Solutions",
+    "features": "Features",
+    "forDoctors": "For Doctors",
+    "forPatients": "For Patients",
+    "login": "Login",
+    "requestDemo": "Request a Demo"
+  },
+  "hero": {
+    "badge": "Next-Gen Ophthalmology",
+    "title1": "Precision Care for Your Vision, ",
+    "title2": "Powered by Data.",
+    "subtitle": "Digitizing the ophthalmology workflow from check-in to surgery. Experience a clinical OS built for accuracy, patient comfort, and operational excellence.",
+    "clinicEfficiency": "Clinic Efficiency",
+    "throughput": "Real-time throughput increased across 12 hub locations.",
+    "bookAppointment": "Book Appointment",
+    "viewTour": "View Platform Tour"
+  },
+  "features": {
+    "title": "Specialized Tools for Modern Practices",
+    "subtitle": "Designed by ophthalmologists for ophthalmologists. Every module is fine-tuned to the unique requirements of eye health delivery.",
+    "multiClinic": {
+      "title": "Multi-Clinic Hub",
+      "description": "Manage multiple locations from one central portal. Sync schedules, staff rosters, and inventory across your entire network with enterprise-grade synchronization.",
+      "locations": "Locations Connected",
+      "connected": "Locations Connected"
+    },
+    "queue": {
+      "title": "Intelligent Queueing",
+      "description": "Real-time patient flow management. Automatically direct patients to the next available pre-screening or dilation station."
+    },
+    "emr": {
+      "title": "Specialized EMR",
+      "description": "Ophthalmology-specific electronic medical records featuring native DICOM viewers for OCT, Fundus, and Perimetry imaging."
+    },
+    "portal": {
+      "title": "Patient Portal",
+      "description": "Easy scheduling and direct prescription access. Patients can view vision history and post-op care instructions from any device, reducing clinical call volume.",
+      "nextAppointment": "Next Appointment"
+    }
+  },
+  "testimonial": {
+    "quote": "This platform has transformed how we manage our clinic. The efficiency gains are remarkable, and our patients love the seamless experience.",
+    "name": "Dr. Elena Sterling, MD",
+    "role": "Chief of Ophthalmology, City Eye Center"
+  },
+  "cta": {
+    "title": "Ready to Scale Your Clinic?",
+    "subtitle": "Join over 450 clinical practices using OcularLink to deliver world-class eye care with operational precision.",
+    "startTrial": "Start Free Trial",
+    "speakExpert": "Speak with an Expert"
+  },
+  "footer": {
+    "tagline": "Precision in Vision. The world's most advanced operating system for ophthalmology networks.",
+    "hipaa": "HIPAA COMPLIANT",
+    "soc2": "SOC2 TYPE II",
+    "product": "Product",
+    "company": "Company",
+    "legal": "Legal",
+    "features": "Features",
+    "integrations": "Integrations",
+    "pricing": "Pricing",
+    "changelog": "Changelog",
+    "aboutUs": "About Us",
+    "careers": "Careers",
+    "contact": "Contact",
+    "partners": "Partners",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "hipaaCompliance": "HIPAA Compliance",
+    "accessibility": "Accessibility",
+    "copyright": "© 2024 OcularLink Medical Systems. Precision in Vision."
+  },
+  "about": {
+    "title": "About Us",
+    "description": "We build the most advanced ophthalmology operating system."
+  }
+}

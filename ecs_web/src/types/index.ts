@@ -156,11 +156,23 @@ export interface AuditLog {
   createdAt: string
 }
 
+export interface MetaResponse {
+  page: number
+  size: number
+  total: number
+  totalPages: number
+  hasNext: boolean
+  hasPrevious: boolean
+}
+
 export interface ApiResponse<T> {
-  success: boolean
+  codeMessage: string
   data?: T
-  message?: string
-  errors?: Record<string, string[]>
+  meta?: MetaResponse | null
+}
+
+export interface LoginResponse {
+  token: string
 }
 
 export interface PaginatedResponse<T> {

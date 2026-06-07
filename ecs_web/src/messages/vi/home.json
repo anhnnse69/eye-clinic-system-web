@@ -1,21 +1,4 @@
 {
-  "brand": "Eye Clinic Support System",
-  "common": {
-    "login": "Đăng nhập",
-    "requestDemo": "Yêu cầu Demo",
-    "getStarted": "Bắt đầu",
-    "learnMore": "Tìm hiểu thêm",
-    "viewMore": "Xem thêm",
-    "viewTour": "Xem Demo"
-  },
-  "nav": {
-    "solutions": "Giải pháp",
-    "features": "Tính năng",
-    "forDoctors": "Dành cho Bác sĩ",
-    "forPatients": "Dành cho Bệnh nhân",
-    "login": "Đăng nhập",
-    "requestDemo": "Yêu cầu Demo"
-  },
   "hero": {
     "badge": "Nền tảng Nhãn khoa Thế hệ mới",
     "title1": "Chăm sóc Tầm nhìn Chính xác, ",
@@ -56,33 +39,8 @@
   },
   "cta": {
     "title": "Sẵn sàng Mở rộng Phòng khám của bạn?",
-    "subtitle": "Tham gia cùng hơn 450 phòng khám sử dụng OcularLink để cung cấp dịch vụ chăm sóc mắt đẳng cấp thế giới với hiệu quả vận hành.",
+    "subtitle": "Tham gia cùng hơn 450 phòng khám sử dụng Eye Clinic Support để cung cấp dịch vụ chăm sóc mắt đẳng cấp thế giới với hiệu quả vận hành.",
     "startTrial": "Bắt đầu Dùng thử miễn phí",
     "speakExpert": "Nói chuyện với Chuyên gia"
-  },
-  "footer": {
-    "tagline": "Độ chính xác trong Tầm nhìn. Hệ điều hành tiên tiến nhất thế giới cho mạng lưới nhãn khoa.",
-    "hipaa": "TUÂN THỦ HIPAA",
-    "soc2": "SOC2 TYPE II",
-    "product": "Sản phẩm",
-    "company": "Công ty",
-    "legal": "Pháp lý",
-    "features": "Tính năng",
-    "integrations": "Tích hợp",
-    "pricing": "Bảng giá",
-    "changelog": "Nhật ký thay đổi",
-    "aboutUs": "Về chúng tôi",
-    "careers": "Tuyển dụng",
-    "contact": "Liên hệ",
-    "partners": "Đối tác",
-    "privacy": "Chính sách bảo mật",
-    "terms": "Điều khoản dịch vụ",
-    "hipaaCompliance": "Tuân thủ HIPAA",
-    "accessibility": "Hỗ trợ tiếp cận",
-    "copyright": "© 2024 OcularLink Medical Systems. Độ chính xác trong Tầm nhìn."
-  },
-  "about": {
-    "title": "Về Chúng Tôi",
-    "description": "Chúng tôi xây dựng hệ điều hành nhãn khoa tiên tiến nhất."
   }
 }

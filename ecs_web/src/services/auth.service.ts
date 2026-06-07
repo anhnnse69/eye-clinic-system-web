@@ -1,21 +1,30 @@
-import { apiClient } from "@/lib/axios"
-import type { ApiResponse, User } from "@/types"
-import type { Role } from "@/types"
+import { apiClient, handleApiError } from "@/lib/axios"
+import type { ApiResponse, LoginResponse, User, Role } from "@/types"
 
-interface LoginRequest {
-  email: string
+export interface LoginRequest {
+  emailAddress: string
   password: string
 }
 
-interface LoginResponse {
-  token: string
-  refreshToken: string
-  user: User
-}
-
-interface AuthState {
+export interface AuthState {
   token: string | null
   user: User | null
+}
+
+interface TokenPayload {
+  sub: string
+  role?: string
+  email: string
+  "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"?: string
+  "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"?: string
+  "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"?: string
+  FullName?: string
+  Phone?: string
+  jti: string
+  nbf: number
+  exp: number
+  iss: string
+  aud: string
 }
 
 class AuthService {
@@ -81,16 +90,67 @@ class AuthService {
     return user ? roles.includes(user.role) : false
   }
 
+  decodeToken(token: string): TokenPayload | null {
+    try {
+      const base64Url = token.split(".")[1]
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/")
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+          .join("")
+      )
+      return JSON.parse(jsonPayload) as TokenPayload
+    } catch {
+      return null
+    }
+  }
+
+  getDashboardPathByRole(role: string): string {
+    const roleMapping: Record<string, string> = {
+      SYSTEM_ADMIN: "/system-admin/dashboard",
+      CLINIC_ADMIN: "/clinic-admin/dashboard",
+      DOCTOR: "/doctor/dashboard",
+      RECEPTIONIST: "/receptionist/dashboard",
+      PATIENT: "/patient/dashboard",
+    }
+    return roleMapping[role] || "/"
+  }
+
+  getDefaultDashboard(): string {
+    return "/system-admin/dashboard"
+  }
+
   async login(credentials: LoginRequest): Promise<ApiResponse<LoginResponse>> {
     try {
       const response = await apiClient.post<ApiResponse<LoginResponse>>("/auth/login", credentials)
-      if (response.data.success && response.data.data) {
+
+      if (response.data.data?.token) {
         this.setToken(response.data.data.token)
-        this.setUser(response.data.data.user)
+
+        const decodedToken = this.decodeToken(response.data.data.token)
+        if (decodedToken) {
+          // .NET uses "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" for role
+          const role = decodedToken.role ||
+            decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ||
+            ""
+
+          const user: User = {
+            id: decodedToken.sub,
+            email: decodedToken.email || decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] || "",
+            name: decodedToken.FullName || decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || "",
+            role: role as Role,
+            avatar: undefined,
+            createdAt: undefined,
+            updatedAt: undefined,
+          }
+          this.setUser(user)
+        }
       }
+
       return response.data
     } catch (error) {
-      throw error
+      throw handleApiError(error)
     }
   }
 
@@ -102,47 +162,6 @@ class AuthService {
     } finally {
       this.clearAuth()
     }
-  }
-
-  async refreshToken(): Promise<string | null> {
-    try {
-      const refreshToken = localStorage.getItem("refreshToken")
-      if (!refreshToken) return null
-
-      const response = await apiClient.post<ApiResponse<{ token: string }>>("/auth/refresh", {
-        refreshToken,
-      })
-
-      if (response.data.success && response.data.data) {
-        this.setToken(response.data.data.token)
-        return response.data.data.token
-      }
-      return null
-    } catch {
-      this.clearAuth()
-      return null
-    }
-  }
-
-  async forgotPassword(email: string): Promise<ApiResponse<void>> {
-    const response = await apiClient.post<ApiResponse<void>>("/auth/forgot-password", { email })
-    return response.data
-  }
-
-  async resetPassword(token: string, password: string): Promise<ApiResponse<void>> {
-    const response = await apiClient.post<ApiResponse<void>>("/auth/reset-password", {
-      token,
-      password,
-    })
-    return response.data
-  }
-
-  async changePassword(currentPassword: string, newPassword: string): Promise<ApiResponse<void>> {
-    const response = await apiClient.post<ApiResponse<void>>("/auth/change-password", {
-      currentPassword,
-      newPassword,
-    })
-    return response.data
   }
 }
 

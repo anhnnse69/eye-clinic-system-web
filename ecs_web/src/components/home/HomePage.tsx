@@ -95,9 +95,9 @@ export function HomePage() {
         <header className="bg-surface-container-lowest sticky top-0 z-50 border-b border-outline-variant">
           <nav className="flex justify-between items-center w-full px-gutter max-w-7xl mx-auto h-16">
             <div className="flex items-center gap-sm">
-              <img alt="OcularLink Logo" className="h-12 w-12 object-contain" src={LOGO_IMG} />
+              <img alt="Eye Clinic Support System Logo" className="h-12 w-12 object-contain" src={LOGO_IMG} />
               <span className="text-headline-md font-headline-md font-bold text-primary">
-                {t("brand")}
+                {t("common.brand")}
               </span>
             </div>
 
@@ -106,25 +106,25 @@ export function HomePage() {
                 className="text-primary border-b-2 border-primary font-bold pb-1 text-label-md font-label-md transition-all"
                 href="#"
               >
-                {t("nav.solutions")}
+                {t("common.nav.solutions")}
               </a>
               <a
                 className="text-on-surface-variant font-medium text-label-md font-label-md hover:text-primary transition-colors duration-200"
                 href="#"
               >
-                {t("nav.features")}
+                {t("common.nav.features")}
               </a>
               <a
                 className="text-on-surface-variant font-medium text-label-md font-label-md hover:text-primary transition-colors duration-200"
                 href="#"
               >
-                {t("nav.forDoctors")}
+                {t("common.nav.forDoctors")}
               </a>
               <a
                 className="text-on-surface-variant font-medium text-label-md font-label-md hover:text-primary transition-colors duration-200"
                 href="#"
               >
-                {t("nav.forPatients")}
+                {t("common.nav.forPatients")}
               </a>
             </div>
 
@@ -136,11 +136,14 @@ export function HomePage() {
               >
                 {locale === "vi" ? "EN" : "VI"}
               </button>
-              <button className="hidden md:block px-lg py-sm font-label-md text-label-md text-primary border border-primary rounded-lg hover:bg-primary-fixed transition-colors">
-                {t("nav.login")}
+              <button
+                onClick={() => router.push(`/${locale}/login`)}
+                className="hidden md:block px-lg py-sm font-label-md text-label-md text-primary border border-primary rounded-lg hover:bg-primary-fixed transition-colors"
+              >
+                {t("common.nav.login")}
               </button>
               <button className="px-lg py-sm font-label-md text-label-md bg-primary text-on-primary rounded-lg shadow-sm hover:opacity-90 active:scale-95 transition-all">
-                {t("nav.requestDemo")}
+                {t("common.nav.requestDemo")}
               </button>
               <button className="md:hidden text-on-surface-variant">
                 <span className="material-symbols-outlined">menu</span>
@@ -395,7 +398,7 @@ export function HomePage() {
                   src={LOGO_IMG}
                 />
                 <span className="text-headline-md font-headline-md text-on-surface">
-                  {t("brand")}
+                  {t("common.brand")}
                 </span>
               </div>
               <p className="text-body-sm font-body-sm text-on-surface-variant">

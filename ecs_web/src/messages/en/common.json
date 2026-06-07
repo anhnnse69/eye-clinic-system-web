@@ -1,0 +1,40 @@
+{
+  "common": {
+    "brand": "Eye Clinic Support",
+    "login": "Login",
+    "requestDemo": "Request a Demo",
+    "getStarted": "Get Started",
+    "learnMore": "Learn More",
+    "viewMore": "View More",
+    "viewTour": "View Platform Tour",
+    "nav": {
+      "solutions": "Solutions",
+      "features": "Features",
+      "forDoctors": "For Doctors",
+      "forPatients": "For Patients",
+      "login": "Login",
+      "requestDemo": "Request a Demo"
+    }
+  },
+  "footer": {
+    "tagline": "Precision in Vision. The world's most advanced operating system for ophthalmology networks.",
+    "hipaa": "HIPAA COMPLIANT",
+    "soc2": "SOC2 TYPE II",
+    "product": "Product",
+    "company": "Company",
+    "legal": "Legal",
+    "features": "Features",
+    "integrations": "Integrations",
+    "pricing": "Pricing",
+    "changelog": "Changelog",
+    "aboutUs": "About Us",
+    "careers": "Careers",
+    "contact": "Contact",
+    "partners": "Partners",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "hipaaCompliance": "HIPAA Compliance",
+    "accessibility": "Accessibility",
+    "copyright": "© 2024 Eye Clinic Support. All rights reserved."
+  }
+}

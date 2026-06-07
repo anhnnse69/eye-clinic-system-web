@@ -1,0 +1,40 @@
+{
+  "common": {
+    "brand": "Eye Clinic Support",
+    "login": "Đăng nhập",
+    "requestDemo": "Yêu cầu Demo",
+    "getStarted": "Bắt đầu",
+    "learnMore": "Tìm hiểu thêm",
+    "viewMore": "Xem thêm",
+    "viewTour": "Xem Demo",
+    "nav": {
+      "solutions": "Giải pháp",
+      "features": "Tính năng",
+      "forDoctors": "Dành cho Bác sĩ",
+      "forPatients": "Dành cho Bệnh nhân",
+      "login": "Đăng nhập",
+      "requestDemo": "Yêu cầu Demo"
+    }
+  },
+  "footer": {
+    "tagline": "Độ chính xác trong Tầm nhìn. Hệ điều hành tiên tiến nhất thế giới cho mạng lưới nhãn khoa.",
+    "hipaa": "TUÂN THỦ HIPAA",
+    "soc2": "SOC2 TYPE II",
+    "product": "Sản phẩm",
+    "company": "Công ty",
+    "legal": "Pháp lý",
+    "features": "Tính năng",
+    "integrations": "Tích hợp",
+    "pricing": "Bảng giá",
+    "changelog": "Nhật ký thay đổi",
+    "aboutUs": "Về chúng tôi",
+    "careers": "Tuyển dụng",
+    "contact": "Liên hệ",
+    "partners": "Đối tác",
+    "privacy": "Chính sách bảo mật",
+    "terms": "Điều khoản dịch vụ",
+    "hipaaCompliance": "Tuân thủ HIPAA",
+    "accessibility": "Hỗ trợ tiếp cận",
+    "copyright": "© 2024 Eye Clinic Support. Độ chính xác trong Tầm nhìn."
+  }
+}

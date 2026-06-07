@@ -1,40 +1,8 @@
-import NextAuth, { type NextAuthConfig } from "next-auth"
+import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import type { Role } from "@/types"
 import { authService } from "@/services/auth.service"
 
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string
-      email: string
-      name: string
-      role: Role
-      clinicId?: string
-      avatar?: string
-    }
-  }
-
-  interface User {
-    id: string
-    email: string
-    name: string
-    role: Role
-    clinicId?: string
-    avatar?: string
-  }
-}
-
-declare module "next-auth/jwt" {
-  interface JWT {
-    id: string
-    role: Role
-    clinicId?: string
-    avatar?: string
-  }
-}
-
-const authConfig: NextAuthConfig = {
+export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -49,116 +17,53 @@ const authConfig: NextAuthConfig = {
 
         try {
           const result = await authService.login({
-            email: credentials.email as string,
+            emailAddress: credentials.email as string,
             password: credentials.password as string,
           })
 
-          if (result.success && result.data) {
-            return {
-              id: result.data.user.id,
-              email: result.data.user.email,
-              name: result.data.user.name,
-              role: result.data.user.role,
-              clinicId: result.data.user.clinicId,
-              avatar: result.data.user.avatar,
+          if (result.data?.token) {
+            authService.setToken(result.data.token)
+            
+            const decodedToken = authService.decodeToken(result.data.token)
+            if (decodedToken) {
+              const role = decodedToken.role ||
+                decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ||
+                ""
+
+              return {
+                id: decodedToken.sub,
+                email: decodedToken.email || decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] || "",
+                name: decodedToken.FullName || decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || "",
+                role: role,
+              }
             }
           }
-
-          return null
-        } catch {
-          return null
+        } catch (error) {
+          console.error("Auth error:", error)
         }
+
+        return null
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id
-        token.role = user.role
-        token.clinicId = user.clinicId
-        token.avatar = user.avatar
+        token.role = (user as any).role
       }
       return token
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id
-        session.user.role = token.role
-        session.user.clinicId = token.clinicId
-        session.user.avatar = token.avatar
+        session.user.role = token.role as string
       }
       return session
     },
   },
   pages: {
     signIn: "/login",
-    error: "/login",
   },
   session: {
     strategy: "jwt",
-    maxAge: 24 * 60 * 60,
   },
-  cookies: {
-    sessionToken: {
-      name: "next-auth.session-token",
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: process.env.NODE_ENV === "production",
-      },
-    },
-  },
-}
-
-export const { handlers, auth, signIn, signOut } = NextAuth(authConfig)
-
-export function getRoleFromToken(token: unknown): Role | null {
-  if (token && typeof token === "object" && "role" in token) {
-    return (token as { role: Role }).role
-  }
-  return null
-}
-
-export function hasPermission(role: Role, requiredRoles: Role[]): boolean {
-  return requiredRoles.includes(role)
-}
-
-export const ROLE_PERMISSIONS = {
-  [Role.SYSTEM_ADMIN]: ["*"],
-  [Role.CLINIC_ADMIN]: [
-    "clinics.read",
-    "clinics.write",
-    "staff.read",
-    "staff.write",
-    "patients.read",
-    "patients.write",
-    "appointments.read",
-    "appointments.write",
-    "medicines.read",
-    "medicines.write",
-    "services.read",
-    "services.write",
-    "rooms.read",
-    "rooms.write",
-    "feedback.read",
-  ],
-  [Role.DOCTOR]: [
-    "patients.read",
-    "patients.write",
-    "appointments.read",
-    "appointments.write",
-    "records.read",
-    "records.write",
-    "queue.read",
-    "queue.write",
-  ],
-  [Role.RECEPTIONIST]: [
-    "patients.read",
-    "appointments.read",
-    "appointments.write",
-    "queue.read",
-    "queue.write",
-  ],
-} as const
+})

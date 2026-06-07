@@ -1,11 +1,33 @@
+"use client"
+
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import type { LucideIcon } from "lucide-react"
+import {
+  LayoutDashboard,
+  Building2,
+  Users,
+  FileText,
+  Shield,
+  Activity,
+  Settings,
+  Home,
+} from "lucide-react"
+
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  LayoutDashboard,
+  Building2,
+  Users,
+  FileText,
+  Shield,
+  Activity,
+  Settings,
+  Home,
+}
 
 export interface NavItem {
   label: string
   href: string
-  icon: LucideIcon
+  icon: string
 }
 
 export interface NavSection {
@@ -49,7 +71,7 @@ export function Sidebar({
             <ul className="space-y-xs">
               {section.items.map((item) => {
                 const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
-                const Icon = item.icon
+                const Icon = iconMap[item.icon] || LayoutDashboard
                 return (
                   <li key={item.href}>
                     <Link
@@ -73,7 +95,7 @@ export function Sidebar({
 
       <div className="px-gutter py-md border-t border-outline-variant">
         <p className="text-label-sm font-label-sm text-on-surface-variant">
-          © 2024 OcularLink
+          © 2024 Eye Clinic Support System
         </p>
       </div>
     </aside>

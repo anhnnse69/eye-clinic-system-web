@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  /* Colors */
+  /* ===== MÀU SẮC ===== */
   --color-background: #f7f9fb;
   --color-surface: #f7f9fb;
   --color-surface-container-lowest: #ffffff;
@@ -50,7 +50,7 @@
   --color-inverse-on-surface: #eff1f3;
   --color-inverse-primary: #81cfff;
 
-  /* Spacing */
+  /* ===== KHOẢNG CÁCH ===== */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
   --spacing-base: 8px;
@@ -61,25 +61,47 @@
   --spacing-2xl: 48px;
   --spacing-margin: 32px;
 
-  /* Border radius */
+  /* ===== BO GÓC ===== */
   --radius-DEFAULT: 0.25rem;
   --radius-lg: 0.5rem;
   --radius-xl: 0.75rem;
   --radius-full: 9999px;
 
-  /* Font families */
+  /* ===== FONT FAMILY ===== */
+  --font-family-sans: "Inter", sans-serif;
   --font-family-body-md: "Inter", sans-serif;
   --font-family-body-lg: "Inter", sans-serif;
   --font-family-body-sm: "Inter", sans-serif;
   --font-family-label-md: "Inter", sans-serif;
+  --font-family-label-lg: "Inter", sans-serif;
+  --font-family-label-sm: "Inter", sans-serif;
   --font-family-headline-md: "Inter", sans-serif;
   --font-family-headline-lg: "Inter", sans-serif;
   --font-family-headline-sm: "Inter", sans-serif;
+  --font-family-headline-lg-mobile: "Inter", sans-serif;
   --font-family-display-lg: "Inter", sans-serif;
   --font-family-data-mono: "JetBrains Mono", monospace;
+
+  /* ===== CỠ CHỮ (text-* classes) ===== */
+  --font-size-body-sm: ["14px", { lineHeight: "20px", fontWeight: "400" }];
+  --font-size-body-md: ["16px", { lineHeight: "24px", fontWeight: "400" }];
+  --font-size-body-lg: ["18px", { lineHeight: "28px", fontWeight: "400" }];
+  --font-size-label-sm: ["11px", { lineHeight: "16px", fontWeight: "500" }];
+  --font-size-label-md: ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "600" }];
+  --font-size-label-lg: ["14px", { lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "600" }];
+  --font-size-headline-sm: ["20px", { lineHeight: "28px", fontWeight: "600" }];
+  --font-size-headline-md: ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }];
+  --font-size-headline-lg: ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700" }];
+  --font-size-headline-lg-mobile: ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "700" }];
+  --font-size-display-lg: ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }];
 }
 
-/* Custom component styles giữ nguyên */
+/* ===== CÁC CLASS TIỆN ÍCH TÙY CHỈNH ===== */
+@utility medical-overlay {
+  background-color: rgba(14, 165, 233, 0.8);
+}
+
+/* ===== COMPONENT STYLES ===== */
 .material-symbols-outlined {
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }

@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
 const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains" })
 
 export const metadata: Metadata = {
-  title: "OcularLink | Precision Eye Care Support System",
+  title: "Precision Eye Care Support System",
   description: "Digitizing the ophthalmology workflow from check-in to surgery",
   icons: {
     icon: "/favicon.ico",

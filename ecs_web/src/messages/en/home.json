@@ -1,21 +1,4 @@
 {
-  "brand": "Eye Clinic Support System",
-  "common": {
-    "login": "Login",
-    "requestDemo": "Request a Demo",
-    "getStarted": "Get Started",
-    "learnMore": "Learn More",
-    "viewMore": "View More",
-    "viewTour": "View Platform Tour"
-  },
-  "nav": {
-    "solutions": "Solutions",
-    "features": "Features",
-    "forDoctors": "For Doctors",
-    "forPatients": "For Patients",
-    "login": "Login",
-    "requestDemo": "Request a Demo"
-  },
   "hero": {
     "badge": "Next-Gen Ophthalmology",
     "title1": "Precision Care for Your Vision, ",
@@ -56,33 +39,8 @@
   },
   "cta": {
     "title": "Ready to Scale Your Clinic?",
-    "subtitle": "Join over 450 clinical practices using OcularLink to deliver world-class eye care with operational precision.",
+    "subtitle": "Join over 450 clinical practices using Eye Clinic Support to deliver world-class eye care with operational precision.",
     "startTrial": "Start Free Trial",
     "speakExpert": "Speak with an Expert"
-  },
-  "footer": {
-    "tagline": "Precision in Vision. The world's most advanced operating system for ophthalmology networks.",
-    "hipaa": "HIPAA COMPLIANT",
-    "soc2": "SOC2 TYPE II",
-    "product": "Product",
-    "company": "Company",
-    "legal": "Legal",
-    "features": "Features",
-    "integrations": "Integrations",
-    "pricing": "Pricing",
-    "changelog": "Changelog",
-    "aboutUs": "About Us",
-    "careers": "Careers",
-    "contact": "Contact",
-    "partners": "Partners",
-    "privacy": "Privacy Policy",
-    "terms": "Terms of Service",
-    "hipaaCompliance": "HIPAA Compliance",
-    "accessibility": "Accessibility",
-    "copyright": "© 2024 OcularLink Medical Systems. Precision in Vision."
-  },
-  "about": {
-    "title": "About Us",
-    "description": "We build the most advanced ophthalmology operating system."
   }
 }

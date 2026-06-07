@@ -1,23 +1,17 @@
 "use client"
 
-import { useSession } from "next-auth/react"
+import { authService } from "@/services/auth.service"
 import type { User, Role } from "@/types"
+import { useEffect, useState } from "react"
 
 export function useCurrentUser(): User | null {
-  const { data: session } = useSession()
+  const [user, setUser] = useState<User | null>(null)
 
-  if (session?.user) {
-    return {
-      id: session.user.id,
-      email: session.user.email || "",
-      name: session.user.name || "",
-      role: session.user.role as Role,
-      clinicId: session.user.clinicId,
-      avatar: session.user.avatar,
-    }
-  }
+  useEffect(() => {
+    setUser(authService.getUser())
+  }, [])
 
-  return null
+  return user
 }
 
 export function useHasRole(requiredRoles: Role | Role[]): boolean {
@@ -30,6 +24,11 @@ export function useHasRole(requiredRoles: Role | Role[]): boolean {
 }
 
 export function useIsAuthenticated(): boolean {
-  const { data: session, status } = useSession()
-  return status === "authenticated" && !!session?.user
+  const [isAuth, setIsAuth] = useState(false)
+
+  useEffect(() => {
+    setIsAuth(authService.isAuthenticated())
+  }, [])
+
+  return isAuth
 }

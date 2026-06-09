@@ -4,6 +4,7 @@ import { Menu, Bell, LogOut } from "lucide-react"
 import { useShell } from "./ShellProvider"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { authService } from "@/services/auth.service"
 
 export interface DashboardHeaderProps {
   title: string
@@ -21,13 +22,25 @@ export default function DashboardHeader({ title, user }: DashboardHeaderProps) {
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const handleLogout = async () => {
+    if (isLoggingOut) return
+    
     setIsLoggingOut(true)
     try {
+      // Clear server-side cookie
       await fetch("/api/auth/logout", { method: "POST" })
-      localStorage.removeItem("accessToken")
+      
+      // Clear client-side storage
+      authService.clearAuth()
+      
+      // Redirect to login page
       router.push("/login")
+      router.refresh()
     } catch (error) {
       console.error("Logout error:", error)
+      // Still clear local storage even if API fails
+      authService.clearAuth()
+      router.push("/login")
+    } finally {
       setIsLoggingOut(false)
     }
   }

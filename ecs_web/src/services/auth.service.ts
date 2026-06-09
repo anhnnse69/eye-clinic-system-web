@@ -6,6 +6,14 @@ export interface LoginRequest {
   password: string
 }
 
+export interface RegisterRequest {
+  fullName: string
+  email: string
+  phone: string
+  password: string
+  confirmPassword: string
+}
+
 export interface AuthState {
   token: string | null
   user: User | null
@@ -148,6 +156,15 @@ class AuthService {
         }
       }
 
+      return response.data
+    } catch (error) {
+      throw handleApiError(error)
+    }
+  }
+
+  async register(request: RegisterRequest): Promise<ApiResponse<boolean>> {
+    try {
+      const response = await apiClient.post<ApiResponse<boolean>>("/auth/register", request)
       return response.data
     } catch (error) {
       throw handleApiError(error)

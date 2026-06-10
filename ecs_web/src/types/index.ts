@@ -182,3 +182,29 @@ export interface PaginatedResponse<T> {
   pageSize: number
   totalPages: number
 }
+
+export interface ClinicApplication {
+  id_clinic_registration: string
+  clinicName: string
+  contactEmail: string
+  contactPhone: string
+  submissionDate: string
+  status: "PENDING" | "APPROVED" | "REJECTED"
+}
+
+export interface GetClinicApplicationDetailResponse {
+  id_clinic_registration: string
+  clinicName: string
+  clinicAddress: string
+  contactName: string
+  contactPhone: string
+  contactEmail: string
+  businessLicenseUrl?: string
+  status: "PENDING" | "APPROVED" | "REJECTED"
+  reviewNote?: string
+  requestedAt: string
+}
+
+export interface RejectClinicApplicationRequest {
+  reviewNote: string
+}

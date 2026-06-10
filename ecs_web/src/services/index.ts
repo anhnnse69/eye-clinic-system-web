@@ -1,5 +1,6 @@
 export { authService } from "./auth.service"
 export { clinicService } from "./clinic.service"
+export { clinicApplicationsService } from "./clinic-applications.service"
 export { accountService } from "./account.service"
 export { patientService } from "./patient.service"
 export { appointmentService } from "./appointment.service"

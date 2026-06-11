@@ -1,79 +1,233 @@
-import { Building2, Users, Calendar, Star, Pill, Briefcase, DoorOpen, TrendingUp } from "lucide-react"
+"use client"
+
+import { useEffect, useState } from "react"
+import {
+  Calendar,
+  TrendingUp,
+  Users,
+  CheckCircle,
+  Briefcase,
+  Pill,
+  DoorOpen,
+  Building2,
+} from "lucide-react"
+
+import {
+  clinicDashboardService,
+  ClinicDashboardResponse,
+} from "@/services/clinic-dashboard.service"
+
+import { formatCurrency } from "@/lib/utils"
 
 export default function ClinicAdminDashboard() {
-  const stats = [
-    { label: "Bệnh nhân", value: "1,234", icon: Users, color: "primary", trend: "+12%" },
-    { label: "Lịch hẹn tháng", value: "456", icon: Calendar, color: "tertiary", trend: "+8%" },
-    { label: "Đánh giá TB", value: "4.8", icon: Star, color: "secondary", trend: "+0.2" },
-    { label: "Doanh thu", value: "120M", icon: TrendingUp, color: "primary", trend: "+15%" },
-  ]
+  const [dashboard, setDashboard] =
+    useState<ClinicDashboardResponse | null>(null)
 
-  return (
-    <div className="space-y-lg">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-lg">
-        {stats.map((s) => {
-          const Icon = s.icon
-          return (
-            <div key={s.label} className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-lg">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-label-md font-label-md text-on-surface-variant">{s.label}</p>
-                  <p className="text-display-sm font-display-sm text-on-surface mt-sm">{s.value}</p>
-                  <p className="text-label-sm font-label-sm text-tertiary mt-sm">{s.trend}</p>
-                </div>
-                <div className={`h-12 w-12 rounded-xl bg-${s.color}-container flex items-center justify-center`}>
-                  <Icon className={`h-6 w-6 text-${s.color}`} />
-                </div>
+  const [loading, setLoading] = useState(true)
+
+  const [error, setError] =
+    useState<string | null>(null)
+
+  useEffect(() => {
+    loadDashboard()
+  }, [])
+
+  const loadDashboard = async () => {
+    try {
+      setLoading(true)
+
+
+     const response =
+  await clinicDashboardService.get()
+
+  if (!response.data) {
+    setError("Không có dữ liệu dashboard")
+    return
+  }
+
+setDashboard(response.data)
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.code ||
+        err?.message ||
+        "Không thể tải dashboard"
+      )
+    } finally {
+      setLoading(false)
+    }
+
+
+  }
+
+  if (loading) {
+    return (<div className="p-6">
+      Đang tải dữ liệu... </div>
+    )
+  }
+
+  if (error) {
+    return (<div className="p-6 text-red-500">
+      {error} </div>
+    )
+  }
+
+  return (<div className="space-y-6"> <h1 className="text-2xl font-bold">
+    Dashboard Phòng Khám </h1>
+
+
+    {/* KPI */}
+
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+      <DashboardCard
+        title="Lịch hẹn hôm nay"
+        value={dashboard?.totalAppointments ?? 0}
+        icon={<Calendar />}
+      />
+
+      <DashboardCard
+        title="Hoàn thành"
+        value={dashboard?.completedAppointments ?? 0}
+        icon={<CheckCircle />}
+      />
+
+      <DashboardCard
+        title="Đang chờ"
+        value={dashboard?.pendingAppointments ?? 0}
+        icon={<Users />}
+      />
+
+      <DashboardCard
+        title="Doanh thu"
+        value={formatCurrency(
+          dashboard?.totalRevenue ?? 0
+        )}
+        icon={<TrendingUp />}
+      />
+    </div>
+
+    {/* Clinic Overview */}
+
+    <div className="bg-white rounded-xl border p-6">
+      <h2 className="text-lg font-semibold mb-4">
+        Tổng quan phòng khám
+      </h2>
+
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+
+        <OverviewCard
+          title="Bác sĩ"
+          value={dashboard?.totalDoctors ?? 0}
+          icon={<Building2 />}
+        />
+
+        <OverviewCard
+          title="Nhân viên"
+          value={dashboard?.totalStaffs ?? 0}
+          icon={<Users />}
+        />
+
+        <OverviewCard
+          title="Dịch vụ"
+          value={dashboard?.totalServices ?? 0}
+          icon={<Briefcase />}
+        />
+
+        <OverviewCard
+          title="Phòng"
+          value={dashboard?.totalRooms ?? 0}
+          icon={<DoorOpen />}
+        />
+
+        <OverviewCard
+          title="Thuốc"
+          value={dashboard?.totalMedicines ?? 0}
+          icon={<Pill />}
+        />
+      </div>
+    </div>
+
+    {/* Weekly Statistics */}
+
+    <div className="bg-white rounded-xl border p-6">
+      <h2 className="text-lg font-semibold mb-4">
+        Thống kê 7 ngày gần nhất
+      </h2>
+
+      <div className="space-y-3">
+        {dashboard?.weeklyStatistics?.map(
+          (item) => (
+            <div
+              key={item.date}
+              className="flex justify-between items-center border rounded-lg p-3"
+            >
+              <div>
+                <p className="font-medium">
+                  {item.date}
+                </p>
+
+                <p className="text-sm text-gray-500">
+                  {item.appointments} lịch hẹn
+                </p>
+              </div>
+
+              <div className="font-semibold">
+                {formatCurrency(item.revenue)}
               </div>
             </div>
           )
-        })}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-lg">
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-lg">
-          <h3 className="text-headline-sm font-headline-sm text-on-surface mb-md">Tổng quan phòng khám</h3>
-          <div className="space-y-md">
-            {[
-              { label: "Phòng khám", value: "12", icon: Building2 },
-              { label: "Nhân viên", value: "28", icon: Users },
-              { label: "Dịch vụ", value: "15", icon: Briefcase },
-              { label: "Thuốc", value: "234", icon: Pill },
-              { label: "Phòng", value: "8", icon: DoorOpen },
-            ].map((item) => {
-              const Icon = item.icon
-              return (
-                <div key={item.label} className="flex items-center justify-between p-md bg-surface-container-low rounded-lg">
-                  <div className="flex items-center gap-sm">
-                    <div className="h-10 w-10 rounded-lg bg-primary-container flex items-center justify-center">
-                      <Icon className="h-5 w-5 text-primary" />
-                    </div>
-                    <span className="text-body-md font-body-md text-on-surface">{item.label}</span>
-                  </div>
-                  <span className="text-headline-sm font-headline-sm text-primary">{item.value}</span>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-lg">
-          <h3 className="text-headline-sm font-headline-sm text-on-surface mb-md">Lịch hẹn gần đây</h3>
-          <div className="space-y-md">
-            {[
-              { patient: "Nguyễn Văn A", service: "Khám mắt tổng quát", time: "10 phút trước" },
-              { patient: "Trần Thị B", service: "Đo thị lực", time: "30 phút trước" },
-              { patient: "Lê Văn C", service: "Phẫu thuật Lasik", time: "1 giờ trước" },
-            ].map((appt, i) => (
-              <div key={i} className="p-md bg-surface-container-low rounded-lg">
-                <p className="text-label-md font-label-md text-on-surface">{appt.patient}</p>
-                <p className="text-label-sm font-label-sm text-on-surface-variant mt-1">{appt.service}</p>
-                <p className="text-label-sm font-label-sm text-primary mt-1">{appt.time}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+        )}
       </div>
     </div>
+  </div>
+
+
+  )
+}
+
+function DashboardCard({
+  title,
+  value,
+  icon,
+}: {
+  title: string
+  value: string | number
+  icon: React.ReactNode
+}) {
+  return (<div className="bg-white border rounded-xl p-4"> <div className="flex justify-between"> <div> <p className="text-gray-500 text-sm">
+    {title} </p>
+
+    <p className="text-2xl font-bold mt-2">
+      {value}
+    </p>
+  </div>
+    {icon}
+  </div>
+  </div>
+
+  )
+}
+
+function OverviewCard({
+  title,
+  value,
+  icon,
+}: {
+  title: string
+  value: number
+  icon: React.ReactNode
+}) {
+  return (<div className="border rounded-lg p-4 text-center"> <div className="flex justify-center mb-2">{icon} 
+  </div>
+    <p className="text-gray-500 text-sm">
+      {title}
+    </p>
+
+    <p className="text-xl font-bold">
+      {value}
+    </p>
+  </div>
+
+
   )
 }

@@ -10,12 +10,8 @@ export interface DashboardChartItem {
 export interface ClinicDashboardResponse {
   totalAppointments: number
   completedAppointments: number
-  pendingAppointments: number
   cancelledAppointments: number
-
   totalRevenue: number
-
-  totalDoctors: number
   totalStaffs: number
   totalServices: number
   totalRooms: number

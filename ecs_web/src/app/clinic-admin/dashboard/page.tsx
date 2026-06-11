@@ -20,13 +20,9 @@ import {
 import { formatCurrency } from "@/lib/utils"
 
 export default function ClinicAdminDashboard() {
-  const [dashboard, setDashboard] =
-    useState<ClinicDashboardResponse | null>(null)
-
+  const [dashboard, setDashboard] = useState<ClinicDashboardResponse | null>(null)
   const [loading, setLoading] = useState(true)
-
-  const [error, setError] =
-    useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     loadDashboard()
@@ -35,153 +31,156 @@ export default function ClinicAdminDashboard() {
   const loadDashboard = async () => {
     try {
       setLoading(true)
+      const response = await clinicDashboardService.get()
 
+      if (!response.data) {
+        setError("Không có dữ liệu dashboard")
+        return
+      }
 
-     const response =
-  await clinicDashboardService.get()
-
-  if (!response.data) {
-    setError("Không có dữ liệu dashboard")
-    return
-  }
-
-setDashboard(response.data)
+      setDashboard(response.data)
     } catch (err: any) {
       setError(
-        err?.response?.data?.code ||
+        err?.response?.data?.message ||
         err?.message ||
         "Không thể tải dashboard"
       )
     } finally {
       setLoading(false)
     }
-
-
   }
 
   if (loading) {
-    return (<div className="p-6">
-      Đang tải dữ liệu... </div>
+    return (
+      <div className="p-6 max-w-7xl mx-auto space-y-8">
+        <div className="animate-pulse space-y-3">
+          <div className="h-8 w-64 bg-gray-200 rounded-xl" />
+          <div className="h-4 w-48 bg-gray-100 rounded-lg" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="h-32 bg-gray-200 rounded-3xl" />
+          ))}
+        </div>
+        <div className="h-64 bg-gray-200 rounded-3xl" />
+      </div>
     )
   }
 
   if (error) {
-    return (<div className="p-6 text-red-500">
-      {error} </div>
+    return (
+      <div className="p-8 text-center min-h-[400px] flex flex-col items-center justify-center">
+        <div className="text-red-500 text-lg font-medium">{error}</div>
+        <button
+          onClick={loadDashboard}
+          className="mt-4 px-6 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition shadow-sm active:scale-95"
+        >
+          Thử lại
+        </button>
+      </div>
     )
   }
 
-  return (<div className="space-y-6"> <h1 className="text-2xl font-bold">
-    Dashboard Phòng Khám </h1>
+  return (
+    <div className="space-y-8 p-6 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Dashboard Phòng Khám</h1>
+          <p className="text-gray-500 mt-1 text-sm sm:text-base">Tổng quan hoạt động hôm nay</p>
+        </div>
+      </div>
 
-
-    {/* KPI */}
-
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-
-      <DashboardCard
-        title="Lịch hẹn hôm nay"
-        value={dashboard?.totalAppointments ?? 0}
-        icon={<Calendar />}
-      />
-
-      <DashboardCard
-        title="Hoàn thành"
-        value={dashboard?.completedAppointments ?? 0}
-        icon={<CheckCircle />}
-      />
-
-      <DashboardCard
-        title="Đang chờ"
-        value={dashboard?.pendingAppointments ?? 0}
-        icon={<Users />}
-      />
-
-      <DashboardCard
-        title="Doanh thu"
-        value={formatCurrency(
-          dashboard?.totalRevenue ?? 0
-        )}
-        icon={<TrendingUp />}
-      />
-    </div>
-
-    {/* Clinic Overview */}
-
-    <div className="bg-white rounded-xl border p-6">
-      <h2 className="text-lg font-semibold mb-4">
-        Tổng quan phòng khám
-      </h2>
-
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-
-        <OverviewCard
-          title="Bác sĩ"
-          value={dashboard?.totalDoctors ?? 0}
-          icon={<Building2 />}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <DashboardCard
+          title="Lịch hẹn hôm nay"
+          value={dashboard?.totalAppointments ?? 0}
+          icon={<Calendar className="w-7 h-7 text-blue-600" />}
+          color="blue"
         />
-
-        <OverviewCard
-          title="Nhân viên"
-          value={dashboard?.totalStaffs ?? 0}
-          icon={<Users />}
+        <DashboardCard
+          title="Hoàn thành"
+          value={dashboard?.completedAppointments ?? 0}
+          icon={<CheckCircle className="w-7 h-7 text-emerald-600" />}
+          color="emerald"
         />
-
-        <OverviewCard
-          title="Dịch vụ"
-          value={dashboard?.totalServices ?? 0}
-          icon={<Briefcase />}
-        />
-
-        <OverviewCard
-          title="Phòng"
-          value={dashboard?.totalRooms ?? 0}
-          icon={<DoorOpen />}
-        />
-
-        <OverviewCard
-          title="Thuốc"
-          value={dashboard?.totalMedicines ?? 0}
-          icon={<Pill />}
+        <DashboardCard
+          title="Doanh thu hôm nay"
+          value={formatCurrency(dashboard?.totalRevenue ?? 0)}
+          icon={<TrendingUp className="w-7 h-7 text-violet-600" />}
+          color="violet"
         />
       </div>
-    </div>
 
-    {/* Weekly Statistics */}
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8">
+        <div className="flex items-center gap-3 mb-6">
+          <Building2 className="w-6 h-6 text-gray-800" />
+          <h2 className="text-xl font-bold text-gray-900">Tổng quan phòng khám</h2>
+        </div>
 
-    <div className="bg-white rounded-xl border p-6">
-      <h2 className="text-lg font-semibold mb-4">
-        Thống kê 7 ngày gần nhất
-      </h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <OverviewCard
+            title="Nhân viên"
+            value={dashboard?.totalStaffs ?? 0}
+            icon={<Users className="w-8 h-8 text-blue-600" />}
+          />
+          <OverviewCard
+            title="Dịch vụ"
+            value={dashboard?.totalServices ?? 0}
+            icon={<Briefcase className="w-8 h-8 text-purple-600" />}
+          />
+          <OverviewCard
+            title="Phòng khám"
+            value={dashboard?.totalRooms ?? 0}
+            icon={<DoorOpen className="w-8 h-8 text-rose-600" />}
+          />
+          <OverviewCard
+            title="Thuốc & vật tư"
+            value={dashboard?.totalMedicines ?? 0}
+            icon={<Pill className="w-8 h-8 text-emerald-600" />}
+          />
+        </div>
+      </div>
 
-      <div className="space-y-3">
-        {dashboard?.weeklyStatistics?.map(
-          (item) => (
-            <div
-              key={item.date}
-              className="flex justify-between items-center border rounded-lg p-3"
-            >
-              <div>
-                <p className="font-medium">
-                  {item.date}
-                </p>
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8">
+        <div className="flex items-center gap-3 mb-6">
+          <TrendingUp className="w-6 h-6 text-gray-800" />
+          <h2 className="text-xl font-bold text-gray-900">Thống kê 7 ngày gần nhất</h2>
+        </div>
 
-                <p className="text-sm text-gray-500">
-                  {item.appointments} lịch hẹn
-                </p>
+        <div className="space-y-3.5">
+          {dashboard?.weeklyStatistics && dashboard.weeklyStatistics.length > 0 ? (
+            dashboard.weeklyStatistics.map((item) => (
+              <div
+                key={item.date}
+                className="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100/80 border border-transparent hover:border-gray-200/60 rounded-2xl transition-all duration-200 group"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-11 h-11 bg-white rounded-xl flex items-center justify-center shadow-sm border border-gray-100 group-hover:scale-105 transition-transform">
+                    <Calendar className="w-5 h-5 text-gray-500" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-800 text-sm sm:text-base">{item.date}</p>
+                    <p className="text-xs sm:text-sm text-gray-400 font-medium">
+                      {item.appointments} lịch hẹn
+                    </p>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <p className="text-lg sm:text-xl font-bold text-emerald-600 tracking-tight">
+                    {formatCurrency(item.revenue)}
+                  </p>
+                  <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">doanh thu</p>
+                </div>
               </div>
-
-              <div className="font-semibold">
-                {formatCurrency(item.revenue)}
-              </div>
-            </div>
-          )
-        )}
+            ))
+          ) : (
+            <div className="text-center py-8 text-gray-400 text-sm">Không có dữ liệu thống kê tuần</div>
+          )}
+        </div>
       </div>
     </div>
-  </div>
-
-
   )
 }
 
@@ -189,22 +188,33 @@ function DashboardCard({
   title,
   value,
   icon,
+  color = "blue",
 }: {
   title: string
   value: string | number
   icon: React.ReactNode
+  color?: string
 }) {
-  return (<div className="bg-white border rounded-xl p-4"> <div className="flex justify-between"> <div> <p className="text-gray-500 text-sm">
-    {title} </p>
+  const colorMap: any = {
+    blue: "bg-blue-50/60 border-blue-100/80 text-blue-900",
+    emerald: "bg-emerald-50/60 border-emerald-100/80 text-emerald-900",
+    violet: "bg-violet-50/60 border-violet-100/80 text-violet-900",
+  }
 
-    <p className="text-2xl font-bold mt-2">
-      {value}
-    </p>
-  </div>
-    {icon}
-  </div>
-  </div>
-
+  return (
+    <div className={`rounded-3xl border p-6 transition-all hover:shadow-lg hover:-translate-y-1 bg-white ${colorMap[color] || colorMap.blue}`}>
+      <div className="flex justify-between items-start">
+        <div>
+          <p className="text-gray-400 text-sm font-semibold tracking-wide uppercase">{title}</p>
+          <p className="text-3xl font-extrabold text-gray-900 mt-3 tracking-tight">
+            {value}
+          </p>
+        </div>
+        <div className="p-3 bg-white rounded-2xl shadow-sm border border-gray-100/50">
+          {icon}
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -217,17 +227,13 @@ function OverviewCard({
   value: number
   icon: React.ReactNode
 }) {
-  return (<div className="border rounded-lg p-4 text-center"> <div className="flex justify-center mb-2">{icon} 
-  </div>
-    <p className="text-gray-500 text-sm">
-      {title}
-    </p>
-
-    <p className="text-xl font-bold">
-      {value}
-    </p>
-  </div>
-
-
+  return (
+    <div className="border border-gray-100 hover:border-gray-200 bg-gray-50/30 hover:bg-white rounded-2xl p-5 text-center transition-all hover:shadow-md group">
+      <div className="mx-auto w-14 h-14 bg-white border border-gray-100 group-hover:scale-105 transition-transform rounded-2xl flex items-center justify-center mb-3 shadow-sm">
+        {icon}
+      </div>
+      <p className="text-2xl font-bold text-gray-900 mb-0.5">{value}</p>
+      <p className="text-gray-400 text-sm font-medium">{title}</p>
+    </div>
   )
 }

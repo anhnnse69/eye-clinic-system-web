@@ -208,3 +208,13 @@ export interface GetClinicApplicationDetailResponse {
 export interface RejectClinicApplicationRequest {
   reviewNote: string
 }
+
+export interface ClinicManagementItem {
+  id_clinic: string
+  clinicName: string
+  address: string
+  contactEmail: string
+  contactPhone: string
+  createdAt: string
+  status: "ACTIVE" | "INACTIVE"
+}

@@ -38,11 +38,19 @@ class ClinicService {
     const response = await apiClient.patch<ApiResponse<Clinic>>(`/clinics/${id}`, { isActive })
     return response.data
   }
-  
+
   async getProfile(): Promise<ApiResponse<Partial<Clinic>>> {
     const response = await apiClient.get<ApiResponse<Partial<Clinic>>>(
       "/clinic-admin/clinic/profile"
     )
+    return response.data
+  }
+  async updateProfile(data: Partial<Clinic>): Promise<ApiResponse<boolean>> {
+    const response = await apiClient.put<ApiResponse<boolean>>(
+      "/clinic-admin/clinic/profile",
+      data
+    )
+
     return response.data
   }
 }

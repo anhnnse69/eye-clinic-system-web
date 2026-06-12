@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { clinicService } from "@/services/clinic.service"
+import { clinicsService } from "@/services/clinic.service"
 import Link from "next/link"
 
 interface ClinicProfile {
@@ -27,7 +27,7 @@ export default function ClinicProfilePage() {
 
         const load = async () => {
             try {
-                const res = await clinicService.getProfile()
+                const res = await clinicsService.getProfile()
                 if (!mounted) return
 
                 if (res && res.data) {

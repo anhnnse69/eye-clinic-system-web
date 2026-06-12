@@ -14,6 +14,15 @@ export interface RegisterRequest {
   confirmPassword: string
 }
 
+export interface RegisterClinicApplicationRequest {
+  clinicName: string
+  clinicAddress: string
+  contactName: string
+  contactPhone: string
+  contactEmail: string
+  businessLicenseUrl?: string | null
+}
+
 export interface AuthState {
   token: string | null
   user: User | null
@@ -165,6 +174,20 @@ class AuthService {
   async register(request: RegisterRequest): Promise<ApiResponse<boolean>> {
     try {
       const response = await apiClient.post<ApiResponse<boolean>>("/auth/register", request)
+      return response.data
+    } catch (error) {
+      throw handleApiError(error)
+    }
+  }
+
+  async registerClinicApplication(
+    request: RegisterClinicApplicationRequest
+  ): Promise<ApiResponse<boolean>> {
+    try {
+      const response = await apiClient.post<ApiResponse<boolean>>(
+        "/auth/register-clinic-application",
+        request
+      )
       return response.data
     } catch (error) {
       throw handleApiError(error)

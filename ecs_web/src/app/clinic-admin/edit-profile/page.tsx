@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { clinicService } from "@/services/clinic.service"
+import { clinicsService } from "@/services/clinic.service"
 import { cn, isValidEmail } from "@/lib/utils" 
 
 interface EditClinicForm {
@@ -53,7 +53,7 @@ export default function EditClinicProfilePage() {
         try {
             setLoading(true)
             setGeneralError("")
-            const res = await clinicService.getProfile()
+            const res = await clinicsService.getProfile()
 
             if (res && res.data) {
                 const clinic = res.data as any
@@ -132,7 +132,7 @@ export default function EditClinicProfilePage() {
 
         try {
             setSaving(true)
-            const response = await clinicService.updateProfile(form) as any
+            const response = await clinicsService.updateProfile(form) as any
 
             if (response && response.data === true) {
                 setSuccessMessage("Cập nhật thông tin phòng khám thành công!")

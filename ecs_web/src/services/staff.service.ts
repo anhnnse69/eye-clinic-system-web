@@ -37,6 +37,14 @@ export interface StaffAccountResponse {
   createdAt: string;
 }
 
+export interface CreateStaffAccountRequest {
+  phone: string      
+  email: string
+  fullName: string
+  password: string    
+  staffRole: number   
+}
+
 class StaffService {
   async list(params?: StaffFilters): Promise<PaginatedResponse<Staff>> {
     const response = await apiClient.get<PaginatedResponse<Staff>>("/staff", { params })
@@ -76,9 +84,16 @@ class StaffService {
   }
   
   async getStaffList(): Promise<ApiResponse<StaffAccountResponse[]>> {
-    // SỬA ĐƯỜNG DẪN Ở ĐÂY CHO KHỚP VỚI CONTROLLER:
     const response = await apiClient.get<ApiResponse<StaffAccountResponse[]>>(
       "https://localhost:7070/api/v1/clinic-admin/staff/accounts"
+    )
+    return response.data
+  }
+
+  async createStaffAccount(data: CreateStaffAccountRequest): Promise<ApiResponse<any>> {
+    const response = await apiClient.post<ApiResponse<any>>(
+      "https://localhost:7070/api/v1/clinic-admin/staff/create", 
+      data
     )
     return response.data
   }

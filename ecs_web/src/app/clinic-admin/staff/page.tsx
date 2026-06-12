@@ -1,8 +1,8 @@
-// src/app/clinic-admin/staff/page.tsx
 "use client"
 
 import { useEffect, useState } from "react"
-import { ShieldCheck, Mail, Phone, Calendar, RefreshCw, AlertCircle } from "lucide-react" //
+import Link from "next/link" // 👈 Thêm Link để điều hướng
+import { ShieldCheck, Mail, Phone, Calendar, AlertCircle, Plus } from "lucide-react" // 👈 Thay RefreshCw bằng Plus
 import { staffService } from "@/services/staff.service"
 import type { StaffAccountResponse } from "@/services/staff.service"
 
@@ -22,7 +22,6 @@ export default function StaffManagementPage() {
         setStaffList(response.data)
       }
     } catch (err: any) {
-      // BẮT CÁC MÃ LỖI TỪ BACKEND TRẢ VỀ TRONGresult (BadRequest)
       const errCode = err?.response?.data?.codeMessage
       
       if (errCode === "APP_MESSAGE_4001") {
@@ -49,12 +48,14 @@ export default function StaffManagementPage() {
           <h2 className="text-headline-md font-headline-md text-on-surface">Quản lý nhân viên</h2>
           <p className="text-body-md text-on-surface-variant">Danh sách tài khoản nhân viên thuộc phòng khám của bạn</p>
         </div>
-        <button 
-          onClick={loadStaffData}
+        
+        {/* THAY ĐỔI: Chuyển nút làm mới thành nút Thêm nhân viên và điều hướng sang trang tạo riêng */}
+        <Link 
+          href="/clinic-admin/staff/create"
           className="flex items-center gap-sm px-md py-sm bg-primary text-on-primary rounded-xl hover:opacity-90 transition-all text-label-md font-medium shadow-sm"
         >
-          <RefreshCw className="h-4 w-4" /> Làm mới
-        </button>
+          <Plus className="h-4 w-4" /> Thêm nhân viên
+        </Link>
       </div>
 
       {/* Đang tải */}

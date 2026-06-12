@@ -23,6 +23,17 @@ export interface RegisterClinicApplicationRequest {
   businessLicenseUrl?: string | null
 }
 
+export interface ForgotPasswordRequest {
+  email: string
+}
+
+export interface ResetPasswordRequest {
+  resetToken: string
+  otp: string
+  newPassword: string
+  confirmPassword: string
+}
+
 export interface AuthState {
   token: string | null
   user: User | null
@@ -201,6 +212,24 @@ class AuthService {
       // Ignore errors
     } finally {
       this.clearAuth()
+    }
+  }
+
+  async forgotPassword(email: string): Promise<ApiResponse<string>> {
+    try {
+      const response = await apiClient.post<ApiResponse<string>>("/auth/forgot-password", { email })
+      return response.data
+    } catch (error) {
+      throw handleApiError(error)
+    }
+  }
+
+  async resetPassword(request: ResetPasswordRequest): Promise<ApiResponse<null>> {
+    try {
+      const response = await apiClient.post<ApiResponse<null>>("/auth/reset-password", request)
+      return response.data
+    } catch (error) {
+      throw handleApiError(error)
     }
   }
 }

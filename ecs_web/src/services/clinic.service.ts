@@ -106,6 +106,14 @@ class ClinicsService {
     return response.data;
   }
 
+  
+  async deleteClinic(id: string): Promise<ApiResponse<any>> {
+    const response = await apiClient.delete<ApiResponse<any>>(
+      `/system-admin/clinics/${id}`
+    )
+    return response.data
+  }
+  
   /**
    * Bổ sung hàm Vô hiệu hóa  (Nếu có endpoint tương ứng xử lý trên UI)
    */

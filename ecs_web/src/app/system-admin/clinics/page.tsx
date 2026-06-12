@@ -7,12 +7,12 @@ import {
   MapPin, Phone, Mail, AlertCircle, Loader2, Edit2, Ban
 } from "lucide-react"
 import { clinicsService } from "@/services"
+import { handleApiError } from "@/lib/axios"
 import type { ClinicManagementItem, MetaResponse } from "@/types"
 
 export default function ClinicsListPage() {
   const router = useRouter()
   
-  // Khởi tạo mảng rỗng để giải quyết triệt để lỗi "'clinics' is possibly 'undefined'"
   const [clinics, setClinics] = useState<ClinicManagementItem[]>([])
   const [searchTerm, setSearchTerm] = useState<string>("")
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>("")
@@ -34,7 +34,7 @@ export default function ClinicsListPage() {
     }
   }, [searchTerm])
 
-  // 2. Gọi fetch danh sách phòng khám từ API khi filter thay đổi
+  // 2. Gọi fetch danh sách phòng khám từ API
   useEffect(() => {
     fetchClinics()
   }, [currentPage, pageSize, statusFilter, debouncedSearchTerm])
@@ -50,8 +50,6 @@ export default function ClinicsListPage() {
         pageNumber: currentPage,
         pageSize: pageSize,
       })
-
-      console.log("=== API CLINICS RESPONSE RAW ===", response)
 
       const resData = response?.data || (response as any)?.Data
       const resMeta = response?.meta || (response as any)?.Meta
@@ -72,19 +70,20 @@ export default function ClinicsListPage() {
     }
   }
 
-  // Cập nhật trạng thái hoạt động thực tế
-  const handleToggleStatus = async (id: string, currentStatus: string) => {
-    // Chỉ xử lý trường hợp vô hiệu hóa
-    if (currentStatus !== "ACTIVE") return
-    
+  // Thực hiện gọi API DELETE để vô hiệu hóa phòng khám
+  const handleDeleteClinic = async (id: string) => {
     if (!window.confirm("Bạn có chắc chắn muốn vô hiệu hóa phòng khám này?")) return
 
     try {
       setLoading(true)
-      await clinicsService.toggleClinicStatus(id)
-      await fetchClinics() // Refresh lại danh sách
+      setError(null)
+      
+      await clinicsService.deleteClinic(id)
+      await fetchClinics() // Tải lại danh sách mới để cập nhật trạng thái UI
     } catch (err) {
-      alert("Vô hiệu hóa thất bại. Vui lòng thử lại sau.")
+      const apiErrorMessage = handleApiError(err)
+      setError(`Vô hiệu hóa thất bại: ${apiErrorMessage}`)
+      console.error("Error deleting clinic:", err)
     } finally {
       setLoading(false)
     }
@@ -129,7 +128,6 @@ export default function ClinicsListPage() {
       {/* Thanh tìm kiếm & Bộ lọc trạng thái */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-          {/* Ô Tìm kiếm */}
           <div className="flex flex-col gap-1.5 w-full">
             <label className="text-sm font-semibold text-slate-600">Tìm kiếm phòng khám</label>
             <div className="relative w-full">
@@ -144,7 +142,6 @@ export default function ClinicsListPage() {
             </div>
           </div>
 
-          {/* Ô lọc Trạng thái */}
           <div className="flex flex-col gap-1.5 w-full">
             <label className="text-sm font-semibold text-slate-600">Trạng thái hoạt động</label>
             <select
@@ -158,7 +155,6 @@ export default function ClinicsListPage() {
             </select>
           </div>
 
-          {/* Nút Làm mới */}
           <button 
             onClick={fetchClinics}
             disabled={loading}
@@ -175,21 +171,21 @@ export default function ClinicsListPage() {
         <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
           <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
           <div>
-            <h3 className="font-semibold text-red-800 mb-0.5">Lỗi</h3>
+            <h3 className="font-semibold text-red-800 mb-0.5">Lỗi hệ thống</h3>
             <p className="text-sm text-red-700">{error}</p>
           </div>
         </div>
       )}
 
-      {/* Hiệu ứng Loading dùng Loader2 */}
+      {/* Loading */}
       {loading && (
         <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
           <Loader2 className="h-8 w-8 text-blue-600 animate-spin mb-3" />
-          <p className="text-sm text-slate-500">Đang tải danh sách phòng khám...</p>
+          <p className="text-sm text-slate-500">Đang xử lý dữ liệu hệ thống...</p>
         </div>
       )}
 
-      {/* Hiển thị bảng dữ liệu */}
+      {/* Bảng dữ liệu */}
       {!loading && clinics.length === 0 ? (
         <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[300px] w-full">
           <Building2 className="h-12 w-12 text-slate-300 mb-3" />
@@ -262,7 +258,6 @@ export default function ClinicsListPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-center gap-4 w-full">
-                          {/* Nút Chỉnh sửa / Xem chi tiết luôn xuất hiện */}
                           <button 
                             onClick={() => {
                               if (status === "ACTIVE") {
@@ -274,13 +269,13 @@ export default function ClinicsListPage() {
                             className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-blue-600 px-2.5 py-1.5 hover:bg-blue-50 rounded-lg transition-all whitespace-nowrap"
                           >
                             <Edit2 className="h-4 w-4 shrink-0" />
-                            <span>{status === "ACTIVE" ? "Chỉnh sửa" : "Chỉnh sửa"}</span>
+                            <span>Chỉnh sửa</span>
                           </button>
 
-                          {/* Nút Vô hiệu hóa chỉ hiển thị khi phòng khám đang hoạt động */}
+                          {/* Chỉ render nút Vô hiệu hóa khi status là ACTIVE */}
                           {status === "ACTIVE" && (
                             <button 
-                              onClick={() => handleToggleStatus(id, status)}
+                              onClick={() => handleDeleteClinic(id)}
                               className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 px-2.5 py-1.5 hover:bg-red-50 rounded-lg transition-all whitespace-nowrap"
                             >
                               <Ban className="h-4 w-4 shrink-0" />

@@ -7,10 +7,33 @@ import type {
 } from "@/types";
 
 export interface GetClinicsParams {
-  searchTerm?: string;
-  status?: string; // "ACTIVE" hoặc "INACTIVE"
-  pageNumber?: number;
-  pageSize?: number;
+  searchTerm?: string
+  status?: string      
+  pageNumber?: number
+  pageSize?: number
+}
+
+
+export interface UpdateClinicRequest {
+  name: string
+  address: string
+  phone: string
+  email: string | null
+  logoUrl: string | null
+  description: string | null
+}
+
+
+export interface GetClinicByIdDetail {
+  name: string
+  address: string
+  phone: string
+  email: string
+  logoUrl: string
+  description: string
+  isActive: boolean
+  ratingAvg: number
+  reviewCount: number
 }
 
 class ClinicsService {
@@ -84,7 +107,7 @@ class ClinicsService {
   }
 
   /**
-   * Bổ sung hàm Vô hiệu hóa / Kích hoạt lại (Nếu có endpoint tương ứng xử lý trên UI)
+   * Bổ sung hàm Vô hiệu hóa  (Nếu có endpoint tương ứng xử lý trên UI)
    */
   async toggleClinicStatus(id: string): Promise<ApiResponse<boolean>> {
     const response = await apiClient.put<ApiResponse<boolean>>(
@@ -99,6 +122,23 @@ class ClinicsService {
       data,
     );
 
+    return response.data;
+  }
+
+  
+  async getClinicById(id: string): Promise<ApiResponse<GetClinicByIdDetail>> {
+    const response = await apiClient.get<ApiResponse<GetClinicByIdDetail>>(
+      `/system-admin/clinics/${id}`
+    );
+    return response.data;
+  }
+
+  
+  async updateClinic(id: string, data: UpdateClinicRequest): Promise<ApiResponse<any>> {
+    const response = await apiClient.put<ApiResponse<any>>(
+      `/system-admin/clinics/${id}`,
+      data
+    );
     return response.data;
   }
 }

@@ -50,12 +50,10 @@ class ClinicsService {
     return response.data
   }
 
-  /**
-   * Bổ sung hàm Vô hiệu hóa  (Nếu có endpoint tương ứng xử lý trên UI)
-   */
-  async toggleClinicStatus(id: string): Promise<ApiResponse<boolean>> {
-    const response = await apiClient.put<ApiResponse<boolean>>(
-      `/system-admin/clinics/${id}/toggle-status`
+  
+  async deleteClinic(id: string): Promise<ApiResponse<any>> {
+    const response = await apiClient.delete<ApiResponse<any>>(
+      `/system-admin/clinics/${id}`
     )
     return response.data
   }

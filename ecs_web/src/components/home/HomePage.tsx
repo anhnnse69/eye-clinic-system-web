@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useTranslations, useLocale } from "next-intl"
 import { useRouter, usePathname } from "next/navigation"
+import { cn } from "@/lib/utils"
 
 const LOGO_IMG =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuCwR5I14Ti14lR3BYE4S0RtQO-d8r8udA0haqFhxTaWQ9yQ-jmxbSRgYSkcBkNwuYRPxAbe8JXfK0F1YyrjzCFly6Lq3OZKEvx1ur-E7AyiXkpaXAzTA7fU0BJWAs3bleQjIy9M4iQHcccCFbjJuDPzFrUn_bu0p0mQxPoyXF7BOJMQYc0C1GCWXA0JfldNcZ4O0CzfxkpvbMhmEFf6B_IaHns3GgbAB4_djZJGV8mIcaRS8VLHh7-bKrri-dHqeG15ux8Eq6zGs31k"
@@ -18,6 +19,16 @@ export function HomePage() {
   const locale = useLocale()
   const router = useRouter()
   const pathname = usePathname()
+  const [searchTab, setSearchTab] = useState<"clinics" | "doctors">("clinics")
+  const [searchQuery, setSearchQuery] = useState("")
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    const q = searchQuery.trim()
+    router.push(
+      `/${locale}/search/${searchTab}${q ? `?q=${encodeURIComponent(q)}` : ""}`
+    )
+  }
 
   const toggleLang = () => {
     if (locale === "en") {
@@ -36,12 +47,12 @@ export function HomePage() {
     }
     const handleMouseUp = () => {
       document.querySelectorAll("button").forEach((b) => {
-        ;(b as HTMLButtonElement).style.transform = "scale(1)"
+        ; (b as HTMLButtonElement).style.transform = "scale(1)"
       })
     }
     const handleMouseLeave = () => {
       document.querySelectorAll("button").forEach((b) => {
-        ;(b as HTMLButtonElement).style.transform = "scale(1)"
+        ; (b as HTMLButtonElement).style.transform = "scale(1)"
       })
     }
 
@@ -152,6 +163,70 @@ export function HomePage() {
           </nav>
         </header>
 
+        <div className="bg-surface-container-lowest border-b border-outline-variant shadow-sm">
+          <div className="max-w-7xl mx-auto px-gutter py-4">
+            <form onSubmit={handleSearch} className="flex items-center gap-2">
+
+              {/* Search Input */}
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={
+                    searchTab === "clinics"
+                      ? locale === "vi"
+                        ? "Tìm kiếm phòng khám..."
+                        : "Search clinics..."
+                      : locale === "vi"
+                        ? "Tìm kiếm bác sĩ..."
+                        : "Search doctors..."
+                  }
+                  className="w-full px-4 py-3 rounded-xl border border-outline-variant bg-white"
+                />
+              </div>
+
+              {/* Clinic Button */}
+              <button
+                type="button"
+                onClick={() => setSearchTab("clinics")}
+                className={cn(
+                  "px-5 py-3 rounded-xl border transition-all",
+                  searchTab === "clinics"
+                    ? "bg-primary text-on-primary border-primary"
+                    : "bg-white border-outline-variant"
+                )}
+              >
+                Clinic
+              </button>
+
+              {/* Doctor Button */}
+              <button
+                type="button"
+                onClick={() => setSearchTab("doctors")}
+                className={cn(
+                  "px-5 py-3 rounded-xl border transition-all",
+                  searchTab === "doctors"
+                    ? "bg-primary text-on-primary border-primary"
+                    : "bg-white border-outline-variant"
+                )}
+              >
+                Doctor
+              </button>
+
+              {/* Search Icon */}
+              <button
+                type="submit"
+                className="h-[48px] w-[48px] flex items-center justify-center bg-primary text-on-primary rounded-xl"
+              >
+                <span className="material-symbols-outlined">
+                  search
+                </span>
+              </button>
+
+            </form>
+          </div>
+        </div>
         <main>
           {/* ── Hero ── */}
           <section className="relative overflow-hidden hero-gradient pt-2xl pb-2xl md:py-2xl">

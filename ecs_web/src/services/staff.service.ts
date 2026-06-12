@@ -27,6 +27,16 @@ interface UpdateStaffData {
   isActive?: boolean
 }
 
+export interface StaffAccountResponse {
+  userId: string;    
+  fullName: string;
+  email: string;
+  phone: string;
+  role: string; 
+  isActive: boolean;
+  createdAt: string;
+}
+
 class StaffService {
   async list(params?: StaffFilters): Promise<PaginatedResponse<Staff>> {
     const response = await apiClient.get<PaginatedResponse<Staff>>("/staff", { params })
@@ -64,7 +74,17 @@ class StaffService {
     })
     return response.data
   }
+  
+  async getStaffList(): Promise<ApiResponse<StaffAccountResponse[]>> {
+    // SỬA ĐƯỜNG DẪN Ở ĐÂY CHO KHỚP VỚI CONTROLLER:
+    const response = await apiClient.get<ApiResponse<StaffAccountResponse[]>>(
+      "https://localhost:7070/api/v1/clinic-admin/staff/accounts"
+    )
+    return response.data
+  }
 }
+
+
 
 export const staffService = new StaffService()
 export default staffService

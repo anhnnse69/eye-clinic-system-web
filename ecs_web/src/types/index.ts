@@ -30,10 +30,13 @@ export interface Clinic {
   address: string
   phone: string
   email?: string
-  logo?: string
+  logoUrl?: string
+  description?: string
   isActive: boolean
-  createdAt: string
-  updatedAt: string
+  ratingAvg?: number
+  reviewCount?: number
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface Staff {

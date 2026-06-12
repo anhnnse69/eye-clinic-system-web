@@ -11,4 +11,4 @@ export { roomService } from "./room.service"
 export { recordService } from "./record.service"
 export { feedbackService } from "./feedback.service"
 export { auditLogService } from "./audit-log.service"
-
+export { clinicFeedbackService } from "./clinic-feedback.service"

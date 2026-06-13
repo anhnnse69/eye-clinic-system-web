@@ -45,6 +45,31 @@ export interface CreateStaffAccountRequest {
   staffRole: number   
 }
 
+export interface EditStaffRequest {
+    staffUserId: string
+    phone: string
+    email: string
+    fullName: string
+    staffRole: number 
+    isActive: boolean
+}
+
+export interface EditStaffResponse {
+    userId: string
+    phone: string
+    email: string
+    fullName: string
+    isActive: boolean
+    updatedRole: string
+}
+
+export interface ViewListStaffRequest {
+  pageNumber?: number
+  pageSize?: number
+  isActive?: boolean
+  searchTerm?: string
+}
+
 class StaffService {
   async list(params?: StaffFilters): Promise<PaginatedResponse<Staff>> {
     const response = await apiClient.get<PaginatedResponse<Staff>>("/staff", { params })
@@ -83,12 +108,20 @@ class StaffService {
     return response.data
   }
   
-  async getStaffList(): Promise<ApiResponse<StaffAccountResponse[]>> {
-    const response = await apiClient.get<ApiResponse<StaffAccountResponse[]>>(
-      "https://localhost:7070/api/v1/clinic-admin/staff/accounts"
-    )
-    return response.data
-  }
+  async getStaffList(params?: ViewListStaffRequest): Promise<ApiResponse<StaffAccountResponse[]>> {
+  const response = await apiClient.get<ApiResponse<StaffAccountResponse[]>>(
+    "https://localhost:7070/api/v1/clinic-admin/staff/accounts",
+    {
+      params: {
+        PageNumber: params?.pageNumber,
+        PageSize: params?.pageSize,
+        IsActive: params?.isActive === null ? undefined : params?.isActive,
+        SearchTerm: params?.searchTerm,
+      }
+    }
+  )
+  return response.data
+}
 
   async createStaffAccount(data: CreateStaffAccountRequest): Promise<ApiResponse<any>> {
     const response = await apiClient.post<ApiResponse<any>>(
@@ -97,6 +130,14 @@ class StaffService {
     )
     return response.data
   }
+
+  async editStaffAccount(data: EditStaffRequest): Promise<ApiResponse<EditStaffResponse>> {
+    const response = await apiClient.put<ApiResponse<EditStaffResponse>>(
+        "https://localhost:7070/api/v1/clinic-admin/staff/edit", 
+        data
+    )
+    return response.data
+}
 }
 
 

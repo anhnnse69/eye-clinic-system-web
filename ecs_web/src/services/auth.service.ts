@@ -140,7 +140,7 @@ class AuthService {
       CLINIC_ADMIN: "/clinic-admin/dashboard",
       DOCTOR: "/doctor/dashboard",
       RECEPTIONIST: "/receptionist/dashboard",
-      PATIENT: "/patient/dashboard",
+      PATIENT: "/patient/profiles",
     }
     return roleMapping[role] || "/"
   }

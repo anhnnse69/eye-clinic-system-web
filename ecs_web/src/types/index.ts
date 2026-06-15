@@ -287,6 +287,7 @@ export interface DoctorProfileNested {
   experienceYears: number
   bio?: string | null
   specialtyName?: string
+  specialtyId?: string | null 
 }
 
 export interface GetPersonalProfileResponse {
@@ -299,4 +300,29 @@ export interface GetPersonalProfileResponse {
   avatarUrl?: string | null
   clinic: ClinicInfoNested
   doctorProfile?: DoctorProfileNested | null
+}
+
+export interface UpdatePersonalProfileRequest {
+  fullName: string
+  phone: string
+  email?: string | null
+  avatarUrl?: string | null
+  title?: string | null
+  experienceYears: number
+  bio?: string | null
+  specialtyId?: string | null
+}
+
+export interface UpdatePersonalProfileResponse {
+  id: string
+  fullName: string
+  role: string
+  updatedAt: string
+}
+
+export interface SpecialtyCategoryResponse {
+  id: string
+  name: string
+  description?: string | null
+  isActive?: boolean
 }

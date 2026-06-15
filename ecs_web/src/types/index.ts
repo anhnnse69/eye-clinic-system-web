@@ -221,3 +221,46 @@ export interface ClinicManagementItem {
   createdAt: string
   status: "ACTIVE" | "INACTIVE"
 }
+
+export interface AdminSystemDashboardResponse {
+  totalSystemAccounts: {
+    total: number
+    doctor: number
+    receptionist: number
+    clinicAdmin: number
+    systemAdmin: number
+  }
+  operationalClinics: {
+    active: number
+    total: number
+  }
+  appointments: {
+    total: number;
+    pending: number;
+    depositPaid: number;
+    booked: number;
+    arrived: number;
+    inProgress: number;
+    completed: number;
+    cancelled: number;
+    noShow: number;
+  }
+  registeredPatients: number
+  pendingClinics: Array<{
+    id: string
+    name: string
+    Owner: string 
+    date: string
+  }>
+  topServices: Array<{
+    name: string
+    count: number
+    growth: string
+  }>
+}
+
+export interface AdminSystemDashboardParams {
+  clinicId?: string
+  startDate?: string
+  endDate?: string
+}

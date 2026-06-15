@@ -229,8 +229,9 @@ export default function SearchDoctorsPage() {
         {!isLoading && doctors.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {doctors.map((doctor) => (
-              <div
+              <Link 
                 key={doctor.id}
+                href={`/${locale}/doctors/${doctor.id}/slots`}
                 className="bg-surface-container rounded-xl border border-outline-variant p-4 hover:shadow-md transition-shadow flex gap-4"
               >
                 {/* Avatar */}
@@ -239,7 +240,7 @@ export default function SearchDoctorsPage() {
                 </div>
 
                 {/* Info */}
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0" >
                   <div className="flex items-start justify-between gap-2 mb-0.5">
                     <div className="min-w-0">
                       <h3 className="font-headline-sm text-on-surface font-semibold truncate">
@@ -285,7 +286,7 @@ export default function SearchDoctorsPage() {
                     </p>
                   )}
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

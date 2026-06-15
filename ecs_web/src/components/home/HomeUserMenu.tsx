@@ -41,11 +41,13 @@ export default function HomeUserMenu({ accountInfoHref }: HomeUserMenuProps) {
   const locale = useLocale()
   const t = useTranslations("common")
   const tAuth = useTranslations("auth")
-
-  const isAuthenticated = authService.isAuthenticated()
-  const userFromStorage = authService.getUser()
+  const [isClient, setIsClient] = useState(false)
+  const isAuthenticated = isClient ? authService.isAuthenticated() : false
+  const userFromStorage = isClient ? authService.getUser() : null
   const roleFromStorage = userFromStorage?.role
-
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
   // Use the dedicated fetch-based hook so a transient /auth/me failure
   // does NOT trigger a hard redirect to /login (see useAccountInfo notes).
   const { account, isLoading, error } = useAccountInfo({

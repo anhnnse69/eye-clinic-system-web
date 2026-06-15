@@ -45,6 +45,7 @@ export default async function PatientLayout({
       items: [
         { label: "Trang chủ", href: `/${locale}/home`, icon: "Home" },
         { label: "Thông tin tài khoản", href: `/${locale}/patient/account-info`, icon: "User" },
+        { label: "Đổi mật khẩu", href: `/${locale}/patient/change-password`, icon: "Key" },
       ],
     },
   ]

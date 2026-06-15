@@ -262,6 +262,19 @@ class AuthService {
       throw handleApiError(error)
     }
   }
+
+  async changePassword(currentPassword: string, newPassword: string, confirmPassword: string): Promise<ApiResponse<null>> {
+    try {
+      const response = await apiClient.put<ApiResponse<null>>("/auth/change-password", {
+        currentPassword,
+        newPassword,
+        confirmPassword,
+      })
+      return response.data
+    } catch (error) {
+      throw handleApiError(error)
+    }
+  }
 }
 
 export const authService = new AuthService()

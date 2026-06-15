@@ -11,6 +11,7 @@ import {
   Activity,
   Settings,
   Home,
+  Key,
 } from "lucide-react"
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -22,6 +23,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Activity,
   Settings,
   Home,
+  Key,
 }
 
 export interface NavItem {

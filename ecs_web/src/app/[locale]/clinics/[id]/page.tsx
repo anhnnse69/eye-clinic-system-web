@@ -54,6 +54,16 @@ interface ClinicProfile {
   feedbacks: ClinicFeedbackItem[];
 }
 
+interface FeedbacksResponse {
+  ratingAvg?: number;
+  reviewCount?: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  totalRecords: number;
+  feedbacks: ClinicFeedbackItem[];
+}
+
 // ── Helpers ──────────────────────────────────────────────
 
 function StarRow({ value, count }: { value?: number; count?: number }) {
@@ -102,7 +112,10 @@ export default function ClinicProfilePage() {
   const router = useRouter();
   const locale = params.locale as string;
   const clinicId = params.id as string;
-
+  const [feedbacksData, setFeedbacksData] = useState<FeedbacksResponse | null>(null);
+  const [feedbacksLoading, setFeedbacksLoading] = useState(false);
+  const [feedbackPage, setFeedbackPage] = useState(1);
+  const FEEDBACK_PAGE_SIZE = 5;
   const [clinic, setClinic] = useState<ClinicProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -114,6 +127,29 @@ export default function ClinicProfilePage() {
     router.push(
       `/${locale === "vi" ? "en" : "vi"}/clinics/${clinicId}`
     );
+
+  useEffect(() => {
+    if (activeTab !== "reviews") return;
+
+    const fetchFeedbacks = async () => {
+      setFeedbacksLoading(true);
+      try {
+        const res = await fetch(
+          `/api/clinics/${clinicId}/feedbacks?pageNumber=${feedbackPage}&pageSize=${FEEDBACK_PAGE_SIZE}`
+        );
+        const data = await res.json();
+        if (data?.data) {
+          setFeedbacksData(data.data);
+        }
+      } catch {
+        // ignore, keep previous state
+      } finally {
+        setFeedbacksLoading(false);
+      }
+    };
+
+    fetchFeedbacks();
+  }, [activeTab, clinicId, feedbackPage]);
 
   useEffect(() => {
     const fetchClinic = async () => {
@@ -535,48 +571,110 @@ export default function ClinicProfilePage() {
         {/* ── Tab: Reviews ── */}
         {activeTab === "reviews" && (
           <div className="space-y-3">
-            {clinic.feedbacks.length === 0 ? (
+            {/* Rating summary */}
+            {feedbacksData && (feedbacksData.ratingAvg ?? 0) > 0 && (
+              <div className="bg-surface-container rounded-xl border border-outline-variant p-4 flex items-center gap-3">
+                <span className="text-3xl font-bold text-primary">
+                  {feedbacksData.ratingAvg?.toFixed(1)}
+                </span>
+                <div>
+                  <StarStatic value={Math.round(feedbacksData.ratingAvg ?? 0)} />
+                  <p className="text-xs text-on-surface-variant mt-1">
+                    {locale === "vi"
+                      ? `${feedbacksData.reviewCount ?? 0} đánh giá`
+                      : `${feedbacksData.reviewCount ?? 0} reviews`}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {feedbacksLoading ? (
+              <div className="flex justify-center py-10">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : !feedbacksData || feedbacksData.feedbacks.length === 0 ? (
               <EmptyState
-                icon={
-                  <MessageSquare className="w-10 h-10 text-outline/40" />
-                }
-                label={
-                  locale === "vi" ? "Chưa có đánh giá" : "No reviews yet"
-                }
+                icon={<MessageSquare className="w-10 h-10 text-outline/40" />}
+                label={locale === "vi" ? "Chưa có đánh giá" : "No reviews yet"}
               />
             ) : (
-              clinic.feedbacks.map((f) => (
-                <div
-                  key={f.id}
-                  className="bg-surface-container rounded-xl border border-outline-variant p-4"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="font-medium text-on-surface text-sm">
-                      {f.patientName}
-                    </p>
-                    <p className="text-xs text-outline">
-                      {new Date(f.createdAt).toLocaleDateString(
-                        locale === "vi" ? "vi-VN" : "en-US"
+              <>
+                {feedbacksData.feedbacks.map((f) => (
+                  <div
+                    key={f.id}
+                    className="bg-surface-container rounded-xl border border-outline-variant p-4"
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-on-surface text-sm truncate">
+                          {f.patientName}
+                        </p>
+                      </div>
+                      <p className="text-xs text-outline shrink-0">
+                        {new Date(f.createdAt).toLocaleDateString(
+                          locale === "vi" ? "vi-VN" : "en-US"
+                        )}
+                      </p>
+                    </div>
+
+                    <div className="flex gap-4 mb-2">
+                      <div className="flex items-center gap-1.5 text-xs text-on-surface-variant">
+                        <Building2 className="w-3.5 h-3.5 text-outline" />
+                        <StarStatic value={f.ratingClinic} />
+                      </div>
+                      <div className="flex items-center gap-1.5 text-xs text-on-surface-variant">
+                        <Stethoscope className="w-3.5 h-3.5 text-outline" />
+                        <StarStatic value={f.ratingDoctor} />
+                      </div>
+                    </div>
+
+                    {f.comment && (
+                      <p className="text-sm text-on-surface-variant leading-relaxed">
+                        {f.comment}
+                      </p>
+                    )}
+                  </div>
+                ))}
+
+                {/* Pagination */}
+                {feedbacksData.totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 pt-2">
+                    <button
+                      onClick={() => setFeedbackPage((p) => Math.max(1, p - 1))}
+                      disabled={feedbackPage <= 1}
+                      className={cn(
+                        "px-3 py-1.5 rounded-lg text-sm border border-outline-variant",
+                        feedbackPage <= 1
+                          ? "text-outline cursor-not-allowed"
+                          : "text-on-surface hover:bg-surface-container-high"
                       )}
-                    </p>
+                    >
+                      {locale === "vi" ? "Trước" : "Prev"}
+                    </button>
+
+                    <span className="text-sm text-on-surface-variant">
+                      {feedbackPage} / {feedbacksData.totalPages}
+                    </span>
+
+                    <button
+                      onClick={() =>
+                        setFeedbackPage((p) =>
+                          Math.min(feedbacksData.totalPages, p + 1)
+                        )
+                      }
+                      disabled={feedbackPage >= feedbacksData.totalPages}
+                      className={cn(
+                        "px-3 py-1.5 rounded-lg text-sm border border-outline-variant",
+                        feedbackPage >= feedbacksData.totalPages
+                          ? "text-outline cursor-not-allowed"
+                          : "text-on-surface hover:bg-surface-container-high"
+                      )}
+                    >
+                      {locale === "vi" ? "Sau" : "Next"}
+                    </button>
                   </div>
-                  <div className="flex gap-4 mb-2">
-                    <div className="flex items-center gap-1.5 text-xs text-on-surface-variant">
-                      <Building2 className="w-3.5 h-3.5 text-outline" />
-                      <StarStatic value={f.ratingClinic} />
-                    </div>
-                    <div className="flex items-center gap-1.5 text-xs text-on-surface-variant">
-                      <Stethoscope className="w-3.5 h-3.5 text-outline" />
-                      <StarStatic value={f.ratingDoctor} />
-                    </div>
-                  </div>
-                  {f.comment && (
-                    <p className="text-sm text-on-surface-variant leading-relaxed">
-                      {f.comment}
-                    </p>
-                  )}
-                </div>
-              ))
+                )}
+              </>
             )}
           </div>
         )}

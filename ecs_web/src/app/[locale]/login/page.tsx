@@ -172,7 +172,7 @@ export default function LoginPage() {
             CLINIC_ADMIN: "/clinic-admin/dashboard",
             DOCTOR: "/doctor/dashboard",
             RECEPTIONIST: "/receptionist/dashboard",
-            PATIENT: `/${locale}/home`,
+            PATIENT: "/patient/profiles",
           };
           redirectPath = roleMapping[role] || redirectPath;
         }
@@ -398,68 +398,68 @@ export default function LoginPage() {
         </div>
       </section>
 
-        {/* Right Side: Login Form */}
-        <section className="w-full md:w-1/2 bg-surface-container-lowest flex items-center justify-center px-4 py-8 md:py-12 md:px-8">
-          <div className="absolute top-4 right-4 md:top-6 md:right-6 z-20">
-            <button
-              onClick={toggleLocale}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors font-label-sm shadow-sm"
-              aria-label="Switch language"
-            >
-              <Globe className="w-4 h-4" />
-              <span className="uppercase font-medium">{locale}</span>
-            </button>
-          </div>
+      {/* Right Side: Login Form */}
+      <section className="w-full md:w-1/2 bg-surface-container-lowest flex items-center justify-center px-4 py-8 md:py-12 md:px-8">
+        <div className="absolute top-4 right-4 md:top-6 md:right-6 z-20">
+          <button
+            onClick={toggleLocale}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors font-label-sm shadow-sm"
+            aria-label="Switch language"
+          >
+            <Globe className="w-4 h-4" />
+            <span className="uppercase font-medium">{locale}</span>
+          </button>
+        </div>
 
-          <div className="w-full max-w-3xl">
-            {/* Mobile Logo */}
-            <Link href={`/${locale}/home`} className="md:hidden mb-6 flex flex-col items-center hover:opacity-80 transition-opacity">
-              <img
-                alt="Eye Clinic Support Logo"
-                className="w-20 h-20 mb-2"
-                src={BRAND_LOGO}
-              />
-              <span className="font-headline-sm text-primary font-semibold">Eye Clinic Support</span>
-            </Link>
+        <div className="w-full max-w-3xl">
+          {/* Mobile Logo */}
+          <Link href={`/${locale}/home`} className="md:hidden mb-6 flex flex-col items-center hover:opacity-80 transition-opacity">
+            <img
+              alt="Eye Clinic Support Logo"
+              className="w-20 h-20 mb-2"
+              src={BRAND_LOGO}
+            />
+            <span className="font-headline-sm text-primary font-semibold">Eye Clinic Support</span>
+          </Link>
 
-            {/* Header */}
-            <div className={cn("mb-8 text-center md:text-left transition-all duration-300", isTransitioning ? "opacity-0 translate-x-4" : "opacity-100 translate-x-0")}>
-              {forgotPasswordState === "none" ? (
-                <>
-                  <h2 className="font-headline-lg md:font-headline-2xl text-on-surface mb-1">
-                    {t("welcomeBack")}
-                  </h2>
-                  <p className="font-body-sm text-body-sm text-on-surface-variant">
-                    {t("accessDashboard")}
-                  </p>
-                </>
-              ) : (
-                <>
-                  <div className="flex items-center gap-3 mb-4">
-                    <button
-                      onClick={handleBackFromForgotPassword}
-                      className="p-2 rounded-lg hover:bg-surface-container transition-colors"
-                    >
-                      <ArrowLeft className="w-5 h-5 text-on-surface-variant" />
-                    </button>
-                    <h2 className="font-headline-lg md:font-headline-2xl text-on-surface">
-                      {forgotPasswordState === "forgot"
-                        ? tAuth("forgotPassword.title")
-                        : forgotPasswordState === "reset_password"
-                          ? tAuth("resetPassword.title")
-                          : t("welcomeBack")}
-                    </h2>
-                  </div>
-                  <p className="font-body-sm text-body-sm text-on-surface-variant ml-10">
+          {/* Header */}
+          <div className={cn("mb-8 text-center md:text-left transition-all duration-300", isTransitioning ? "opacity-0 translate-x-4" : "opacity-100 translate-x-0")}>
+            {forgotPasswordState === "none" ? (
+              <>
+                <h2 className="font-headline-lg md:font-headline-2xl text-on-surface mb-1">
+                  {t("welcomeBack")}
+                </h2>
+                <p className="font-body-sm text-body-sm text-on-surface-variant">
+                  {t("accessDashboard")}
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-3 mb-4">
+                  <button
+                    onClick={handleBackFromForgotPassword}
+                    className="p-2 rounded-lg hover:bg-surface-container transition-colors"
+                  >
+                    <ArrowLeft className="w-5 h-5 text-on-surface-variant" />
+                  </button>
+                  <h2 className="font-headline-lg md:font-headline-2xl text-on-surface">
                     {forgotPasswordState === "forgot"
-                      ? tAuth("forgotPassword.subtitle")
+                      ? tAuth("forgotPassword.title")
                       : forgotPasswordState === "reset_password"
-                        ? tAuth("resetPassword.subtitle")
-                        : t("accessDashboard")}
-                  </p>
-                </>
-              )}
-            </div>
+                        ? tAuth("resetPassword.title")
+                        : t("welcomeBack")}
+                  </h2>
+                </div>
+                <p className="font-body-sm text-body-sm text-on-surface-variant ml-10">
+                  {forgotPasswordState === "forgot"
+                    ? tAuth("forgotPassword.subtitle")
+                    : forgotPasswordState === "reset_password"
+                      ? tAuth("resetPassword.subtitle")
+                      : t("accessDashboard")}
+                </p>
+              </>
+            )}
+          </div>
 
           {/* Error Message */}
           {error && (

@@ -26,6 +26,21 @@ interface UpdateServiceData {
   isActive?: boolean
 }
 
+export interface ViewClinicServicesRequest {
+  pageNumber: number
+  pageSize: number
+  isActive?: boolean
+  searchTerm?: string
+}
+
+export interface ViewClinicServiceResponse {
+  id_service: string
+  serviceName: string
+  price: number | null
+  durationMinutes: number
+  isActive: boolean
+}
+
 class ServiceService {
   async list(params?: ServiceFilters): Promise<PaginatedResponse<Service>> {
     const response = await apiClient.get<PaginatedResponse<Service>>("/services", { params })
@@ -54,6 +69,21 @@ class ServiceService {
 
   async getByClinic(clinicId: string): Promise<ApiResponse<Service[]>> {
     const response = await apiClient.get<ApiResponse<Service[]>>(`/services/clinic/${clinicId}`)
+    return response.data
+  }
+
+  async getClinicServices(params: ViewClinicServicesRequest): Promise<ApiResponse<ViewClinicServiceResponse[]>> {
+    const response = await apiClient.get<ApiResponse<ViewClinicServiceResponse[]>>(
+      "https://localhost:7070/api/v1/clinic-admin/clinic-services",
+      {
+        params: {
+          pageNumber: params.pageNumber,
+          pageSize: params.pageSize,
+          isActive: params.isActive,
+          searchTerm: params.searchTerm,
+        },
+      }
+    )
     return response.data
   }
 }

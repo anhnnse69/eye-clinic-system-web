@@ -47,6 +47,16 @@ class ClinicFeedbackService {
 
     return response.data
   }
+
+  async delete(
+    feedbackId: string
+  ): Promise<ApiResponse<boolean>> {
+    const response = await apiClient.delete<ApiResponse<boolean>>(
+      `/clinic-admin/feedbacks/${feedbackId}`
+    )
+
+    return response.data
+  }
 }
 
 export const clinicFeedbackService =

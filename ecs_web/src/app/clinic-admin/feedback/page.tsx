@@ -11,7 +11,9 @@ import {
   Calendar,
   Clock,
   AlertCircle,
-  RotateCcw 
+  RotateCcw,
+  Trash2,
+  CheckCircle2, // Import thêm icon thông báo thành công
 } from "lucide-react"
 
 import { clinicFeedbackService } from "@/services"
@@ -24,6 +26,7 @@ export default function ClinicFeedbackPage() {
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null) // State thông báo thành công
 
   const [searchTerm, setSearchTerm] = useState("")
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
@@ -34,8 +37,19 @@ export default function ClinicFeedbackPage() {
 
   const [pageNumber, setPageNumber] = useState(1)
   const [pageSize] = useState(10)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const isFiltering = searchTerm !== "" || ratingDoctor !== "" || ratingClinic !== "" || feedbackDate !== ""
+
+  // Tự động ẩn thông báo thành công sau 3 giây
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => {
+        setSuccessMessage(null)
+      }, 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [successMessage])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -83,7 +97,6 @@ export default function ClinicFeedbackPage() {
     setPageNumber(1)
   }
 
-  // Hàm xử lý Reset toàn bộ tìm kiếm & bộ lọc
   const handleResetFilters = () => {
     setSearchTerm("")
     setDebouncedSearchTerm("")
@@ -93,15 +106,36 @@ export default function ClinicFeedbackPage() {
     setPageNumber(1)
   }
 
+  const handleDelete = async (id: string) => {
+    const confirmed = confirm("Bạn có chắc chắn muốn xóa đánh giá này không?")
+    if (!confirmed) return
+
+    try {
+      setDeletingId(id)
+      setError(null)
+      setSuccessMessage(null) // Xóa thông báo cũ trước khi thực hiện hành động mới
+
+      await clinicFeedbackService.delete(id)
+
+      setSuccessMessage("Xóa đánh giá thành công!") // Thiết lập thông báo thành công
+      await loadFeedbacks()
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.message || err?.message || "Xóa đánh giá thất bại"
+      )
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
   const renderStars = (rating: number) => {
     return (
       <div className="flex items-center gap-0.5">
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
-            className={`w-4 h-4 ${
-              star <= rating ? "text-amber-400 fill-amber-400" : "text-gray-200"
-            }`}
+            className={`w-4 h-4 ${star <= rating ? "text-amber-400 fill-amber-400" : "text-gray-200"
+              }`}
           />
         ))}
         <span className="text-xs font-semibold ml-1 text-gray-600">({rating})</span>
@@ -185,21 +219,29 @@ export default function ClinicFeedbackPage() {
             onClick={handleResetFilters}
             disabled={!isFiltering}
             title="Xóa tất cả bộ lọc"
-            className={`p-2 rounded-xl border flex items-center justify-center transition-all duration-200 ${
-              isFiltering
-                ? "border-red-200 bg-red-50 text-red-600 hover:bg-red-100/70 active:scale-95"
-                : "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed opacity-60"
-            }`}
+            className={`p-2 rounded-xl border flex items-center justify-center transition-all duration-200 ${isFiltering
+              ? "border-red-200 bg-red-50 text-red-600 hover:bg-red-100/70 active:scale-95"
+              : "border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed opacity-60"
+              }`}
           >
             <RotateCcw className="w-4 h-4" />
           </button>
         </div>
       </div>
 
+      {/* Thông báo Lỗi */}
       {error && (
-        <div className="flex items-center gap-3 p-4 text-sm text-red-800 border border-red-200 rounded-xl bg-red-50">
+        <div className="flex items-center gap-3 p-4 text-sm text-red-800 border border-red-200 rounded-xl bg-red-50 transition-all">
           <AlertCircle className="w-5 h-5 flex-shrink-0 text-red-600" />
           <div className="font-medium">{error}</div>
+        </div>
+      )}
+
+      {/* Thông báo Thành Công */}
+      {successMessage && (
+        <div className="flex items-center gap-3 p-4 text-sm text-emerald-800 border border-emerald-200 rounded-xl bg-emerald-50 transition-all duration-300 animate-in fade-in slide-in-from-top-2">
+          <CheckCircle2 className="w-5 h-5 flex-shrink-0 text-emerald-600" />
+          <div className="font-medium">{successMessage}</div>
         </div>
       )}
 
@@ -215,6 +257,7 @@ export default function ClinicFeedbackPage() {
                 <th className="px-6 py-4 font-semibold w-[22%]">Nội dung bình luận</th>
                 <th className="px-6 py-4 font-semibold w-[14%]">Ngày hẹn khám</th>
                 <th className="px-6 py-4 font-semibold w-[14%]">Thời gian gửi</th>
+                <th className="px-6 py-4 font-semibold w-[10%]">Hành động</th>
               </tr>
             </thead>
 
@@ -223,7 +266,7 @@ export default function ClinicFeedbackPage() {
                 {loading ? (
                   Array.from({ length: 5 }).map((_, idx) => (
                     <tr key={idx} className="animate-pulse">
-                      <td colSpan={7} className="px-6 py-4.5">
+                      <td colSpan={8} className="px-6 py-4.5">
                         <div className="h-5 bg-gray-100 rounded-lg w-full"></div>
                       </td>
                     </tr>
@@ -273,6 +316,22 @@ export default function ClinicFeedbackPage() {
                         <div className="flex items-center gap-1.5 text-xs text-slate-600 whitespace-nowrap">
                           <Clock className="w-3.5 h-3.5 text-slate-400" />
                           {item.feedbackDate}
+                        </div>
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-end">
+                          <button
+                            onClick={() => handleDelete(item.id_feedback)}
+                            disabled={deletingId === item.id_feedback}
+                            className={`inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg border transition-all duration-150 ${deletingId === item.id_feedback
+                              ? "opacity-60 cursor-not-allowed bg-white text-gray-400 border-gray-200"
+                              : "bg-white text-red-600 border-red-200 hover:bg-red-50"
+                              }`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            <span>Xóa</span>
+                          </button>
                         </div>
                       </td>
                     </tr>

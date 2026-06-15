@@ -1,5 +1,11 @@
 import { apiClient, handleApiError } from "@/lib/axios"
-import type { ApiResponse, LoginResponse, User, Role } from "@/types"
+import type {
+  ApiResponse,
+  LoginResponse,
+  User,
+  Role,
+  ViewAccountInfoResponse,
+} from "@/types"
 
 export interface LoginRequest {
   emailAddress: string
@@ -227,6 +233,20 @@ class AuthService {
   async resetPassword(request: ResetPasswordRequest): Promise<ApiResponse<null>> {
     try {
       const response = await apiClient.post<ApiResponse<null>>("/auth/reset-password", request)
+      return response.data
+    } catch (error) {
+      throw handleApiError(error)
+    }
+  }
+
+  /**
+   * Fetches the authenticated user's account information.
+   * Uses the JWT from localStorage (attached automatically by apiClient).
+   * Backed by GET /api/v1/auth/me.
+   */
+  async getAccountInfo(): Promise<ApiResponse<ViewAccountInfoResponse>> {
+    try {
+      const response = await apiClient.get<ApiResponse<ViewAccountInfoResponse>>("/auth/me")
       return response.data
     } catch (error) {
       throw handleApiError(error)

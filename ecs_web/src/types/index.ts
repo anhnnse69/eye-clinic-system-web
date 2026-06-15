@@ -178,6 +178,18 @@ export interface LoginResponse {
   token: string
 }
 
+export interface ViewAccountInfoResponse {
+  id: string
+  email?: string
+  phone: string
+  fullName: string
+  role: string
+  isActive: boolean
+  avatarUrl?: string
+  createdAt: string
+  updatedAt: string
+}
+
 export interface PaginatedResponse<T> {
   items: T[]
   total: number

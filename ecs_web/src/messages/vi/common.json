@@ -7,6 +7,13 @@
     "learnMore": "Tìm hiểu thêm",
     "viewMore": "Xem thêm",
     "viewTour": "Xem Demo",
+    "userMenu": {
+      "accountInfo": "Thông tin tài khoản",
+      "accountInfoSubtitle": "Xem và cập nhật thông tin cá nhân",
+      "logout": "Đăng xuất",
+      "signedInAs": "Đăng nhập với tư cách",
+      "patient": "Bệnh nhân"
+    },
     "nav": {
       "solutions": "Giải pháp",
       "features": "Tính năng",

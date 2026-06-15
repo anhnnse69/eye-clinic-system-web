@@ -57,6 +57,12 @@ export default async function ClinicAdminLayout({ children }: { children: React.
         { label: "Cài đặt", href: "/clinic-admin/settings", icon: "Settings" },
       ],
     },
+    {
+      title: "Tài khoản",
+      items: [
+        { label: "Thông tin tài khoản", href: "/clinic-admin/account-info", icon: "User" },
+      ],
+    },
   ]
 
   const userName = decodedToken.FullName || decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || "Quản lý"
@@ -68,6 +74,7 @@ export default async function ClinicAdminLayout({ children }: { children: React.
       <div className="flex-1 flex flex-col min-w-0">
         <DashboardHeader
           title="Quản lý Phòng khám"
+          accountInfoHref="/clinic-admin/account-info"
           user={{
             name: userName,
             email: userEmail,

@@ -276,3 +276,27 @@ export interface AdminSystemDashboardParams {
   startDate?: string
   endDate?: string
 }
+
+export interface ClinicInfoNested {
+  name: string
+  address: string
+}
+
+export interface DoctorProfileNested {
+  title?: string | null
+  experienceYears: number
+  bio?: string | null
+  specialtyName?: string
+}
+
+export interface GetPersonalProfileResponse {
+  id: string
+  fullName: string
+  phone: string
+  email?: string | null
+  role: "DOCTOR" | "RECEPTIONIST"
+  isActive: boolean
+  avatarUrl?: string | null
+  clinic: ClinicInfoNested
+  doctorProfile?: DoctorProfileNested | null
+}

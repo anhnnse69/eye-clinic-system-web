@@ -202,9 +202,10 @@ export default function SearchClinicsPage() {
         {!isLoading && clinics.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {clinics.map((clinic) => (
-              <div
+              <Link
                 key={clinic.id}
-                className="bg-surface-container rounded-xl border border-outline-variant p-4 hover:shadow-md transition-shadow flex gap-4"
+                href={`/${locale}/clinics/${clinic.id}`}
+                className="bg-surface-container rounded-xl border border-outline-variant p-4 hover:shadow-md hover:border-primary transition-all flex gap-4 cursor-pointer"
               >
                 {/* Logo */}
                 <div className="w-14 h-14 rounded-lg bg-surface-container-high shrink-0 overflow-hidden flex items-center justify-center">
@@ -260,7 +261,7 @@ export default function SearchClinicsPage() {
                     </p>
                   )}
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

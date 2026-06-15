@@ -46,8 +46,16 @@ export default async function PatientLayout({
         { label: "Trang chủ", href: `/${locale}/home`, icon: "Home" },
         { label: "Thông tin tài khoản", href: `/${locale}/patient/account-info`, icon: "User" },
         { label: "Đổi mật khẩu", href: `/${locale}/patient/change-password`, icon: "Key" },
+        { label: "Hồ sơ bệnh nhân", href: `/${locale}/patient/profiles`, icon: "User" },
       ],
     },
+    {
+      title: "Lịch sử",
+      items: [
+        { label: "Lịch hẹn", href: "/patient/appointments", icon: "Calendar" },
+        { label: "Phản hồi", href: "/patient/feedbacks", icon: "MessageSquare" },
+      ],
+    }
   ]
 
   return (

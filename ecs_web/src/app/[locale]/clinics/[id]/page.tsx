@@ -121,7 +121,7 @@ export default function ClinicProfilePage() {
         const res = await fetch(`/api/clinics/${clinicId}`);
         console.log("status", res.status);
         const data = await res.json();
-console.log("clinic response", data);
+        console.log("clinic response", data);
 
         if (data?.data) {
           setClinic(data.data);
@@ -333,7 +333,9 @@ console.log("clinic response", data);
                 </SectionTitle>
                 <div className="space-y-3">
                   {clinic.doctors.slice(0, 3).map((d) => (
-                    <div key={d.id} className="flex items-center gap-3">
+                    <Link key={d.id}
+                      href={`/${locale}/doctors/${d.id}/slots`}
+                      className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-primary-container/30 shrink-0 overflow-hidden flex items-center justify-center">
                         {d.avatarUrl ? (
                           <img
@@ -360,7 +362,7 @@ console.log("clinic response", data);
                       {d.ratingAvg && (
                         <StarRow value={d.ratingAvg} />
                       )}
-                    </div>
+                    </Link>
                   ))}
                 </div>
                 {clinic.doctors.length > 3 && (
@@ -402,16 +404,16 @@ console.log("clinic response", data);
                       <p className="text-sm font-semibold text-primary shrink-0">
                         {s.price != null
                           ? new Intl.NumberFormat(
-                              locale === "vi" ? "vi-VN" : "en-US",
-                              {
-                                style: "currency",
-                                currency: locale === "vi" ? "VND" : "USD",
-                                maximumFractionDigits: 0,
-                              }
-                            ).format(s.price)
+                            locale === "vi" ? "vi-VN" : "en-US",
+                            {
+                              style: "currency",
+                              currency: locale === "vi" ? "VND" : "USD",
+                              maximumFractionDigits: 0,
+                            }
+                          ).format(s.price)
                           : locale === "vi"
-                          ? "Liên hệ"
-                          : "Contact"}
+                            ? "Liên hệ"
+                            : "Contact"}
                       </p>
                     </div>
                   ))}
@@ -443,8 +445,9 @@ console.log("clinic response", data);
               />
             ) : (
               clinic.doctors.map((d) => (
-                <div
+                <Link
                   key={d.id}
+                  href={`/${locale}/doctors/${d.id}/slots`}
                   className="bg-surface-container rounded-xl border border-outline-variant p-4 flex gap-4"
                 >
                   <div className="w-14 h-14 rounded-full bg-primary-container/30 shrink-0 overflow-hidden flex items-center justify-center">
@@ -477,7 +480,7 @@ console.log("clinic response", data);
                       {locale === "vi" ? "năm kinh nghiệm" : "years exp."}
                     </p>
                   </div>
-                </div>
+                </Link>
               ))
             )}
           </div>
@@ -512,16 +515,16 @@ console.log("clinic response", data);
                   <p className="font-semibold text-primary">
                     {s.price != null
                       ? new Intl.NumberFormat(
-                          locale === "vi" ? "vi-VN" : "en-US",
-                          {
-                            style: "currency",
-                            currency: locale === "vi" ? "VND" : "USD",
-                            maximumFractionDigits: 0,
-                          }
-                        ).format(s.price)
+                        locale === "vi" ? "vi-VN" : "en-US",
+                        {
+                          style: "currency",
+                          currency: locale === "vi" ? "VND" : "USD",
+                          maximumFractionDigits: 0,
+                        }
+                      ).format(s.price)
                       : locale === "vi"
-                      ? "Liên hệ"
-                      : "Contact"}
+                        ? "Liên hệ"
+                        : "Contact"}
                   </p>
                 </div>
               ))

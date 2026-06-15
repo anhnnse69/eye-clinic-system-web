@@ -55,6 +55,7 @@ export default async function DoctorLayout({ children }: { children: React.React
       title: "Cá nhân",
       items: [
         { label: "Hồ sơ cá nhân", href: "/doctor/profile", icon: "User" },
+        { label: "Thông tin tài khoản", href: "/doctor/account-info", icon: "User" },
       ],
     },
   ]
@@ -68,6 +69,7 @@ export default async function DoctorLayout({ children }: { children: React.React
       <div className="flex-1 flex flex-col min-w-0">
         <DashboardHeader
           title="Bác sĩ"
+          accountInfoHref="/doctor/account-info"
           user={{
             name: userName,
             email: userEmail,

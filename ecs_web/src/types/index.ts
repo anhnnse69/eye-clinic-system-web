@@ -178,6 +178,18 @@ export interface LoginResponse {
   token: string
 }
 
+export interface ViewAccountInfoResponse {
+  id: string
+  email?: string
+  phone: string
+  fullName: string
+  role: string
+  isActive: boolean
+  avatarUrl?: string
+  createdAt: string
+  updatedAt: string
+}
+
 export interface PaginatedResponse<T> {
   items: T[]
   total: number
@@ -220,4 +232,71 @@ export interface ClinicManagementItem {
   contactPhone: string
   createdAt: string
   status: "ACTIVE" | "INACTIVE"
+}
+
+export interface AdminSystemDashboardResponse {
+  totalSystemAccounts: {
+    total: number
+    doctor: number
+    receptionist: number
+    clinicAdmin: number
+    systemAdmin: number
+  }
+  operationalClinics: {
+    active: number
+    total: number
+  }
+  appointments: {
+    total: number;
+    pending: number;
+    depositPaid: number;
+    booked: number;
+    arrived: number;
+    inProgress: number;
+    completed: number;
+    cancelled: number;
+    noShow: number;
+  }
+  registeredPatients: number
+  pendingClinics: Array<{
+    id: string
+    name: string
+    Owner: string 
+    date: string
+  }>
+  topServices: Array<{
+    name: string
+    count: number
+    growth: string
+  }>
+}
+
+export interface AdminSystemDashboardParams {
+  clinicId?: string
+  startDate?: string
+  endDate?: string
+}
+
+export interface ClinicInfoNested {
+  name: string
+  address: string
+}
+
+export interface DoctorProfileNested {
+  title?: string | null
+  experienceYears: number
+  bio?: string | null
+  specialtyName?: string
+}
+
+export interface GetPersonalProfileResponse {
+  id: string
+  fullName: string
+  phone: string
+  email?: string | null
+  role: "DOCTOR" | "RECEPTIONIST"
+  isActive: boolean
+  avatarUrl?: string | null
+  clinic: ClinicInfoNested
+  doctorProfile?: DoctorProfileNested | null
 }

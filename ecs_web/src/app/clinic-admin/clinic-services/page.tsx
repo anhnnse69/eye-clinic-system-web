@@ -3,39 +3,35 @@
 import { useEffect, useState, useCallback } from "react"
 import Link from "next/link"
 import { 
-  ShieldCheck, 
-  Mail, 
-  Phone, 
-  Calendar, 
+  Layers, 
+  DollarSign, 
+  Clock, 
   AlertCircle, 
   Plus, 
-  Edit2, 
   Search, 
   Filter, 
   ChevronLeft, 
   ChevronRight 
 } from "lucide-react"
-import { staffService } from "@/services/staff.service"
-import type { StaffAccountResponse } from "@/services/staff.service"
+// Đã đồng bộ chuẩn hóa tên biến import instance sang serviceService để tránh lỗi "not defined"
+import { serviceService } from "@/services/service.service"
+import type { ViewClinicServiceResponse } from "@/services/service.service"
 
-// Định nghĩa giao diện MetaResponse đồng bộ chính xác với Backend C#
-interface MetaResponse {
-  page: number
-  size: number
-  total: number
-  totalPages: number
-  hasNext: boolean
-  hasPrevious: boolean
-}
-
-export default function StaffManagementPage() {
-  // State quản lý danh sách dữ liệu và trạng thái ứng dụng
-  const [staffList, setStaffList] = useState<StaffAccountResponse[]>([])
+export default function ClinicServiceManagementPage() {
+  // State quản lý danh sách dữ liệu dịch vụ và trạng thái tải ứng dụng
+  const [servicesList, setServicesList] = useState<ViewClinicServiceResponse[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
-  // State lưu trữ thông tin phân trang từ Backend meta
-  const [meta, setMeta] = useState<MetaResponse>({
+  // State lưu trữ thông tin phân trang lấy trực tiếp từ response.meta của Axios/Types chung
+  const [meta, setMeta] = useState<{
+    page: number
+    size: number
+    total: number
+    totalPages: number
+    hasNext: boolean
+    hasPrevious: boolean
+  }>({
     page: 1,
     size: 10,
     total: 0,
@@ -44,14 +40,14 @@ export default function StaffManagementPage() {
     hasPrevious: false
   })
 
-  // State kiểm soát các tham số bộ lọc tìm kiếm đầu vào
+  // State kiểm soát các tham số bộ lọc tìm kiếm và phân trang đầu vào
   const [pageNumber, setPageNumber] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(10)
   const [isActiveFilter, setIsActiveFilter] = useState<string>("all")
   const [searchTerm, setSearchTerm] = useState<string>("")
   const [debouncedSearch, setDebouncedSearch] = useState<string>("")
 
-  // Hiệu ứng trì hoãn (Debounce) 500ms đối với thanh tìm kiếm văn bản để tối ưu băng thông API
+  // Hiệu ứng trì hoãn tìm kiếm (Debounce 500ms) tối ưu hóa băng thông gọi API khi gõ phím
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchTerm)
@@ -61,32 +57,39 @@ export default function StaffManagementPage() {
     return () => clearTimeout(handler)
   }, [searchTerm])
 
-  // Hàm xử lý gọi API kết nối Server lấy danh sách nhân viên kèm bộ lọc
-  const loadStaffData = useCallback(async () => {
+  // Hàm xử lý gọi API kết nối Server lấy danh sách dịch vụ kèm bộ lọc nâng cao
+  const loadServicesData = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
 
-      // Chuyển đổi trạng thái filter string sang kiểu boolean? cho API
+      // Chuyển đổi trạng thái filter string sang kiểu boolean? tương thích với Backend C#
       const isActiveParam = 
         isActiveFilter === "active" ? true : 
         isActiveFilter === "inactive" ? false : undefined
 
-      // Gọi service truyền đầy đủ các tham số truy vấn phân trang
-      const response = await staffService.getStaffList({
+      // FIX CHÍNH XÁC: Gọi đúng instance `serviceService` đã được import từ dòng 14
+      const response = await serviceService.getClinicServices({
         pageNumber,
         pageSize,
         isActive: isActiveParam,
-        searchTerm: debouncedSearch || undefined
+        searchTerm: debouncedSearch.trim() || undefined
       })
 
       if (response.data) {
-        setStaffList(response.data)
+        setServicesList(response.data)
       }
       
-      // Khớp nối dữ liệu Metadata phân trang được trả về từ tầng ApiResponse
+      // Khớp nối đồng bộ dữ liệu Metadata phân trang từ response hệ thống
       if (response.meta) {
-        setMeta(response.meta)
+        setMeta({
+          page: response.meta.page,
+          size: response.meta.size,
+          total: response.meta.total,
+          totalPages: response.meta.totalPages,
+          hasNext: response.meta.hasNext,
+          hasPrevious: response.meta.hasPrevious,
+        })
       }
     } catch (err: any) {
       const errCode = err?.response?.data?.codeMessage
@@ -94,52 +97,61 @@ export default function StaffManagementPage() {
       if (errCode === "APP_MESSAGE_4001") {
         setError("Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại!")
       } else if (errCode === "APP_MESSAGE_4020") {
-        setError("Không tìm thấy thông tin phòng khám gắn liền với tài khoản của bạn!")
+        setError("Không tìm thấy thông tin phòng khám gắn liền với tài khoản quản trị của bạn!")
       } else {
-        setError("Không thể kết nối tới máy chủ. Vui lòng thử lại sau!")
+        setError("Không thể kết nối tới máy chủ hệ thống. Vui lòng thử lại sau!")
       }
     } finally {
       setLoading(false)
     }
   }, [pageNumber, pageSize, isActiveFilter, debouncedSearch])
 
-  // Kích hoạt nạp dữ liệu khi bất kỳ bộ lọc tham số nào thay đổi trạng thái
+  // Tự động kích hoạt nạp lại dữ liệu khi bất kỳ bộ lọc tham số nào thay đổi trạng thái
   useEffect(() => {
-    loadStaffData()
-  }, [loadStaffData])
+    loadServicesData()
+  }, [loadServicesData])
+
+  // Định dạng hiển thị tiền tệ chuẩn vi-VN VND
+  const formatCurrency = (value: number | null) => {
+    if (value === null || value === undefined) return "Miễn phí / Liên hệ"
+    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value)
+  }
 
   return (
     <div className="space-y-6 text-left p-4 md:p-6 w-full">
-      {/* Tiêu đề & Nút Thêm nhân viên */}
+      {/* Tiêu đề & Nút Thêm dịch vụ mới */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-headline-md font-bold text-on-surface">Quản lý nhân viên</h2>
-          <p className="text-body-md text-on-surface-variant">Danh sách tài khoản nhân viên thuộc phòng khám của bạn</p>
+          <h2 className="text-headline-md font-bold text-on-surface flex items-center gap-2">
+            <Layers className="h-6 w-6 text-primary shrink-0" />
+            Danh mục dịch vụ khám bệnh
+          </h2>
+          <p className="text-body-md text-on-surface-variant">Quản lý danh sách dịch vụ, bảng giá và thời lượng chuẩn tại phòng khám của bạn</p>
         </div>
         
         <Link 
-          href="/clinic-admin/staff/create"
+          href="/clinic-admin/clinic-service/create"
           className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-on-primary rounded-xl hover:opacity-90 transition-all text-label-md font-medium shadow-sm shrink-0"
         >
-          <Plus className="h-4 w-4" /> Thêm nhân viên
+          <Plus className="h-4 w-4" /> Thêm dịch vụ
         </Link>
       </div>
 
-      {/* Thanh công cụ: Bộ lọc trạng thái & Thanh Tìm kiếm nâng cao */}
+      {/* Thanh công cụ: Ô tìm kiếm văn bản & Bộ lọc trạng thái hoạt động */}
       <div className="flex flex-col md:flex-row items-center gap-4 bg-surface-container-low p-4 rounded-2xl border border-outline-variant">
         {/* Ô Tìm kiếm input text */}
         <div className="relative w-full md:flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-on-surface-variant" />
           <input
             type="text"
-            placeholder="Tìm kiếm theo tên, email, số điện thoại..."
+            placeholder="Tìm kiếm nhanh theo tên dịch vụ y tế..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-body-md placeholder:text-on-surface-variant/60 focus:outline-none focus:border-primary transition-colors"
           />
         </div>
 
-        {/* Dropdown Lọc trạng thái hoạt động */}
+        {/* Dropdown Lọc trạng thái hoạt động của dịch vụ */}
         <div className="flex items-center gap-2 w-full md:w-auto">
           <span className="flex items-center gap-1 text-label-md font-medium text-on-surface-variant shrink-0">
             <Filter className="h-4 w-4" /> Trạng thái:
@@ -148,13 +160,13 @@ export default function StaffManagementPage() {
             value={isActiveFilter}
             onChange={(e) => {
               setIsActiveFilter(e.target.value)
-              setPageNumber(1) // Reset trang khi thay đổi tiêu chí lọc
+              setPageNumber(1) // Reset trang về 1 khi thay đổi tiêu chí lọc
             }}
             className="w-full md:w-48 px-3 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors cursor-pointer font-medium"
           >
-            <option value="all">Tất cả nhân viên</option>
-            <option value="active">Đang làm việc</option>
-            <option value="inactive">Đã khóa / Ngừng làm</option>
+            <option value="all">Tất cả dịch vụ</option>
+            <option value="active">Đang mở / Hoạt động</option>
+            <option value="inactive">Đang đóng / Tạm dừng</option>
           </select>
         </div>
       </div>
@@ -162,11 +174,13 @@ export default function StaffManagementPage() {
       {/* Trạng thái đang tải dữ liệu Skeleton/Pulse */}
       {loading && (
         <div className="flex justify-center items-center py-12 bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-sm">
-          <p className="text-body-md text-on-surface-variant animate-pulse">Đang nạp dữ liệu danh sách nhân viên từ hệ thống...</p>
+          <p className="text-body-md text-on-surface-variant animate-pulse">
+            Đang nạp danh mục dịch vụ phòng khám từ hệ thống...
+          </p>
         </div>
       )}
 
-      {/* Hiển thị lỗi từ API */}
+      {/* Hiển thị lỗi nhận về từ API */}
       {error && !loading && (
         <div className="p-4 bg-error-container text-on-error-container rounded-xl flex items-center gap-2 text-body-md font-medium border border-error/20">
           <AlertCircle className="h-5 w-5 text-error shrink-0" />
@@ -174,7 +188,7 @@ export default function StaffManagementPage() {
         </div>
       )}
 
-      {/* Bảng kết quả hiển thị danh sách nhân viên */}
+      {/* Bảng kết quả hiển thị danh sách dịch vụ */}
       {!loading && !error && (
         <div className="space-y-4">
           <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden shadow-sm">
@@ -182,84 +196,51 @@ export default function StaffManagementPage() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-surface-container-low border-b border-outline-variant text-label-md text-on-surface-variant font-medium">
-                    <th className="p-4">Nhân viên</th>
-                    <th className="p-4">Thông tin liên hệ</th>
-                    <th className="p-4">Chức vụ / Vai trò</th>
-                    <th className="p-4">Trạng thái</th>
-                    <th className="p-4">Ngày tham gia</th>
-                    <th className="p-4 text-center">Thao tác</th>
+                    <th className="p-4">Tên dịch vụ</th>
+                    <th className="p-4">Giá dịch vụ chuẩn</th>
+                    <th className="p-4">Thời lượng thực hiện</th>
+                    <th className="p-4 text-center">Trạng thái</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant text-body-md text-on-surface">
-                  {staffList.length === 0 ? (
+                  {servicesList.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="p-12 text-center text-on-surface-variant">
-                        Không tìm thấy nhân viên nào phù hợp với bộ lọc điều kiện hiện tại.
+                      <td colSpan={4} className="p-12 text-center text-on-surface-variant">
+                        Không tìm thấy dịch vụ y tế nào phù hợp với bộ lọc điều kiện hiện tại.
                       </td>
                     </tr>
                   ) : (
-                    staffList.map((staff) => (
-                      <tr key={staff.userId} className="hover:bg-surface-container-low/40 transition-colors">
-                        {/* Avatar & Họ và tên */}
+                    servicesList.map((service) => (
+                      <tr key={service.id_service} className="hover:bg-surface-container-low/40 transition-colors">
+                        {/* Tên dịch vụ y tế */}
                         <td className="p-4">
-                          <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-full bg-primary-container flex items-center justify-center text-primary font-bold shrink-0">
-                              {staff.fullName ? staff.fullName.charAt(0).toUpperCase() : "U"}
-                            </div>
-                            <div>
-                              <p className="font-semibold text-on-surface">{staff.fullName}</p>
-                            </div>
-                          </div>
+                          <p className="font-semibold text-on-surface">{service.serviceName}</p>
                         </td>
                         
-                        {/* Email & Số điện thoại liên hệ */}
-                        <td className="p-4">
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-1.5 text-label-md text-on-surface-variant">
-                              <Mail className="h-3.5 w-3.5 text-primary shrink-0" /> {staff.email}
-                            </div>
-                            <div className="flex items-center gap-1.5 text-label-md text-on-surface-variant">
-                              <Phone className="h-3.5 w-3.5 text-primary shrink-0" /> {staff.phone || "---"}
-                            </div>
+                        {/* Bảng giá niêm yết */}
+                        <td className="p-4 text-primary font-semibold">
+                          <div className="flex items-center gap-1.5 text-label-md">
+                            {formatCurrency(service.price)}
                           </div>
                         </td>
 
-                        {/* Phân quyền / Chức vụ */}
-                        <td className="p-4">
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-secondary-container text-on-secondary-container text-label-sm font-medium">
-                            <ShieldCheck className="h-3.5 w-3.5 text-secondary shrink-0" />
-                            {staff.role}
-                          </span>
-                        </td>
-
-                        {/* Trạng thái hoạt động mã màu đồng bộ */}
-                        <td className="p-4">
-                          <span className={`inline-block px-2 py-0.5 rounded-full text-label-sm font-semibold ${
-                            staff.isActive 
-                              ? "bg-success-container text-on-success-container" 
-                              : "bg-error-container text-on-error-container"
-                          }`}>
-                            {staff.isActive ? "Đang làm việc" : "Đã khóa"}
-                          </span>
-                        </td>
-
-                        {/* Ngày tạo tài khoản */}
+                        {/* Thời lượng ước tính */}
                         <td className="p-4 text-on-surface-variant">
                           <div className="flex items-center gap-1.5 text-label-md">
-                            <Calendar className="h-3.5 w-3.5 shrink-0" />
-                            {new Date(staff.createdAt).toLocaleDateString("vi-VN")}
+                            <Clock className="h-4 w-4 text-on-surface-variant shrink-0" /> 
+                            {service.durationMinutes} phút
                           </div>
                         </td>
 
-                        {/* Thao tác chỉnh sửa thông tin */}
+                        {/* Nhãn hiển thị trạng thái hoạt động */}
                         <td className="p-4 text-center">
-                          <Link
-                            href={`/clinic-admin/staff/edit/${staff.userId}`}
-                            className="inline-flex items-center justify-center p-2 text-primary hover:bg-surface-container-low rounded-xl transition-colors bg-surface-container-low/40"
-                            title="Chỉnh sửa thông tin"
-                          >
-                            <Edit2 className="h-4 w-4" />
-                          </Link>
+                          <span className={`inline-block px-3 py-0.5 rounded-full text-label-sm font-semibold border ${
+                            service.isActive 
+                              ? "bg-success-container text-on-success-container border-success/20" 
+                              : "bg-error-container text-on-error-container border-error/20"
+                          }`}>
+                            {service.isActive ? "Đang hoạt động" : "Tạm dừng"}
+                          </span>
                         </td>
                       </tr>
                     ))
@@ -269,13 +250,13 @@ export default function StaffManagementPage() {
             </div>
           </div>
 
-          {/* Thanh phân trang Pagination Controls (Dựa theo cấu trúc MetaResponse) */}
+          {/* Thanh phân trang Pagination Controls */}
           {meta.total > 0 && (
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-surface-container-low px-4 py-3 border border-outline-variant rounded-2xl shadow-sm text-label-md text-on-surface-variant">
               <div>
                 Hiển thị dòng <span className="font-semibold text-on-surface">{Math.min((meta.page - 1) * meta.size + 1, meta.total)}</span> đến{" "}
                 <span className="font-semibold text-on-surface">{Math.min(meta.page * meta.size, meta.total)}</span> trên tổng số{" "}
-                <span className="font-semibold text-on-surface">{meta.total}</span> nhân viên.
+                <span className="font-semibold text-on-surface">{meta.total}</span> dịch vụ phòng khám.
               </div>
 
               <div className="flex items-center gap-2">
@@ -294,7 +275,7 @@ export default function StaffManagementPage() {
                   <option value={50}>50 dòng / trang</option>
                 </select>
 
-                {/* Nút quay lại trang trước */}
+                {/* Nút lùi về trang trước */}
                 <button
                   disabled={!meta.hasPrevious || loading}
                   onClick={() => setPageNumber(prev => Math.max(prev - 1, 1))}
@@ -304,12 +285,12 @@ export default function StaffManagementPage() {
                   <ChevronLeft className="h-4 w-4" />
                 </button>
 
-                {/* Số trang hiển thị trực quan */}
+                {/* Tổng quan vị trí trang hiện tại */}
                 <span className="px-3 py-1 bg-primary text-on-primary font-semibold rounded-lg text-label-md">
                   {meta.page} / {meta.totalPages}
                 </span>
 
-                {/* Nút chuyển tới trang kế tiếp */}
+                {/* Nút tiến tới trang kế tiếp */}
                 <button
                   disabled={!meta.hasNext || loading}
                   onClick={() => setPageNumber(prev => Math.min(prev + 1, meta.totalPages))}

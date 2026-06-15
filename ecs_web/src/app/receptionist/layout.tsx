@@ -36,26 +36,17 @@ export default async function ReceptionistLayout({ children }: { children: React
       ],
     },
     {
-      title: "Bệnh nhân",
+      title: "Quản lý",
       items: [
-        { label: "Tìm bệnh nhân", href: "/receptionist/patients/search", icon: "Search" },
         { label: "Danh sách bệnh nhân", href: "/receptionist/patients", icon: "Users" },
-        { label: "Tạo bệnh nhân mới", href: "/receptionist/patients/new", icon: "UserCheck" },
-      ],
-    },
-    {
-      title: "Lễ tân",
-      items: [
-        { label: "Check-in", href: "/receptionist/check-in", icon: "UserCheck" },
-        { label: "Walk-in", href: "/receptionist/walk-in", icon: "Calendar" },
-        { label: "Đánh dấu No-show", href: "/receptionist/no-show", icon: "UserX" },
-        { label: "Hủy lịch hẹn", href: "/receptionist/cancel", icon: "UserX" },
+        { label: "Lịch hẹn hàng ngày", href: "/receptionist/appointments", icon: "CalendarDays" },
       ],
     },
     {
       title: "Cá nhân",
       items: [
         { label: "Hồ sơ cá nhân", href: "/receptionist/profile", icon: "User" },
+        { label: "Thông tin tài khoản", href: "/receptionist/account-info", icon: "User" },
       ],
     },
   ]
@@ -69,6 +60,7 @@ export default async function ReceptionistLayout({ children }: { children: React
       <div className="flex-1 flex flex-col min-w-0">
         <DashboardHeader
           title="Lễ tân"
+          accountInfoHref="/receptionist/account-info"
           user={{
             name: userName,
             email: userEmail,

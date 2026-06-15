@@ -50,11 +50,18 @@ const createApiClient = (): AxiosInstance => {
   client.interceptors.response.use(
     (response: AxiosResponse) => response,
     async (error: AxiosError<ApiErrorResponse>) => {
+      // We used to hard-redirect to /login on any 401 here, but that caused
+      // account-info and other pages to bounce users out whenever an
+      // authenticated call (e.g. GET /auth/me) returned 401 for transient
+      // reasons (token near expiry, CORS preflight race, etc).
+      //
+      // Instead we just attach a flag and let the caller decide.
+      // Hard logout is still performed by explicit logout actions
+      // (DashboardHeader / AccountHeader) and by layouts that detect a
+      // missing cookie.
       if (error.response?.status === 401) {
         if (typeof window !== "undefined") {
-          localStorage.removeItem("accessToken")
-          localStorage.removeItem("userData")
-          window.location.href = "/login"
+          ;(error as AxiosError & { __skipAuthRedirect?: boolean }).__skipAuthRedirect = true
         }
       }
 

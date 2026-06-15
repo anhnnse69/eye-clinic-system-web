@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useTranslations, useLocale } from "next-intl"
 import { useRouter, usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import HomeUserMenu from "@/components/home/HomeUserMenu"
 
 const LOGO_IMG =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuCwR5I14Ti14lR3BYE4S0RtQO-d8r8udA0haqFhxTaWQ9yQ-jmxbSRgYSkcBkNwuYRPxAbe8JXfK0F1YyrjzCFly6Lq3OZKEvx1ur-E7AyiXkpaXAzTA7fU0BJWAs3bleQjIy9M4iQHcccCFbjJuDPzFrUn_bu0p0mQxPoyXF7BOJMQYc0C1GCWXA0JfldNcZ4O0CzfxkpvbMhmEFf6B_IaHns3GgbAB4_djZJGV8mIcaRS8VLHh7-bKrri-dHqeG15ux8Eq6zGs31k"
@@ -147,15 +148,7 @@ export function HomePage() {
               >
                 {locale === "vi" ? "EN" : "VI"}
               </button>
-              <button
-                onClick={() => router.push(`/${locale}/login`)}
-                className="hidden md:block px-lg py-sm font-label-md text-label-md text-primary border border-primary rounded-lg hover:bg-primary-fixed transition-colors"
-              >
-                {t("common.nav.login")}
-              </button>
-              <button className="px-lg py-sm font-label-md text-label-md bg-primary text-on-primary rounded-lg shadow-sm hover:opacity-90 active:scale-95 transition-all">
-                {t("common.nav.requestDemo")}
-              </button>
+              <HomeUserMenu />
               <button className="md:hidden text-on-surface-variant">
                 <span className="material-symbols-outlined">menu</span>
               </button>

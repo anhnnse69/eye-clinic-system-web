@@ -46,7 +46,7 @@ export default async function ClinicAdminLayout({ children }: { children: React.
       title: "Quản lý",
       items: [
         { label: "Nhân viên", href: "/clinic-admin/staff", icon: "Users" },
-        { label: "Dịch vụ", href: "/clinic-admin/services", icon: "Briefcase" },
+        { label: "Dịch vụ", href: "/clinic-admin/clinic-services", icon: "Briefcase" },
         { label: "Danh mục thuốc", href: "/clinic-admin/medicines", icon: "Pill" },
       ],
     },
@@ -55,6 +55,12 @@ export default async function ClinicAdminLayout({ children }: { children: React.
       items: [
         { label: "Đánh giá", href: "/clinic-admin/feedback", icon: "Star" },
         { label: "Cài đặt", href: "/clinic-admin/settings", icon: "Settings" },
+      ],
+    },
+    {
+      title: "Tài khoản",
+      items: [
+        { label: "Thông tin tài khoản", href: "/clinic-admin/account-info", icon: "User" },
       ],
     },
   ]
@@ -68,6 +74,7 @@ export default async function ClinicAdminLayout({ children }: { children: React.
       <div className="flex-1 flex flex-col min-w-0">
         <DashboardHeader
           title="Quản lý Phòng khám"
+          accountInfoHref="/clinic-admin/account-info"
           user={{
             name: userName,
             email: userEmail,

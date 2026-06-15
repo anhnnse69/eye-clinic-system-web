@@ -46,7 +46,7 @@ export default async function ClinicAdminLayout({ children }: { children: React.
       title: "Quản lý",
       items: [
         { label: "Nhân viên", href: "/clinic-admin/staff", icon: "Users" },
-        { label: "Dịch vụ", href: "/clinic-admin/services", icon: "Briefcase" },
+        { label: "Dịch vụ", href: "/clinic-admin/clinic-services", icon: "Briefcase" },
         { label: "Danh mục thuốc", href: "/clinic-admin/medicines", icon: "Pill" },
       ],
     },

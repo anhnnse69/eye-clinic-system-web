@@ -56,6 +56,7 @@ export default async function ReceptionistLayout({ children }: { children: React
       title: "Cá nhân",
       items: [
         { label: "Hồ sơ cá nhân", href: "/receptionist/profile", icon: "User" },
+        { label: "Thông tin tài khoản", href: "/receptionist/account-info", icon: "User" },
       ],
     },
   ]
@@ -69,6 +70,7 @@ export default async function ReceptionistLayout({ children }: { children: React
       <div className="flex-1 flex flex-col min-w-0">
         <DashboardHeader
           title="Lễ tân"
+          accountInfoHref="/receptionist/account-info"
           user={{
             name: userName,
             email: userEmail,

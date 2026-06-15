@@ -7,6 +7,13 @@
     "learnMore": "Learn More",
     "viewMore": "View More",
     "viewTour": "View Platform Tour",
+    "userMenu": {
+      "accountInfo": "Account Info",
+      "accountInfoSubtitle": "View and update your details",
+      "logout": "Log out",
+      "signedInAs": "Signed in as",
+      "patient": "Patient"
+    },
     "nav": {
       "solutions": "Solutions",
       "features": "Features",

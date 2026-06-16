@@ -300,3 +300,39 @@ export interface GetPersonalProfileResponse {
   clinic: ClinicInfoNested
   doctorProfile?: DoctorProfileNested | null
 }
+
+export interface MedicalRecordSummaryItem {
+  id_MedicalRecord: string
+  recordType: string
+  recordTypeLabel: string
+  doctorName: string
+  appointmentDate: string
+  chiefComplaint?: string | null
+  diagnosisMain?: string | null
+  isLocked: boolean
+  createdAt: string
+}
+
+export interface ViewPatientDemographicsResponse {
+  id_PatientProfile: string
+  fullName: string
+  gender: string
+  dob: string
+  identityNumber?: string | null
+  phoneNumber?: string | null
+  address?: string | null
+  bhytNumber?: string | null
+  bloodType?: string | null
+  allergies?: string | null
+  medicalHistory?: string | null
+  totalRecords: number
+  records: MedicalRecordSummaryItem[]
+}
+
+export interface ViewPatientDemographicsRequest {
+  patientProfileId: string
+  recordType?: string
+  searchTerm?: string
+  pageNumber?: number
+  pageSize?: number
+}

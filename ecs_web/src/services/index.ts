@@ -16,3 +16,4 @@ export { clinicAppointmentService } from "./clinic-appointment.service"
 export { patientProfileService } from "./patient-profile.service"
 export { medicalRecordPatientDemographicsService } from "./medical-record-patient-demographics.service"
 export { systemAdminDashboardService } from "./system-admin.dashboard.service"
+export { receptionistService } from "./receptionist.service";

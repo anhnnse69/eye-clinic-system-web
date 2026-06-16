@@ -56,6 +56,21 @@ export interface CreateServiceResponse {
   isActive: boolean
 }
 
+export interface EditServiceRequest {
+  serviceName: string
+  price?: number
+  durationMinutes: number
+}
+
+export interface EditServiceResponse {
+  serviceId: string
+  clinicId: string
+  serviceName: string
+  price: number | null
+  durationMinutes: number
+  updatedAt: string
+}
+
 class ServiceService {
   async list(params?: ServiceFilters): Promise<PaginatedResponse<Service>> {
     const response = await apiClient.get<PaginatedResponse<Service>>("/services", { params })
@@ -105,6 +120,14 @@ class ServiceService {
   async createService(data: CreateServiceRequest): Promise<ApiResponse<CreateServiceResponse>> {
     const response = await apiClient.post<ApiResponse<CreateServiceResponse>>(
       "https://localhost:7070/api/v1/clinic-admin/clinic-services/create",
+      data
+    )
+    return response.data
+  }
+
+  async editService(id: string, data: EditServiceRequest): Promise<ApiResponse<EditServiceResponse>> {
+    const response = await apiClient.put<ApiResponse<EditServiceResponse>>(
+      `https://localhost:7070/api/v1/clinic-admin/clinic-services/${id}`,
       data
     )
     return response.data

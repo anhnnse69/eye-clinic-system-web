@@ -6,6 +6,9 @@ import type {
   Role,
   ViewAccountInfoResponse,
   GetPersonalProfileResponse,
+  UpdatePersonalProfileResponse,
+  UpdatePersonalProfileRequest,
+  SpecialtyCategoryResponse,
 } from "@/types"
 
 export interface LoginRequest {
@@ -275,7 +278,32 @@ class AuthService {
       throw handleApiError(error)
     }
   }
+  
+  async updatePersonalProfile(
+    userId: string,
+    request: UpdatePersonalProfileRequest
+  ): Promise<ApiResponse<UpdatePersonalProfileResponse>> {
+    try {
+      const response = await apiClient.put<ApiResponse<UpdatePersonalProfileResponse>>(
+        `/auth/profile/${userId}`,
+        request
+      )
+      return response.data
+    } catch (error) {
+      throw handleApiError(error) 
+    }
+  }
+
+  async getActiveSpecialties(): Promise<ApiResponse<SpecialtyCategoryResponse[]>> {
+    try {
+      const response = await apiClient.get<ApiResponse<SpecialtyCategoryResponse[]>>("/specialties")
+      return response.data
+    } catch (error) {
+      throw handleApiError(error)
+    }
+  }
 }
+
 
 export const authService = new AuthService()
 export default authService

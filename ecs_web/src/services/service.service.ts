@@ -71,6 +71,11 @@ export interface EditServiceResponse {
   updatedAt: string
 }
 
+export interface DeactivateServiceResponse {
+  serviceId: string
+  isActive: boolean
+}
+
 class ServiceService {
   async list(params?: ServiceFilters): Promise<PaginatedResponse<Service>> {
     const response = await apiClient.get<PaginatedResponse<Service>>("/services", { params })
@@ -129,6 +134,13 @@ class ServiceService {
     const response = await apiClient.put<ApiResponse<EditServiceResponse>>(
       `https://localhost:7070/api/v1/clinic-admin/clinic-services/${id}`,
       data
+    )
+    return response.data
+  }
+
+  async deactivateService(id: string): Promise<ApiResponse<DeactivateServiceResponse>> {
+    const response = await apiClient.put<ApiResponse<DeactivateServiceResponse>>(
+      `https://localhost:7070/api/v1/clinic-admin/clinic-services/${id}/deactivate`
     )
     return response.data
   }

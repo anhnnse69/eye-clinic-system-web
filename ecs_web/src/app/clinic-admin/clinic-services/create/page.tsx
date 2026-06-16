@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, AlertCircle, Loader2, DollarSign, Clock, FileText } from "lucide-react"
+import { ArrowLeft, AlertCircle, Loader2, Clock, FileText } from "lucide-react" // Đã xóa DollarSign khỏi đây
 import { serviceService } from "@/services/service.service"
 import type { CreateServiceRequest } from "@/services/service.service"
 
@@ -48,28 +48,28 @@ export default function CreateClinicServicePage() {
             if (response.data) {
                 router.push("/clinic-admin/clinic-services")
             }
-       } catch (err: any) {
-    console.error("[Create Service Error Debug - Toàn bộ Object]:", err);
-    const errCode = 
-        err?.response?.data?.codeMessage || 
-        err?.data?.codeMessage || 
-        err?.codeMessage ||
-        err?.response?.data?.code ||
-        err?.code;
-    const errorString = err ? JSON.stringify(err) : "";
-    if (errCode === "APP_MESSAGE_4041" || errCode === "4041" || errorString.includes("APP_MESSAGE_4041")) {
-        setError("Tên dịch vụ y tế này đã tồn tại trong hệ thống phòng khám của bạn.");
-    } else if (errCode === "APP_MESSAGE_4001" || errCode === "4001" || errorString.includes("APP_MESSAGE_4001")) {
-        setError("Phiên đăng nhập không hợp lệ hoặc tài khoản không có quyền Admin.");
-    } else if (errCode === "APP_MESSAGE_4020" || errCode === "4020" || errorString.includes("APP_MESSAGE_4020")) {
-        setError("Hệ thống không tìm thấy hồ sơ phòng khám gắn liền với tài khoản quản trị này.");
-    } else {
-        const serverMessage = err?.response?.data?.message || err?.message || "Đã xảy ra lỗi hệ thống trong quá trình khởi tạo dịch vụ.";
-        setError(serverMessage);
-    }
-} finally {
-    setSubmitting(false)
-}
+        } catch (err: any) {
+            console.error("[Create Service Error Debug - Toàn bộ Object]:", err);
+            const errCode = 
+                err?.response?.data?.codeMessage || 
+                err?.data?.codeMessage || 
+                err?.codeMessage ||
+                err?.response?.data?.code ||
+                err?.code;
+            const errorString = err ? JSON.stringify(err) : "";
+            if (errCode === "APP_MESSAGE_4041" || errCode === "4041" || errorString.includes("APP_MESSAGE_4041")) {
+                setError("Tên dịch vụ y tế này đã tồn tại trong hệ thống phòng khám của bạn.");
+            } else if (errCode === "APP_MESSAGE_4001" || errCode === "4001" || errorString.includes("APP_MESSAGE_4001")) {
+                setError("Phiên đăng nhập không hợp lệ hoặc tài khoản không có quyền Admin.");
+            } else if (errCode === "APP_MESSAGE_4020" || errCode === "4020" || errorString.includes("APP_MESSAGE_4020")) {
+                setError("Hệ thống không tìm thấy hồ sơ phòng khám gắn liền với tài khoản quản trị này.");
+            } else {
+                const serverMessage = err?.response?.data?.message || err?.message || "Đã xảy ra lỗi hệ thống trong quá trình khởi tạo dịch vụ.";
+                setError(serverMessage);
+            }
+        } finally {
+            setSubmitting(false)
+        }
     }
 
     return (
@@ -126,7 +126,7 @@ export default function CreateClinicServicePage() {
                                 Giá dịch vụ (VNĐ) *
                             </label>
                             <div className="relative w-full">
-                                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-on-surface-variant" />
+                                {/* ĐÃ XÓA ICON VÀ THAY pl-10 THÀNH px-4 ĐỂ CHỮ SÁT RA LỀ */}
                                 <input
                                     type="number"
                                     name="price"
@@ -137,7 +137,7 @@ export default function CreateClinicServicePage() {
                                     value={formData.price || ""}
                                     onChange={handleChange}
                                     disabled={submitting}
-                                    className="w-full block pl-10 pr-4 py-2.5 bg-surface-container-low border border-outline rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors"
+                                    className="w-full block px-4 py-2.5 bg-surface-container-low border border-outline rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors"
                                 />
                             </div>
                         </div>

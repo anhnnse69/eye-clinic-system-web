@@ -9,7 +9,6 @@ const noI18nPrefixes = [
   "/doctor",
   "/clinic-admin",
   "/receptionist",
-  "/patient",
 ]
 
 export default function middleware(request: NextRequest) {

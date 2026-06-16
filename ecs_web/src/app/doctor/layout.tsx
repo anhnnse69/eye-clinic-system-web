@@ -39,7 +39,7 @@ export default async function DoctorLayout({ children }: { children: React.React
       title: "Khám bệnh",
       items: [
         { label: "Danh sách lịch hẹn", href: "/doctor/appointments", icon: "Calendar" },
-        { label: "Danh sách bệnh nhân", href: "/doctor/patients", icon: "Users" },
+        { label: "Danh sách bệnh nhân",href: "/doctor/patients", icon: "Users" },
         { label: "Hàng đợi", href: "/doctor/queue", icon: "Stethoscope" },
       ],
     },

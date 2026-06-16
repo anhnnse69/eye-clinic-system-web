@@ -1,0 +1,378 @@
+// app/doctor/patients/DoctorPatientListClient.tsx
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import {
+  Search,
+  User,
+  Phone,
+  CalendarDays,
+  RefreshCw,
+  ChevronLeft,
+  ChevronRight,
+  Users,
+} from "lucide-react";
+
+// ── Types ────────────────────────────────────────────────
+
+type AppointmentStatus =
+  | "PENDING"
+  | "DEPOSIT_PAID"
+  | "BOOKED"
+  | "ARRIVED"
+  | "IN_PROGRESS"
+  | "COMPLETED"
+  | "CANCELLED"
+  | "NOSHOW";
+
+interface PatientAppointmentItem {
+  appointmentId: string;
+  patientId: string;
+  patientName: string;
+  patientAvatarUrl?: string;
+  patientPhone?: string;
+  appointmentDate: string;
+  status: AppointmentStatus;
+  symptoms?: string;
+}
+
+interface PatientListResponse {
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  totalRecords: number;
+  patients: PatientAppointmentItem[];
+}
+
+// ── Constants ────────────────────────────────────────────
+
+const PAGE_SIZE = 10;
+
+const STATUS_OPTIONS: { value: AppointmentStatus | ""; label: string }[] = [
+  { value: "",            label: "Tất cả trạng thái"       },
+  { value: "PENDING",     label: "Chờ thanh toán (Pending)" },
+  { value: "DEPOSIT_PAID",label: "Đã cọc (Deposit Paid)"   },
+  { value: "BOOKED",      label: "Đã đặt lịch (Booked)"    },
+  { value: "ARRIVED",     label: "Đã đến (Arrived)"         },
+  { value: "IN_PROGRESS", label: "Đang khám (In Progress)"  },
+  { value: "COMPLETED",   label: "Hoàn thành (Completed)"   },
+  { value: "CANCELLED",   label: "Đã hủy (Cancelled)"       },
+  { value: "NOSHOW",      label: "Không đến (No Show)"      },
+];
+
+// ── Helpers ──────────────────────────────────────────────
+
+function getStatusBadgeClass(status: AppointmentStatus | string): string {
+  const s = typeof status === "string" ? status : String(status ?? "");
+
+  switch (s.toUpperCase()) {
+    case "PENDING":      return "bg-amber-50 text-amber-700 border-amber-100";
+    case "DEPOSIT_PAID": return "bg-sky-50 text-sky-700 border-sky-100";
+    case "BOOKED":       return "bg-blue-50 text-blue-700 border-blue-100";
+    case "ARRIVED":      return "bg-indigo-50 text-indigo-700 border-indigo-100";
+    case "IN_PROGRESS":  return "bg-purple-50 text-purple-700 border-purple-100";
+    case "COMPLETED":    return "bg-emerald-50 text-emerald-700 border-emerald-100";
+    case "CANCELLED":    return "bg-rose-50 text-rose-700 border-rose-100";
+    case "NOSHOW":       return "bg-gray-50 text-gray-600 border-gray-100";
+    default:             return "bg-gray-50 text-gray-700 border-gray-100";
+  }
+}
+
+const STATUS_LABEL_VI: Record<string, string> = {
+  PENDING:      "Chờ thanh toán",
+  DEPOSIT_PAID: "Đã cọc",
+  BOOKED:       "Đã đặt lịch",
+  ARRIVED:      "Đã đến",
+  IN_PROGRESS:  "Đang khám",
+  COMPLETED:    "Hoàn thành",
+  CANCELLED:    "Đã hủy",
+  NOSHOW:       "Không đến",
+};
+
+function Avatar({ name, url }: { name: string; url?: string }) {
+  return (
+    <div className="w-8 h-8 rounded-full bg-blue-100 shrink-0 overflow-hidden flex items-center justify-center font-bold text-blue-600 text-sm">
+      {url ? (
+        <img src={url} alt={name} className="w-full h-full object-cover" />
+      ) : (
+        name.charAt(0).toUpperCase()
+      )}
+    </div>
+  );
+}
+
+
+// ── Main Component ───────────────────────────────────────
+
+export default function DoctorPatientListClient() {
+  const [data,          setData]          = useState<PatientListResponse | null>(null);
+  const [loading,       setLoading]       = useState(true);
+  const [error,         setError]         = useState<string | null>(null);
+  const [page,          setPage]          = useState(1);
+  const [statusFilter,  setStatusFilter]  = useState<AppointmentStatus | "">("");
+  const [searchTerm,    setSearchTerm]    = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [appointmentDate, setAppointmentDate] = useState("");
+
+  // Debounce search
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setPage(1);
+    }, 500);
+    return () => clearTimeout(t);
+  }, [searchTerm]);
+
+  const loadPatients = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const query = new URLSearchParams({
+        pageNumber: String(page),
+        pageSize:   String(PAGE_SIZE),
+      });
+      if (statusFilter)    query.set("status",          statusFilter);
+      if (debouncedSearch) query.set("searchTerm",      debouncedSearch);
+      if (appointmentDate) query.set("appointmentDate", appointmentDate);
+
+      const res  = await fetch(`/api/doctor/patients?${query.toString()}`);
+      const json = await res.json();
+
+      if (json?.data) {
+        setData(json.data);
+      } else {
+        setError("Không thể tải danh sách bệnh nhân");
+      }
+    } catch {
+      setError("Không thể tải danh sách bệnh nhân");
+    } finally {
+      setLoading(false);
+    }
+  }, [page, statusFilter, debouncedSearch, appointmentDate]);
+
+  useEffect(() => {
+    loadPatients();
+  }, [loadPatients]);
+
+  const handleFilterChange = () => setPage(1);
+
+  return (
+    <div className="space-y-6 p-6 max-w-7xl mx-auto">
+      {/* ── Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+            Danh Sách Bệnh Nhân
+          </h1>
+          <p className="text-gray-500 mt-1 text-sm">
+            Xem và tìm kiếm danh sách bệnh nhân đã đặt lịch với bạn
+          </p>
+        </div>
+        <button
+          onClick={loadPatients}
+          disabled={loading}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-100 active:scale-95 transition-all disabled:opacity-50"
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+          Làm mới
+        </button>
+      </div>
+
+      {/* ── Filter bar ── */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+        {/* Search */}
+        <div className="relative md:col-span-2">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <input
+            type="text"
+            placeholder="Tìm theo tên bệnh nhân, số điện thoại..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-900 placeholder:text-gray-400"
+          />
+        </div>
+
+        {/* Status */}
+        <div className="relative">
+          <select
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value as AppointmentStatus | "");
+              handleFilterChange();
+            }}
+            className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-900 appearance-none cursor-pointer"
+          >
+            {STATUS_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Date */}
+        <div className="relative">
+          <input
+            type="date"
+            value={appointmentDate}
+            onChange={(e) => {
+              setAppointmentDate(e.target.value);
+              handleFilterChange();
+            }}
+            className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-900 cursor-pointer"
+          />
+        </div>
+      </div>
+
+      {/* ── Table ── */}
+      {error ? (
+        <div className="p-8 text-center min-h-[300px] bg-white rounded-3xl border border-gray-100 flex flex-col items-center justify-center gap-4">
+          <Users className="w-12 h-12 text-gray-300" />
+          <p className="text-red-500 font-medium">{error}</p>
+          <button
+            onClick={loadPatients}
+            className="px-5 py-2 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition active:scale-95 shadow-sm"
+          >
+            Thử lại
+          </button>
+        </div>
+      ) : (
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50/70 border-b border-gray-100 text-gray-500 text-xs font-bold uppercase tracking-wider">
+                  <th className="p-4 pl-6">Bệnh nhân</th>
+                  <th className="p-4">Số điện thoại</th>
+                  <th className="p-4">Ngày hẹn</th>
+                  <th className="p-4">Triệu chứng</th>
+                  <th className="p-4">Trạng thái</th>
+                </tr>
+              </thead>
+
+              <tbody className="divide-y divide-gray-50 text-sm text-gray-700">
+                {loading ? (
+                  // Skeleton rows
+                  [...Array(5)].map((_, i) => (
+                    <tr key={i} className="animate-pulse">
+                      <td className="p-4 pl-6">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gray-200" />
+                          <div className="h-4 w-32 bg-gray-200 rounded" />
+                        </div>
+                      </td>
+                      <td className="p-4"><div className="h-4 w-28 bg-gray-200 rounded" /></td>
+                      <td className="p-4"><div className="h-4 w-32 bg-gray-200 rounded" /></td>
+                      <td className="p-4"><div className="h-4 w-40 bg-gray-200 rounded" /></td>
+                      <td className="p-4"><div className="h-6 w-24 bg-gray-200 rounded-full" /></td>
+                    </tr>
+                  ))
+                ) : data && data.patients.length > 0 ? (
+                  data.patients.map((p) => (
+                    <tr
+                      key={p.appointmentId}
+                      className="hover:bg-gray-50/50 transition-colors"
+                    >
+                      {/* Bệnh nhân */}
+                      <td className="p-4 pl-6">
+                        <div className="flex items-center gap-3">
+                          <Avatar name={p.patientName} url={p.patientAvatarUrl} />
+                          <span className="font-semibold text-gray-900">
+                            {p.patientName}
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* SĐT */}
+                      <td className="p-4">
+                        {p.patientPhone ? (
+                          <div className="flex items-center gap-1.5 text-gray-700">
+                            <Phone className="w-3.5 h-3.5 text-gray-400" />
+                            {p.patientPhone}
+                          </div>
+                        ) : (
+                          <span className="text-gray-300">—</span>
+                        )}
+                      </td>
+
+                      {/* Ngày hẹn */}
+                      <td className="p-4">
+                        <div className="flex items-center gap-1.5 font-medium text-gray-900">
+                          <CalendarDays className="w-3.5 h-3.5 text-gray-400" />
+                          {new Date(p.appointmentDate).toLocaleString("vi-VN", {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          })}
+                        </div>
+                      </td>
+
+                      {/* Triệu chứng */}
+                      <td className="p-4 max-w-[200px]">
+                        {p.symptoms ? (
+                          <span className="px-2.5 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-medium line-clamp-1">
+                            {p.symptoms}
+                          </span>
+                        ) : (
+                          <span className="text-gray-300 text-xs">Không có</span>
+                        )}
+                      </td>
+
+                      {/* Status badge */}
+                      <td className="p-4">
+                        <span
+                          className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusBadgeClass(p.status)}`}
+                        >
+                          {STATUS_LABEL_VI[p.status] ?? p.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="text-center py-16">
+                      <div className="flex flex-col items-center gap-3 text-gray-400">
+                        <Users className="w-10 h-10" />
+                        <p className="font-medium">Chưa có bệnh nhân nào</p>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* ── Pagination footer ── */}
+          {data && data.totalPages > 1 && (
+            <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-t border-gray-100">
+              <p className="text-xs sm:text-sm text-gray-500 font-medium">
+                Trang{" "}
+                <span className="font-bold text-gray-800">{data.pageNumber}</span>
+                {" / "}
+                <span className="font-bold text-gray-800">{data.totalPages}</span>
+                {" "}(Tổng{" "}
+                <span className="font-bold text-gray-800">{data.totalRecords}</span>
+                {" "}bệnh nhân)
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                  disabled={page <= 1 || loading}
+                  className="p-2 border border-gray-200 bg-white hover:bg-gray-50 active:scale-95 transition rounded-xl disabled:opacity-40 disabled:pointer-events-none shadow-sm"
+                >
+                  <ChevronLeft className="w-4 h-4 text-gray-600" />
+                </button>
+                <button
+                  onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
+                  disabled={page >= data.totalPages || loading}
+                  className="p-2 border border-gray-200 bg-white hover:bg-gray-50 active:scale-95 transition rounded-xl disabled:opacity-40 disabled:pointer-events-none shadow-sm"
+                >
+                  <ChevronRight className="w-4 h-4 text-gray-600" />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

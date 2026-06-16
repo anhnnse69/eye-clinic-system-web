@@ -35,6 +35,18 @@ export default function PatientProfilesPage() {
     const params = useParams()
     const locale = (params?.locale as string) || ""
 
+    const handleViewDetail = (profileId: string) => {
+        if (locale) {
+            router.push(
+                `/${locale}/patient/profiles/detail?id=${profileId}`
+            )
+        } else {
+            router.push(
+                `/patient/profiles/detail?id=${profileId}`
+            )
+        }
+    }
+
     const handleCreateProfile = () => {
         // navigate including current locale so route stays under /{locale}
         if (locale) {
@@ -141,7 +153,7 @@ export default function PatientProfilesPage() {
                                 <th className="px-6 py-4 text-left font-semibold">CCCD</th>
                                 <th className="px-6 py-4 text-left font-semibold">Số điện thoại</th>
                                 <th className="px-6 py-4 text-left font-semibold">Quan hệ</th>
-                                <th className="px-6 py-4 text-left font-semibold">Ngày tạo</th>
+                                <th className="px-6 py-4 text-center font-semibold">Hành động</th>
                             </tr>
                         </thead>
 
@@ -200,8 +212,15 @@ export default function PatientProfilesPage() {
                                             </span>
                                         </td>
 
-                                        <td className="px-6 py-4 text-gray-400 text-xs">
-                                            {item.createdAt}
+                                        <td className="px-6 py-4 text-center">
+                                            <button
+                                                onClick={() =>
+                                                    handleViewDetail(item.id_patientProfile)
+                                                }
+                                                className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                                            >
+                                                Xem chi tiết
+                                            </button>
                                         </td>
                                     </tr>
                                 ))

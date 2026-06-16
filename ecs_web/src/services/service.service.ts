@@ -41,6 +41,21 @@ export interface ViewClinicServiceResponse {
   isActive: boolean
 }
 
+export interface CreateServiceRequest {
+  serviceName: string
+  price: number
+  durationMinutes: number
+}
+
+export interface CreateServiceResponse {
+  id: string
+  clinicId: string
+  serviceName: string
+  price: number
+  durationMinutes: number
+  isActive: boolean
+}
+
 class ServiceService {
   async list(params?: ServiceFilters): Promise<PaginatedResponse<Service>> {
     const response = await apiClient.get<PaginatedResponse<Service>>("/services", { params })
@@ -83,6 +98,14 @@ class ServiceService {
           searchTerm: params.searchTerm,
         },
       }
+    )
+    return response.data
+  }
+
+  async createService(data: CreateServiceRequest): Promise<ApiResponse<CreateServiceResponse>> {
+    const response = await apiClient.post<ApiResponse<CreateServiceResponse>>(
+      "https://localhost:7070/api/v1/clinic-admin/clinic-services/create",
+      data
     )
     return response.data
   }

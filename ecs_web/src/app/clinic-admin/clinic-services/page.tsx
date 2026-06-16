@@ -119,7 +119,6 @@ export default function ClinicServiceManagementPage() {
 
   return (
     <div className="space-y-6 text-left p-4 md:p-6 w-full">
-      {/* Tiêu đề & Nút Thêm dịch vụ mới */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-headline-md font-bold text-on-surface flex items-center gap-2">
@@ -130,7 +129,7 @@ export default function ClinicServiceManagementPage() {
         </div>
         
         <Link 
-          href="/clinic-admin/clinic-service/create"
+          href="/clinic-admin/clinic-services/create"
           className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-on-primary rounded-xl hover:opacity-90 transition-all text-label-md font-medium shadow-sm shrink-0"
         >
           <Plus className="h-4 w-4" /> Thêm dịch vụ

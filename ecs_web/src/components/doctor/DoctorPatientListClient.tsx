@@ -1,9 +1,10 @@
-// app/doctor/patients/DoctorPatientListClient.tsx
+// components/doctor/DoctorPatientListClient.tsx
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
 import {
   Search,
+  Plus,
   User,
   Phone,
   CalendarDays,
@@ -156,26 +157,39 @@ export default function DoctorPatientListClient() {
 
   const handleFilterChange = () => setPage(1);
 
+  const handleCreateProfile = () => {
+    window.location.href = "/patient/profiles/create";
+  };
+
   return (
-    <div className="space-y-6 p-6 max-w-7xl mx-auto">
+    <div className="space-y-6 p-6 max-w-7xl mx-auto antialiased">
       {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-gray-100">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
             Danh Sách Bệnh Nhân
           </h1>
           <p className="text-gray-500 mt-1 text-sm">
             Xem và tìm kiếm danh sách bệnh nhân đã đặt lịch với bạn
           </p>
         </div>
-        <button
-          onClick={loadPatients}
-          disabled={loading}
-          className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-100 active:scale-95 transition-all disabled:opacity-50"
-        >
-          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-          Làm mới
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleCreateProfile}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold rounded-xl shadow-sm shadow-blue-100 transition-colors duration-200"
+          >
+            <Plus className="w-4 h-4" />
+            Tạo mới hồ sơ
+          </button>
+          <button
+            onClick={loadPatients}
+            disabled={loading}
+            className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-100 active:scale-95 transition-all disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+            Làm mới
+          </button>
+        </div>
       </div>
 
       {/* ── Filter bar ── */}

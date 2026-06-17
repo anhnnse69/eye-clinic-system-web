@@ -1,10 +1,14 @@
-// app/doctor/patients/page.tsx
+// app/doctor/patient-demographics/[id]/page.tsx
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { authService } from "@/services/auth.service";
-import DoctorPatientListClient from "@/components/doctor/DoctorPatientListClient";
+import PatientDemographicsClient from "@/components/doctor/PatientDemographicsClient";
 
-export default async function DoctorPatientsPage() {
+export default async function PatientDemographicsPage({
+  params,
+}: {
+  params: { id: string }
+}) {
   const cookieStore = await cookies();
   const token = cookieStore.get("auth_token")?.value;
 
@@ -20,7 +24,15 @@ export default async function DoctorPatientsPage() {
     ] ||
     "";
 
-  if (role !== "DOCTOR") redirect("/login");
+  if (!["DOCTOR", "CLINIC_ADMIN", "RECEPTIONIST", "PATIENT"].includes(role)) {
+    redirect("/login");
+  }
 
-  return <DoctorPatientListClient />;
+  const patientProfileId = params.id;
+
+  if (!patientProfileId) {
+    redirect("/login");
+  }
+
+  return <PatientDemographicsClient patientProfileId={patientProfileId} />;
 }

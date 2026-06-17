@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useRouter, useParams } from "next/navigation"
 import {
     Search,
     ChevronLeft,
@@ -30,10 +31,17 @@ export default function PatientProfilesPage() {
 
     const [pageNumber, setPageNumber] = useState(1)
     const [pageSize] = useState(10)
-
+    const router = useRouter()
+    const params = useParams()
+    const locale = (params?.locale as string) || ""
 
     const handleCreateProfile = () => {
-
+        // navigate including current locale so route stays under /{locale}
+        if (locale) {
+            router.push(`/${locale}/patient/profiles/create`)
+        } else {
+            router.push('/patient/profiles/create')
+        }
         console.log("Mở form tạo mới hồ sơ")
     }
 

@@ -58,6 +58,27 @@ export interface GetPatientProfileDetailResponse {
     updatedAt: string
 }
 
+export interface UpdatePatientProfileRequest {
+    fullName: string
+    gender: number
+    dob: string
+    identityNumber?: string
+    address?: string
+    phoneNumber?: string
+    bhytNumber?: string
+    bloodType?: string
+    allergies?: string
+    medicalHistory?: string
+    relationship: string
+}
+
+export interface UpdatePatientProfileResponse {
+    patientProfileId: string
+    fullName: string
+    relationship: string
+    updatedAt: string
+}
+
 class PatientProfileService {
     async getAll(
         params: GetPatientProfilesRequest
@@ -86,6 +107,20 @@ class PatientProfileService {
         const response = await apiClient.get<
             ApiResponse<GetPatientProfileDetailResponse>
         >(`/patient-profiles/${patientProfileId}`)
+
+        return response.data
+    }
+
+    async update(
+        patientProfileId: string,
+        data: UpdatePatientProfileRequest
+    ): Promise<ApiResponse<UpdatePatientProfileResponse>> {
+        const response = await apiClient.put<
+            ApiResponse<UpdatePatientProfileResponse>
+        >(
+            `/patient-profiles/${patientProfileId}/edit`,
+            data
+        )
 
         return response.data
     }

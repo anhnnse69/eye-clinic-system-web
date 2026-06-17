@@ -16,7 +16,8 @@ const HERO_IMG = "https://lh3.googleusercontent.com/aida-public/AB6AXuCA9DFUQ7Th
 const FIELD_ERROR_MAP: Record<string, { field: string; vi: string; en: string }> = {
   APP_MESSAGE_4017: { field: "email",           vi: "Email đã tồn tại",                  en: "Email already exists" },
   APP_MESSAGE_4018: { field: "phone",           vi: "Số điện thoại đã được sử dụng",     en: "Phone number already in use" },
-  APP_MESSAGE_4019: { field: "confirmPassword", vi: "Mật khẩu không khớp",               en: "Passwords do not match" },
+  APP_MESSAGE_4042: { field: "confirmPassword", vi: "Mật khẩu không khớp",               en: "Passwords do not match" },
+  APP_MESSAGE_4026: { field: "password", vi: "Mật khẩu phải có ít nhất 8 ký tự và bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.",               en: "Password must be at least 8 characters and include uppercase, lowercase, number and special character" },
 };
 
 const GENERAL_ERROR_MAP: Record<string, { vi: string; en: string }> = {

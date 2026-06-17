@@ -2,7 +2,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { authService } from "@/services/auth.service";
-import PatientDemographicsClient from "@/components/doctor/PatientDemographicsClient";
+import PatientDemographicsListClient from "@/components/doctor/PatientDemographicsListClient";
 
 export default async function PatientDemographicsPage({
   params,
@@ -24,9 +24,7 @@ export default async function PatientDemographicsPage({
     ] ||
     "";
 
-  if (!["DOCTOR", "CLINIC_ADMIN", "RECEPTIONIST", "PATIENT"].includes(role)) {
-    redirect("/login");
-  }
+  if (role !== "DOCTOR") redirect("/login");
 
   const patientProfileId = params.id;
 
@@ -34,5 +32,5 @@ export default async function PatientDemographicsPage({
     redirect("/login");
   }
 
-  return <PatientDemographicsClient patientProfileId={patientProfileId} />;
+  return <PatientDemographicsListClient patientProfileId={patientProfileId} />;
 }

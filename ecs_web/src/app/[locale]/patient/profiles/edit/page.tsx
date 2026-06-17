@@ -175,7 +175,7 @@ export default function PatientProfilesEditPage() {
                 let apiErrorMessage = "Cập nhật hồ sơ thất bại. Vui lòng kiểm tra lại thông tin."
 
                 if (response?.codeMessage) {
-                    if (response.codeMessage.includes("4042")) {
+                    if (response.codeMessage.includes("4043")) {
                         apiErrorMessage = "Số CCCD/CMND này đã tồn tại trên một hồ sơ bệnh nhân khác."
                     } else {
                         apiErrorMessage = `Lỗi hệ thống: ${response.codeMessage}`

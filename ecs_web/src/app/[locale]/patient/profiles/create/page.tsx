@@ -119,7 +119,7 @@ export default function PatientProfilesCreatePage() {
             const codeMsg = response?.codeMessage || response?.data?.codeMessage || response?.data?.message || response?.message || "";
 
             if (
-                (typeof codeMsg === "string" && codeMsg.includes("4042")) ||
+                (typeof codeMsg === "string" && codeMsg.includes("4043")) ||
                 (typeof codeMsg === "string" && (codeMsg.toLowerCase().includes("trùng") || codeMsg.toLowerCase().includes("tồn tại") || codeMsg.toLowerCase().includes("already exist") || codeMsg.toLowerCase().includes("already exists")))
             ) {
                 setFieldErrors(prev => ({ ...prev, identityNumber: "Số CMND/CCCD này đã tồn tại trên hệ thống." }))
@@ -136,7 +136,7 @@ export default function PatientProfilesCreatePage() {
         } catch (err: any) {
             const catchMsg = err?.response?.data?.codeMessage || err?.response?.data?.message || err?.message || ""
             const lowerCatch = typeof catchMsg === "string" ? catchMsg.toLowerCase() : ""
-            if (catchMsg.includes("4042") || lowerCatch.includes("trùng") || lowerCatch.includes("tồn tại") || lowerCatch.includes("already exist") || lowerCatch.includes("already exists")) {
+            if (catchMsg.includes("4043") || lowerCatch.includes("trùng") || lowerCatch.includes("tồn tại") || lowerCatch.includes("already exist") || lowerCatch.includes("already exists")) {
                 setFieldErrors(prev => ({ ...prev, identityNumber: "Số CMND/CCCD này đã tồn tại trên hệ thống." }))
                 setSubmitError("Vui lòng kiểm tra lại các thông tin lỗi bên dưới.")
             } else {

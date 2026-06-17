@@ -11,7 +11,7 @@ import {
   Filter, 
   ChevronLeft, 
   ChevronRight,
-  Pencil // Thêm icon chỉnh sửa
+  Pencil
 } from "lucide-react"
 import { serviceService } from "@/services/service.service"
 import type { ViewClinicServiceResponse } from "@/services/service.service"
@@ -20,6 +20,9 @@ export default function ClinicServiceManagementPage() {
   const [servicesList, setServicesList] = useState<ViewClinicServiceResponse[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
+  
+  // State theo dõi xem ID dịch vụ nào đang được gạt để hiển thị hiệu ứng đợi riêng biệt
+  const [updatingId, setUpdatingId] = useState<string | null>(null)
 
   const [meta, setMeta] = useState<{
     page: number
@@ -101,6 +104,27 @@ export default function ClinicServiceManagementPage() {
     loadServicesData()
   }, [loadServicesData])
 
+  // Hàm xử lý khi bấm vào nút gạt đổi trạng thái
+  const handleToggleActive = async (serviceId: string, currentStatus: boolean) => {
+    try {
+      setUpdatingId(serviceId)
+      
+      // Gọi hàm deactivate của serviceService (đang cấu hình trỏ về API /deactivate của Backend)
+      await serviceService.deactivateService(serviceId)
+      
+      // Cập nhật nhanh UI ở client để nút gạt chuyển đổi tức thì mà không cần reload trang
+      setServicesList(prev => 
+        prev.map(item => 
+          item.id_service === serviceId ? { ...item, isActive: !currentStatus } : item
+        )
+      )
+    } catch (err: any) {
+      alert("Cập nhật trạng thái dịch vụ thất bại. Vui lòng thử lại!")
+    } finally {
+      setUpdatingId(null)
+    }
+  }
+
   const formatCurrency = (value: number | null) => {
     if (value === null || value === undefined) return "Miễn phí / Liên hệ"
     return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value)
@@ -181,7 +205,7 @@ export default function ClinicServiceManagementPage() {
                     <th className="p-4">Tên dịch vụ</th>
                     <th className="p-4">Giá dịch vụ chuẩn</th>
                     <th className="p-4">Thời lượng thực hiện</th>
-                    <th className="p-4 text-center">Trạng thái</th>
+                    <th className="p-4 text-center">Trạng thái hoạt động</th>
                     <th className="p-4 text-center">Thao tác</th>
                   </tr>
                 </thead>
@@ -210,17 +234,29 @@ export default function ClinicServiceManagementPage() {
                           </div>
                         </td>
 
-                        <td className="p-4 text-center">
-                          <span className={`inline-block px-3 py-0.5 rounded-full text-label-sm font-semibold border ${
-                            service.isActive 
-                              ? "bg-success-container text-on-success-container border-success/20" 
-                              : "bg-error-container text-on-error-container border-error/20"
-                          }`}>
-                            {service.isActive ? "Đang hoạt động" : "Tạm dừng"}
-                          </span>
+                        {/* NÚT GẠT (TOGGLE SWITCH) 2 CHIỀU MỚI THÊM VÀO ĐÂY */}
+                        <td className="p-4">
+                          <div className="flex flex-col items-center justify-center gap-1">
+                            <button
+                              type="button"
+                              disabled={updatingId !== null}
+                              onClick={() => handleToggleActive(service.id_service, service.isActive)}
+                              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                                service.isActive ? "bg-emerald-500" : "bg-neutral-300"
+                              } ${updatingId === service.id_service ? "opacity-50 cursor-wait" : ""}`}
+                            >
+                              <span
+                                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                                  service.isActive ? "translate-x-5" : "translate-x-0"
+                                }`}
+                              />
+                            </button>
+                            <span className="text-[11px] font-medium text-on-surface-variant/80">
+                              {service.isActive ? "Đang hoạt động" : "Tạm dừng"}
+                            </span>
+                          </div>
                         </td>
 
-                        {/* Thêm cột nút hành động chỉnh sửa */}
                         <td className="p-4 text-center">
                           <Link
                             href={`/clinic-admin/clinic-services/${service.id_service}`}

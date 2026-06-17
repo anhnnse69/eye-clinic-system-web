@@ -27,6 +27,21 @@ interface UpdateRoomData {
   isAvailable?: boolean
 }
 
+export interface ViewClinicRoomsRequest {
+  pageNumber: number;
+  pageSize: number;
+  isActive?: boolean;
+  searchTerm?: string;
+  roomType?: string; 
+}
+
+export interface ViewClinicRoomResponse {
+  id_room: string;
+  roomName: string;
+  roomType: string;
+  isActive: boolean;
+}
+
 class RoomService {
   async list(params?: RoomFilters): Promise<PaginatedResponse<Room>> {
     const response = await apiClient.get<PaginatedResponse<Room>>("/rooms", { params })
@@ -63,6 +78,22 @@ class RoomService {
       params: { clinicId, type },
     })
     return response.data
+  }
+
+  async getClinicRooms(params: ViewClinicRoomsRequest): Promise<ApiResponse<ViewClinicRoomResponse[]>> {
+    const response = await apiClient.get<ApiResponse<ViewClinicRoomResponse[]>>(
+      "https://localhost:7070/api/v1/clinic-admin/rooms",
+      {
+        params: {
+          pageNumber: params.pageNumber,
+          pageSize: params.pageSize,
+          isActive: params.isActive,
+          searchTerm: params.searchTerm,
+          roomType: params.roomType,
+        },
+      }
+    );
+    return response.data;
   }
 }
 

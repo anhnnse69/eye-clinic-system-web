@@ -2,12 +2,12 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { authService } from "@/services/auth.service";
-import PatientDemographicsClient from "@/components/doctor/PatientDemographicsClient";
+import PatientDemographicsListClient from "@/components/doctor/PatientDemographicsListClient";
 
 export default async function PatientDemographicsPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
   const cookieStore = await cookies();
   const token = cookieStore.get("auth_token")?.value;
@@ -24,15 +24,14 @@ export default async function PatientDemographicsPage({
     ] ||
     "";
 
-  if (!["DOCTOR", "CLINIC_ADMIN", "RECEPTIONIST", "PATIENT"].includes(role)) {
-    redirect("/login");
-  }
+  if (role !== "DOCTOR") redirect("/login");
 
-  const patientProfileId = params.id;
+  const resolvedParams = await params;
+  const patientProfileId = resolvedParams.id;
 
   if (!patientProfileId) {
     redirect("/login");
   }
 
-  return <PatientDemographicsClient patientProfileId={patientProfileId} />;
+  return <PatientDemographicsListClient patientProfileId={patientProfileId} />;
 }

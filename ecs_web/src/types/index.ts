@@ -330,12 +330,61 @@ export interface ViewPatientDemographicsResponse {
   records: MedicalRecordSummaryItem[]
 }
 
+export interface ViewPatientDemographicsListItem {
+  id_PatientProfile: string
+  fullName: string
+  gender: string
+  dob: string
+  identityNumber?: string | null
+  phoneNumber?: string | null
+  address?: string | null
+  bhytNumber?: string | null
+  bloodType?: string | null
+  allergies?: string | null
+  medicalHistory?: string | null
+  id_MedicalRecord: string
+  recordType: string
+  recordTypeLabel: string
+  doctorName: string
+  appointmentDate: string
+  chiefComplaint?: string | null
+  diagnosisMain?: string | null
+  isLocked: boolean
+  createdAt: string
+}
+
+export interface ViewPatientDemographicsListResponse {
+  pageNumber: number
+  pageSize: number
+  totalPages: number
+  totalRecords: number
+  items: ViewPatientDemographicsListItem[]
+}
+
 export interface ViewPatientDemographicsRequest {
-  patientProfileId: string
+  patientProfileId?: string
   recordType?: string
   searchTerm?: string
   pageNumber?: number
   pageSize?: number
+}
+
+export interface PatientAppointmentItem {
+  appointmentId: string
+  patientId: string
+  patientName: string
+  patientAvatarUrl?: string
+  patientPhone?: string
+  appointmentDate: string
+  status: string
+}
+
+export interface ViewListPatientResponse {
+  pageNumber: number
+  pageSize: number
+  totalPages: number
+  totalRecords: number
+  patients: PatientAppointmentItem[]
 }
 
 export interface UpdatePersonalProfileRequest {

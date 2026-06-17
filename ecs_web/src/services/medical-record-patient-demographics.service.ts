@@ -1,5 +1,10 @@
 import { apiClient } from "@/lib/axios"
-import type { ApiResponse, ViewPatientDemographicsResponse, ViewPatientDemographicsRequest } from "@/types"
+import type {
+  ApiResponse,
+  ViewPatientDemographicsResponse,
+  ViewPatientDemographicsListResponse,
+  ViewPatientDemographicsRequest,
+} from "@/types"
 
 class MedicalRecordPatientDemographicsService {
   async getPatientDemographics(
@@ -9,6 +14,16 @@ class MedicalRecordPatientDemographicsService {
       "/medical-record/patient-demographics",
       { params }
     )
+
+    return response.data
+  }
+
+  async getPatientDemographicsList(
+    params: ViewPatientDemographicsRequest
+  ): Promise<ApiResponse<ViewPatientDemographicsListResponse>> {
+    const response = await apiClient.get<
+      ApiResponse<ViewPatientDemographicsListResponse>
+    >("/medical-record/patient-demographics", { params })
 
     return response.data
   }

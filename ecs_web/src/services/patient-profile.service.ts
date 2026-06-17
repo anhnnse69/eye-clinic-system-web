@@ -41,6 +41,23 @@ export interface CreatePatientProfileResponse {
     assignedRelationship: string
 }
 
+export interface GetPatientProfileDetailResponse {
+    patientProfileId: string
+    fullName: string
+    gender: number
+    dob: string
+    identityNumber?: string
+    address?: string
+    phoneNumber?: string
+    bhytNumber?: string
+    bloodType?: string
+    allergies?: string
+    medicalHistory?: string
+    relationship: string
+    createdAt: string
+    updatedAt: string
+}
+
 class PatientProfileService {
     async getAll(
         params: GetPatientProfilesRequest
@@ -59,6 +76,16 @@ class PatientProfileService {
         const response = await apiClient.post<
             ApiResponse<CreatePatientProfileResponse>
         >("/patient-profiles/create", data)
+
+        return response.data
+    }
+
+    async getById(
+        patientProfileId: string
+    ): Promise<ApiResponse<GetPatientProfileDetailResponse>> {
+        const response = await apiClient.get<
+            ApiResponse<GetPatientProfileDetailResponse>
+        >(`/patient-profiles/${patientProfileId}`)
 
         return response.data
     }

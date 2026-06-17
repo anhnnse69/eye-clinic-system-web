@@ -261,7 +261,7 @@ export interface AdminSystemDashboardResponse {
   pendingClinics: Array<{
     id: string
     name: string
-    Owner: string 
+    Owner: string
     date: string
   }>
   topServices: Array<{
@@ -287,7 +287,7 @@ export interface DoctorProfileNested {
   experienceYears: number
   bio?: string | null
   specialtyName?: string
-  specialtyId?: string | null 
+  specialtyId?: string | null
 }
 
 export interface GetPersonalProfileResponse {
@@ -361,4 +361,44 @@ export interface SpecialtyCategoryResponse {
   name: string
   description?: string | null
   isActive?: boolean
+}
+
+export enum ShiftType {
+  MORNING = "MORNING",
+  AFTERNOON = "AFTERNOON",
+  EVENING = "EVENING"
+}
+
+export enum SlotStatus {
+  AVAILABLE = "AVAILABLE",
+  BOOKED = "BOOKED",
+  BLOCKED = "BLOCKED"
+}
+
+export interface TimeSlotData {
+  id: string
+  startTime: string
+  endTime: string
+  maxPatients: number
+  currentPatients: number
+  status: SlotStatus
+}
+
+export interface DoctorScheduleMatrixRow {
+  id: string
+  shiftType: ShiftType
+  doctorName: string
+  title?: string | null
+  specialtyName: string
+  roomId?: string | null     
+  roomName?: string | null  
+  slots: TimeSlotData[]
+}
+
+export interface GetAvailableSlotsParams {
+  currentUserId: string
+  workDate: string
+  searchDoctor?: string
+  shiftType?: string
+  specialtyId?: string
 }

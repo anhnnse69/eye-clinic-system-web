@@ -32,7 +32,7 @@ export default async function ReceptionistLayout({ children }: { children: React
       items: [
         { label: "Dashboard", href: "/receptionist/dashboard", icon: "LayoutDashboard" },
         { label: "Lịch hẹn hôm nay", href: "/receptionist/appointments/today", icon: "Calendar" },
-        { label: "Khung giờ trống", href: "/receptionist/slots", icon: "Clock" },
+        { label: "Khung giờ trống", href: "/receptionist/available-slots", icon: "Clock" },
       ],
     },
     {

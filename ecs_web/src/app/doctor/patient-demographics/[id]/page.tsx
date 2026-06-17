@@ -7,7 +7,7 @@ import PatientDemographicsListClient from "@/components/doctor/PatientDemographi
 export default async function PatientDemographicsPage({
   params,
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
   const cookieStore = await cookies();
   const token = cookieStore.get("auth_token")?.value;
@@ -26,7 +26,8 @@ export default async function PatientDemographicsPage({
 
   if (role !== "DOCTOR") redirect("/login");
 
-  const patientProfileId = params.id;
+  const resolvedParams = await params;
+  const patientProfileId = resolvedParams.id;
 
   if (!patientProfileId) {
     redirect("/login");

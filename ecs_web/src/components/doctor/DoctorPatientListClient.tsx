@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 import {
   Search,
   Plus,
@@ -12,6 +13,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Users,
+  FileText,
 } from "lucide-react";
 
 import type {
@@ -185,6 +187,7 @@ export default function DoctorPatientListClient() {
                   <th className="p-4">Số điện thoại</th>
                   <th className="p-4">Ngày hẹn</th>
                   <th className="p-4">Trạng thái</th>
+                  <th className="p-4">Thao tác</th>
                 </tr>
               </thead>
 
@@ -209,7 +212,7 @@ export default function DoctorPatientListClient() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={4} className="text-center py-16">
+                    <td colSpan={5} className="text-center py-16">
                       <div className="flex flex-col items-center gap-3 text-gray-400">
                         <Users className="w-10 h-10" />
                         <p className="font-medium">Chưa có bệnh nhân nào</p>
@@ -296,6 +299,16 @@ function PatientRow({ patient }: { patient: PatientAppointmentItem }) {
         >
           {STATUS_LABEL_VI[patient.status] ?? patient.status}
         </span>
+      </td>
+
+      <td className="p-4">
+        <Link
+          href={`/doctor/patient-demographics/${patient.patientId}`}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-lg transition-colors"
+        >
+          <FileText className="w-3.5 h-3.5" />
+          Hồ sơ bệnh án
+        </Link>
       </td>
     </tr>
   );

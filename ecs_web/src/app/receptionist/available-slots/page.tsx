@@ -28,9 +28,9 @@ export default function RealShiftTimeSchedulerPage() {
   const router = useRouter()
 
   const getLocalCurrentDateString = () => {
-    const tzoffset = new Date().getTimezoneOffset() * 60000; // Lấy độ lệch múi giờ tính bằng mili-giây
-    const localISOTime = new Date(Date.now() - tzoffset).toISOString(); // Tạo chuỗi ISO theo giờ cục bộ
-    return localISOTime.split("T")[0]; // Cắt lấy phần yyyy-MM-dd
+    const tzoffset = new Date().getTimezoneOffset() * 60000;
+    const localISOTime = new Date(Date.now() - tzoffset).toISOString();
+    return localISOTime.split("T")[0];
   };
 
   const [dateFilter, setDateFilter] = useState<string>(getLocalCurrentDateString());
@@ -96,12 +96,12 @@ export default function RealShiftTimeSchedulerPage() {
     router.push(`/receptionist/appointments/create-walk-in?slotId=${slotId}&doctor=${encodedDoctor}&time=${timeLabel}&date=${dateFilter}&room=${encodedRoom}`)
   }
 
+  // CẬP NHẬT: So khớp khung giờ bằng chuỗi text thô, triệt tiêu hoàn toàn lệch múi giờ
   const findSlotByTimeLabel = (slots: any[], timeLabel: string) => {
     return slots.find(s => {
-      const dateObj = new Date(s.startTime);
-      const hours = String(dateObj.getUTCHours()).padStart(2, '0');
-      const minutes = String(dateObj.getUTCMinutes()).padStart(2, '0');
-      return `${hours}:${minutes}` === timeLabel;
+      if (!s.startTime) return false;
+      const timePart = s.startTime.split("T")[1];
+      return timePart ? timePart.substring(0, 5) === timeLabel : false;
     })
   }
 
@@ -274,7 +274,7 @@ export default function RealShiftTimeSchedulerPage() {
                                     <span>{row.specialtyName}</span>
                                   </span>
 
-                                  {/* Phòng khám: Đã đổi sang icon DoorOpen (Cánh cửa) */}
+                                  {/* Phòng khám */}
                                   <span className="text-[10px] text-slate-700 font-medium bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded flex items-center gap-1 w-full break-words">
                                     <DoorOpen className="h-2.5 w-2.5 text-slate-500 flex-shrink-0" />
                                     <span>{row.roomName || "Chưa xếp phòng"}</span>
@@ -285,7 +285,12 @@ export default function RealShiftTimeSchedulerPage() {
                           </td>
 
                           {timeLabels.map((time) => {
-                            const slot = findSlotByTimeLabel(row.slots, time)
+                            // CẬP NHẬT: So khớp khung giờ bằng chuỗi text thô tại ô Render
+                            const slot = row.slots.find(s => {
+                              if (!s.startTime) return false;
+                              const timePart = s.startTime.split("T")[1];
+                              return timePart ? timePart.substring(0, 5) === time : false;
+                            });
 
                             if (!slot) {
                               return (
@@ -294,12 +299,29 @@ export default function RealShiftTimeSchedulerPage() {
                                     -
                                   </div>
                                 </td>
-                              )
+                              );
                             }
+
+                            // --- LOGIC KIỂM TRA THỜI GIAN THỰC CHÍNH XÁC ---
+                            // Trình duyệt sẽ tự động phân tích định dạng yyyy-MM-ddTHH:mm:ss theo múi giờ local
+                            const slotStartTime = new Date(slot.startTime);
+                            const currentTime = new Date();
+
+                            // Tính toán khoảng lệch phút thực tế
+                            const diffInMinutes = (currentTime.getTime() - slotStartTime.getTime()) / (1000 * 60);
+
+                            const todayStr = getLocalCurrentDateString();
+                            const isPastDate = dateFilter < todayStr;
+
+                            // Hết hạn khi thuộc ngày cũ hoặc lố giờ hiện tại quá 30 phút
+                            const isExpired = slot.status === SlotStatus.AVAILABLE && (isPastDate || diffInMinutes >= 30);
+
+                            const effectiveStatus = isExpired ? SlotStatus.BLOCKED : slot.status;
+                            // ----------------------------------------------------
 
                             return (
                               <td key={time} className="p-1.5 border-r border-slate-200 text-center align-middle bg-white">
-                                {slot.status === SlotStatus.AVAILABLE && (
+                                {effectiveStatus === SlotStatus.AVAILABLE && (
                                   <button
                                     onClick={() => handleSelectSlot(slot.id, row.doctorName, time, row.roomName)}
                                     title={`Bấm để xếp lịch khám tại ${row.roomName || 'phòng trực'}`}
@@ -315,7 +337,7 @@ export default function RealShiftTimeSchedulerPage() {
                                   </button>
                                 )}
 
-                                {slot.status === SlotStatus.BOOKED && (
+                                {effectiveStatus === SlotStatus.BOOKED && (
                                   <div className="w-full min-h-[44px] p-1 rounded-xl bg-amber-50 border border-amber-200 text-center flex flex-col items-center justify-center select-none cursor-not-allowed">
                                     <div className="flex items-center gap-0.5 font-bold text-amber-700 text-[11px]">
                                       <XCircle className="h-3 w-3 text-amber-500" />
@@ -327,10 +349,17 @@ export default function RealShiftTimeSchedulerPage() {
                                   </div>
                                 )}
 
-                                {slot.status === SlotStatus.BLOCKED && (
-                                  <div className="w-full min-h-[44px] p-1 rounded-xl bg-rose-50 border border-rose-100 text-center flex flex-col items-center justify-center select-none cursor-not-allowed">
+                                {effectiveStatus === SlotStatus.BLOCKED && (
+                                  <div
+                                    className="w-full min-h-[44px] p-1 rounded-xl bg-rose-50 border border-rose-100 text-center flex flex-col items-center justify-center select-none cursor-not-allowed"
+                                    // Sửa lại ghi chú khi rê chuột vào (tooltip) cho rõ ràng
+                                    title={isExpired ? "Lịch này đã quá giờ đăng ký quy định (hệ thống tự động khóa)" : undefined}
+                                  >
                                     <Ban className="h-3 w-3 text-rose-400" />
-                                    <span className="text-[9px] font-bold text-rose-500 mt-0.5">Khóa</span>
+                                    <span className="text-[9px] font-bold text-rose-500 mt-0.5">
+                                      {/* SỬA TẠI ĐÂY: Thay vì hiện "Hết hạn", chúng ta ép hiển thị chữ "Khóa" luôn */}
+                                      Khóa
+                                    </span>
                                   </div>
                                 )}
                               </td>

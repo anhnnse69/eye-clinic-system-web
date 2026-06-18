@@ -69,6 +69,19 @@ export interface EditRoomResponse {
   isActive: boolean
 }
 
+export interface DeleteRoomRequest {
+  roomId: string
+  isActive: boolean // Dùng làm switch toggle khóa/mở khóa phòng bệnh
+}
+
+export interface DeleteRoomResponse {
+  id: string
+  clinicId: string
+  roomName: string
+  roomType: string
+  isActive: boolean
+}
+
 class RoomService {
   async list(params?: RoomFilters): Promise<PaginatedResponse<Room>> {
     const response = await apiClient.get<PaginatedResponse<Room>>("/rooms", { params })
@@ -133,6 +146,14 @@ class RoomService {
 
   async editClinicRoom(data: EditRoomRequest): Promise<ApiResponse<EditRoomResponse>> {
   const response = await apiClient.put<ApiResponse<EditRoomResponse>>("https://localhost:7070/api/v1/clinic-admin/rooms/edit", data);
+  return response.data;
+}
+
+async toggleRoomStatus(data: DeleteRoomRequest): Promise<ApiResponse<DeleteRoomResponse>> {
+  const response = await apiClient.patch<ApiResponse<DeleteRoomResponse>>(
+    `https://localhost:7070/api/v1/clinic-admin/rooms/${data.roomId}/status`,
+    data
+  );
   return response.data;
 }
 }

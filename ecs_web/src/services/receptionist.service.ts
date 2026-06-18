@@ -57,6 +57,23 @@ export interface PatientDetailedProfile {
   appointments: ReceptionistAppointmentLogDto[];
 }
 
+export interface ReceptionistUpdatePatientProfileRequest {
+  fullName: string;
+  gender: "MALE" | "FEMALE" | "OTHER";
+  dob: string; // "yyyy-MM-dd"
+  phoneNumber: string | null;
+  email: string | null;
+  address: string | null;
+  identityNumber: string | null;
+  bhytNumber: string | null;
+}
+
+export interface ReceptionistUpdatePatientProfileResponse {
+  id: string;
+  fullName: string;
+  updatedAt: string;
+}
+
 class ReceptionistService {
   /**
    * Lấy danh sách hồ sơ bệnh nhân kèm bộ lọc và phân trang từ server
@@ -124,6 +141,18 @@ class ReceptionistService {
     return (
       await apiClient.get<ApiResponse<SpecialtyCategoryResponse[]>>(
         "/specialties"
+      )
+    ).data;
+  }
+  
+  async updatePatientProfile(
+    id: string, 
+    payload: ReceptionistUpdatePatientProfileRequest
+  ): Promise<ApiResponse<ReceptionistUpdatePatientProfileResponse>> {
+    return (
+      await apiClient.put<ApiResponse<ReceptionistUpdatePatientProfileResponse>>(
+        `/receptionist/patients/${id}`, 
+        payload
       )
     ).data;
   }

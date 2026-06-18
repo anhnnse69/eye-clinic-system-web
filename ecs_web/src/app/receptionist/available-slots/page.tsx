@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { 
+import {
   Calendar as CalendarIcon, Search, User, Stethoscope,
   CheckCircle2, XCircle, Ban, Loader2, RefreshCw, Layers,
-  DoorOpen 
+  DoorOpen
 } from "lucide-react"
 
 import { receptionistService } from "@/services/receptionist.service"
@@ -27,7 +27,13 @@ const SHIFT_ORDER: ShiftType[] = [
 export default function RealShiftTimeSchedulerPage() {
   const router = useRouter()
 
-  const [dateFilter, setDateFilter] = useState<string>("2026-06-17")
+  const getLocalCurrentDateString = () => {
+    const tzoffset = new Date().getTimezoneOffset() * 60000; // Lấy độ lệch múi giờ tính bằng mili-giây
+    const localISOTime = new Date(Date.now() - tzoffset).toISOString(); // Tạo chuỗi ISO theo giờ cục bộ
+    return localISOTime.split("T")[0]; // Cắt lấy phần yyyy-MM-dd
+  };
+
+  const [dateFilter, setDateFilter] = useState<string>(getLocalCurrentDateString());
   const [searchDoctor, setSearchDoctor] = useState<string>("")
   const [debouncedDoctor, setDebouncedDoctor] = useState<string>("")
   const [shiftFilter, setShiftFilter] = useState<string>("")
@@ -35,11 +41,11 @@ export default function RealShiftTimeSchedulerPage() {
 
   const [scheduleData, setScheduleData] = useState<DoctorScheduleMatrixRow[]>([])
   const [specialties, setSpecialties] = useState<SpecialtyCategoryResponse[]>([])
-  
+
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
 
-  const currentUserId = "F533F6FF-7601-47A7-A15F-1FFA2D79672E" 
+  const currentUserId = "F533F6FF-7601-47A7-A15F-1FFA2D79672E"
 
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedDoctor(searchDoctor), 400)
@@ -108,7 +114,7 @@ export default function RealShiftTimeSchedulerPage() {
 
   return (
     <div className="space-y-6 w-full min-w-0 px-4 py-4">
-      
+
       {/* Header */}
       <div>
         <h2 className="text-2xl font-bold text-slate-800">Quản lý Lịch trống Khám bệnh</h2>
@@ -121,7 +127,7 @@ export default function RealShiftTimeSchedulerPage() {
           <label className="text-sm font-semibold text-slate-600">Ngày làm việc</label>
           <div className="relative w-full">
             <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <input 
+            <input
               type="date"
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
@@ -145,7 +151,7 @@ export default function RealShiftTimeSchedulerPage() {
               ))}
             </select>
             <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
             </div>
           </div>
         </div>
@@ -154,7 +160,7 @@ export default function RealShiftTimeSchedulerPage() {
           <label className="text-sm font-semibold text-slate-600">Tên bác sĩ cần tìm</label>
           <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <input 
+            <input
               type="text"
               placeholder="Nhập tên bác sĩ..."
               value={searchDoctor}
@@ -178,12 +184,12 @@ export default function RealShiftTimeSchedulerPage() {
               <option value={ShiftType.EVENING}>Ca Tối (17h - 20h)</option>
             </select>
             <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
             </div>
           </div>
         </div>
 
-        <button 
+        <button
           onClick={fetchData}
           disabled={loading}
           className="border border-blue-600 text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-95 h-[38px] w-full"
@@ -202,7 +208,7 @@ export default function RealShiftTimeSchedulerPage() {
       </div>
 
       {error && <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm font-medium">{error}</div>}
-      
+
       {loading ? (
         <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center flex flex-col items-center justify-center min-h-[250px]">
           <Loader2 className="h-8 w-8 text-blue-600 animate-spin mb-2" />
@@ -250,7 +256,7 @@ export default function RealShiftTimeSchedulerPage() {
                     <tbody className="divide-y divide-slate-200">
                       {rows.map((row) => (
                         <tr key={row.id} className="hover:bg-slate-50/30 transition-colors">
-                          
+
                           <td className="px-6 py-3.5 border-r border-slate-200 bg-white sticky left-0 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.01)]">
                             <div className="flex items-center gap-2.5">
                               <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0">
@@ -260,14 +266,14 @@ export default function RealShiftTimeSchedulerPage() {
                                 <span className="font-bold text-xs text-slate-800 truncate">
                                   {row.title ? `${row.title} ` : ""}{row.doctorName}
                                 </span>
-                                
+
                                 <div className="flex flex-col gap-1 w-full items-start">
                                   {/* Chuyên khoa */}
                                   <span className="text-[10px] text-indigo-700 font-semibold bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 rounded flex items-center gap-1 w-fit">
                                     <Stethoscope className="h-2.5 w-2.5 text-indigo-500 flex-shrink-0" />
                                     <span>{row.specialtyName}</span>
                                   </span>
-                                  
+
                                   {/* Phòng khám: Đã đổi sang icon DoorOpen (Cánh cửa) */}
                                   <span className="text-[10px] text-slate-700 font-medium bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded flex items-center gap-1 w-full break-words">
                                     <DoorOpen className="h-2.5 w-2.5 text-slate-500 flex-shrink-0" />

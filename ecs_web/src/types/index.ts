@@ -451,3 +451,17 @@ export interface GetAvailableSlotsParams {
   shiftType?: string
   specialtyId?: string
 }
+
+// GetDetailPatientDemographics — matches /api/v1/medical-record/demographics/{patientId}
+export interface GetDetailPatientDemographicsResponse {
+  fullName: string
+  dob: string
+  gender: string
+  phoneNumber?: string | null
+  identityNumber?: string | null
+  bhytNumber?: string | null
+  address?: string | null
+  bloodType?: string | null
+  allergies?: string | null
+  medicalHistory?: string | null
+}

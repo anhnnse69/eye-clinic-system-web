@@ -4,6 +4,8 @@ import type {
   ViewPatientDemographicsResponse,
   ViewPatientDemographicsListResponse,
   ViewPatientDemographicsRequest,
+  CreatePatientDemographicsRequest,
+  CreatePatientDemographicsResponse,
 } from "@/types"
 
 class MedicalRecordPatientDemographicsService {
@@ -24,6 +26,17 @@ class MedicalRecordPatientDemographicsService {
     const response = await apiClient.get<
       ApiResponse<ViewPatientDemographicsListResponse>
     >("/medical-record/patient-demographics", { params })
+
+    return response.data
+  }
+
+  async createPatientDemographics(
+    request: CreatePatientDemographicsRequest
+  ): Promise<ApiResponse<CreatePatientDemographicsResponse>> {
+    const response = await apiClient.post<ApiResponse<CreatePatientDemographicsResponse>>(
+      "/medical-record/demographics",
+      request
+    )
 
     return response.data
   }

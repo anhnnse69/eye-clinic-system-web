@@ -451,3 +451,35 @@ export interface GetAvailableSlotsParams {
   shiftType?: string
   specialtyId?: string
 }
+
+// ==========================================
+// Create Patient Demographics
+// ==========================================
+
+export enum Gender {
+  Male = 0,
+  Female = 1,
+  Other = 2
+}
+
+export interface CreatePatientDemographicsRequest {
+  fullName: string
+  gender: Gender
+  dob: string
+  identityNumber?: string | null
+  address?: string | null
+  phoneNumber?: string | null
+  bhytNumber?: string | null
+  bloodType?: string | null
+  allergies?: string | null
+  medicalHistory?: string | null
+  relationship: string
+}
+
+export interface CreatePatientDemographicsResponse {
+  patientProfileId: string
+  fullName: string
+  identityNumber?: string | null
+  relationship: string
+  createdAt: string
+}

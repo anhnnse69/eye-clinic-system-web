@@ -109,10 +109,6 @@ export default function DoctorPatientListClient() {
     loadPatients();
   }, [loadPatients]);
 
-  const handleCreateProfile = () => {
-    window.location.href = "/patient/profiles/create";
-  };
-
   return (
     <div className="space-y-6 p-6 max-w-7xl mx-auto antialiased">
       {/* Header */}
@@ -126,13 +122,13 @@ export default function DoctorPatientListClient() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button
-            onClick={handleCreateProfile}
+          <Link
+            href="/doctor/patient-demographics/create"
             className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold rounded-xl shadow-sm shadow-blue-100 transition-colors duration-200"
           >
             <Plus className="w-4 h-4" />
             Tạo mới hồ sơ
-          </button>
+          </Link>
           <button
             onClick={loadPatients}
             disabled={loading}

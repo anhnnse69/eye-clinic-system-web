@@ -42,6 +42,19 @@ export interface ViewClinicRoomResponse {
   isActive: boolean;
 }
 
+export interface CreateRoomRequest {
+    roomName: string
+    roomType?: string
+}
+
+export interface CreateRoomResponse {
+    id: string
+    clinicId: string
+    roomName: string
+    roomType?: string
+    isActive: boolean
+}
+
 class RoomService {
   async list(params?: RoomFilters): Promise<PaginatedResponse<Room>> {
     const response = await apiClient.get<PaginatedResponse<Room>>("/rooms", { params })
@@ -92,6 +105,14 @@ class RoomService {
           roomType: params.roomType,
         },
       }
+    );
+    return response.data;
+  }
+  
+  async createRoom(data: CreateRoomRequest): Promise<ApiResponse<CreateRoomResponse>> {
+    const response = await apiClient.post<ApiResponse<CreateRoomResponse>>(
+      "https://localhost:7070/api/v1/clinic-admin/rooms",
+      data
     );
     return response.data;
   }

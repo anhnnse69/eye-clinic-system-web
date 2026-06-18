@@ -1,65 +1,3 @@
-// import { apiClient } from "@/lib/axios";
-// import type {
-//   ApiResponse,
-//   DoctorScheduleMatrixRow,
-//   GetAvailableSlotsParams,
-//   SpecialtyCategoryResponse,
-// } from "@/types";
-
-// class ReceptionistService {
-
-//   async getAvailableSlots(
-//     params: GetAvailableSlotsParams
-//   ): Promise<ApiResponse<DoctorScheduleMatrixRow[]>> {
-
-//     // Khởi tạo object params chỉ giữ lại những gì có giá trị thực
-//     const queryParams: Record<string, any> = {
-//       CurrentUserId: params.currentUserId
-//     };
-
-//     // Chỉ truyền WorkDate nếu có giá trị
-//     if (params.workDate) {
-//       queryParams.WorkDate = params.workDate;
-//     }
-
-//     // Chỉ truyền SearchDoctor nếu người dùng có gõ chữ tìm kiếm
-//     if (params.searchDoctor && params.searchDoctor.trim() !== "") {
-//       queryParams.SearchDoctor = params.searchDoctor.trim();
-//     }
-
-//     // CHỈ truyền ShiftType lên nếu nó khác chuỗi rỗng ""
-//     if (params.shiftType && params.shiftType !== "") {
-//       queryParams.ShiftType = params.shiftType;
-//     }
-
-//     // CHỈ truyền SpecialtyId lên nếu nó không phải là "All" và không rỗng
-//     if (params.specialtyId && params.specialtyId !== "All" && params.specialtyId !== "") {
-//       queryParams.SpecialtyId = params.specialtyId;
-//     }
-
-//     return (
-//       await apiClient.get<ApiResponse<DoctorScheduleMatrixRow[]>>(
-//         "/receptionist/scheduler",
-//         { params: queryParams }
-//       )
-//     ).data;
-//   }
-
-//   /**
-//    * Lấy danh sách chuyên khoa hoạt động để phục vụ bộ lọc Dropdown động
-//    */
-//   async getActiveSpecialties(): Promise<ApiResponse<SpecialtyCategoryResponse[]>> {
-//     // Endpoint giả định dựa trên cấu trúc Response SpecialtyCategoryResponse bạn đã cung cấp
-//     return (
-//       await apiClient.get<ApiResponse<SpecialtyCategoryResponse[]>>(
-//         "/specialties" // Hãy điều chỉnh endpoint này khớp với router backend chuyên khoa của bạn nếu cần
-//       )
-//     ).data;
-//   }
-// }
-
-// export const receptionistService = new ReceptionistService();
-// export default receptionistService;
 import { apiClient } from "@/lib/axios";
 import type {
   ApiResponse,
@@ -89,6 +27,36 @@ export interface PatientProfileItem {
   createdAt: string;
 }
 
+// --- THÊM MỚI ĐOẠN ĐỊNH NGHĨA PHỤC VỤ CHO MÀN CHI TIẾT ---
+export interface ReceptionistAppointmentLogDto {
+  id: string;
+  clinicId: string;
+  appointmentDate: string; // "yyyy-MM-ddTHH:mm:ss"
+  doctorName: string;
+  specialtyName: string;
+  symptoms: string | null;
+  status: "PENDING" | "DEPOSIT_PAID" | "BOOKED" | "ARRIVED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "NOSHOW";
+  bookingSource: "MOBILE_APP" | "WEBSITE" | "WALK_IN" | "ONLINE" | "WALKIN"; // Tương thích cả chuỗi text cũ/mới
+}
+
+export interface PatientDetailedProfile {
+  id: string;
+  fullName: string;
+  gender: "MALE" | "FEMALE" | "OTHER";
+  dob: string; // "yyyy-MM-dd"
+  identityNumber: string | null;
+  address: string | null;
+  phoneNumber: string | null;
+  bhytNumber: string | null;
+  bloodType: string | null;
+  allergies: string | null;
+  medicalHistory: string | null;
+  createdAt: string; // "yyyy-MM-ddTHH:mm:ssZ"
+  email: string | null;
+  avatarUrl: string | null;
+  appointments: ReceptionistAppointmentLogDto[];
+}
+
 class ReceptionistService {
   /**
    * Lấy danh sách hồ sơ bệnh nhân kèm bộ lọc và phân trang từ server
@@ -111,6 +79,16 @@ class ReceptionistService {
       await apiClient.get<ApiResponse<PatientProfileItem[]>>("/receptionist/patients", {
         params: queryParams,
       })
+    ).data;
+  }
+
+  /**
+   * Lấy chi tiết thông tin hành chính & lịch sử cuộc hẹn bảo mật của bệnh nhân
+   * URL trùng khớp route BE: api/v1/receptionist/patients/{id} (baseURL đã cấu hình v1 sẵn)
+   */
+  async getPatientDetails(id: string): Promise<ApiResponse<PatientDetailedProfile>> {
+    return (
+      await apiClient.get<ApiResponse<PatientDetailedProfile>>(`/receptionist/patients/${id}`)
     ).data;
   }
 

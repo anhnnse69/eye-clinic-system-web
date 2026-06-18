@@ -11,9 +11,11 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
+  Eye,
 } from "lucide-react";
 
 import { medicalRecordPatientDemographicsService } from "@/services";
+import PatientDemographicsDetailModal from "./PatientDemographicsDetailModal";
 import type {
   ViewPatientDemographicsListResponse,
   ViewPatientDemographicsListItem,
@@ -49,6 +51,10 @@ export default function PatientDemographicsListClient({
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
+
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [detailPatientId, setDetailPatientId] = useState<string | null>(null);
+  const [detailPatientName, setDetailPatientName] = useState<string>("");
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -203,6 +209,7 @@ export default function PatientDemographicsListClient({
                       <th className="px-6 py-4 text-left font-semibold">Chẩn đoán</th>
                       <th className="px-6 py-4 text-left font-semibold">Trạng thái</th>
                       <th className="px-6 py-4 text-left font-semibold">Ngày tạo</th>
+                      <th className="px-6 py-4 text-left font-semibold">Thao tác</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -257,6 +264,19 @@ export default function PatientDemographicsListClient({
                         <td className="px-6 py-4 text-gray-500 text-xs">
                           {record.createdAt}
                         </td>
+                        <td className="px-6 py-4">
+                          <button
+                            onClick={() => {
+                              setDetailPatientId(record.id_PatientProfile);
+                              setDetailPatientName(record.fullName);
+                              setDetailModalOpen(true);
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-100 rounded-lg hover:bg-blue-100 active:bg-blue-200 transition-colors"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                            Xem chi tiết
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -291,6 +311,14 @@ export default function PatientDemographicsListClient({
           )}
         </>
       )}
+
+      {/* Detail Modal */}
+      <PatientDemographicsDetailModal
+        isOpen={detailModalOpen}
+        onClose={() => setDetailModalOpen(false)}
+        patientId={detailPatientId || ""}
+        patientName={detailPatientName}
+      />
     </div>
   );
 }

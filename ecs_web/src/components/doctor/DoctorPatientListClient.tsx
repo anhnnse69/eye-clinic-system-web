@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Users,
   FileText,
+  Eye,
 } from "lucide-react";
 
 import type {
@@ -302,6 +303,15 @@ function PatientRow({ patient }: { patient: PatientAppointmentItem }) {
       </td>
 
       <td className="p-4">
+        <div className="flex items-center gap-2">
+          {/* Button Xem chi tiết */}
+          <Link
+            href={`/doctor/patients/${patient.patientId}`}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-lg transition-colors"
+          >
+            <Eye className="w-3.5 h-3.5" />
+            Xem chi tiết
+          </Link>
         <Link
           href={`/doctor/patient-demographics/${patient.patientId}`}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-lg transition-colors"
@@ -309,6 +319,7 @@ function PatientRow({ patient }: { patient: PatientAppointmentItem }) {
           <FileText className="w-3.5 h-3.5" />
           Hồ sơ bệnh án
         </Link>
+        </div>
       </td>
     </tr>
   );

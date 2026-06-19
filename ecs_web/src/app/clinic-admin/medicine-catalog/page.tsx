@@ -91,6 +91,8 @@ export default function MedicineCatalogManagementPage() {
         setError("Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại!")
       } else if (errCode === "APP_MESSAGE_4020") {
         setError("Không tìm thấy thông tin phòng khám gắn liền với tài khoản quản trị của bạn!")
+      } else if (errCode === "APP_MESSAGE_4015") {
+        setError("Tên thuốc này đã tồn tại trong danh mục của phòng khám!")
       } else {
         setError("Không thể kết nối tới máy chủ hệ thống. Vui lòng thử lại sau!")
       }

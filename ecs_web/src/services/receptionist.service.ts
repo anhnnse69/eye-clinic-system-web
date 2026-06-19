@@ -74,6 +74,41 @@ export interface ReceptionistUpdatePatientProfileResponse {
   updatedAt: string;
 }
 
+export interface ReceptionistCreatePatientProfileRequest {
+  isHasAccount: boolean;
+  selectedUserId: string | null;
+  fullName: string;
+  gender: "MALE" | "FEMALE" | "OTHER";
+  dob: string; // định dạng "yyyy-MM-dd"
+  phoneNumber: string;
+  email: string | null;
+  address: string | null;
+  identityNumber: string | null;
+  bhytNumber: string | null;
+}
+
+export interface ReceptionistCreatePatientProfileResponse {
+  patientProfileId: string;
+  fullName: string;
+  linkedUserId: string | null;
+  isActiveAccountAutoCreated: boolean;
+  generatedPassword: string | null; // <--- THÊM MỚI TRƯỜNG NÀY
+  createdAt: string;
+}
+
+export interface ReceptionistSearchAccountParams {
+  fullName?: string;
+  phone?: string;
+  email?: string;
+}
+
+export interface ReceptionistSearchAccountItem {
+  id: string;
+  fullName: string;
+  phone: string;
+  email: string | null;
+}
+
 class ReceptionistService {
   /**
    * Lấy danh sách hồ sơ bệnh nhân kèm bộ lọc và phân trang từ server
@@ -144,7 +179,7 @@ class ReceptionistService {
       )
     ).data;
   }
-  
+
   async updatePatientProfile(
     id: string, 
     payload: ReceptionistUpdatePatientProfileRequest
@@ -153,6 +188,38 @@ class ReceptionistService {
       await apiClient.put<ApiResponse<ReceptionistUpdatePatientProfileResponse>>(
         `/receptionist/patients/${id}`, 
         payload
+      )
+    ).data;
+  }
+
+  async createPatientProfile(
+    payload: ReceptionistCreatePatientProfileRequest
+  ): Promise<ApiResponse<ReceptionistCreatePatientProfileResponse>> {
+    return (
+      await apiClient.post<ApiResponse<ReceptionistCreatePatientProfileResponse>>(
+        "/receptionist/patients",
+        payload
+      )
+    ).data;
+  }
+
+  async searchAccounts(params: ReceptionistSearchAccountParams): Promise<ApiResponse<ReceptionistSearchAccountItem[]>> {
+    const queryParams: Record<string, any> = {};
+
+    if (params.fullName && params.fullName.trim() !== "") {
+      queryParams.FullName = params.fullName.trim();
+    }
+    if (params.phone && params.phone.trim() !== "") {
+      queryParams.Phone = params.phone.trim();
+    }
+    if (params.email && params.email.trim() !== "") {
+      queryParams.Email = params.email.trim();
+    }
+
+    return (
+      await apiClient.get<ApiResponse<ReceptionistSearchAccountItem[]>>(
+        "/receptionist/users/search",
+        { params: queryParams }
       )
     ).data;
   }

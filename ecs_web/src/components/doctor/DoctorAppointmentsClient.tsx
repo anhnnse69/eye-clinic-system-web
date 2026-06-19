@@ -6,6 +6,7 @@ import {
   RefreshCw, ChevronLeft, ChevronRight,
   CalendarDays, Phone, Search, X,
   Stethoscope, FileText, Clock, User,
+  Check, Ban, Loader2,
 } from "lucide-react";
 import {
   doctorAppointmentService,
@@ -18,45 +19,48 @@ import {
 const PAGE_SIZE = 10;
 
 const STATUS_OPTIONS = [
-  { value: "",             label: "Tất cả" },
-  { value: "PENDING",      label: "Chờ thanh toán" },
+  { value: "", label: "Tất cả" },
+  { value: "PENDING", label: "Chờ thanh toán" },
   { value: "DEPOSIT_PAID", label: "Đã cọc" },
-  { value: "BOOKED",       label: "Đã đặt lịch" },
-  { value: "ARRIVED",      label: "Đã đến" },
-  { value: "IN_PROGRESS",  label: "Đang khám" },
-  { value: "COMPLETED",    label: "Hoàn thành" },
-  { value: "CANCELLED",    label: "Đã hủy" },
-  { value: "NOSHOW",       label: "Không đến" },
+  { value: "BOOKED", label: "Đã đặt lịch" },
+  { value: "ARRIVED", label: "Đã đến" },
+  { value: "IN_PROGRESS", label: "Đang khám" },
+  { value: "COMPLETED", label: "Hoàn thành" },
+  { value: "CANCELLED", label: "Đã hủy" },
+  { value: "NOSHOW", label: "Không đến" },
 ];
 
 const STATUS_STYLE: Record<string, string> = {
-  PENDING:      "bg-amber-50 text-amber-700 border-amber-200",
+  PENDING: "bg-amber-50 text-amber-700 border-amber-200",
   DEPOSIT_PAID: "bg-sky-50 text-sky-700 border-sky-200",
-  BOOKED:       "bg-blue-50 text-blue-700 border-blue-200",
-  ARRIVED:      "bg-purple-50 text-purple-700 border-purple-200",
-  IN_PROGRESS:  "bg-indigo-50 text-indigo-700 border-indigo-200",
-  COMPLETED:    "bg-emerald-50 text-emerald-700 border-emerald-200",
-  CANCELLED:    "bg-red-50 text-red-600 border-red-200",
-  NOSHOW:       "bg-gray-50 text-gray-600 border-gray-200",
+  BOOKED: "bg-blue-50 text-blue-700 border-blue-200",
+  ARRIVED: "bg-purple-50 text-purple-700 border-purple-200",
+  IN_PROGRESS: "bg-indigo-50 text-indigo-700 border-indigo-200",
+  COMPLETED: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  CANCELLED: "bg-red-50 text-red-600 border-red-200",
+  NOSHOW: "bg-gray-50 text-gray-600 border-gray-200",
 };
 
 const STATUS_LABEL: Record<string, string> = {
-  PENDING:      "Chờ thanh toán",
+  PENDING: "Chờ thanh toán",
   DEPOSIT_PAID: "Đã cọc",
-  BOOKED:       "Đã đặt lịch",
-  ARRIVED:      "Đã đến",
-  IN_PROGRESS:  "Đang khám",
-  COMPLETED:    "Hoàn thành",
-  CANCELLED:    "Đã hủy",
-  NOSHOW:       "Không đến",
+  BOOKED: "Đã đặt lịch",
+  ARRIVED: "Đã đến",
+  IN_PROGRESS: "Đang khám",
+  COMPLETED: "Hoàn thành",
+  CANCELLED: "Đã hủy",
+  NOSHOW: "Không đến",
 };
 
 const BOOKING_SOURCE_LABEL: Record<string, string> = {
   ONLINE: "Online",
-  WEB:    "Website",
-  APP:    "App",
+  WEB: "Website",
+  APP: "App",
   WALKIN: "Trực tiếp",
 };
+
+// Status được phép confirm/reject
+const ACTIONABLE_STATUSES = ["PENDING", "DEPOSIT_PAID"];
 
 // ── Helpers ───────────────────────────────────────────────
 
@@ -76,7 +80,7 @@ function calcAge(dob?: string) {
   if (!dob) return null;
   return Math.floor(
     (Date.now() - new Date(dob).getTime()) /
-      (1000 * 60 * 60 * 24 * 365.25)
+    (1000 * 60 * 60 * 24 * 365.25)
   );
 }
 
@@ -97,6 +101,12 @@ export default function DoctorAppointmentsClient({
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
 
+  // Action state
+  const [rejectTarget, setRejectTarget] = useState<AppointmentItem | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+
   // Debounce search 400ms
   useEffect(() => {
     const t = setTimeout(() => {
@@ -114,10 +124,10 @@ export default function DoctorAppointmentsClient({
         doctorId,
         {
           pageNumber: page,
-          pageSize:   PAGE_SIZE,
-          status:     statusFilter || undefined,
-          date:       dateFilter   || undefined,
-          search:     search       || undefined,
+          pageSize: PAGE_SIZE,
+          status: statusFilter || undefined,
+          date: dateFilter || undefined,
+          search: search || undefined,
         }
       );
 
@@ -144,6 +154,87 @@ export default function DoctorAppointmentsClient({
   };
 
   const hasFilter = statusFilter || dateFilter || search;
+
+  // ── Update local state sau khi confirm/reject thành công ──
+  const applyStatusUpdate = (
+    appointmentId: string,
+    newStatus: string,
+    noteReason?: string
+  ) => {
+    setData((prev) =>
+      prev
+        ? {
+          ...prev,
+          appointments: prev.appointments.map((a) =>
+            a.appointmentId === appointmentId
+              ? { ...a, status: newStatus as AppointmentItem["status"], noteReason }
+              : a
+          ),
+        }
+        : prev
+    );
+  };
+
+  // ── Confirm ──
+  const handleConfirm = async (appt: AppointmentItem) => {
+    setActionLoadingId(appt.appointmentId);
+    setActionError(null);
+    try {
+      const result = await doctorAppointmentService.confirmRejectAppointment(
+        doctorId,
+        appt.appointmentId,
+        { decision: "CONFIRM" }
+      );
+      if (result?.data) {
+        applyStatusUpdate(
+          appt.appointmentId,
+          result.data.status,
+          result.data.noteReason
+        );
+      }
+    } catch {
+      setActionError("Không thể xác nhận lịch hẹn. Vui lòng thử lại.");
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+
+  // ── Reject (mở modal) ──
+  const openRejectModal = (appt: AppointmentItem) => {
+    setRejectTarget(appt);
+    setRejectReason("");
+    setActionError(null);
+  };
+
+  const handleRejectSubmit = async () => {
+    if (!rejectTarget) return;
+
+    setActionLoadingId(rejectTarget.appointmentId);
+    setActionError(null);
+    try {
+      const result = await doctorAppointmentService.confirmRejectAppointment(
+        doctorId,
+        rejectTarget.appointmentId,
+        {
+          decision: "REJECT",
+          rejectReason: rejectReason.trim() || undefined,
+        }
+      );
+      if (result?.data) {
+        applyStatusUpdate(
+          rejectTarget.appointmentId,
+          result.data.status,
+          result.data.noteReason
+        );
+        setRejectTarget(null);
+      }
+    } catch {
+      setActionError("Không thể từ chối lịch hẹn. Vui lòng thử lại.");
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
 
   return (
     <div className="space-y-5 p-6 max-w-7xl mx-auto">
@@ -172,7 +263,6 @@ export default function DoctorAppointmentsClient({
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
 
-          {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -184,7 +274,6 @@ export default function DoctorAppointmentsClient({
             />
           </div>
 
-          {/* Status */}
           <select
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
@@ -195,7 +284,6 @@ export default function DoctorAppointmentsClient({
             ))}
           </select>
 
-          {/* Date + Clear */}
           <div className="flex gap-2">
             <input
               type="date"
@@ -229,6 +317,16 @@ export default function DoctorAppointmentsClient({
           </p>
         )}
       </div>
+
+      {/* Action error toast (ngoài modal reject) */}
+      {actionError && !rejectTarget && (
+        <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3 flex items-center justify-between">
+          {actionError}
+          <button onClick={() => setActionError(null)}>
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* ── Table ── */}
       <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
@@ -269,21 +367,11 @@ export default function DoctorAppointmentsClient({
                           </div>
                         </div>
                       </td>
-                      <td className="p-4">
-                        <div className="h-4 w-32 bg-gray-200 rounded" />
-                      </td>
-                      <td className="p-4">
-                        <div className="h-4 w-28 bg-gray-200 rounded" />
-                      </td>
-                      <td className="p-4">
-                        <div className="h-6 w-24 bg-gray-200 rounded-full" />
-                      </td>
-                      <td className="p-4">
-                        <div className="h-4 w-16 bg-gray-200 rounded" />
-                      </td>
-                      <td className="p-4">
-                        <div className="h-8 w-24 bg-gray-200 rounded-lg" />
-                      </td>
+                      <td className="p-4"><div className="h-4 w-32 bg-gray-200 rounded" /></td>
+                      <td className="p-4"><div className="h-4 w-28 bg-gray-200 rounded" /></td>
+                      <td className="p-4"><div className="h-6 w-24 bg-gray-200 rounded-full" /></td>
+                      <td className="p-4"><div className="h-4 w-16 bg-gray-200 rounded" /></td>
+                      <td className="p-4"><div className="h-8 w-24 bg-gray-200 rounded-lg" /></td>
                     </tr>
                   ))
                 ) : !data || data.appointments.length === 0 ? (
@@ -305,7 +393,13 @@ export default function DoctorAppointmentsClient({
                   </tr>
                 ) : (
                   data.appointments.map((appt) => (
-                    <AppointmentRow key={appt.appointmentId} appt={appt} />
+                    <AppointmentRow
+                      key={appt.appointmentId}
+                      appt={appt}
+                      isActionLoading={actionLoadingId === appt.appointmentId}
+                      onConfirm={() => handleConfirm(appt)}
+                      onReject={() => openRejectModal(appt)}
+                    />
                   ))
                 )}
               </tbody>
@@ -346,14 +440,86 @@ export default function DoctorAppointmentsClient({
           </div>
         )}
       </div>
+
+      {/* ── Reject Reason Modal ── */}
+      {rejectTarget && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white
+    rounded-2xl
+    shadow-xl
+    w-[700px]
+    max-w-[90vw]
+    p-8
+    space-y-6">
+            <div>
+              <h3 className="font-bold text-lg text-gray-900">
+                Từ chối lịch hẹn
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Bệnh nhân:{" "}
+                <span className="font-medium">{rejectTarget.patientName}</span>
+                {" · "}
+                {new Date(rejectTarget.appointmentDate).toLocaleDateString("vi-VN")}
+              </p>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-1.5 block">
+                Lý do từ chối <span className="text-gray-400">(không bắt buộc)</span>
+              </label>
+              <textarea
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                rows={3}
+                placeholder="Ví dụ: Bác sĩ đột xuất bận, vui lòng đặt lại lịch khác..."
+                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all resize-none"
+              />
+              {actionError && (
+                <p className="text-xs text-red-600 mt-1.5">{actionError}</p>
+              )}
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                onClick={() => setRejectTarget(null)}
+                disabled={actionLoadingId === rejectTarget.appointmentId}
+                className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl transition disabled:opacity-50"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleRejectSubmit}
+                disabled={actionLoadingId === rejectTarget.appointmentId}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-xl transition disabled:opacity-50 flex items-center gap-2"
+              >
+                {actionLoadingId === rejectTarget.appointmentId && (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                )}
+                Xác nhận từ chối
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 // ── Row Component ─────────────────────────────────────────
 
-function AppointmentRow({ appt }: { appt: AppointmentItem }) {
+function AppointmentRow({
+  appt,
+  isActionLoading,
+  onConfirm,
+  onReject,
+}: {
+  appt: AppointmentItem;
+  isActionLoading: boolean;
+  onConfirm: () => void;
+  onReject: () => void;
+}) {
   const age = calcAge(appt.patientDob);
+  const canAct = ACTIONABLE_STATUSES.includes(appt.status);
 
   return (
     <tr className="hover:bg-gray-50/50 transition-colors">
@@ -432,10 +598,8 @@ function AppointmentRow({ appt }: { appt: AppointmentItem }) {
       <td className="p-4">
         <div className="space-y-1.5">
           <span
-            className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold border ${
-              STATUS_STYLE[appt.status] ??
-              "bg-gray-50 text-gray-600 border-gray-200"
-            }`}
+            className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold border ${STATUS_STYLE[appt.status] ?? "bg-gray-50 text-gray-600 border-gray-200"
+              }`}
           >
             {STATUS_LABEL[appt.status] ?? appt.status}
           </span>
@@ -461,21 +625,48 @@ function AppointmentRow({ appt }: { appt: AppointmentItem }) {
 
       {/* Thao tác */}
       <td className="p-4">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {canAct && (
+            <>
+              <button
+                onClick={onConfirm}
+                disabled={isActionLoading}
+                title="Xác nhận lịch hẹn"
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {isActionLoading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Check className="w-3.5 h-3.5" />
+                )}
+                Xác nhận
+              </button>
+              <button
+                onClick={onReject}
+                disabled={isActionLoading}
+                title="Từ chối lịch hẹn"
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors disabled:opacity-50"
+              >
+                <Ban className="w-3.5 h-3.5" />
+                Từ chối
+              </button>
+            </>
+          )}
+
           <Link
             href={`/doctor/patients/${appt.patientId}`}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-lg transition-colors"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-lg transition-colors"
           >
             <User className="w-3.5 h-3.5" />
-            Bệnh nhân
+            BN
           </Link>
+
           {appt.symptoms && (
             <span
               title={appt.symptoms}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded-lg cursor-help"
+              className="inline-flex items-center gap-1 px-2 py-1.5 text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded-lg cursor-help"
             >
               <Stethoscope className="w-3.5 h-3.5" />
-              TC
             </span>
           )}
         </div>

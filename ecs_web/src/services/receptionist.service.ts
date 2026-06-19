@@ -109,6 +109,62 @@ export interface ReceptionistSearchAccountItem {
   email: string | null;
 }
 
+export interface GetDailyAppointmentsParams {
+  pageNumber: number;
+  pageSize: number;
+  targetDate?: string; // Định dạng "yyyy-MM-dd"
+  shiftFilter?: "MORNING" | "AFTERNOON" | "EVENING" | "";
+  searchPatient?: string;
+  searchDoctor?: string;
+}
+
+export interface PatientProfileRowDto {
+  id: string;
+  fullName: string;
+  gender: "MALE" | "FEMALE" | "OTHER";
+  dob: string; // "yyyy-MM-dd"
+  phoneNumber: string | null;
+  bhytNumber: string | null;
+}
+
+export interface DoctorProfileRowDto {
+  id: string;
+  fullName: string;
+  clinicRoomName: string;
+}
+
+export interface TimeSlotRowDto {
+  id: string;
+  scheduleId: string;
+  startTime: string; // "yyyy-MM-ddTHH:mm:ss"
+  endTime: string;
+  shiftType: "MORNING" | "AFTERNOON" | "EVENING";
+}
+
+export interface QueueInlineRowDto {
+  id: string;
+  queueNumber: number;
+  status: "WAITING" | "CALLING" | "COMPLETED";
+  calledAt: string | null;
+}
+
+export interface DailyAppointmentItemResponse {
+  id: string;
+  patientId: string;
+  doctorId: string;
+  slotId: string;
+  appointmentDate: string; // "yyyy-MM-dd"
+  symptoms: string | null;
+  status: "PENDING" | "DEPOSIT_PAID" | "BOOKED" | "ARRIVED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "NOSHOW";
+  depositAmount: number;
+  depositPaid: boolean;
+  bookingSource: string;
+  patient: PatientProfileRowDto;
+  doctor: DoctorProfileRowDto;
+  slot: TimeSlotRowDto;
+  queue: QueueInlineRowDto | null;
+}
+
 class ReceptionistService {
   /**
    * Lấy danh sách hồ sơ bệnh nhân kèm bộ lọc và phân trang từ server
@@ -119,7 +175,6 @@ class ReceptionistService {
       PageSize: params.pageSize,
     };
 
-    // Khớp chính xác với Query Parameters trên API của bạn
     if (params.searchName && params.searchName.trim() !== "") {
       queryParams.SearchName = params.searchName.trim();
     }
@@ -134,10 +189,6 @@ class ReceptionistService {
     ).data;
   }
 
-  /**
-   * Lấy chi tiết thông tin hành chính & lịch sử cuộc hẹn bảo mật của bệnh nhân
-   * URL trùng khớp route BE: api/v1/receptionist/patients/{id} (baseURL đã cấu hình v1 sẵn)
-   */
   async getPatientDetails(id: string): Promise<ApiResponse<PatientDetailedProfile>> {
     return (
       await apiClient.get<ApiResponse<PatientDetailedProfile>>(`/receptionist/patients/${id}`)
@@ -221,6 +272,62 @@ class ReceptionistService {
         "/receptionist/users/search",
         { params: queryParams }
       )
+    ).data;
+  }
+
+  async getDailyAppointments(params: GetDailyAppointmentsParams): Promise<ApiResponse<DailyAppointmentItemResponse[]>> {
+    const queryParams: Record<string, any> = {
+      PageNumber: params.pageNumber,
+      PageSize: params.pageSize,
+    };
+
+    if (params.targetDate) {
+      queryParams.TargetDate = params.targetDate;
+    }
+    if (params.shiftFilter) {
+      queryParams.ShiftFilter = params.shiftFilter;
+    }
+    if (params.searchPatient && params.searchPatient.trim() !== "") {
+      queryParams.SearchPatient = params.searchPatient.trim();
+    }
+    if (params.searchDoctor && params.searchDoctor.trim() !== "") {
+      queryParams.SearchDoctor = params.searchDoctor.trim();
+    }
+
+    return (
+      await apiClient.get<ApiResponse<DailyAppointmentItemResponse[]>>("/receptionist/appointments/daily", {
+        params: queryParams,
+      })
+    ).data;
+  }
+
+  /**
+   * Đánh dấu bệnh nhân đã đến phòng khám (Chuyển trạng thái thành ARRIVED và cấp STT vào hàng đợi)
+   * Route BE: POST /api/v1/receptionist/appointments/{id}/arrive
+   */
+  async handleArrived(appointmentId: string): Promise<ApiResponse<any>> {
+    return (
+      await apiClient.post<ApiResponse<any>>(`/receptionist/appointments/${appointmentId}/arrive`)
+    ).data;
+  }
+
+  /**
+   * Đánh dấu bệnh nhân vắng mặt không đến khám (Chuyển trạng thái thành NOSHOW)
+   * Route BE: POST /api/v1/receptionist/appointments/{id}/noshow
+   */
+  async handleNoShow(appointmentId: string): Promise<ApiResponse<any>> {
+    return (
+      await apiClient.post<ApiResponse<any>>(`/receptionist/appointments/${appointmentId}/noshow`)
+    ).data;
+  }
+
+  /**
+   * Hủy lịch hẹn khám bệnh theo yêu cầu (Chuyển trạng thái thành CANCELLED)
+   * Route BE: POST /api/v1/receptionist/appointments/{id}/cancel
+   */
+  async handleCancel(appointmentId: string): Promise<ApiResponse<any>> {
+    return (
+      await apiClient.post<ApiResponse<any>>(`/receptionist/appointments/${appointmentId}/cancel`)
     ).data;
   }
 }

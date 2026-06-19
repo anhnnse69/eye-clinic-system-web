@@ -5,16 +5,14 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import {
   Search,
-  Plus,
-  User,
-  Phone,
-  CalendarDays,
   RefreshCw,
   ChevronLeft,
   ChevronRight,
-  Users,
   FileText,
   Eye,
+  Phone,
+  CalendarDays,
+  Users,
 } from "lucide-react";
 
 import type {
@@ -110,10 +108,6 @@ export default function DoctorPatientListClient() {
     loadPatients();
   }, [loadPatients]);
 
-  const handleCreateProfile = () => {
-    window.location.href = "/patient/profiles/create";
-  };
-
   return (
     <div className="space-y-6 p-6 max-w-7xl mx-auto antialiased">
       {/* Header */}
@@ -127,13 +121,6 @@ export default function DoctorPatientListClient() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <button
-            onClick={handleCreateProfile}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold rounded-xl shadow-sm shadow-blue-100 transition-colors duration-200"
-          >
-            <Plus className="w-4 h-4" />
-            Tạo mới hồ sơ
-          </button>
           <button
             onClick={loadPatients}
             disabled={loading}
@@ -304,20 +291,19 @@ function PatientRow({ patient }: { patient: PatientAppointmentItem }) {
 
       <td className="p-4">
         <div className="flex items-center gap-2">
-          {/* Button Xem chi tiết */}
-          <Link
-            href={`/doctor/patients/${patient.patientId}`}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-lg transition-colors"
-          >
-            <Eye className="w-3.5 h-3.5" />
-            Xem chi tiết
-          </Link>
         <Link
-          href={`/doctor/patient-demographics/${patient.patientId}`}
+          href={`/doctor/patients/${patient.patientId}`}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-lg transition-colors"
         >
+          <Eye className="w-3.5 h-3.5" />
+          Xem chi tiết
+        </Link>
+        <Link
+          href={`/doctor/patient-demographics/${patient.patientId}?appointmentId=${patient.appointmentId}`}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 rounded-lg transition-colors"
+        >
           <FileText className="w-3.5 h-3.5" />
-          Hồ sơ bệnh án
+          Nhập thông tin y tế
         </Link>
         </div>
       </td>

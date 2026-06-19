@@ -196,8 +196,8 @@ export default function PatientDemographicsListClient({
             </div>
           ) : (
             <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-gray-600 min-w-[900px]">
+              <div className="overflow-x-auto scrollbar-thin">
+                <table className="w-full text-sm text-gray-600 min-w-[1200px]">
                   <thead>
                     <tr className="bg-gray-50/75 border-b border-gray-200 text-gray-700 font-semibold">
                       <th className="px-6 py-4 text-left font-semibold">Bệnh nhân</th>
@@ -243,10 +243,10 @@ export default function PatientDemographicsListClient({
                             {record.appointmentDate}
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-gray-600 max-w-[180px] truncate" title={record.chiefComplaint || undefined}>
+                        <td className="px-6 py-4 text-gray-600" title={record.chiefComplaint || undefined}>
                           {record.chiefComplaint || "—"}
                         </td>
-                        <td className="px-6 py-4 text-gray-600 max-w-[180px] truncate" title={record.diagnosisMain || undefined}>
+                        <td className="px-6 py-4 text-gray-600" title={record.diagnosisMain || undefined}>
                           {record.diagnosisMain || "—"}
                         </td>
                         <td className="px-6 py-4">

@@ -452,8 +452,46 @@ export interface GetAvailableSlotsParams {
   specialtyId?: string
 }
 
+// ==========================================
+// Create Patient Demographics (UC36)
+// Doctor creates medical/ophthalmology demographics for existing patients
+// Administrative info (DOB, Gender, Address) are handled by Patient/Receptionist
+// ==========================================
+
+export interface CreatePatientDemographicsRequest {
+  patientProfileId: string;
+  // Medical Background Section
+  bloodType?: string | null;
+  allergies?: string | null;
+  medicalHistory?: string | null;
+  familyHistory?: string | null;
+  lifestyleFactors?: string | null;
+  // Ophthalmology-specific fields
+  currentEyeMedications?: string | null;
+  previousEyeSurgery?: string | null;
+  eyeVisionHistory?: string | null;
+}
+
+export interface CreatePatientDemographicsResponse {
+  patientProfileId: string;
+  patientName?: string | null;
+  // Medical Background Section
+  bloodType?: string | null;
+  allergies?: string | null;
+  medicalHistory?: string | null;
+  familyHistory?: string | null;
+  lifestyleFactors?: string | null;
+  // Ophthalmology-specific fields
+  currentEyeMedications?: string | null;
+  previousEyeSurgery?: string | null;
+  eyeVisionHistory?: string | null;
+  createdAt: string;
+  isSuccess: boolean;
+}
+
 // GetDetailPatientDemographics — matches /api/v1/medical-record/demographics/{patientId}
 export interface GetDetailPatientDemographicsResponse {
+  // Patient Info (from Patient/Receptionist)
   fullName: string
   dob: string
   gender: string
@@ -461,7 +499,57 @@ export interface GetDetailPatientDemographicsResponse {
   identityNumber?: string | null
   bhytNumber?: string | null
   address?: string | null
+  // Medical Demographics (from Doctor - UC36)
+  hasMedicalDemographics: boolean
   bloodType?: string | null
   allergies?: string | null
   medicalHistory?: string | null
+  familyHistory?: string | null
+  lifestyleFactors?: string | null
+  currentEyeMedications?: string | null
+  previousEyeSurgery?: string | null
+  eyeVisionHistory?: string | null
+}
+
+// CreateMedicalRecord — matches POST /api/v1/medical-record/demographics
+export type RecordType =
+  | "MS21_TRAUMA"
+  | "MS22_ANTERIOR"
+  | "MS23_FUNDUS"
+  | "MS24_GLAUCOMA"
+  | "MS25_STRABISMUS_PTOSIS"
+  | "MS26_PEDIATRIC"
+
+export const RECORD_TYPE_LABELS: Record<RecordType, string> = {
+  MS21_TRAUMA: "Bệnh án mắt (Chấn thương)",
+  MS22_ANTERIOR: "Bệnh án mắt (Bán phần trước)",
+  MS23_FUNDUS: "Bệnh án mắt (Đáy mắt)",
+  MS24_GLAUCOMA: "Bệnh án mắt (Glôcôm)",
+  MS25_STRABISMUS_PTOSIS: "Bệnh án mắt (Lác, sụp mi)",
+  MS26_PEDIATRIC: "Bệnh án mắt (Mắt trẻ em)",
+}
+
+export interface CreateMedicalRecordRequest {
+  patientProfileId: string
+  appointmentId: string
+  recordType: RecordType
+  chiefComplaint: string
+  diagnosisMain?: string
+  // Thông tin y tế sơ bộ
+  bloodType?: string
+  allergies?: string
+  medicalHistory?: string
+}
+
+export interface CreateMedicalRecordResponse {
+  id_MedicalRecord: string
+  patientProfileId: string
+  recordType: RecordType
+  recordTypeLabel: string
+  chiefComplaint: string
+  diagnosisMain?: string
+  doctorName: string
+  appointmentDate: string
+  createdAt: string
+  isLocked: boolean
 }

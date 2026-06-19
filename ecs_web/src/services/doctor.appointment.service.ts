@@ -1,6 +1,17 @@
 import { apiClient } from "@/lib/axios";
 import type { ApiResponse } from "@/types";
 
+// ── Khớp 1:1 với ECS.Domain.Enums.AppointmentStatus ──
+export type AppointmentStatusEnum =
+  | "PENDING"
+  | "DEPOSIT_PAID"
+  | "BOOKED"
+  | "ARRIVED"
+  | "IN_PROGRESS"
+  | "COMPLETED"
+  | "CANCELLED"
+  | "NOSHOW";
+
 export interface AppointmentItem {
   appointmentId: string;
   appointmentDate: string;
@@ -41,6 +52,26 @@ export interface ViewDoctorAppointmentsResponse {
   appointments: AppointmentItem[];
 }
 
+export type AppointmentDecision = "CONFIRM" | "REJECT";
+
+export interface ConfirmRejectAppointmentRequest {
+  decision: AppointmentDecision;
+  rejectReason?: string;
+}
+
+export interface ConfirmRejectAppointmentResponse {
+  appointmentId: string;
+  status: AppointmentStatusEnum;
+  noteReason?: string;
+  updatedAt: string;
+}
+
+// Status còn cho phép Confirm/Reject (chưa được xử lý)
+export const ACTIONABLE_STATUSES: AppointmentStatusEnum[] = [
+  "PENDING",
+  "DEPOSIT_PAID",
+];
+
 class DoctorAppointmentService {
   async getAppointments(
     doctorId: string,
@@ -50,6 +81,20 @@ class DoctorAppointmentService {
       ApiResponse<ViewDoctorAppointmentsResponse>
     >(`/doctors/${doctorId}/appointments`, { params });
 
+    return response.data;
+  }
+
+  async confirmRejectAppointment(
+    doctorId: string,
+    appointmentId: string,
+    payload: ConfirmRejectAppointmentRequest
+  ): Promise<ApiResponse<ConfirmRejectAppointmentResponse>> {
+    const response = await apiClient.patch<
+      ApiResponse<ConfirmRejectAppointmentResponse>
+    >(
+      `/doctors/${doctorId}/appointments/${appointmentId}/decision`,
+      payload
+    );
     return response.data;
   }
 }

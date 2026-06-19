@@ -35,6 +35,26 @@ interface UpdateMedicineData {
   isActive?: boolean
 }
 
+export interface GetMedicineCatalogRequest {
+  pageNumber: number
+  pageSize: number
+  isActive?: boolean
+  searchTerm?: string
+}
+
+export interface GetMedicineCatalogResponse {
+  id: string
+  medicineName: string
+  genericName: string | null
+  unit: string
+  dosageForm: string
+  concentration: string
+  manufacturer: string | null
+  notes: string | null
+  isActive: boolean
+  createdAt: string
+}
+
 class MedicineService {
   async list(params?: MedicineFilters): Promise<PaginatedResponse<Medicine>> {
     const response = await apiClient.get<PaginatedResponse<Medicine>>("/medicines", { params })
@@ -77,6 +97,21 @@ class MedicineService {
     const response = await apiClient.get<ApiResponse<Medicine[]>>("/medicines/low-stock", {
       params: { threshold, clinicId },
     })
+    return response.data
+  }
+
+  async getMedicineCatalog(params: GetMedicineCatalogRequest): Promise<ApiResponse<GetMedicineCatalogResponse[]>> {
+    const response = await apiClient.get<ApiResponse<GetMedicineCatalogResponse[]>>(
+      "https://localhost:7070/api/v1/clinic-admin/medicine-catalog",
+      {
+        params: {
+          pageNumber: params.pageNumber,
+          pageSize: params.pageSize,
+          isActive: params.isActive,
+          searchTerm: params.searchTerm,
+        },
+      }
+    )
     return response.data
   }
 }

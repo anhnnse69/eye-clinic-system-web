@@ -1,4 +1,3 @@
-// components/doctor/PatientDemographicsClient.tsx
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
@@ -117,14 +116,12 @@ export default function PatientDemographicsClient({
         await medicalRecordPatientDemographicsService.getPatientDemographicsDetail(
           patientProfileId
         );
+      
       if (response.data && response.data.fullName) {
         setDemographics(response.data);
-        // Check if medical demographics exist
-        const hasMedDemo =
-          response.data.bloodType ||
-          response.data.allergies ||
-          response.data.medicalHistory;
-        setHasMedicalDemographics(!!hasMedDemo);
+        
+        // Use hasMedicalDemographics directly from backend response
+        setHasMedicalDemographics(!!response.data.hasMedicalDemographics);
       } else {
         setDemographicsError("Không tìm thấy thông tin bệnh nhân");
       }
@@ -191,11 +188,11 @@ export default function PatientDemographicsClient({
       bloodType: demographics?.bloodType || "",
       allergies: demographics?.allergies || "",
       medicalHistory: demographics?.medicalHistory || "",
-      familyHistory: "",
-      lifestyleFactors: "",
-      currentEyeMedications: "",
-      previousEyeSurgery: "",
-      eyeVisionHistory: "",
+      familyHistory: demographics?.familyHistory || "",
+      lifestyleFactors: demographics?.lifestyleFactors || "",
+      currentEyeMedications: demographics?.currentEyeMedications || "",
+      previousEyeSurgery: demographics?.previousEyeSurgery || "",
+      eyeVisionHistory: demographics?.eyeVisionHistory || "",
     });
   };
 
@@ -205,11 +202,11 @@ export default function PatientDemographicsClient({
       bloodType: demographics?.bloodType || "",
       allergies: demographics?.allergies || "",
       medicalHistory: demographics?.medicalHistory || "",
-      familyHistory: "",
-      lifestyleFactors: "",
-      currentEyeMedications: "",
-      previousEyeSurgery: "",
-      eyeVisionHistory: "",
+      familyHistory: demographics?.familyHistory || "",
+      lifestyleFactors: demographics?.lifestyleFactors || "",
+      currentEyeMedications: demographics?.currentEyeMedications || "",
+      previousEyeSurgery: demographics?.previousEyeSurgery || "",
+      eyeVisionHistory: demographics?.eyeVisionHistory || "",
     });
     setMedicalFormError(null);
     setMedicalFormSuccess(null);
@@ -241,14 +238,13 @@ export default function PatientDemographicsClient({
       // Check for success (200 OK)
       if (response.codeMessage === "APP_MESSAGE_2005" || response.data?.isSuccess) {
         setMedicalFormSuccess("Tạo thông tin y tế thành công!");
+        // Reload demographics to show updated data, then close form after data is ready
+        await loadDemographics();
         setHasMedicalDemographics(true);
-        // Reload demographics to show updated data
-        loadDemographics();
-        // Close form after short delay
         setTimeout(() => {
           setShowMedicalForm(false);
           setMedicalFormSuccess(null);
-        }, 1500);
+        }, 500);
       } else {
         // Handle error codes from API
         const errorMsg = response.codeMessage;
@@ -370,7 +366,7 @@ export default function PatientDemographicsClient({
         </div>
       ) : null}
 
-      {/* Medical Demographics Card (from Doctor - UC36) */}
+      {/* Medical Demographics Card */}
       <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
         <div className="px-6 py-5 border-b border-gray-100 bg-blue-50/50">
           <div className="flex items-center justify-between">
@@ -379,24 +375,33 @@ export default function PatientDemographicsClient({
               <h2 className="text-base font-semibold text-gray-900">
                 Thông tin y tế
               </h2>
-              {hasMedicalDemographics && (
+              {hasMedicalDemographics ? (
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
                   Đã khởi tạo
                 </span>
-              )}
+              ) : !showMedicalForm ? (
+                <button
+                  onClick={handleOpenForm}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-medium rounded-lg shadow-sm transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Tạo thông tin y tế
+                </button>
+              ) : null}
             </div>
-            {!hasMedicalDemographics && (
+            {showMedicalForm && (
               <button
-                onClick={handleOpenForm}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors"
+                onClick={handleCloseForm}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
               >
-                <Plus className="w-4 h-4" />
-                Tạo thông tin y tế
+                <X className="w-4 h-4" />
               </button>
             )}
           </div>
           <p className="text-xs text-gray-500 mt-1">
-            Thông tin y tế chuyên khoa mắt do bác sĩ nhập (UC36)
+            {hasMedicalDemographics 
+              ? "Thông tin y tế chuyên khoa mắt do bác sĩ nhập"
+              : "Nhấn 'Tạo thông tin y tế' để bác sĩ nhập thông tin y khoa"}
           </p>
         </div>
 
@@ -634,35 +639,100 @@ export default function PatientDemographicsClient({
           </div>
         )}
 
-        {/* Display existing medical demographics */}
-        {!showMedicalForm && (
+        {/* Display existing medical demographics or Form */}
+        {!showMedicalForm && !hasMedicalDemographics ? (
+          /* Show empty state when no medical demographics */
+          <div className="p-8">
+            <div className="py-6 flex flex-col items-center justify-center text-center">
+              <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 mb-4 border border-gray-100">
+                <Activity className="w-8 h-8" />
+              </div>
+              <h3 className="text-base font-semibold text-gray-900 mb-2">
+                Chưa có thông tin y tế
+              </h3>
+              <p className="text-sm text-gray-500">
+                Nhấn &quot;Tạo thông tin y tế&quot; để bác sĩ nhập thông tin y khoa
+              </p>
+            </div>
+          </div>
+        ) : !showMedicalForm && hasMedicalDemographics ? (
+          /* Show medical info with "Tiền sử y khoa" when hasMedicalDemographics is true */
           <div className="p-6">
-            {hasMedicalDemographics || demographics?.bloodType || demographics?.allergies || demographics?.medicalHistory ? (
-              <div className="space-y-6">
-                {/* Medical Background */}
-                {(demographics?.bloodType || demographics?.allergies || demographics?.medicalHistory) && (
-                  <div>
-                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
-                      <Heart className="w-4 h-4 text-rose-500" />
-                      Tiền sử y khoa
-                    </h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      <InfoField label="Nhóm máu" value={demographics?.bloodType || "—"} />
-                      <InfoField
-                        label="Dị ứng"
-                        value={demographics?.allergies || "—"}
-                        alert={!!demographics?.allergies}
-                      />
-                      <InfoField
-                        label="Tiền sử bệnh"
-                        value={demographics?.medicalHistory || "—"}
-                        muted={!!demographics?.medicalHistory}
-                      />
-                    </div>
-                  </div>
-                )}
+            <div className="space-y-6">
+              {/* Tiền sử y khoa */}
+              <div>
+                <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
+                  <Heart className="w-4 h-4 text-rose-500" />
+                  Tiền sử y khoa
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {demographics?.bloodType && (
+                    <InfoField label="Nhóm máu" value={demographics.bloodType} />
+                  )}
+                  {demographics?.allergies && (
+                    <InfoField
+                      label="Dị ứng"
+                      value={demographics.allergies}
+                      alert
+                    />
+                  )}
+                  {demographics?.medicalHistory && (
+                    <InfoField
+                      label="Tiền sử bệnh"
+                      value={demographics.medicalHistory}
+                      muted
+                    />
+                  )}
+                  {demographics?.familyHistory && (
+                    <InfoField
+                      label="Tiền sử gia đình"
+                      value={demographics.familyHistory}
+                    />
+                  )}
+                  {demographics?.lifestyleFactors && (
+                    <InfoField
+                      label="Yếu tố lối sống"
+                      value={demographics.lifestyleFactors}
+                    />
+                  )}
+                </div>
+              </div>
 
-                {/* Ophthalmology info note */}
+              {/* Thông tin chuyên khoa mắt */}
+              {(demographics?.currentEyeMedications || demographics?.previousEyeSurgery || demographics?.eyeVisionHistory) && (
+                <div>
+                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
+                    <Eye className="w-4 h-4 text-blue-500" />
+                    Thông tin chuyên khoa mắt
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {demographics?.currentEyeMedications && (
+                      <InfoField
+                        label="Thuốc đang dùng cho mắt"
+                        value={demographics.currentEyeMedications}
+                      />
+                    )}
+                    {demographics?.previousEyeSurgery && (
+                      <InfoField
+                        label="Phẫu thuật mắt trước đó"
+                        value={demographics.previousEyeSurgery}
+                      />
+                    )}
+                    {demographics?.eyeVisionHistory && (
+                      <InfoField
+                        label="Tiền sử thị lực"
+                        value={demographics.eyeVisionHistory}
+                      />
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Show info note if no medical info at all */}
+              {!demographics?.bloodType && !demographics?.allergies && !demographics?.medicalHistory && 
+               !demographics?.familyHistory && !demographics?.lifestyleFactors && 
+               !demographics?.currentEyeMedications && !demographics?.previousEyeSurgery && 
+               !demographics?.eyeVisionHistory && (
                 <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
                   <div className="flex items-center gap-2 text-sm text-blue-700">
                     <Eye className="w-4 h-4" />
@@ -672,29 +742,10 @@ export default function PatientDemographicsClient({
                     Các thông tin y tế chuyên khoa mắt sẽ được cập nhật khi bác sĩ khám và tạo bệnh án.
                   </p>
                 </div>
-              </div>
-            ) : (
-              <div className="py-8 flex flex-col items-center justify-center text-center">
-                <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 mb-4 border border-gray-100">
-                  <Activity className="w-8 h-8" />
-                </div>
-                <h3 className="text-base font-semibold text-gray-900 mb-1">
-                  Chưa có thông tin y tế
-                </h3>
-                <p className="text-sm text-gray-500 mb-4">
-                  Nhấn &quot;Tạo thông tin y tế&quot; để bác sĩ nhập thông tin y khoa
-                </p>
-                <button
-                  onClick={handleOpenForm}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors"
-                >
-                  <Plus className="w-4 h-4" />
-                  Tạo thông tin y tế
-                </button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Medical Records Section */}

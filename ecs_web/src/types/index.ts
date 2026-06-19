@@ -491,6 +491,7 @@ export interface CreatePatientDemographicsResponse {
 
 // GetDetailPatientDemographics — matches /api/v1/medical-record/demographics/{patientId}
 export interface GetDetailPatientDemographicsResponse {
+  // Patient Info (from Patient/Receptionist)
   fullName: string
   dob: string
   gender: string
@@ -498,9 +499,16 @@ export interface GetDetailPatientDemographicsResponse {
   identityNumber?: string | null
   bhytNumber?: string | null
   address?: string | null
+  // Medical Demographics (from Doctor - UC36)
+  hasMedicalDemographics: boolean
   bloodType?: string | null
   allergies?: string | null
   medicalHistory?: string | null
+  familyHistory?: string | null
+  lifestyleFactors?: string | null
+  currentEyeMedications?: string | null
+  previousEyeSurgery?: string | null
+  eyeVisionHistory?: string | null
 }
 
 // CreateMedicalRecord — matches POST /api/v1/medical-record/demographics

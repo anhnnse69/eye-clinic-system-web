@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import {
   Search,
   ChevronLeft,
@@ -64,6 +65,8 @@ export default function PatientDemographicsClient({
   patientProfileId,
   appointmentId,
 }: PatientDemographicsClientProps) {
+  const router = useRouter();
+
   // ── Demographics state ──────────────────────────────────────────────
   const [demographics, setDemographics] =
     useState<GetDetailPatientDemographicsResponse | null>(null);
@@ -120,8 +123,11 @@ export default function PatientDemographicsClient({
       if (response.data && response.data.fullName) {
         setDemographics(response.data);
         
-        // Use hasMedicalDemographics directly from backend response
-        setHasMedicalDemographics(!!response.data.hasMedicalDemographics);
+        // Only set hasMedicalDemographics from detail API if field actually exists
+        // If not, let loadRecords() handle it since list API always has this field
+        if ('hasMedicalDemographics' in response.data) {
+          setHasMedicalDemographics(response.data.hasMedicalDemographics === true);
+        }
       } else {
         setDemographicsError("Không tìm thấy thông tin bệnh nhân");
       }
@@ -159,6 +165,12 @@ export default function PatientDemographicsClient({
       if (response.data) {
         setRecords(response.data.items);
         setTotalRecords(response.data.totalRecords);
+
+        // Get hasMedicalDemographics from list API (source of truth)
+        // Only set if items exist, otherwise keep value from loadDemographics()
+        if (response.data.items.length > 0) {
+          setHasMedicalDemographics(response.data.items[0].hasMedicalDemographics === true);
+        }
       } else {
         setRecords([]);
         setTotalRecords(0);
@@ -761,11 +773,22 @@ export default function PatientDemographicsClient({
               {totalRecords}
             </span>
           </div>
-          {appointmentId && (
-            <span className="text-xs text-gray-500">
-              Lịch hẹn: <span className="font-medium text-gray-700">{appointmentId}</span>
-            </span>
-          )}
+          <div className="flex items-center gap-3">
+            {appointmentId && (
+              <span className="text-xs text-gray-500">
+                Lịch hẹn: <span className="font-medium text-gray-700">{appointmentId}</span>
+              </span>
+            )}
+            {appointmentId && (
+              <button
+                onClick={() => router.push(`/doctor/medical-records/create?appointmentId=${appointmentId}&patientProfileId=${patientProfileId}`)}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors shadow-sm mt-6"
+              >
+                <Plus className="w-4 h-4" />
+                Tạo bệnh án
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Filters */}

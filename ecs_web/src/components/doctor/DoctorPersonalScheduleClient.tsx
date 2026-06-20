@@ -5,6 +5,7 @@ import {
     Calendar as CalendarIcon, Loader2, RefreshCw, Layers,
     DoorOpen, User, Phone, Stethoscope, CheckCircle2,
     XCircle, Ban,
+    Plus,
 } from "lucide-react";
 
 import {
@@ -13,6 +14,7 @@ import {
     type ScheduleSlotItem,
 } from "@/services/doctor.schedule.service";
 import { ShiftType, SlotStatus } from "@/types";
+import CreateScheduleModal from "./CreateScheduleModal";
 
 const SHIFT_TIMELINE_MAP: Record<ShiftType, string[]> = {
     [ShiftType.MORNING]: ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30"],
@@ -48,6 +50,7 @@ export default function DoctorPersonalScheduleClient({
     const [shifts, setShifts] = useState<ScheduleShiftItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [showCreateModal, setShowCreateModal] = useState(false);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -79,11 +82,20 @@ export default function DoctorPersonalScheduleClient({
         <div className="space-y-6 w-full min-w-0 px-4 py-4">
 
             {/* Header */}
-            <div>
-                <h2 className="text-2xl font-bold text-slate-800">Lịch cá nhân</h2>
-                <p className="text-sm text-slate-500 mt-0.5">
-                    Sơ đồ lịch trực và lịch hẹn của bạn theo từng khung giờ
-                </p>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-2xl font-bold text-slate-800">Lịch cá nhân</h2>
+                    <p className="text-sm text-slate-500 mt-0.5">
+                        Sơ đồ lịch trực và lịch hẹn của bạn theo từng khung giờ
+                    </p>
+                </div>
+                <button
+                    onClick={() => setShowCreateModal(true)}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl shadow-sm transition-colors"
+                >
+                    <Plus className="w-4 h-4" />
+                    Tạo lịch trực
+                </button>
             </div>
 
             {/* Filter bar */}
@@ -233,6 +245,13 @@ export default function DoctorPersonalScheduleClient({
                         );
                     })}
                 </div>
+            )}
+            {showCreateModal && (
+                <CreateScheduleModal
+                    doctorId={doctorId}
+                    onClose={() => setShowCreateModal(false)}
+                    onCreated={fetchData}
+                />
             )}
         </div>
     );

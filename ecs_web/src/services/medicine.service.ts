@@ -69,6 +69,25 @@ export interface CreateMedicineCatalogResponse {
   id: string
 }
 
+export interface UpdateMedicineCatalogRequest {
+  id: string
+  medicineName: string
+  genericName?: string
+  unit: string
+  dosageForm?: string
+  concentration?: string
+  manufacturer?: string
+  notes?: string
+  isActive: boolean
+}
+
+export interface UpdateMedicineCatalogResponse {
+  id: string
+  medicineName: string
+  isActive: boolean
+  updatedAt: string
+}
+
 class MedicineService {
   async list(params?: MedicineFilters): Promise<PaginatedResponse<Medicine>> {
     const response = await apiClient.get<PaginatedResponse<Medicine>>("/medicines", { params })
@@ -132,6 +151,14 @@ class MedicineService {
   async createMedicine(params: CreateMedicineCatalogRequest): Promise<ApiResponse<CreateMedicineCatalogResponse>> {
     const response = await apiClient.post<ApiResponse<CreateMedicineCatalogResponse>>(
       "https://localhost:7070/api/v1/clinic-admin/medicine-catalog/create",
+      params
+    )
+    return response.data
+  }
+
+  async updateMedicineCatalog(params: UpdateMedicineCatalogRequest): Promise<ApiResponse<UpdateMedicineCatalogResponse>> {
+    const response = await apiClient.put<ApiResponse<UpdateMedicineCatalogResponse>>(
+      "https://localhost:7070/api/v1/clinic-admin/medicine-catalog/edit",
       params
     )
     return response.data

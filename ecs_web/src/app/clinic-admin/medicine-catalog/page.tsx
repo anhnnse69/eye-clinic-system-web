@@ -39,19 +39,19 @@ export default function MedicineCatalogManagementPage() {
   const [pageNumber, setPageNumber] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(10)
   const [isActiveFilter, setIsActiveFilter] = useState<string>("all")
-  const [searchTerm, setSearchTerm] = useState<string>("") // Sửa lỗi: Khởi tạo giá trị chuỗi rỗng mặc định để tránh lỗi Controlled component
+  const [searchTerm, setSearchTerm] = useState<string>("") 
   const [debouncedSearch, setDebouncedSearch] = useState<string>("")
 
-  // Debounce tìm kiếm tự động sau 500ms để giảm tần suất gọi API liên tục
+  // Debounce tìm kiếm tự động sau 500ms
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchTerm)
-      setPageNumber(1) // Reset về trang 1 khi bắt đầu gõ tìm kiếm từ khoá mới
+      setPageNumber(1)
     }, 500)
     return () => clearTimeout(handler)
   }, [searchTerm])
 
-  // Hàm load danh sách dữ liệu danh mục thuốc từ API phối hợp phân trang & bộ lọc
+  // Hàm load danh sách dữ liệu danh mục thuốc
   const loadMedicineData = useCallback(async () => {
     try {
       setLoading(true)
@@ -85,7 +85,6 @@ export default function MedicineCatalogManagementPage() {
         })
       }
     } catch (err: any) {
-      // Map mã lỗi định danh từ Backend (C# ApiResponse Fail Codes)
       const errCode = err?.response?.data?.codeMessage
       if (errCode === "APP_MESSAGE_4001") {
         setError("Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại!")
@@ -227,7 +226,8 @@ export default function MedicineCatalogManagementPage() {
                         </td>
                         <td className="p-4 text-center">
                           <Link
-                            href={`/clinic-admin/medicine-catalog/${medicine.id}`}
+                            href={`/clinic-admin/medicine-catalog/edit/${medicine.id}`}
+                            onClick={() => sessionStorage.setItem("currentEditMedicine", JSON.stringify(medicine))}
                             className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 border border-outline-variant rounded-xl text-label-sm text-primary font-medium bg-surface-container-lowest hover:bg-primary/5 transition-colors shadow-sm"
                           >
                             <Pencil className="h-3.5 w-3.5" /> Sửa

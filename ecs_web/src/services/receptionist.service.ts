@@ -333,12 +333,6 @@ class ReceptionistService {
     ).data;
   }
 
-  async handleNoShow(appointmentId: string): Promise<ApiResponse<any>> {
-    return (
-      await apiClient.post<ApiResponse<any>>(`/receptionist/appointments/${appointmentId}/noshow`)
-    ).data;
-  }
-
   async handleCancel(appointmentId: string): Promise<ApiResponse<any>> {
     return (
       await apiClient.post<ApiResponse<any>>(`/receptionist/appointments/${appointmentId}/cancel`)

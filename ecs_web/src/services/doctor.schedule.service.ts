@@ -39,6 +39,41 @@ export interface ViewDoctorPersonalScheduleRequest {
   workDate: string; // yyyy-MM-dd
   shiftType?: ShiftType | "";
 }
+// ── Clinic Room (riêng cho doctor) ──
+
+export interface ClinicRoomItem {
+  roomId: string;
+  roomName: string;
+  roomType: string;
+  isActive: boolean;
+}
+
+// ── Create Schedule ──
+
+export interface CreateDoctorScheduleRequest {
+  workDates: string[];
+  shiftTypes: string[];
+  roomId: string;
+}
+
+export interface CreatedScheduleItem {
+  scheduleId: string;
+  workDate: string;
+  shiftType: ShiftType;
+  roomName: string;
+  slotCount: number;
+}
+
+export interface SkippedScheduleItem {
+  workDate: string;
+  shiftType: ShiftType;
+  reason: string;
+}
+
+export interface CreateDoctorScheduleResponse {
+  created: CreatedScheduleItem[];
+  skipped: SkippedScheduleItem[];
+}
 
 class DoctorScheduleService {
   async getPersonalSchedule(
@@ -49,6 +84,26 @@ class DoctorScheduleService {
       ApiResponse<ViewDoctorPersonalScheduleResponse>
     >(`/doctors/${doctorId}/schedule`, { params });
 
+    return response.data;
+  }
+
+  async getActiveRooms(
+    doctorId: string
+  ): Promise<ApiResponse<ClinicRoomItem[]>> {
+    const response = await apiClient.get<
+    ApiResponse<ClinicRoomItem[]>>(
+      `/doctors/${doctorId}/rooms`
+    );
+    return response.data;
+  }
+
+  async createSchedule(
+    doctorId: string,
+    payload: CreateDoctorScheduleRequest
+  ): Promise<ApiResponse<CreateDoctorScheduleResponse>> {
+    const response = await apiClient.post<
+    ApiResponse < CreateDoctorScheduleResponse >
+    > (`/doctors/${doctorId}/schedule`, payload);
     return response.data;
   }
 }

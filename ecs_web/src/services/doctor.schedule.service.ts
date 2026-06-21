@@ -96,6 +96,11 @@ export interface BlockUnblockSlotRequest {
   block: boolean;
 }
 
+export interface DeleteDoctorScheduleResponse {
+  scheduleId: string;
+  deletedAt: string;
+}
+
 class DoctorScheduleService {
   async getPersonalSchedule(
     doctorId: string,
@@ -112,9 +117,9 @@ class DoctorScheduleService {
     doctorId: string
   ): Promise<ApiResponse<ClinicRoomItem[]>> {
     const response = await apiClient.get<
-    ApiResponse<ClinicRoomItem[]>>(
-      `/doctors/${doctorId}/rooms`
-    );
+      ApiResponse<ClinicRoomItem[]>>(
+        `/doctors/${doctorId}/rooms`
+      );
     return response.data;
   }
 
@@ -123,35 +128,45 @@ class DoctorScheduleService {
     payload: CreateDoctorScheduleRequest
   ): Promise<ApiResponse<CreateDoctorScheduleResponse>> {
     const response = await apiClient.post<
-    ApiResponse < CreateDoctorScheduleResponse >
-    > (`/doctors/${doctorId}/schedule`, payload);
+      ApiResponse<CreateDoctorScheduleResponse>
+    >(`/doctors/${doctorId}/schedule`, payload);
     return response.data;
   }
 
 
-async editSchedule(
-  doctorId: string,
-  scheduleId: string,
-  payload: EditDoctorScheduleRequest
-): Promise<ApiResponse<EditDoctorScheduleResponse>> {
-  const response = await apiClient.put<ApiResponse<EditDoctorScheduleResponse>>(
-    `/doctors/${doctorId}/schedule/${scheduleId}`,
-    payload
-  );
-  return response.data;
-}
+  async editSchedule(
+    doctorId: string,
+    scheduleId: string,
+    payload: EditDoctorScheduleRequest
+  ): Promise<ApiResponse<EditDoctorScheduleResponse>> {
+    const response = await apiClient.put<ApiResponse<EditDoctorScheduleResponse>>(
+      `/doctors/${doctorId}/schedule/${scheduleId}`,
+      payload
+    );
+    return response.data;
+  }
 
-async toggleSlotBlock(
-  doctorId: string,
-  slotId: string,
-  block: boolean
-): Promise<ApiResponse<string>> {
-  const response = await apiClient.patch<ApiResponse<string>>(
-    `/doctors/${doctorId}/schedule/slots/${slotId}/block`,
-    { block }
-  );
-  return response.data;
-}
+  async toggleSlotBlock(
+    doctorId: string,
+    slotId: string,
+    block: boolean
+  ): Promise<ApiResponse<string>> {
+    const response = await apiClient.patch<ApiResponse<string>>(
+      `/doctors/${doctorId}/schedule/slots/${slotId}/block`,
+      { block }
+    );
+    return response.data;
+  }
+
+  async deleteSchedule(
+    doctorId: string,
+    scheduleId: string
+  ): Promise<ApiResponse<DeleteDoctorScheduleResponse>> {
+    const response = await apiClient.delete<ApiResponse<DeleteDoctorScheduleResponse>>(
+      `/doctors/${doctorId}/schedule/${scheduleId}`
+    );
+    return response.data;
+  }
 }
 
 export const doctorScheduleService = new DoctorScheduleService();

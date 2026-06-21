@@ -148,6 +148,14 @@ export function HomePage() {
               >
                 {locale === "vi" ? "EN" : "VI"}
               </button>
+              <button
+                onClick={() => router.push("/book-appointment")}
+                className="hidden md:inline-flex items-center gap-sm px-lg py-sm font-label-md text-label-md bg-primary text-on-primary rounded-lg shadow-sm hover:opacity-90 active:scale-95 transition-all"
+                title={t("hero.bookAppointment")}
+              >
+                <span className="material-symbols-outlined">calendar_month</span>
+                <span>{t("hero.bookAppointment")}</span>
+              </button>
               <HomeUserMenu />
               <button className="md:hidden text-on-surface-variant">
                 <span className="material-symbols-outlined">menu</span>

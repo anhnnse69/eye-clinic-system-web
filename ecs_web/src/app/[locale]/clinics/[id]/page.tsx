@@ -309,6 +309,16 @@ export default function ClinicProfilePage() {
               </p>
             </div>
           )}
+          {/* ── Nút đặt lịch ── */}
+          <div className="px-6 pb-6">
+            <Link
+              href={`/${locale}/book-appointment?clinicId=${clinic.id}`}
+              className="w-full flex items-center justify-center gap-2 py-3 bg-primary text-on-primary font-semibold rounded-xl hover:opacity-90 active:scale-95 transition"
+            >
+              <Stethoscope className="w-4 h-4" />
+              {locale === "vi" ? "Đặt lịch khám" : "Book an appointment"}
+            </Link>
+          </div>
         </div>
 
         {/* ── Tabs ── */}

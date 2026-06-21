@@ -1,3 +1,4 @@
+export { medicalRecordsService } from "./medical-records.service"
 export { authService } from "./auth.service"
 export { clinicsService } from "./clinic.service"
 export { clinicApplicationsService } from "./clinic-applications.service"

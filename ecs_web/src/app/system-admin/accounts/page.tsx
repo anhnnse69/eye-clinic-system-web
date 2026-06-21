@@ -17,6 +17,15 @@ import {
 import { accountService } from "@/services/account.service"
 import type { GetAccountResponse } from "@/services/account.service"
 
+// Bộ từ điển để hiển thị tên vai trò thân thiện bằng tiếng Việt
+const roleMapping: Record<string, string> = {
+  SYSTEM_ADMIN: "System Admin",
+  CLINIC_ADMIN: "Clinic Admin",
+  DOCTOR: "Bác sĩ",
+  RECEPTIONIST: "Nhân viên lễ tân",
+  PATIENT: "Bệnh nhân"
+}
+
 export default function SystemAccountsManagementPage() {
   const [accountsList, setAccountsList] = useState<GetAccountResponse[]>([])
   const [loading, setLoading] = useState<boolean>(true)
@@ -153,7 +162,7 @@ export default function SystemAccountsManagementPage() {
             <option value="SYSTEM_ADMIN">System Admin</option>
             <option value="CLINIC_ADMIN">Clinic Admin</option>
             <option value="DOCTOR">Bác sĩ</option>
-            <option value="STAFF">Nhân viên</option>
+            <option value="RECEPTIONIST">Tiếp tân</option>
           </select>
         </div>
       </div>
@@ -219,7 +228,7 @@ export default function SystemAccountsManagementPage() {
                         </td>
                         <td className="p-4">
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-label-sm font-semibold bg-secondary/10 text-secondary">
-                            <ShieldCheck className="h-3 w-3" /> {account.role}
+                            <ShieldCheck className="h-3 w-3" /> {roleMapping[account.role] || account.role}
                           </span>
                         </td>
                         <td className="p-4 text-on-surface-variant">

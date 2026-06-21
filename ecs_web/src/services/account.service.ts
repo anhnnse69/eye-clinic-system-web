@@ -43,6 +43,26 @@ export interface GetAccountResponse {
   createdAt: string;
 }
 
+export interface CreateAccountRequest {
+  phone: string
+  email?: string
+  password?: string
+  fullName: string
+  role: number 
+  avatarUrl?: string
+}
+
+export interface CreateAccountResponse {
+  id: string
+  phone: string
+  email: string | null
+  fullName: string
+  role: string
+  isActive: boolean
+  avatarUrl: string | null
+  createdAt: string
+}
+
 class AccountService {
   async list(params?: AccountFilters): Promise<PaginatedResponse<User>> {
     const response = await apiClient.get<PaginatedResponse<User>>("/accounts", { params })
@@ -96,6 +116,21 @@ class AccountService {
       }
     );
     return response.data;
+  }
+
+  async createAccount(params: CreateAccountRequest): Promise<ApiResponse<CreateAccountResponse>> {
+    const response = await apiClient.post<ApiResponse<CreateAccountResponse>>(
+      "https://localhost:7070/api/v1/system-admin/accounts/create",
+      {
+        phone: params.phone,
+        email: params.email,
+        password: params.password,
+        fullName: params.fullName,
+        role: params.role,
+        avatarUrl: params.avatarUrl,
+      }
+    )
+    return response.data
   }
 }
 

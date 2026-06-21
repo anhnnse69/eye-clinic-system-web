@@ -18,3 +18,4 @@ export { medicalRecordPatientDemographicsService } from "./medical-record-patien
 export { doctorAppointmentService } from "./doctor.appointment.service"
 export { systemAdminDashboardService } from "./system-admin.dashboard.service"
 export { receptionistService } from "./receptionist.service";
+export { patientAppointmentService } from "./patient-appointment.service";

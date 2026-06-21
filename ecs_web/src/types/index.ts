@@ -553,3 +553,54 @@ export interface CreateMedicalRecordResponse {
   createdAt: string
   isLocked: boolean
 }
+
+// ==========================================
+// Get Medical Records (UC - View List Medical Records)
+// Doctor views history of medical records they created
+// ==========================================
+
+export interface GetMedicalRecordsRequest {
+  pageNumber?: number
+  pageSize?: number
+  startDate?: string
+  endDate?: string
+  recordType?: string
+  doctorId?: string
+  searchTerm?: string
+}
+
+export interface GetMedicalRecordsItem {
+  id: string
+  appointmentId: string
+  patientId: string
+  patientFullName: string
+  patientDob?: string | null
+  patientPhone?: string | null
+  doctorId: string
+  doctorFullName: string
+  appointmentDate: string
+  recordType: string
+  chiefComplaint?: string | null
+  diagnosisMain?: string | null
+  treatmentPlan?: string | null
+  isLocked: boolean
+  createdAt: string
+  updatedAt: string
+  canEdit: boolean
+  canViewOnly: boolean
+  editRestrictionReason?: string | null
+}
+
+export interface GetMedicalRecordsMeta {
+  page: number
+  size: number
+  total: number
+  totalPages: number
+  hasNext: boolean
+  hasPrevious: boolean
+}
+
+export interface GetMedicalRecordsResponse {
+  items: GetMedicalRecordsItem[]
+  meta: GetMedicalRecordsMeta
+}

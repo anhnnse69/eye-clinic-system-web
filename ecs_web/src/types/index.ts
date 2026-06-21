@@ -1488,7 +1488,7 @@ export interface CreateMedicalRecordResponse {
   appointmentDate?: string
   doctorName?: string
   createdAt: string
-  isLocked: boolean
+  isSuccess: boolean
 }
 
 // ==========================================
@@ -1540,6 +1540,4 @@ export interface GetMedicalRecordsMeta {
 export interface GetMedicalRecordsResponse {
   items: GetMedicalRecordsItem[]
   meta: GetMedicalRecordsMeta
-}
-  isSuccess: boolean
 }

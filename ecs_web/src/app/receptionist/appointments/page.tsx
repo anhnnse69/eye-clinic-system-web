@@ -35,13 +35,11 @@ const StatCard = ({ icon, title, value, iconBgClass, iconColorClass, shadowColor
     shadowColor: string;
 }) => {
     const [isHovered, setIsHovered] = useState(false);
-
-    // Định nghĩa bảng màu HEX chuẩn để khi hover nó sẽ lấy màu đậm/sáng hẳn lên
     const colorMap: Record<string, string> = {
-        'text-indigo-600': '#4f46e5', // Màu Indigo gốc
-        'text-emerald-600': '#10b981', // Màu Emerald gốc
-        'text-sky-600': '#0ea5e9', // Màu Sky gốc
-        'text-rose-600': '#f43f5e'  // Màu Rose gốc
+        'text-indigo-600': '#4f46e5',
+        'text-emerald-600': '#10b981',
+        'text-sky-600': '#0ea5e9',
+        'text-rose-600': '#f43f5e'
     };
 
     const activeColor = colorMap[iconColorClass] || '#94a3b8';
@@ -67,15 +65,14 @@ const StatCard = ({ icon, title, value, iconBgClass, iconColorClass, shadowColor
                     {icon}
                 </div>
             </div>
-            
+
             {/* THANH CHẠY DƯỚI ĐÁY CARD - ĐÃ NÂNG CẤP HOVER SÁNG RÕ */}
             <div className={`absolute bottom-0 left-0 right-0 overflow-hidden rounded-b-3xl bg-slate-100 transition-all duration-300 ${isHovered ? 'h-[6px]' : 'h-[4px]'}`}>
                 <div
                     className="h-full rounded-r-full transition-all duration-500"
-                    style={{ 
+                    style={{
                         width: isHovered ? '100%' : '16%',
                         backgroundColor: activeColor,
-                        // Khi hover thì thêm hiệu ứng đổ bóng đèn neon (drop-shadow) làm thanh màu sáng rực lên
                         filter: isHovered ? `drop-shadow(0 0 4px ${activeColor})` : 'none',
                         opacity: isHovered ? 1 : 0.75 // Bình thường hơi mờ nhẹ, hover sẽ đậm 100%
                     }}
@@ -149,7 +146,7 @@ export default function ReceptionistDailyAppointmentsPage() {
 
     // ======================== TÁC VỤ XỬ LÝ API ========================
 
-   const handlePayDeposit = async (appointmentId: string) => {
+    const handlePayDeposit = async (appointmentId: string) => {
         const isConfirmed = window.confirm("Xác nhận đã thu tiền cọc của bệnh nhân trực tiếp tại quầy?");
         if (!isConfirmed) return;
 
@@ -193,25 +190,6 @@ export default function ReceptionistDailyAppointmentsPage() {
         }
     }
 
-    const handleNoShow = async (id: string) => {
-        const isConfirmed = window.confirm("Xác nhận đánh dấu bệnh nhân này vắng mặt (No-Show)?"); // Đã sửa lỗi thừa dấu )
-        if (!isConfirmed) return;
-
-        try {
-            setIsActionLoading(true)
-            const response = await receptionistService.handleNoShow(id)
-            if (response.codeMessage === "APP_MESSAGE_2000") {
-                alert("Đã cập nhật trạng thái vắng mặt thành công.")
-                setSelectedAppointment(prev => prev ? { ...prev, status: "NOSHOW" } : null)
-                fetchDailyAppointments()
-            }
-        } catch (error) {
-            alert("Lỗi cập nhật vắng mặt: " + handleApiError(error))
-        } finally {
-            setIsActionLoading(false)
-        }
-    }
-    
     const handleCancel = async (id: string) => {
         const isConfirmed = window.confirm("Bạn có chắc chắn muốn HỦY lịch hẹn này không? Hành động này không thể hoàn tác!");
         if (!isConfirmed) return;
@@ -260,9 +238,8 @@ export default function ReceptionistDailyAppointmentsPage() {
     const isToday = appointmentDateStr === todayStr
 
     const canPayDeposit = selectedAppointment && isToday && !selectedAppointment.depositPaid && ["PENDING", "CONFIRMED", "BOOKED"].includes(selectedAppointment.status)
-    const canArrive = selectedAppointment && isToday && selectedAppointment.depositPaid && ["CONFIRMED", "BOOKED"].includes(selectedAppointment.status)
+    const canArrive = selectedAppointment && isToday && selectedAppointment.depositPaid && ["CONFIRMED", "BOOKED", "NOSHOW"].includes(selectedAppointment.status)
     const canCancel = selectedAppointment && isToday && ["PENDING", "DEPOSIT_PAID", "CONFIRMED", "BOOKED"].includes(selectedAppointment.status)
-    const canNoShow = selectedAppointment && isToday && ["CONFIRMED", "BOOKED"].includes(selectedAppointment.status)
 
     const totalPages = Math.ceil(totalItems / pageSize)
 
@@ -657,18 +634,7 @@ export default function ReceptionistDailyAppointmentsPage() {
                         <div className="p-4 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row justify-between items-center gap-3">
                             {/* Nhóm hành động phụ (Bên trái: Báo vắng & Hủy lịch) */}
                             <div className="flex items-center gap-2 w-full sm:w-auto">
-                                <button
-                                    type="button"
-                                    onClick={() => handleNoShow(selectedAppointment.id)}
-                                    disabled={!canNoShow || isActionLoading}
-                                    className={`flex-1 sm:flex-none py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm ${canNoShow && !isActionLoading ? 'bg-white text-amber-700 border border-slate-200 hover:bg-amber-50 hover:border-amber-300 active:scale-[0.98]' : 'bg-slate-100 text-slate-300 border border-slate-200 cursor-not-allowed'
-                                        }`}
-                                >
-                                    <UserX className="h-4 w-4" />
-                                    Báo vắng mặt
-                                </button>
-
-                                <button
+                               <button
                                     type="button"
                                     onClick={() => handleCancel(selectedAppointment.id)}
                                     disabled={!canCancel || isActionLoading}

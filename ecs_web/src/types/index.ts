@@ -261,7 +261,7 @@ export interface AdminSystemDashboardResponse {
   pendingClinics: Array<{
     id: string
     name: string
-    Owner: string
+    owner: string
     date: string
   }>
   topServices: Array<{
@@ -342,6 +342,7 @@ export interface ViewPatientDemographicsListItem {
   bloodType?: string | null
   allergies?: string | null
   medicalHistory?: string | null
+  hasMedicalDemographics: boolean
   id_MedicalRecord: string
   recordType: string
   recordTypeLabel: string
@@ -439,8 +440,8 @@ export interface DoctorScheduleMatrixRow {
   doctorName: string
   title?: string | null
   specialtyName: string
-  roomId?: string | null     
-  roomName?: string | null  
+  roomId?: string | null
+  roomName?: string | null
   slots: TimeSlotData[]
 }
 
@@ -511,7 +512,17 @@ export interface GetDetailPatientDemographicsResponse {
   eyeVisionHistory?: string | null
 }
 
-// CreateMedicalRecord — matches POST /api/v1/medical-record/demographics
+// ==========================================
+// CreateMedicalRecord — matches POST /api/v1/doctor-appointment/medical-record/create (UC40)
+// Supports 6 standard medical record templates:
+// - MS21: Chấn thương (Trauma)
+// - MS22: Bán phần trước (Anterior Segment)
+// - MS23: Đáy mắt (Fundus)
+// - MS24: Glôcôm (Glaucoma)
+// - MS25: Lác, sụp mi (Strabismus/Ptosis)
+// - MS26: Mắt trẻ em (Pediatric)
+// ==========================================
+
 export type RecordType =
   | "MS21_TRAUMA"
   | "MS22_ANTERIOR"
@@ -529,27 +540,953 @@ export const RECORD_TYPE_LABELS: Record<RecordType, string> = {
   MS26_PEDIATRIC: "Bệnh án mắt (Mắt trẻ em)",
 }
 
+// ==========================================
+// Eye Examination Data Types
+// ==========================================
+
+// Eye Basic Exam Data - Thị lực & Nhãn áp
+export interface EyeBasicExamData {
+  // Thị lực (Visual Acuity)
+  vaUncorrected?: string
+  vaCorrected?: string
+  vaNear?: string
+  vaPinhole?: string
+  vaWithGlasses?: string
+
+  // Nhãn áp (Intraocular Pressure)
+  iopMmhg?: string
+  iopMethod?: string
+
+  // Khúc xạ máy (Refraction)
+  autoRefraction?: string
+  retinoscopy?: string
+  subjectiveRefraction?: string
+
+  // Vận nhãn (Extraocular Movement)
+  eomStatus?: string
+  eomNote?: string
+  nystagmus?: string
+  nystagmusType?: string
+
+  // Thị trường (Visual Field)
+  visualField?: string
+}
+
+// Eye Eyelid Data - Mi mắt
+export interface EyeEyelidData {
+  // Tình trạng chung (General Condition)
+  status?: string
+
+  // Sụp mi (Ptosis)
+  ptosis?: boolean
+  ptosisDegree?: string
+
+  // Rách mi (Eyelid Laceration)
+  laceration?: boolean
+  lacerationExtent?: string
+  lacerationLocation?: string
+  lacerationSutured?: boolean
+  lacerationUnsutured?: boolean
+
+  // Lệ quản (Lacrimal Duct)
+  lacrimalDuctStatus?: string
+  lacrimalDuctLocation?: string
+
+  // Sẹo mi (Eyelid Scar)
+  scar?: boolean
+  scarDescription?: string
+
+  // Tổn thương khác (Other Findings)
+  otherFindings?: string
+
+  // Quặm (Entropion)
+  entropion?: boolean
+  epicanthus?: boolean
+  epicanthusType?: string
+
+  // U mi (Eyelid Tumor)
+  hasTumor?: boolean
+  tumorNature?: string
+  tumorLocation?: string
+  tumorSize?: string
+
+  // Hở mi, Trễ mi (Lagophthalmos, Lower Lid Retraction)
+  lagophthalmos?: boolean
+  lowerLidRetraction?: boolean
+
+  // Khuyết mi (Eyelid Defect)
+  eyelidDefect?: string
+
+  // Chắp, Lẹo (Chalazion, Hordeolum)
+  chalazionHordeolum?: string
+}
+
+// Eye Conjunctiva Data - Kết mạc
+export interface EyeConjunctivaData {
+  // Tình trạng chung (General Condition)
+  status?: string
+
+  // Cương tụ (Congestion)
+  congestionType?: string
+  congestionLocation?: string
+
+  // Xuất huyết (Hemorrhage)
+  hemorrhage?: boolean
+  hemorrhageDescription?: string
+
+  // Rách kết mạc (Conjunctival Laceration)
+  laceration?: boolean
+  lacerationLocation?: string
+
+  // Thiếu máu (Ischemia)
+  ischemia?: boolean
+
+  // Phù nề (Edema)
+  edema?: boolean
+
+  // Nhú, Hột (Papillae, Follicles)
+  papilla?: boolean
+  follicle?: boolean
+
+  // Sừng hóa (Keratinization)
+  keratinization?: boolean
+
+  // Sẹo kết mạc (Conjunctival Scar)
+  scar?: boolean
+
+  // Tiết tố (Discharge)
+  discharge?: string
+  fluoresceinStain?: boolean
+
+  // Mắt ngả (Pterygium)
+  pterygium?: boolean
+  pterygiumLocation?: string
+  pterygiumSize?: string
+
+  // U kết mạc (Conjunctival Tumor)
+  hasTumor?: boolean
+  tumorNature?: string
+  tumorLocation?: string
+  tumorSize?: string
+
+  // Cùng đồ (Fornix)
+  fornixStatus?: string
+  symblepharonHeight?: string
+  symblepharonWidth?: string
+
+  // Tổn thương khác (Other Findings)
+  otherFindings?: string
+}
+
+// Eye Cornea Exam Data - Giác mạc
+export interface EyeCorneaExamData {
+  // Tình trạng trong suốt (Transparency)
+  clarity?: string
+  scar?: string
+
+  // Kích thước, hình dạng (Size, Shape)
+  size?: string
+  shape?: string
+  diameterMm?: number
+
+  // Biểu mô (Epithelium)
+  epitheliumStatus?: string
+  epitheliumPunctate?: boolean
+  epitheliumEdemaLevel?: string
+  epitheliumLoss?: string
+
+  // Tủa mặt sau (Posterior Deposits)
+  posteriorDeposit?: string
+  posteriorDepositLocation?: string
+
+  // Nhu mô (Stroma)
+  stromaEdemaLevel?: string
+  stromaInfiltrate?: string
+  stromaThinning?: string
+
+  // Loét (Ulcer)
+  ulcer?: boolean
+  ulcerLocation?: string
+  ulcerSize?: string
+  ulcerDescription?: string
+
+  // Abces, Trợt (Abscess, Descmetocele)
+  abscess?: boolean
+  descemetocele?: boolean
+
+  // Ngấm máu (Blood Staining)
+  bloodStaining?: boolean
+
+  // Rách giác mạc (Corneal Laceration)
+  laceration?: boolean
+  lacerationSize?: string
+  lacerationLocation?: string
+  lacerationType?: string
+  lacerationSutured?: boolean
+  anatomicalReduction?: boolean
+
+  // Thủng (Perforation)
+  perforation?: boolean
+  perforationDiameterMm?: number
+  perforationLocation?: string
+  seidelTest?: string
+
+  // Tân mạch (Neovascularization)
+  neovascularization?: boolean
+  neovascularizationDepth?: string
+  neovascularizationExtent?: string
+
+  // Vùng rìa (Limbal Zone)
+  limbalStatus?: string
+
+  // Cảm giác giác mạc (Corneal Sensation)
+  sensation?: string
+
+  // Viêm (Inflammation)
+  inflammationType?: string
+  inflammationDepth?: string
+
+  // Viêm thượng củng mạc (Episcleritis)
+  episcleritis?: boolean
+
+  // Giãn lối (Staphyloma)
+  staphyloma?: boolean
+
+  // Dị vật (Foreign Body)
+  foreignBody?: boolean
+  foreignBodyDescription?: string
+
+  // Tổn thương khác (Other Findings)
+  otherFindings?: string
+}
+
+// Eye Sclera Exam Data - Củng mạc
+export interface EyeScleraExamData {
+  status?: string
+  laceration?: boolean
+  lacerationSize?: string
+  lacerationLocation?: string
+  lacerationSutured?: boolean
+  lacerationUnsutured?: boolean
+  tissueEntrapped?: boolean
+  otherFindings?: string
+}
+
+// Eye Anterior Chamber Data - Tiền phòng
+export interface EyeAnteriorChamberData {
+  depth?: string
+  depthMm?: number
+  herickClassification?: string
+  vitreousInAC?: boolean
+  pus?: boolean
+  pusMm?: number
+  exudate?: boolean
+  exudateDescription?: string
+  tyndall?: string
+  hemorrhage?: boolean
+  hemorrhageLevel?: string
+  foreignBody?: boolean
+  otherFindings?: string
+}
+
+// Eye Iris Pupil Data - Mống mắt & Đồng tử
+export interface EyeIrisPupilData {
+  irisColor?: string
+  irisCondition?: string
+  irisDegeneration?: boolean
+  irisNeovascularization?: boolean
+  irisCiliaryProcesses?: boolean
+  koeppeNodules?: boolean
+  busaccaNodules?: boolean
+  irisRootTear?: boolean
+  irisRootTearDegree?: string
+  irisLoss?: boolean
+  irisPerforation?: boolean
+  pupilDiameterMm?: number
+  pupilShape?: string
+  pupilPosition?: string
+  pupilReflex?: string
+  pupilDilated?: boolean
+  ptdtTest?: boolean
+  fundusReflex?: string
+  otherFindings?: string
+}
+
+// Eye Lens Data - Thể thủy tinh
+export interface EyeLensData {
+  status?: string
+  opacityType?: string
+  opacityLocation?: string
+  subluxation?: boolean
+  lensInAnterior?: boolean
+  lensInVitreous?: boolean
+  purulent?: boolean
+  anteriorPigmentation?: boolean
+  iolPresent?: boolean
+  iolStatus?: string
+  iolPosition?: string
+  otherFindings?: string
+}
+
+// Eye Vitreous Data - Dịch kính
+export interface EyeVitreousData {
+  status?: string
+  opacityLevel?: string
+  tyndall?: string
+  hemorrhage?: boolean
+  organized?: boolean
+  pvd?: boolean
+  purulent?: boolean
+  foreignBody?: boolean
+  otherFindings?: string
+}
+
+// Eye Fundus Disc Macula Data - Đáy mắt - Đĩa thị & Hoàng điểm
+export interface EyeFundusDiscMaculaData {
+  // Đĩa thị (Optic Disc)
+  discStatus?: string
+  discColor?: string
+  cdRatio?: string
+  rimStatus?: string
+  rimLocation?: string
+  vesselChange?: string
+  discHemorrhage?: boolean
+  neovascularization?: boolean
+  neovascularizationDegree?: string
+  discNotVisible?: boolean
+
+  // Hoàng điểm (Macula)
+  maculaStatus?: string
+  maculaReflexAbsent?: boolean
+  maculaEdemaType?: string
+  maculaHoleDegree?: string
+  maculaScar?: boolean
+  serousDetachment?: boolean
+  maculaHemorrhage?: boolean
+  maculaCondition?: string
+
+  // Hắc mạc (Choroid)
+  choroidStatus?: string
+  choroidFindings?: string
+  cnv?: boolean
+
+  // Ổ viêm hắc mạc (Chorioretinitis)
+  chorioretinitisActive?: boolean
+  chorioretinitisScar?: boolean
+  chorioretinitisCount?: number
+  chorioretinitisLocation?: string
+
+  // Tổn thương khác (Other Findings)
+  otherFindings?: string
+}
+
+// Eye Fundus Retina Vessel Data - Đáy mắt - Võng mạc & Mạch máu
+export interface EyeFundusRetinaVesselData {
+  vesselStatus?: string
+  arteryOcclusion?: string
+  veinOcclusion?: string
+  occlusionType?: string
+  vasculitis?: boolean
+  retinalNeovascularization?: boolean
+  retinaStatus?: string
+  retinalCondition?: string
+  retinalEdema?: boolean
+  edemaType?: string
+  hemorrhage?: boolean
+  hemorrhageType?: string
+  exudateType?: string
+  degeneration?: boolean
+  degenerationType?: string
+  degenerationDescription?: string
+  detachment?: boolean
+  detachmentLevel?: string
+  retinalTear?: boolean
+  tearCount?: number
+  tearLocation?: string
+  tearMorphology?: string
+  bmscDetachment?: boolean
+  iofb?: boolean
+  iofbLocation?: string
+  iofbSize?: string
+  combinedFindings?: string
+  otherFindings?: string
+}
+
+// Eye Orbit Data - Hốc mắt
+export interface EyeOrbitData {
+  status?: string
+  foreignBody?: boolean
+  foreignBodyDescription?: string
+  eomStatus?: string
+  eomFindings?: string
+  eyeballStatus?: string
+  eyeballTexture?: string
+}
+
+// Systemic Exam Data - Khám toàn thân
+export interface SystemicExamData {
+  bloodPressure?: string
+  temperature?: string
+  pulse?: string
+  respiratoryRate?: string
+  endocrineStatus?: string
+  endocrineFindings?: string
+  neuroStatus?: string
+  neuroFindings?: string
+  cardiovascularStatus?: string
+  cardiovascularFindings?: string
+  respiratoryStatus?: string
+  respiratoryFindings?: string
+  digestiveStatus?: string
+  digestiveFindings?: string
+  musculoskeletalStatus?: string
+  musculoskeletalFindings?: string
+  urogenitalStatus?: string
+  urogenitalFindings?: string
+  otherFindings?: string
+}
+
+// ==========================================
+// Subspecialty Record Data Types
+// ==========================================
+
+// Trauma Record Data - MS21
+export interface TraumaRecordData {
+  injuryCause?: string
+  injuryTime?: string
+  priorTreatment?: string
+  postTreatmentCourse?: string
+  odInjuries?: string
+  osInjuries?: string
+  injuryDetails?: string
+  traumaConclusion?: string
+}
+
+// Trauma Surgery Data - MS21
+export interface TraumaSurgeryData {
+  surgeryDate?: string
+  surgeryType?: string
+  surgeryDescription?: string
+  surgeonName?: string
+  anesthesiaType?: string
+  postSurgeryCondition?: string
+  notes?: string
+}
+
+// Lacrimal Record Data - MS22, MS26
+export interface LacrimalRecordData {
+  side: string
+  irrigationFree?: boolean
+  irrigationRegurgitationSame?: boolean
+  irrigationRegurgitationOpposite?: boolean
+  irrigationNote?: string
+  lacrimalOther?: string
+}
+
+// Glaucoma Record Data - MS24
+export interface GlaucomaRecordData {
+  // Symptoms
+  eyePainLevel?: string
+  visionSymptoms?: string
+  visionProgression?: string
+  hasPhotophobia?: boolean
+  hasTearing?: boolean
+  hasRedness?: boolean
+  systemicSymptoms?: string
+
+  // Visual Acuity & IOP
+  vaWithoutCorrectionOd?: string
+  vaWithoutCorrectionOs?: string
+  vaWithCorrectionOd?: string
+  vaWithCorrectionOs?: string
+  iopOd?: string
+  iopOs?: string
+  iopMethod?: string
+  iopTargetOd?: string
+  iopTargetOs?: string
+
+  // History
+  historyEye?: string
+  historyEyeSurgery?: string
+  priorEyeSurgeryDetails?: string
+  steroidUse?: string
+  steroidPrescribed?: string
+  medicationDuration?: string
+  medicationRoute?: string
+
+  // Systemic history
+  hasCardiovascularDisease?: boolean
+  hasHypertension?: boolean
+  hasDiabetes?: boolean
+  hasCarotidFistula?: boolean
+  otherSystemicDisease?: string
+
+  // Family history
+  familyHasGlaucoma?: boolean
+  familyGlaucomaRelation?: string
+
+  // Treatment History
+  glaucomaMedications?: string
+  otherMedications?: string
+  treatmentProgress?: string
+
+  // Classification
+  glaucomaType?: string
+  stageOd?: string
+  stageOs?: string
+
+  // Examination
+  hasEyelidSwelling?: boolean
+  hasConjunctivalInjection?: boolean
+  hasFilteringBleb?: boolean
+  blebLocation?: string
+  blebStatus?: string
+  conjunctivalScarLocation?: string
+  cornealTransparency?: string
+  cornealEdemaLevel?: string
+  cornealThickness?: string
+  hasScleralThinning?: boolean
+  scleralScarLocation?: string
+  acDepthSmith?: string
+  acDepthHerick?: string
+  gonioscopyOd?: string
+  gonioscopyOs?: string
+  angleFindings?: string
+  irisColor?: string
+  irisCondition?: string
+  hasIrisNeovascularization?: boolean
+  pupilDiameter?: string
+  pupilPigmentBorder?: string
+  pupilReflexResponse?: string
+  lensStatus?: string
+  fundusRetinaFindings?: string
+  fundusMaculaFindings?: string
+  hasCNV?: boolean
+  hasRetinalHemorrhage?: boolean
+  opticDiscDescription?: string
+  nerveRimOd?: string
+  nerveRimOs?: string
+  opticDiscCupRatio?: string
+  opticDiscVesselChange?: string
+  hasOpticDiscHemorrhage?: boolean
+  hasRimAtrophy?: boolean
+  eyeAxialLength?: string
+
+  // Treatment Plan
+  treatmentPlanSurgery?: string
+  treatmentPlanLaser?: string
+  treatmentPlanMedication?: string
+  followUpPlan?: string
+}
+
+// Glaucoma History Data - MS24
+export interface GlaucomaHistoryData {
+  historyType?: string
+  eyeSide?: string
+  attemptNumber?: number
+  procedureType?: string
+  procedureDate?: string
+  facilityLevel?: string
+  drugName?: string
+  dosage?: string
+  duration?: string
+  route?: string
+  changeReason?: string
+}
+
+// Strabismus & Ptosis Record Data - MS25
+export interface StrabismusPtosisRecordData {
+  // Chief complaint & cause
+  chiefStrabismus?: boolean
+  chiefPtosis?: boolean
+  congenital?: boolean
+  acquired?: boolean
+  acquiredOnset?: string
+
+  // Strabismus type
+  strabismusType?: string
+
+  // Nystagmus
+  nystagmus?: boolean
+  nystagmusType?: string
+
+  // Treatment history
+  priorAmblyopiaTreatment?: string
+  priorAmblyopiaResult?: string
+  priorSurgery?: string
+  priorSurgeryResult?: string
+
+  // Visual acuity before/after atropine
+  vaBeforeAtropineOd?: string
+  vaBeforeAtropineOs?: string
+  vaAfterAtropineOd?: string
+  vaAfterAtropineOs?: string
+
+  // Refraction
+  refractionPreAtropine?: string
+  refractionPostAtropine?: string
+
+  // Pupil shadow test
+  pupilShadowTestOd?: string
+  pupilShadowTestOs?: string
+
+  // Extraocular motility
+  eomGazeTest?: string
+  eomGazeIncreaseOd?: string
+  eomGazeIncreaseOs?: string
+  eomGazeLimitOd?: string
+  eomGazeLimitOs?: string
+  eomInternalOd?: string
+  eomInternalOs?: string
+  convergencePoint?: string
+
+  // Cover test
+  coverTestResult?: string
+
+  // Hirschberg & Prism
+  hirschbergBeforeAtropine?: string
+  hirschbergAfterAtropine?: string
+  prismNear?: string
+  prismDistance?: string
+  prismUp?: string
+  prismDown?: string
+
+  // Syndrome & synoptophore
+  strabismusSyndrome?: string
+  synoptophoreObjective?: string
+  synoptophoreSubjective?: string
+
+  // Binocular vision
+  binocularStatus?: string
+  fusionAmplitude?: string
+  retinalCorrespondence?: string
+  diplopia?: string
+  compensatoryHeadPosture?: string
+
+  // Ptosis measurements
+  ptosisDegreeOd?: string
+  ptosisDegreeOs?: string
+  levatorFunctionOd?: string
+  levatorFunctionOs?: string
+  marcusGunn?: string
+  bellPhenomenon?: string
+  fixationOd?: string
+  fixationOs?: string
+  palpebralReflexOd?: string
+  palpebralReflexOs?: string
+  epicanthus?: string
+  hemmingAngle?: string
+}
+
+// Pediatric Record Data - MS26
+export interface PediatricRecordData {
+  // History
+  congenital?: boolean
+  acquired?: boolean
+  acquiredOnset?: string
+  priorTreatment?: string
+  pregnancyIllness?: boolean
+  pregnancyIllnessDetail?: string
+  intellectualDevelopmentNormal?: boolean
+  chiefSymptoms?: string
+
+  // Eyelid conditions
+  entropionOd?: boolean
+  epicanthusOd?: boolean
+  ptosisOd?: boolean
+  eyelidTumor?: string
+  eyelidTumorLocation?: string
+  eyelidTumorSize?: string
+
+  // Eyeball status
+  eyeballOdStatus?: string
+  eyeballOsStatus?: string
+  eyeballTexture?: string
+
+  // Amblyopia
+  amblyopiaStatus?: string
+  fixationPreferenceOd?: string
+  fixationPreferenceOs?: string
+
+  // Fundus summary
+  fundusSummaryOd?: string
+  fundusSummaryOs?: string
+
+  // Developmental status
+  intellectualDevelopmentStatus?: string
+  generalHealthStatus?: string
+}
+
+// ==========================================
+// Diagnosis Data Types
+// ==========================================
+
+export interface DiagnosisData {
+  type?: string
+  isMain?: boolean
+  icdCode?: string
+  diagnosisName?: string
+  description?: string
+}
+
+// ==========================================
+// Surgery Plan Data Types
+// ==========================================
+
+export interface SurgeryPlanData {
+  surgeryName?: string
+  surgeryType?: string
+  eye?: string
+  surgeon?: string
+  plannedDate?: string
+  notes?: string
+}
+
+// ==========================================
+// Prescription Data Types
+// ==========================================
+
+export interface PrescriptionData {
+  notes?: string
+}
+
+export interface PrescriptionItemData {
+  medicationName?: string
+  dosage?: string
+  frequency?: string
+  duration?: string
+  quantity?: number
+  instructions?: string
+  medicineName?: string
+  durationDays?: number
+  instruction?: string
+}
+
+export interface GlassesPrescriptionData {
+  sphOd?: number
+  cylOd?: number
+  axisOd?: number
+  addOd?: number
+  sphOs?: number
+  cylOs?: number
+  axisOs?: number
+  addOs?: number
+  pd?: number
+  lensType?: string
+  notes?: string
+}
+
+// ==========================================
+// Full CreateMedicalRecordRequest (UC40)
+// ==========================================
+
 export interface CreateMedicalRecordRequest {
-  patientProfileId: string
   appointmentId: string
   recordType: RecordType
-  chiefComplaint: string
-  diagnosisMain?: string
-  // Thông tin y tế sơ bộ
-  bloodType?: string
-  allergies?: string
+
+  // ==================== I. HÀNH CHÍNH (Administrative) ====================
+  maYeuTo?: string
+  age?: number
+
+  // ==================== II. QUẢN LÝ NGƯỜI BỆNH (Patient Management) ====================
+  admissionDate?: string
+  admissionType?: string
+  referralSource?: string
+  admissionNumber?: number
+  departmentAdmissionDate?: string
+  departmentName?: string
+  bedNumber?: string
+  transferDate?: string
+  transferToDepartment?: string
+  transferReason?: string
+  dischargeDate?: string
+  dischargeType?: string
+  transferToFacility?: string
+  totalTreatmentDays?: number
+
+  // ==================== III. CHẨN ĐOÁN MÃ MÃ (Diagnosis Codes) ====================
+  diagnosisAtReferral?: string
+  diagnosisAtER?: string
+  diagnosisAtAdmission?: string
+  diagnosisComplication?: string
+  diagnosisComplicationType?: string
+  postSurgeryTreatmentDays?: number
+  totalSurgeryCount?: number
+  diagnosisAtDischarge?: string
+  diagnosisCause?: string
+  diagnosisComorbidities?: string
+  diagnosisPreSurgery?: string
+  diagnosisPostSurgery?: string
+
+  // ==================== IV. TÌNH TRẠNG RA VIỆN (Discharge Status) ====================
+  treatmentResult?: string
+  pathologyResult?: string
+  deathTime?: string
+  deathWithinHours?: string
+  deathCause?: string
+  deathCauseType?: string
+  autopsyPerformed?: boolean
+  autopsyDiagnosis?: string
+
+  // ==================== A. BỆNH ÁN - I. LÝ DO VÀO VIỆN ====================
+  chiefComplaint?: string
+  illnessDayNumber?: number
+
+  // ==================== A. BỆNH ÁN - II. HỎI BỆNH (History) ====================
   medicalHistory?: string
+  personalHistoryEye?: string
+  personalHistorySystemic?: string
+  familyHistory?: string
+
+  // MS21 Specific - Trauma History
+  traumaCause?: string
+  traumaTime?: string
+  traumaPriorTreatment?: string
+  traumaPostTreatmentCourse?: string
+
+  // MS24 Specific - Glaucoma History
+  glaucomaSymptomDuration?: string
+  glaucomaPriorFacility?: string
+  glaucomaPriorTreatment?: string
+  glaucomaHistoryEye?: string
+  glaucomaSteroidUse?: string
+  glaucomaFamilyHistory?: string
+
+  // MS25 Specific - Strabismus History
+  strabismusCongenital?: boolean
+  strabismusAcquired?: boolean
+  strabismusOnsetTime?: string
+  strabismusMainSymptom?: string
+
+  // MS26 Specific - Pediatric History
+  pediatricPregnancyHistory?: string
+  pediatricDevelopment?: string
+
+  // ==================== III. KHÁM BỆNH (Examination) ====================
+  // 1. Khám chuyên khoa - Thị lực & Nhãn áp vào viện
+  rightEyeBasic?: EyeBasicExamData
+  leftEyeBasic?: EyeBasicExamData
+
+  // 2. Mi mắt (Eyelid)
+  rightEyeEyelid?: EyeEyelidData
+  leftEyeEyelid?: EyeEyelidData
+
+  // 3. Kết mạc (Conjunctiva)
+  rightEyeConjunctiva?: EyeConjunctivaData
+  leftEyeConjunctiva?: EyeConjunctivaData
+
+  // 4. Giác mạc (Cornea)
+  rightEyeCornea?: EyeCorneaExamData
+  leftEyeCornea?: EyeCorneaExamData
+
+  // 5. Củng mạc (Sclera)
+  rightEyeSclera?: EyeScleraExamData
+  leftEyeSclera?: EyeScleraExamData
+
+  // 6. Tiền phòng (Anterior Chamber)
+  rightEyeAnteriorChamber?: EyeAnteriorChamberData
+  leftEyeAnteriorChamber?: EyeAnteriorChamberData
+
+  // 7. Mống mắt & Đồng tử (Iris & Pupil)
+  rightEyeIrisPupil?: EyeIrisPupilData
+  leftEyeIrisPupil?: EyeIrisPupilData
+
+  // 8. Thể thủy tinh (Lens)
+  rightEyeLens?: EyeLensData
+  leftEyeLens?: EyeLensData
+
+  // 9. Dịch kính (Vitreous)
+  rightEyeVitreous?: EyeVitreousData
+  leftEyeVitreous?: EyeVitreousData
+
+  // 10. Đáy mắt - Đĩa thị & Hoàng điểm (Optic Disc & Macula)
+  rightEyeFundusDiscMacula?: EyeFundusDiscMaculaData
+  leftEyeFundusDiscMacula?: EyeFundusDiscMaculaData
+
+  // 11. Đáy mắt - Võng mạc & Mạch máu (Retina & Vessels)
+  rightEyeFundusRetinaVessel?: EyeFundusRetinaVesselData
+  leftEyeFundusRetinaVessel?: EyeFundusRetinaVesselData
+
+  // 12. Hốc mắt (Orbit)
+  rightEyeOrbit?: EyeOrbitData
+  leftEyeOrbit?: EyeOrbitData
+
+  // 2. Khám toàn thân
+  systemicExam?: SystemicExamData
+
+  // ==================== IV. CÁC XÉT NGHIỆM CẦN LÀM ====================
+  requiredTests?: string
+
+  // ==================== V. TÓM TẮT ====================
+  summary?: string
+
+  // ==================== VI. CHẨN ĐOÁN ====================
+  diagnosisMain?: string
+  diagnosisComorbid?: string
+  diagnosisDifferential?: string
+
+  // ==================== VII. TIÊN LƯỢNG ====================
+  prognosis?: string
+
+  // ==================== VIII. ĐIỀU TRỊ ====================
+  treatmentPlan?: string
+  dietPlan?: string
+  carePlan?: string
+
+  // ==================== VITAL SIGNS (when creating record) ====================
+  vitalPulse?: number
+  vitalTemperature?: number
+  vitalBloodPressure?: string
+  vitalRespiratoryRate?: number
+  vitalWeightKg?: number
+
+  // ==================== NOTES ====================
+  notes?: string
+
+  // ==================== B. TỔNG KẾT BỆNH ÁN (Summary) ====================
+  finalDiagnosisClinical?: string
+  finalDiagnosisCause?: string
+  treatmentProcessSummary?: string
+  surgerySummary?: string
+  dischargeConditionSummary?: string
+  dischargeVaOd?: string
+  dischargeVaOs?: string
+  dischargeIopOd?: string
+  dischargeIopOs?: string
+  followUpPlan?: string
+
+  // ==================== SUBSPECIALTY RECORDS ====================
+  traumaRecord?: TraumaRecordData
+  traumaSurgeries?: TraumaSurgeryData[]
+  lacrimalRecord?: LacrimalRecordData
+  glaucomaRecord?: GlaucomaRecordData
+  glaucomaHistories?: GlaucomaHistoryData[]
+  strabismusPtosisRecord?: StrabismusPtosisRecordData
+  pediatricRecord?: PediatricRecordData
+
+  // ==================== DIAGNOSES & CLINICAL SUMMARY ====================
+  diagnoses?: DiagnosisData[]
+  clinicalSummary?: string
+
+  // ==================== PRESCRIPTIONS ====================
+  prescription?: PrescriptionData
+  prescriptionItems?: PrescriptionItemData[]
+  glassesPrescription?: GlassesPrescriptionData
+
+  // ==================== TREATMENT PLANS & FOLLOW-UP ====================
+  prescriptions?: PrescriptionItemData[]
+  surgeryPlans?: SurgeryPlanData[]
+  followUpDate?: string
+  followUpDays?: number
+  followUpNote?: string
 }
 
 export interface CreateMedicalRecordResponse {
-  id_MedicalRecord: string
-  patientProfileId: string
-  recordType: RecordType
-  recordTypeLabel: string
-  chiefComplaint: string
-  diagnosisMain?: string
-  doctorName: string
-  appointmentDate: string
+  medicalRecordId: string
+  patientName?: string
+  recordTypeLabel?: string
+  appointmentDate?: string
+  doctorName?: string
   createdAt: string
   isLocked: boolean
 }
@@ -603,4 +1540,6 @@ export interface GetMedicalRecordsMeta {
 export interface GetMedicalRecordsResponse {
   items: GetMedicalRecordsItem[]
   meta: GetMedicalRecordsMeta
+}
+  isSuccess: boolean
 }

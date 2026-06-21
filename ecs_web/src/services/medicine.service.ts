@@ -88,6 +88,17 @@ export interface UpdateMedicineCatalogResponse {
   updatedAt: string
 }
 
+export interface DeleteMedicineCatalogRequest {
+  id: string
+}
+
+export interface DeleteMedicineCatalogResponse {
+  id: string
+  medicineName: string
+  isActive: boolean
+  updatedAt: string
+}
+
 class MedicineService {
   async list(params?: MedicineFilters): Promise<PaginatedResponse<Medicine>> {
     const response = await apiClient.get<PaginatedResponse<Medicine>>("/medicines", { params })
@@ -163,6 +174,13 @@ class MedicineService {
     )
     return response.data
   }
+
+  async toggleMedicineStatus(params: DeleteMedicineCatalogRequest): Promise<ApiResponse<DeleteMedicineCatalogResponse>> {
+  const response = await apiClient.put<ApiResponse<DeleteMedicineCatalogResponse>>(
+    `https://localhost:7070/api/v1/clinic-admin/medicine-catalog/${params.id}/delete`
+  );
+  return response.data;
+}
 }
 
 export const medicineService = new MedicineService()

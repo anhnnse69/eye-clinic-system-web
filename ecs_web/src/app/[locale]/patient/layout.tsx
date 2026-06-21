@@ -52,7 +52,7 @@ export default async function PatientLayout({
     {
       title: "Lịch sử",
       items: [
-        { label: "Lịch hẹn", href: "/patient/appointments", icon: "Calendar" },
+        { label: "Lịch hẹn", href: "/patient/appointment-history", icon: "Calendar" },
         { label: "Phản hồi", href: "/patient/feedback-history", icon: "MessageSquare" },
       ],
     }

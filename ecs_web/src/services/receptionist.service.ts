@@ -185,6 +185,17 @@ export interface ReceptionistCheckInResponse {
   queue: QueueInlineRowDto;
 }
 
+export interface ReceptionistCancelAppointmentRequest {
+  appointmentId: string;
+  noteReason: string;
+}
+
+export interface ReceptionistCancelAppointmentResponse {
+  appointmentId: string;
+  status: string;
+  updatedAt: string;
+}
+
 class ReceptionistService {
   /**
    * Lấy danh sách hồ sơ bệnh nhân kèm bộ lọc và phân trang từ server
@@ -333,11 +344,14 @@ class ReceptionistService {
     ).data;
   }
 
-  async handleCancel(appointmentId: string): Promise<ApiResponse<any>> {
-    return (
-      await apiClient.post<ApiResponse<any>>(`/receptionist/appointments/${appointmentId}/cancel`)
-    ).data;
-  }
+ async handleCancel(payload: ReceptionistCancelAppointmentRequest): Promise<ApiResponse<ReceptionistCancelAppointmentResponse>> {
+  return (
+    await apiClient.post<ApiResponse<ReceptionistCancelAppointmentResponse>>(
+      "/receptionist/appointments/cancel", 
+      payload
+    )
+  ).data;
+}
 }
 
 export const receptionistService = new ReceptionistService();

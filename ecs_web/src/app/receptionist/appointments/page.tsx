@@ -21,7 +21,6 @@ enum AppointmentStatus {
     NOSHOW = "NOSHOW"
 }
 
-// Hàm format tiền tệ nhanh
 const formatVND = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 };
@@ -41,7 +40,6 @@ const StatCard = ({ icon, title, value, iconBgClass, iconColorClass, shadowColor
         'text-sky-600': '#0ea5e9',
         'text-rose-600': '#f43f5e'
     };
-
     const activeColor = colorMap[iconColorClass] || '#94a3b8';
 
     return (
@@ -66,7 +64,7 @@ const StatCard = ({ icon, title, value, iconBgClass, iconColorClass, shadowColor
                 </div>
             </div>
 
-            {/* THANH CHẠY DƯỚI ĐÁY CARD - ĐÃ NÂNG CẤP HOVER SÁNG RÕ */}
+            {/* THANH CHẠY DƯỚI ĐÁY CARD */}
             <div className={`absolute bottom-0 left-0 right-0 overflow-hidden rounded-b-3xl bg-slate-100 transition-all duration-300 ${isHovered ? 'h-[6px]' : 'h-[4px]'}`}>
                 <div
                     className="h-full rounded-r-full transition-all duration-500"
@@ -74,7 +72,7 @@ const StatCard = ({ icon, title, value, iconBgClass, iconColorClass, shadowColor
                         width: isHovered ? '100%' : '16%',
                         backgroundColor: activeColor,
                         filter: isHovered ? `drop-shadow(0 0 4px ${activeColor})` : 'none',
-                        opacity: isHovered ? 1 : 0.75 // Bình thường hơi mờ nhẹ, hover sẽ đậm 100%
+                        opacity: isHovered ? 1 : 0.75
                     }}
                 />
             </div>
@@ -145,7 +143,6 @@ export default function ReceptionistDailyAppointmentsPage() {
     }
 
     // ======================== TÁC VỤ XỬ LÝ API ========================
-
     const handlePayDeposit = async (appointmentId: string) => {
         const isConfirmed = window.confirm("Xác nhận đã thu tiền cọc của bệnh nhân trực tiếp tại quầy?");
         if (!isConfirmed) return;
@@ -190,24 +187,36 @@ export default function ReceptionistDailyAppointmentsPage() {
         }
     }
 
-    const handleCancel = async (id: string) => {
-        const isConfirmed = window.confirm("Bạn có chắc chắn muốn HỦY lịch hẹn này không? Hành động này không thể hoàn tác!");
-        if (!isConfirmed) return;
-
-        try {
-            setIsActionLoading(true)
-            const response = await receptionistService.handleCancel(id)
-            if (response.codeMessage === "APP_MESSAGE_2000") {
-                alert("Đã hủy lịch hẹn thành công.")
-                setSelectedAppointment(prev => prev ? { ...prev, status: "CANCELLED" } : null)
-                fetchDailyAppointments()
-            }
-        } catch (error) {
-            alert("Lỗi hủy lịch hẹn: " + handleApiError(error))
-        } finally {
-            setIsActionLoading(false)
-        }
+const handleCancel = async (id: string) => {
+    const isConfirmed = window.confirm(
+        "Lưu ý: Lịch hẹn sau khi hủy sẽ không được hoàn lại chi phí (nếu có).\nBạn có chắc chắn muốn tiếp tục hủy lịch hẹn này không?"
+    );
+    if (!isConfirmed) return;
+    const reason = window.prompt("Nhập lý do hủy lịch hẹn khám này (bắt buộc):");
+    if (reason === null) return; 
+    if (!reason.trim()) {
+        alert("Bạn phải nhập lý do hủy lịch hẹn!");
+        return;
     }
+    try {
+        setIsActionLoading(true)
+        const response = await receptionistService.handleCancel({ 
+            appointmentId: id, 
+            noteReason: reason.trim() 
+        })
+        if (response.codeMessage === "APP_MESSAGE_2000") {
+            alert("Đã hủy lịch hẹn thành công.")
+            setSelectedAppointment(prev => prev ? { ...prev, status: "CANCELLED" } : null)
+            fetchDailyAppointments()
+        } else {
+            alert(`Không thể hủy lịch: ${response.codeMessage}`)
+        }
+    } catch (error) {
+        alert("Lỗi hủy lịch hẹn: " + handleApiError(error))
+    } finally {
+        setIsActionLoading(false)
+    }
+}
 
     const getStatusBadge = (status: string) => {
         switch (status) {
@@ -232,7 +241,7 @@ export default function ReceptionistDailyAppointmentsPage() {
                 return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-slate-50 text-slate-600">{status}</span>
         }
     }
-    // Xác định các hành động có thể thực hiện dựa trên trạng thái của lịch hẹn và ngày hiện tại
+
     const appointmentDateStr = selectedAppointment?.appointmentDate
     const todayStr = new Date().toLocaleDateString("fr-CA")
     const isToday = appointmentDateStr === todayStr
@@ -269,38 +278,10 @@ export default function ReceptionistDailyAppointmentsPage() {
 
             {/* DASHBOARD STATISTICS CARDS */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard
-                    icon={<Users className="h-5 w-5" />}
-                    title="Tổng lịch hẹn trong ngày"
-                    value={stats.total}
-                    iconBgClass="bg-indigo-50"
-                    iconColorClass="text-indigo-600"
-                    shadowColor="79, 70, 229"
-                />
-                <StatCard
-                    icon={<Activity className="h-5 w-5" />}
-                    title="Đã đến & Đang khám"
-                    value={stats.arrived}
-                    iconBgClass="bg-emerald-50"
-                    iconColorClass="text-emerald-600"
-                    shadowColor="5, 150, 105"
-                />
-                <StatCard
-                    icon={<CheckCircle2 className="h-5 w-5" />}
-                    title="Hoàn thành ca khám"
-                    value={stats.completed}
-                    iconBgClass="bg-sky-50"
-                    iconColorClass="text-sky-600"
-                    shadowColor="2, 132, 199"
-                />
-                <StatCard
-                    icon={<AlertTriangle className="h-5 w-5" />}
-                    title="Lịch bị hủy bỏ"
-                    value={stats.cancelled}
-                    iconBgClass="bg-rose-50"
-                    iconColorClass="text-rose-600"
-                    shadowColor="220, 38, 38"
-                />
+                <StatCard icon={<Users className="h-5 w-5" />} title="Tổng lịch hẹn trong ngày" value={stats.total} iconBgClass="bg-indigo-50" iconColorClass="text-indigo-600" shadowColor="79, 70, 229" />
+                <StatCard icon={<Activity className="h-5 w-5" />} title="Đã đến & Đang khám" value={stats.arrived} iconBgClass="bg-emerald-50" iconColorClass="text-emerald-600" shadowColor="5, 150, 105" />
+                <StatCard icon={<CheckCircle2 className="h-5 w-5" />} title="Hoàn thành ca khám" value={stats.completed} iconBgClass="bg-sky-50" iconColorClass="text-sky-600" shadowColor="2, 132, 199" />
+                <StatCard icon={<AlertTriangle className="h-5 w-5" />} title="Lịch bị hủy bỏ" value={stats.cancelled} iconBgClass="bg-rose-50" iconColorClass="text-rose-600" shadowColor="220, 38, 38" />
             </div>
 
             {/* THANH BỘ LỌC TÌM KIẾM */}
@@ -491,9 +472,10 @@ export default function ReceptionistDailyAppointmentsPage() {
                 )}
             </div>
 
-            {/* MODAL OVERLAY - THÔNG TIN TIẾP ĐÓN CHI TIẾT (ĐÃ FIX THEO CODE MẪU CAO CẤP) */}
+            {/* MODAL OVERLAY - ĐÃ KHÔI PHỤC HOÀN TOÀN THIẾT KẾ GỐC CỦA BẠN */}
             {selectedAppointment && (
                 <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
+                    {/* KHÔI PHỤC LẠI CLASS GỐC: w-full max-w-4xl (Không bị bóp nghẹt layout) */}
                     <div className="bg-white rounded-2xl w-full max-w-4xl border border-slate-200 shadow-2xl flex flex-col max-h-[95vh] overflow-hidden text-left space-y-0 animate-scale-in">
 
                         {/* MODAL HEADER */}
@@ -526,12 +508,13 @@ export default function ReceptionistDailyAppointmentsPage() {
                                         <div className="flex justify-between items-center"><span className="text-slate-400">Họ và tên:</span><span className="font-bold text-slate-900 text-sm">{selectedAppointment.patient.fullName}</span></div>
                                         <div className="flex justify-between items-center">
                                             <span className="text-slate-400">Giới tính:</span>
-                                            <span className={`font-bold px-2.5 py-0.5 rounded-md text-xs uppercase ${selectedAppointment.patient.gender?.toUpperCase() === "MALE" ? "bg-blue-50 text-blue-700 border border-blue-100" :
-                                                selectedAppointment.patient.gender?.toUpperCase() === "FEMALE" ? "bg-pink-50 text-pink-700 border border-pink-100" :
+                                            <span className={`font-bold px-2.5 py-0.5 rounded-md text-xs uppercase ${selectedAppointment.patient.gender?.toUpperCase() === "MALE" ?
+                                                "bg-blue-50 text-blue-700 border border-blue-100" :
+                                                selectedAppointment.patient.gender?.toUpperCase() === "FEMALE" ?
+                                                    "bg-pink-50 text-pink-700 border border-pink-100" :
                                                     "bg-slate-100 text-slate-700 border border-slate-200"
                                                 }`}>
-                                                {selectedAppointment.patient.gender?.toUpperCase() === "MALE" ? "Nam" :
-                                                    selectedAppointment.patient.gender?.toUpperCase() === "FEMALE" ? "Nữ" : "Khác"}
+                                                {selectedAppointment.patient.gender?.toUpperCase() === "MALE" ? "Nam" : selectedAppointment.patient.gender?.toUpperCase() === "FEMALE" ? "Nữ" : "Khác"}
                                             </span>
                                         </div>
                                         <div className="flex justify-between items-center"><span className="text-slate-400">Ngày sinh:</span><span className="font-bold text-slate-800">{selectedAppointment.patient.dob}</span></div>
@@ -569,16 +552,18 @@ export default function ReceptionistDailyAppointmentsPage() {
                                     <div className="p-4 bg-white border border-slate-200/80 rounded-xl space-y-3 text-xs shadow-sm flex-1 flex flex-col justify-center">
                                         <div className="flex justify-between items-center">
                                             <span className="text-slate-400">Trạng thái lịch hẹn:</span>
-                                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-wider uppercase ${selectedAppointment.status === AppointmentStatus.COMPLETED ? "bg-emerald-100 text-emerald-800" :
+                                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-wider uppercase ${selectedAppointment.status === AppointmentStatus.COMPLETED ?
+                                                "bg-emerald-100 text-emerald-800" :
                                                 selectedAppointment.status === AppointmentStatus.ARRIVED || selectedAppointment.status === AppointmentStatus.IN_PROGRESS ? "bg-indigo-100 text-indigo-800 animate-pulse" :
-                                                    selectedAppointment.status === AppointmentStatus.CONFIRMED ? "bg-sky-100 text-sky-800" :
-                                                        selectedAppointment.status === AppointmentStatus.CANCELLED ? "bg-rose-100 text-rose-800" :
+                                                    selectedAppointment.status === AppointmentStatus.CONFIRMED ?
+                                                        "bg-sky-100 text-sky-800" :
+                                                        selectedAppointment.status === AppointmentStatus.CANCELLED ?
+                                                            "bg-rose-100 text-rose-800" :
                                                             "bg-amber-100 text-amber-800"
                                                 }`}>
                                                 {selectedAppointment.status === AppointmentStatus.CONFIRMED ? "ĐÃ XÁC NHẬN" : selectedAppointment.status}
                                             </span>
                                         </div>
-
                                         <div className="pt-2.5 border-t border-slate-100 flex justify-between items-center">
                                             <span className="text-slate-400">Số thứ tự / Hàng đợi:</span>
                                             {selectedAppointment.queue ? (
@@ -604,7 +589,8 @@ export default function ReceptionistDailyAppointmentsPage() {
                                         </div>
                                         <div className="flex justify-between items-center pt-2.5 border-t border-slate-100">
                                             <span className="text-slate-400">Trạng thái xác thực:</span>
-                                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase border ${selectedAppointment.depositPaid ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-rose-50 text-rose-700 border-rose-200"
+                                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase border ${selectedAppointment.depositPaid ?
+                                                "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-rose-50 text-rose-700 border-rose-200"
                                                 }`}>
                                                 {selectedAppointment.depositPaid ? "✓ Đã thu quỹ thành công" : "✗ Chưa đóng tạm ứng"}
                                             </span>
@@ -632,13 +618,14 @@ export default function ReceptionistDailyAppointmentsPage() {
 
                         {/* MODAL ACTIONS FOOTER */}
                         <div className="p-4 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row justify-between items-center gap-3">
-                            {/* Nhóm hành động phụ (Bên trái: Báo vắng & Hủy lịch) */}
+                            {/* Nhóm hành động phụ (Bên trái) */}
                             <div className="flex items-center gap-2 w-full sm:w-auto">
-                               <button
+                                <button
                                     type="button"
                                     onClick={() => handleCancel(selectedAppointment.id)}
                                     disabled={!canCancel || isActionLoading}
-                                    className={`flex-1 sm:flex-none py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm ${canCancel && !isActionLoading ? 'bg-white text-rose-600 border border-slate-200 hover:bg-rose-50 hover:border-rose-300 active:scale-[0.98]' : 'bg-slate-100 text-slate-300 border border-slate-200 cursor-not-allowed'
+                                    className={`flex-1 sm:flex-none py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm ${canCancel && !isActionLoading ?
+                                        'bg-white text-rose-600 border border-slate-200 hover:bg-rose-50 hover:border-rose-300 active:scale-[0.98]' : 'bg-slate-100 text-slate-300 border border-slate-200 cursor-not-allowed'
                                         }`}
                                 >
                                     <CalendarX className="h-4 w-4" />
@@ -646,9 +633,8 @@ export default function ReceptionistDailyAppointmentsPage() {
                                 </button>
                             </div>
 
-                            {/* Nhóm hành động quyết định tiến trình (Bên phải: Thu cọc -> Tiếp đón sinh số khám) */}
+                            {/* Nhóm hành động quyết định tiến trình (Bên phải) */}
                             <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                                {/* NÚT THU TIỀN CỌC TẠI QUẦY (ĐÃ ĐƯỢC TÍCH HỢP HỢP NHẤT VÀO ĐÚNG VỊ TRÍ) */}
                                 {canPayDeposit && (
                                     <button
                                         type="button"

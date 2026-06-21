@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import {
   Calendar as CalendarIcon, Loader2, RefreshCw, Layers,
   DoorOpen, User, Phone, CheckCircle2,
-  XCircle, Ban, Plus, Pencil,
+  XCircle, Ban, Plus, Pencil, Trash2,
 } from "lucide-react";
 
 import {
@@ -54,6 +54,9 @@ export default function DoctorPersonalScheduleClient({
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editTarget, setEditTarget] = useState<ScheduleShiftItem | null>(null);
 
+  const [deleteTarget, setDeleteTarget] = useState<ScheduleShiftItem | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -87,6 +90,24 @@ export default function DoctorPersonalScheduleClient({
       fetchData();
     } catch {
       setError("Không thể thay đổi trạng thái slot. Vui lòng thử lại.");
+    }
+  };
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    setError(null);
+    try {
+      await doctorScheduleService.deleteSchedule(doctorId, deleteTarget.scheduleId);
+      setDeleteTarget(null);
+      fetchData();
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        "Không thể xóa ca này. Ca đã có bệnh nhân đặt lịch.";
+      setError(msg);
+      setDeleteTarget(null); // đóng modal, hiện lỗi ở ngoài
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -218,6 +239,19 @@ export default function DoctorPersonalScheduleClient({
                       <Pencil className="h-3 w-3" />
                       Sửa ca
                     </button>
+                    <button
+                      onClick={() => setDeleteTarget(shift)}
+                      disabled={disableEdit}
+                      title={
+                        disableEdit
+                          ? "Ca này đã có bệnh nhân đặt lịch, không thể xóa"
+                          : "Xóa ca này"
+                      }
+                      className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border border-red-200 text-red-700 bg-white hover:bg-red-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                      Xóa ca
+                    </button>
                   </div>
                 </div>
 
@@ -299,6 +333,38 @@ export default function DoctorPersonalScheduleClient({
             fetchData();
           }}
         />
+      )}
+      {deleteTarget && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl p-6 space-y-4">
+            <h3 className="font-bold text-lg text-slate-800">Xóa ca trực</h3>
+            <p className="text-sm text-slate-600">
+              Bạn chắc chắn muốn xóa{" "}
+              <span className="font-semibold">
+                {SHIFT_TITLE[deleteTarget.shiftType]}
+              </span>
+              ? Hành động này không thể hoàn tác.
+            </p>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                disabled={deleting}
+                className="px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition disabled:opacity-50"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                disabled={deleting}
+                className="px-5 py-2.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-xl transition disabled:opacity-50 flex items-center gap-2"
+              >
+                {deleting && <Loader2 className="w-4 h-4 animate-spin" />}
+                Xác nhận xóa
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -20,6 +20,9 @@ export default function MedicineCatalogManagementPage() {
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
+  // State theo dõi xem ID thuốc nào đang được gạt để hiển thị hiệu ứng đợi riêng biệt
+  const [updatingId, setUpdatingId] = useState<string | null>(null)
+
   const [meta, setMeta] = useState<{
     page: number
     size: number
@@ -39,19 +42,19 @@ export default function MedicineCatalogManagementPage() {
   const [pageNumber, setPageNumber] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(10)
   const [isActiveFilter, setIsActiveFilter] = useState<string>("all")
-  const [searchTerm, setSearchTerm] = useState<string>("") // Sửa lỗi: Khởi tạo giá trị chuỗi rỗng mặc định để tránh lỗi Controlled component
+  const [searchTerm, setSearchTerm] = useState<string>("") 
   const [debouncedSearch, setDebouncedSearch] = useState<string>("")
 
-  // Debounce tìm kiếm tự động sau 500ms để giảm tần suất gọi API liên tục
+  // Debounce tìm kiếm tự động sau 500ms
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchTerm)
-      setPageNumber(1) // Reset về trang 1 khi bắt đầu gõ tìm kiếm từ khoá mới
+      setPageNumber(1)
     }, 500)
     return () => clearTimeout(handler)
   }, [searchTerm])
 
-  // Hàm load danh sách dữ liệu danh mục thuốc từ API phối hợp phân trang & bộ lọc
+  // Hàm load danh sách dữ liệu danh mục thuốc
   const loadMedicineData = useCallback(async () => {
     try {
       setLoading(true)
@@ -85,17 +88,15 @@ export default function MedicineCatalogManagementPage() {
         })
       }
     } catch (err: any) {
-      // Map mã lỗi định danh từ Backend (C# ApiResponse Fail Codes)
-      const errCode = err?.response?.data?.codeMessage
-      if (errCode === "APP_MESSAGE_4001") {
-        setError("Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại!")
-      } else if (errCode === "APP_MESSAGE_4020") {
-        setError("Không tìm thấy thông tin phòng khám gắn liền với tài khoản quản trị của bạn!")
-      } else if (errCode === "APP_MESSAGE_4015") {
-        setError("Tên thuốc này đã tồn tại trong danh mục của phòng khám!")
-      } else {
-        setError("Không thể kết nối tới máy chủ hệ thống. Vui lòng thử lại sau!")
-      }
+      // Bắt lỗi chuẩn cấu trúc hệ thống dựa trên tài liệu tập huấn
+      const errCode = err?.response?.data?.codeMessage || err?.codeMessage || err?.data?.codeMessage;
+      const errorMessages: Record<string, string> = {
+        "APP_MESSAGE_4001": "Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại!",
+        "APP_MESSAGE_4020": "Không tìm thấy thông tin phòng khám gắn liền với tài khoản quản trị của bạn!",
+        "APP_MESSAGE_4015": "Tên thuốc này đã tồn tại trong danh mục của phòng khám!"
+      };
+      const fallbackMessage = "Không thể kết nối tới máy chủ hệ thống hoặc dữ liệu không hợp lệ. Vui lòng thử lại sau!";
+      setError(errorMessages[errCode] || fallbackMessage);
       setMedicineList([])
     } finally {
       setLoading(false)
@@ -105,6 +106,35 @@ export default function MedicineCatalogManagementPage() {
   useEffect(() => {
     loadMedicineData()
   }, [loadMedicineData])
+
+  // Hàm xử lý khi bấm vào nút gạt đổi trạng thái hoạt động/khóa thuốc
+  const handleToggleActive = async (medicineId: string, currentStatus: boolean) => {
+    try {
+      setUpdatingId(medicineId)
+
+      // Gọi hàm của service và truyền tham số dạng object Request { id: ... } đúng chuẩn quy định
+      await medicineService.toggleMedicineStatus({ id: medicineId })
+
+      // Cập nhật nhanh UI ở client để nút gạt chuyển đổi tức thì mà không cần reload trang
+      setMedicineList(prev =>
+        prev.map(item =>
+          item.id === medicineId ? { ...item, isActive: !currentStatus } : item
+        )
+      )
+    } catch (err: any) {
+      // Bắt lỗi khi gạt nút đổi trạng thái theo cấu trúc Dictionary chuẩn
+      const errCode = err?.response?.data?.codeMessage || err?.codeMessage || err?.data?.codeMessage;
+      const errorMessages: Record<string, string> = {
+        "APP_MESSAGE_4001": "Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại!",
+        "APP_MESSAGE_4020": "Không tìm thấy thông tin phòng khám gắn liền với quyền quản trị của bạn!",
+        "APP_MESSAGE_4019": "Không tìm thấy bản ghi danh mục thuốc này trên hệ thống!"
+      };
+      const fallbackMessage = "Cập nhật trạng thái thuốc thất bại. Vui lòng thử lại sau!";
+      alert(errorMessages[errCode] || fallbackMessage);
+    } finally {
+      setUpdatingId(null)
+    }
+  }
 
   return (
     <div className="space-y-6 text-left p-4 md:p-6 w-full">
@@ -186,7 +216,7 @@ export default function MedicineCatalogManagementPage() {
                     <th className="p-4">Hàm lượng / Nồng độ</th>
                     <th className="p-4">Đơn vị / Dạng bào chế</th>
                     <th className="p-4">Nhà sản xuất</th>
-                    <th className="p-4 text-center">Trạng thái</th>
+                    <th className="p-4 text-center">Trạng thái hoạt động</th>
                     <th className="p-4 text-center">Thao tác</th>
                   </tr>
                 </thead>
@@ -218,16 +248,34 @@ export default function MedicineCatalogManagementPage() {
                         <td className="p-4 text-on-surface-variant text-sm">
                           {medicine.manufacturer || "---"}
                         </td>
-                        <td className="p-4 text-center">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
-                            medicine.isActive ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-neutral-50 text-neutral-600 border border-neutral-200"
-                          }`}>
-                            {medicine.isActive ? "Hoạt động" : "Tạm dừng"}
-                          </span>
+                        
+                        {/* NÚT GẠT (TOGGLE SWITCH) 2 CHIỀU ĐÃ ĐƯỢC TÍCH HỢP */}
+                        <td className="p-4">
+                          <div className="flex flex-col items-center justify-center gap-1">
+                            <button
+                              type="button"
+                              disabled={updatingId !== null}
+                              onClick={() => handleToggleActive(medicine.id, medicine.isActive)}
+                              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                                medicine.isActive ? "bg-emerald-500" : "bg-neutral-300"
+                              } ${updatingId === medicine.id ? "opacity-50 cursor-wait" : ""}`}
+                            >
+                              <span
+                                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                                  medicine.isActive ? "translate-x-5" : "translate-x-0"
+                                }`}
+                              />
+                            </button>
+                            <span className="text-[11px] font-medium text-on-surface-variant/80">
+                              {medicine.isActive ? "Hoạt động" : "Tạm dừng"}
+                            </span>
+                          </div>
                         </td>
+
                         <td className="p-4 text-center">
                           <Link
-                            href={`/clinic-admin/medicine-catalog/${medicine.id}`}
+                            href={`/clinic-admin/medicine-catalog/edit/${medicine.id}`}
+                            onClick={() => sessionStorage.setItem("currentEditMedicine", JSON.stringify(medicine))}
                             className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 border border-outline-variant rounded-xl text-label-sm text-primary font-medium bg-surface-container-lowest hover:bg-primary/5 transition-colors shadow-sm"
                           >
                             <Pencil className="h-3.5 w-3.5" /> Sửa

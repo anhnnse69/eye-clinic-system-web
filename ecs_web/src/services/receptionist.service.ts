@@ -155,7 +155,7 @@ export interface DailyAppointmentItemResponse {
   slotId: string;
   appointmentDate: string; // "yyyy-MM-dd"
   symptoms: string | null;
-  status: "PENDING" | "DEPOSIT_PAID" | "BOOKED" | "ARRIVED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "NOSHOW";
+  status: "PENDING" | "DEPOSIT_PAID" | "CONFIRMED" | "BOOKED" | "ARRIVED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED" | "NOSHOW";
   depositAmount: number;
   depositPaid: boolean;
   bookingSource: string;
@@ -163,6 +163,26 @@ export interface DailyAppointmentItemResponse {
   doctor: DoctorProfileRowDto;
   slot: TimeSlotRowDto;
   queue: QueueInlineRowDto | null;
+}
+
+export interface ReceptionistPayDepositRequest {
+  appointmentId: string;
+}
+
+export interface ReceptionistPayDepositResponse {
+  appointmentId: string;
+  depositPaid: boolean;
+  updatedAt: string;
+}
+
+export interface ReceptionistCheckInRequest {
+  appointmentId: string;
+}
+
+export interface ReceptionistCheckInResponse {
+  appointmentId: string;
+  status: string;
+  queue: QueueInlineRowDto;
 }
 
 class ReceptionistService {
@@ -301,30 +321,18 @@ class ReceptionistService {
     ).data;
   }
 
-  /**
-   * Đánh dấu bệnh nhân đã đến phòng khám (Chuyển trạng thái thành ARRIVED và cấp STT vào hàng đợi)
-   * Route BE: POST /api/v1/receptionist/appointments/{id}/arrive
-   */
-  async handleArrived(appointmentId: string): Promise<ApiResponse<any>> {
+  async handleArrived(payload: ReceptionistCheckInRequest): Promise<ApiResponse<ReceptionistCheckInResponse>> {
     return (
-      await apiClient.post<ApiResponse<any>>(`/receptionist/appointments/${appointmentId}/arrive`)
+      await apiClient.post<ApiResponse<ReceptionistCheckInResponse>>("/receptionist/appointments/arrive", payload)
     ).data;
   }
 
-  /**
-   * Đánh dấu bệnh nhân vắng mặt không đến khám (Chuyển trạng thái thành NOSHOW)
-   * Route BE: POST /api/v1/receptionist/appointments/{id}/noshow
-   */
-  async handleNoShow(appointmentId: string): Promise<ApiResponse<any>> {
+  async payDepositAtCounter(payload: ReceptionistPayDepositRequest): Promise<ApiResponse<ReceptionistPayDepositResponse>> {
     return (
-      await apiClient.post<ApiResponse<any>>(`/receptionist/appointments/${appointmentId}/noshow`)
+      await apiClient.post<ApiResponse<ReceptionistPayDepositResponse>>("/receptionist/appointments/pay-deposit", payload)
     ).data;
   }
 
-  /**
-   * Hủy lịch hẹn khám bệnh theo yêu cầu (Chuyển trạng thái thành CANCELLED)
-   * Route BE: POST /api/v1/receptionist/appointments/{id}/cancel
-   */
   async handleCancel(appointmentId: string): Promise<ApiResponse<any>> {
     return (
       await apiClient.post<ApiResponse<any>>(`/receptionist/appointments/${appointmentId}/cancel`)

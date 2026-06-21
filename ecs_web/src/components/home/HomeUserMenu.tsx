@@ -8,6 +8,7 @@ import {
   Loader2,
   LogOut,
   User as UserIcon,
+  Calendar,
   AlertCircle,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -81,6 +82,11 @@ export default function HomeUserMenu({ accountInfoHref }: HomeUserMenuProps) {
     setOpen(false)
     const href = accountInfoHref ?? `/${locale}/patient/account-info`
     router.push(href)
+  }
+
+  const handleBookAppointment = () => {
+    setOpen(false)
+    router.push("home/book-appointment")
   }
 
   const handleLogout = async () => {
@@ -221,6 +227,18 @@ export default function HomeUserMenu({ accountInfoHref }: HomeUserMenuProps) {
               <span className="text-[11px] text-on-surface-variant">
                 {t("userMenu.accountInfoSubtitle")}
               </span>
+            </div>
+          </button>
+
+          <button
+            role="menuitem"
+            onClick={handleBookAppointment}
+            className="w-full flex items-center gap-sm px-4 py-3 text-sm text-on-surface hover:bg-surface-container transition-colors"
+          >
+            <Calendar className="h-4 w-4 text-on-surface-variant" />
+            <div className="flex flex-col items-start">
+              <span className="font-medium">Đặt lịch</span>
+              <span className="text-[11px] text-on-surface-variant">Đặt lịch khám</span>
             </div>
           </button>
 

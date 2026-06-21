@@ -187,36 +187,36 @@ export default function ReceptionistDailyAppointmentsPage() {
         }
     }
 
-const handleCancel = async (id: string) => {
-    const isConfirmed = window.confirm(
-        "Lưu ý: Lịch hẹn sau khi hủy sẽ không được hoàn lại chi phí (nếu có).\nBạn có chắc chắn muốn tiếp tục hủy lịch hẹn này không?"
-    );
-    if (!isConfirmed) return;
-    const reason = window.prompt("Nhập lý do hủy lịch hẹn khám này (bắt buộc):");
-    if (reason === null) return; 
-    if (!reason.trim()) {
-        alert("Bạn phải nhập lý do hủy lịch hẹn!");
-        return;
-    }
-    try {
-        setIsActionLoading(true)
-        const response = await receptionistService.handleCancel({ 
-            appointmentId: id, 
-            noteReason: reason.trim() 
-        })
-        if (response.codeMessage === "APP_MESSAGE_2000") {
-            alert("Đã hủy lịch hẹn thành công.")
-            setSelectedAppointment(prev => prev ? { ...prev, status: "CANCELLED" } : null)
-            fetchDailyAppointments()
-        } else {
-            alert(`Không thể hủy lịch: ${response.codeMessage}`)
+    const handleCancel = async (id: string) => {
+        const isConfirmed = window.confirm(
+            "Lưu ý: Lịch hẹn sau khi hủy sẽ không được hoàn lại chi phí (nếu có).\nBạn có chắc chắn muốn tiếp tục hủy lịch hẹn này không?"
+        );
+        if (!isConfirmed) return;
+        const reason = window.prompt("Nhập lý do hủy lịch hẹn khám này (bắt buộc):");
+        if (reason === null) return;
+        if (!reason.trim()) {
+            alert("Bạn phải nhập lý do hủy lịch hẹn!");
+            return;
         }
-    } catch (error) {
-        alert("Lỗi hủy lịch hẹn: " + handleApiError(error))
-    } finally {
-        setIsActionLoading(false)
+        try {
+            setIsActionLoading(true)
+            const response = await receptionistService.handleCancel({
+                appointmentId: id,
+                noteReason: reason.trim()
+            })
+            if (response.codeMessage === "APP_MESSAGE_2000") {
+                alert("Đã hủy lịch hẹn thành công.")
+                setSelectedAppointment(prev => prev ? { ...prev, status: "CANCELLED" } : null)
+                fetchDailyAppointments()
+            } else {
+                alert(`Không thể hủy lịch: ${response.codeMessage}`)
+            }
+        } catch (error) {
+            alert("Lỗi hủy lịch hẹn: " + handleApiError(error))
+        } finally {
+            setIsActionLoading(false)
+        }
     }
-}
 
     const getStatusBadge = (status: string) => {
         switch (status) {
@@ -248,7 +248,13 @@ const handleCancel = async (id: string) => {
 
     const canPayDeposit = selectedAppointment && isToday && !selectedAppointment.depositPaid && ["PENDING", "CONFIRMED", "BOOKED"].includes(selectedAppointment.status)
     const canArrive = selectedAppointment && isToday && selectedAppointment.depositPaid && ["CONFIRMED", "BOOKED", "NOSHOW"].includes(selectedAppointment.status)
-    const canCancel = selectedAppointment && isToday && ["PENDING", "DEPOSIT_PAID", "CONFIRMED", "BOOKED"].includes(selectedAppointment.status)
+    const canCancel =
+        selectedAppointment &&
+        appointmentDateStr &&
+        appointmentDateStr >= todayStr &&
+        ["PENDING", "DEPOSIT_PAID", "CONFIRMED", "BOOKED"].includes(
+            selectedAppointment.status
+        )
 
     const totalPages = Math.ceil(totalItems / pageSize)
 

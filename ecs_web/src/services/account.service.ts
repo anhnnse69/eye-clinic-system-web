@@ -25,6 +25,24 @@ interface UpdateAccountData {
   isActive?: boolean
 }
 
+export interface GetAccountsRequest {
+  pageNumber: number;
+  pageSize: number;
+  role?: number | string; 
+  searchTerm?: string;
+}
+
+export interface GetAccountResponse {
+  id: string;
+  phone: string;
+  email: string;
+  fullName: string;
+  role: string;
+  isActive: boolean;
+  avatarUrl: string | null;
+  createdAt: string;
+}
+
 class AccountService {
   async list(params?: AccountFilters): Promise<PaginatedResponse<User>> {
     const response = await apiClient.get<PaginatedResponse<User>>("/accounts", { params })
@@ -63,6 +81,21 @@ class AccountService {
       `/accounts/${id}/reset-password`
     )
     return response.data
+  }
+
+  async getAccounts(params: GetAccountsRequest): Promise<ApiResponse<GetAccountResponse[]>> {
+    const response = await apiClient.get<ApiResponse<GetAccountResponse[]>>(
+      "https://localhost:7070/api/v1/system-admin/accounts",
+      {
+        params: {
+          pageNumber: params.pageNumber,
+          pageSize: params.pageSize,
+          role: params.role || undefined,
+          searchTerm: params.searchTerm || undefined,
+        },
+      }
+    );
+    return response.data;
   }
 }
 

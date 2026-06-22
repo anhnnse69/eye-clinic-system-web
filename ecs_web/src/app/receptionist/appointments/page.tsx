@@ -221,7 +221,7 @@ export default function ReceptionistDailyAppointmentsPage() {
     const getStatusBadge = (status: string) => {
         switch (status) {
             case "PENDING":
-                return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-100">Chờ duyệt cọc</span>
+                return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-100">Chờ cọc</span>
             case "DEPOSIT_PAID":
                 return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100">Đã đóng cọc</span>
             case "CONFIRMED":
@@ -378,57 +378,77 @@ export default function ReceptionistDailyAppointmentsPage() {
                                     </td>
                                 </tr>
                             ) : (
-                                appointments.map((item) => (
-                                    <tr key={item.id} className="hover:bg-slate-50/60 transition-colors group">
-                                        <td className="py-3.5 px-4">
-                                            <div className="font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">{item.patient.fullName}</div>
-                                            <div className="text-[11px] text-slate-400 font-semibold mt-0.5">{item.patient.phoneNumber || "Không có SĐT"}</div>
-                                        </td>
-                                        <td className="py-3.5 px-4">
-                                            <div className="flex items-center gap-1 font-bold text-slate-700">
-                                                <Clock className="h-3.5 w-3.5 text-slate-400" />
-                                                {item.slot.startTime.split('T')[1]?.substring(0, 5) || "00:00"} - {item.slot.endTime.split('T')[1]?.substring(0, 5) || "00:00"}
-                                            </div>
-                                            <div className="text-[10px] uppercase font-black tracking-wider text-slate-400 mt-0.5">{item.slot.shiftType}</div>
-                                        </td>
-                                        <td className="py-3.5 px-4">
-                                            <div className="font-bold text-slate-800">{item.doctor.fullName}</div>
-                                            <div className="text-[11px] font-bold text-indigo-500 mt-0.5">{item.doctor.clinicRoomName || "Chưa gán phòng"}</div>
-                                        </td>
-                                        <td className="py-3.5 px-4 max-w-[200px] truncate text-slate-500 font-normal">
-                                            {item.symptoms || <span className="text-slate-300 italic">Không có triệu chứng ghi nhận</span>}
-                                        </td>
-                                        <td className="py-3.5 px-4">
-                                            <div className="font-bold text-slate-800">{item.depositAmount.toLocaleString('vi-VN')}đ</div>
-                                            <div className="mt-0.5">
-                                                {item.depositPaid ? (
-                                                    <span className="text-[10px] font-black text-emerald-600 uppercase tracking-wide">Đã đóng cọc</span>
+                                appointments.map((item) => {
+                                    // Kiểm tra xem hình thức đăng ký có phải là Walk-in trực tiếp tại quầy hay không
+                                    const isWalkIn = item.bookingSource === "WALKIN" || item.bookingSource === "WALK_IN";
+                                    return (
+                                        <tr 
+                                            key={item.id} 
+                                            className={`transition-colors group ${
+                                                isWalkIn 
+                                                    ? 'bg-amber-50/70 hover:bg-amber-100/60' 
+                                                    : 'hover:bg-slate-50/60'
+                                            }`}
+                                        >
+                                            <td className="py-3.5 px-4">
+                                                <div className="font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">{item.patient.fullName}</div>
+                                                <div className="text-[11px] text-slate-400 font-semibold mt-0.5">{item.patient.phoneNumber || "Không có SĐT"}</div>
+                                            </td>
+                                            <td className="py-3.5 px-4">
+                                                {isWalkIn ? (
+                                                    // Nếu là Walk-in: Ẩn khung giờ chi tiết, chỉ hiển thị tên Ca làm việc kèm Icon
+                                                    <div className="flex items-center gap-1 font-bold text-slate-700">
+                                                        {/* <Clock className="h-3.5 w-3.5 text-slate-400" /> */}
+                                                        {/* <span className="text-slate-700 font-bold">Theo ca làm việc</span> */}
+                                                    </div>
                                                 ) : (
-                                                    <span className="text-[10px] font-black text-rose-500 uppercase tracking-wide">Chưa thu cọc</span>
+                                                    // Nếu là lịch hẹn bình thường: Hiển thị đầy đủ khung giờ
+                                                    <div className="flex items-center gap-1 font-bold text-slate-700">
+                                                        <Clock className="h-3.5 w-3.5 text-slate-400" />
+                                                        {item.slot.startTime.split('T')[1]?.substring(0, 5) || "00:00"} - {item.slot.endTime.split('T')[1]?.substring(0, 5) || "00:00"}
+                                                    </div>
                                                 )}
-                                            </div>
-                                        </td>
-                                        <td className="py-3.5 px-4">{getStatusBadge(item.status)}</td>
-                                        <td className="py-3.5 px-4 text-center">
-                                            {item.queue ? (
-                                                <div className="inline-block px-2.5 py-1 bg-emerald-600 text-white font-black rounded-lg text-xs shadow-sm">
-                                                    #{item.queue.queueNumber}
+                                                <div className="text-[10px] uppercase font-black tracking-wider text-slate-400 mt-0.5">{item.slot.shiftType}</div>
+                                            </td>
+                                            <td className="py-3.5 px-4">
+                                                <div className="font-bold text-slate-800">{item.doctor.fullName}</div>
+                                                <div className="text-[11px] font-bold text-indigo-500 mt-0.5">{item.doctor.clinicRoomName || "Chưa gán phòng"}</div>
+                                            </td>
+                                            <td className="py-3.5 px-4 max-w-[200px] truncate text-slate-500 font-normal">
+                                                {item.symptoms || <span className="text-slate-300 italic">Không có triệu chứng ghi nhận</span>}
+                                            </td>
+                                            <td className="py-3.5 px-4">
+                                                <div className="font-bold text-slate-800">{item.depositAmount.toLocaleString('vi-VN')}đ</div>
+                                                <div className="mt-0.5">
+                                                    {item.depositPaid ? (
+                                                        <span className="text-[10px] font-black text-emerald-600 uppercase tracking-wide">Đã đóng cọc</span>
+                                                    ) : (
+                                                        <span className="text-[10px] font-black text-rose-500 uppercase tracking-wide">Chưa thu cọc</span>
+                                                    )}
                                                 </div>
-                                            ) : (
-                                                <span className="text-slate-300 font-semibold italic text-[11px]">Chưa cấp số</span>
-                                            )}
-                                        </td>
-                                        <td className="py-3.5 px-4 text-right">
-                                            <button
-                                                type="button"
-                                                onClick={() => setSelectedAppointment(item)}
-                                                className="bg-white border border-slate-200 hover:border-indigo-300 hover:text-indigo-600 text-slate-600 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95"
-                                            >
-                                                Xem & Xử lý
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
+                                            </td>
+                                            <td className="py-3.5 px-4">{getStatusBadge(item.status)}</td>
+                                            <td className="py-3.5 px-4 text-center">
+                                                {item.queue ? (
+                                                    <div className="inline-block px-2.5 py-1 bg-emerald-600 text-white font-black rounded-lg text-xs shadow-sm">
+                                                        #{item.queue.queueNumber}
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-slate-300 font-semibold italic text-[11px]">Chưa cấp số</span>
+                                                )}
+                                            </td>
+                                            <td className="py-3.5 px-4 text-right">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setSelectedAppointment(item)}
+                                                    className="bg-white border border-slate-200 hover:border-indigo-300 hover:text-indigo-600 text-slate-600 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95"
+                                                >
+                                                    Xem & Xử lý
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
                             )}
                         </tbody>
                     </table>
@@ -443,10 +463,7 @@ export default function ReceptionistDailyAppointmentsPage() {
                         <div className="flex items-center gap-2">
                             <select
                                 value={pageSize}
-                                onChange={(e) => {
-                                    setPageSize(Number(e.target.value))
-                                    setPageNumber(1)
-                                }}
+                                onChange={(e) => { setPageSize(Number(e.target.value)); setPageNumber(1); }}
                                 className="bg-white border border-slate-200 text-slate-600 px-2 py-1.5 rounded-lg text-xs focus:outline-none cursor-pointer mr-2 font-medium hover:bg-slate-50 transition-colors"
                             >
                                 <option value={5}>5 lịch / trang</option>
@@ -461,11 +478,9 @@ export default function ReceptionistDailyAppointmentsPage() {
                             >
                                 <ChevronLeft className="h-4 w-4" />
                             </button>
-
                             <span className="px-3 py-1 bg-indigo-600 text-white font-bold rounded-lg text-xs">
                                 {pageNumber} / {totalPages}
                             </span>
-
                             <button
                                 disabled={pageNumber === totalPages}
                                 onClick={() => setPageNumber(p => Math.min(p + 1, totalPages))}
@@ -478,12 +493,10 @@ export default function ReceptionistDailyAppointmentsPage() {
                 )}
             </div>
 
-            {/* MODAL OVERLAY - ĐÃ KHÔI PHỤC HOÀN TOÀN THIẾT KẾ GỐC CỦA BẠN */}
+            {/* MODAL OVERLAY */}
             {selectedAppointment && (
                 <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
-                    {/* KHÔI PHỤC LẠI CLASS GỐC: w-full max-w-4xl (Không bị bóp nghẹt layout) */}
                     <div className="bg-white rounded-2xl w-full max-w-4xl border border-slate-200 shadow-2xl flex flex-col max-h-[95vh] overflow-hidden text-left space-y-0 animate-scale-in">
-
                         {/* MODAL HEADER */}
                         <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
                             <div>
@@ -502,8 +515,6 @@ export default function ReceptionistDailyAppointmentsPage() {
 
                         {/* MODAL BODY */}
                         <div className="p-6 overflow-y-auto flex-1 space-y-6 bg-slate-50/30">
-
-                            {/* HÀNG 1: HÀNH CHÍNH BỆNH NHÂN NGANG HÀNG THÔNG TIN CHỈ ĐỊNH KHÁM */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 {/* KHỐI: HÀNH CHÍNH BỆNH NHÂN */}
                                 <div className="space-y-2 flex flex-col">
@@ -514,144 +525,107 @@ export default function ReceptionistDailyAppointmentsPage() {
                                         <div className="flex justify-between items-center"><span className="text-slate-400">Họ và tên:</span><span className="font-bold text-slate-900 text-sm">{selectedAppointment.patient.fullName}</span></div>
                                         <div className="flex justify-between items-center">
                                             <span className="text-slate-400">Giới tính:</span>
-                                            <span className={`font-bold px-2.5 py-0.5 rounded-md text-xs uppercase ${selectedAppointment.patient.gender?.toUpperCase() === "MALE" ?
-                                                "bg-blue-50 text-blue-700 border border-blue-100" :
-                                                selectedAppointment.patient.gender?.toUpperCase() === "FEMALE" ?
-                                                    "bg-pink-50 text-pink-700 border border-pink-100" :
-                                                    "bg-slate-100 text-slate-700 border border-slate-200"
-                                                }`}>
+                                            <span className={`font-bold px-2.5 py-0.5 rounded-md text-xs uppercase ${selectedAppointment.patient.gender?.toUpperCase() === "MALE" ? "bg-blue-50 text-blue-700 border border-blue-100" : selectedAppointment.patient.gender?.toUpperCase() === "FEMALE" ? "bg-pink-50 text-pink-700 border border-pink-100" : "bg-slate-100 text-slate-700 border border-slate-200"}`}>
                                                 {selectedAppointment.patient.gender?.toUpperCase() === "MALE" ? "Nam" : selectedAppointment.patient.gender?.toUpperCase() === "FEMALE" ? "Nữ" : "Khác"}
                                             </span>
                                         </div>
-                                        <div className="flex justify-between items-center"><span className="text-slate-400">Ngày sinh:</span><span className="font-bold text-slate-800">{selectedAppointment.patient.dob}</span></div>
-                                        <div className="flex justify-between items-center"><span className="text-slate-400">Số điện thoại:</span><span className="font-bold text-indigo-600 select-all">{selectedAppointment.patient.phoneNumber || "Chưa cập nhật"}</span></div>
-                                        <div className="flex justify-between items-center"><span className="text-slate-400">Mã số BHYT:</span><span className="font-mono font-bold text-slate-700 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded-md">{selectedAppointment.patient.bhytNumber || "Không đăng ký"}</span></div>
+                                        <div className="flex justify-between items-center"><span className="text-slate-400">Ngày sinh:</span><span className="font-bold text-slate-700">{new Date(selectedAppointment.patient.dob).toLocaleDateString('vi-VN')}</span></div>
+                                        <div className="flex justify-between items-center"><span className="text-slate-400">Số điện thoại:</span><span className="font-bold text-slate-700">{selectedAppointment.patient.phoneNumber || "N/A"}</span></div>
+                                        <div className="flex justify-between items-center"><span className="text-slate-400">Mã BHYT:</span><span className="font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200 font-mono text-[11px]">{selectedAppointment.patient.bhytNumber || "Không đăng ký"}</span></div>
                                     </div>
                                 </div>
 
-                                {/* KHỐI: THÔNG TIN CHỈ ĐỊNH KHÁM */}
+                                {/* KHỐI: THÔNG TIN LỊCH KHÁM */}
                                 <div className="space-y-2 flex flex-col">
                                     <h4 className="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-1.5 pl-1">
-                                        <Calendar className="h-3.5 w-3.5 text-indigo-500" /> Thông tin chỉ định khám
+                                        <Clock className="h-3.5 w-3.5 text-indigo-500" /> Thông tin chỉ định khám
                                     </h4>
                                     <div className="p-4 bg-white border border-slate-200/80 rounded-xl space-y-2.5 text-xs shadow-sm flex-1 flex flex-col justify-between">
-                                        <div className="flex justify-between items-center"><span className="text-slate-400">Bác sĩ khám:</span><span className="font-bold text-slate-800">{selectedAppointment.doctor.fullName}</span></div>
-                                        <div className="flex justify-between items-center"><span className="text-slate-400">Phòng khám:</span><span className="font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">{selectedAppointment.doctor.clinicRoomName}</span></div>
-                                        <div className="flex justify-between items-center"><span className="text-slate-400">Giờ hẹn khám:</span><span className="font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded-md">{selectedAppointment.slot.startTime.split('T')[1]?.substring(0, 5) || "00:00"} - {selectedAppointment.slot.endTime.split('T')[1]?.substring(0, 5) || "00:00"}</span></div>
-                                        <div className="pt-2 border-t border-slate-100 flex flex-col gap-1">
-                                            <span className="text-slate-400 font-medium">Triệu chứng lâm sàng:</span>
-                                            <p className="p-2 bg-slate-50 border border-slate-200/60 rounded-lg text-[11px] text-slate-600 italic line-clamp-2">
-                                                "{selectedAppointment.symptoms || "Không có ghi chú triệu chứng đặc biệt."}"
-                                            </p>
+                                        <div className="flex justify-between items-center"><span className="text-slate-400">Bác sĩ phụ trách:</span><span className="font-bold text-slate-900">{selectedAppointment.doctor.fullName}</span></div>
+                                        <div className="flex justify-between items-center"><span className="text-slate-400">Phòng khám gán:</span><span className="font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 rounded-md">{selectedAppointment.doctor.clinicRoomName || "Chưa điều phòng"}</span></div>
+                                        <div className="flex justify-between items-center"><span className="text-slate-400">Ngày hẹn khám:</span><span className="font-bold text-slate-700">{new Date(selectedAppointment.appointmentDate).toLocaleDateString('vi-VN')}</span></div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-slate-400">Khung giờ biểu:</span>
+                                            <span className="font-bold text-slate-700 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded">
+                                                {selectedAppointment.bookingSource === "WALKIN" || selectedAppointment.bookingSource === "WALK_IN"
+                                                    ? `${selectedAppointment.slot.shiftType}`
+                                                    : `${selectedAppointment.slot.startTime.split('T')[1]?.substring(0, 5)} - ${selectedAppointment.slot.endTime.split('T')[1]?.substring(0, 5)} (${selectedAppointment.slot.shiftType})`
+                                                }
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-slate-400">Hình thức đặt:</span>
+                                            <span className="font-bold text-slate-500">{selectedAppointment.bookingSource}</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* HÀNG 2: TIẾN ĐỘ ĐIỀU PHỐI NGANG HÀNG NGHĨA VỤ TÀI CHÍNH */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                {/* KHỐI: TIẾN ĐỘ ĐIỀU PHỐI */}
-                                <div className="space-y-2 flex flex-col">
-                                    <h4 className="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-1.5 pl-1">
-                                        <Clock className="h-3.5 w-3.5 text-indigo-500" /> Tiến độ điều phối
-                                    </h4>
-                                    <div className="p-4 bg-white border border-slate-200/80 rounded-xl space-y-3 text-xs shadow-sm flex-1 flex flex-col justify-center">
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-slate-400">Trạng thái lịch hẹn:</span>
-                                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-wider uppercase ${selectedAppointment.status === AppointmentStatus.COMPLETED ?
-                                                "bg-emerald-100 text-emerald-800" :
-                                                selectedAppointment.status === AppointmentStatus.ARRIVED || selectedAppointment.status === AppointmentStatus.IN_PROGRESS ? "bg-indigo-100 text-indigo-800 animate-pulse" :
-                                                    selectedAppointment.status === AppointmentStatus.CONFIRMED ?
-                                                        "bg-sky-100 text-sky-800" :
-                                                        selectedAppointment.status === AppointmentStatus.CANCELLED ?
-                                                            "bg-rose-100 text-rose-800" :
-                                                            "bg-amber-100 text-amber-800"
-                                                }`}>
-                                                {selectedAppointment.status === AppointmentStatus.CONFIRMED ? "ĐÃ XÁC NHẬN" : selectedAppointment.status}
-                                            </span>
-                                        </div>
-                                        <div className="pt-2.5 border-t border-slate-100 flex justify-between items-center">
-                                            <span className="text-slate-400">Số thứ tự / Hàng đợi:</span>
-                                            {selectedAppointment.queue ? (
-                                                <span className="text-lg font-black text-indigo-600 bg-indigo-50/50 px-2.5 py-0.5 rounded-lg border border-indigo-100">
-                                                    #{selectedAppointment.queue.queueNumber.toString().padStart(2, '0')}
-                                                </span>
-                                            ) : (
-                                                <span className="text-slate-400 italic text-[11px]">Chưa cấp số vào hàng đợi</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* KHỐI: NGHĨA VỤ TÀI CHÍNH TẠI QUẦY */}
-                                <div className="space-y-2 flex flex-col">
-                                    <h4 className="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-1.5 pl-1">
-                                        <Landmark className="h-3.5 w-3.5 text-indigo-500" /> Nghĩa vụ tài chính tại quầy
-                                    </h4>
-                                    <div className="p-4 bg-white border border-slate-200/80 rounded-xl space-y-3 text-xs shadow-sm flex-1 flex flex-col justify-center">
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-slate-400">Khoản tiền tạm ứng yêu cầu:</span>
-                                            <span className="text-sm font-black text-slate-900">{formatVND(selectedAppointment.depositAmount)}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center pt-2.5 border-t border-slate-100">
-                                            <span className="text-slate-400">Trạng thái xác thực:</span>
-                                            <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase border ${selectedAppointment.depositPaid ?
-                                                "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-rose-50 text-rose-700 border-rose-200"
-                                                }`}>
-                                                {selectedAppointment.depositPaid ? "✓ Đã thu quỹ thành công" : "✗ Chưa đóng tạm ứng"}
-                                            </span>
-                                        </div>
-                                    </div>
+                            {/* TRIỆU CHỨNG LÂM SÀNG */}
+                            <div className="space-y-2">
+                                <h4 className="text-xs font-black text-slate-800 uppercase tracking-widest pl-1">Triệu chứng ghi nhận khi đặt</h4>
+                                <div className="p-4 bg-white border border-slate-200/80 rounded-xl text-xs font-normal text-slate-600 leading-relaxed shadow-sm min-h-[60px]">
+                                    {selectedAppointment.symptoms || <span className="text-slate-400 italic">Không có dữ liệu triệu chứng bệnh nhân cung cấp trước.</span>}
                                 </div>
                             </div>
 
-                            {/* ALERTS CẢNH BÁO TIẾP ĐÓN */}
-                            {!selectedAppointment.depositPaid && [AppointmentStatus.PENDING, AppointmentStatus.BOOKED, AppointmentStatus.CONFIRMED].includes(selectedAppointment.status as AppointmentStatus) && (
-                                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-[11px] font-medium text-rose-700 flex gap-2 items-center shadow-sm">
-                                    <AlertTriangle className="h-4 w-4 text-rose-500 shrink-0" />
-                                    <span><strong>Lưu ý lễ tân:</strong> Cần thực hiện thu phí tạm ứng tại quầy trước khi chuyển trạng thái sang tiếp nhận thành công.</span>
+                            {/* HÓA ĐƠN TIỀN CỌC TẠI QUẦY */}
+                            <div className="p-5 bg-slate-100/80 border border-slate-200/60 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                <div className="flex items-center gap-3.5">
+                                    <div className="p-3 bg-white rounded-xl border border-slate-200 text-slate-500 shrink-0 shadow-sm">
+                                        <Landmark className="h-5 w-5 text-indigo-600" />
+                                    </div>
+                                    <div>
+                                        <h5 className="font-bold text-slate-800 text-sm">Phí đặt cọc giữ chỗ tại quầy tiếp tiếp đón</h5>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span className="text-lg font-black text-indigo-700 tracking-tight">{formatVND(selectedAppointment.depositAmount)}</span>
+                                            <div className="shrink-0">
+                                                {selectedAppointment.depositPaid ? (
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold uppercase tracking-wider">Đã đóng cọc</span>
+                                                ) : (
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold uppercase tracking-wider">Chưa thu tiền</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            )}
 
-                            {/* Biển báo nếu không thuộc ngày hôm nay */}
-                            {!isToday && (
-                                <div className="flex items-center gap-2 text-amber-600 bg-amber-50 px-4 py-3 rounded-xl text-xs font-semibold border border-amber-100">
-                                    <AlertTriangle className="h-4 w-4 shrink-0" />
-                                    Tính năng tiếp đón và đóng cọc bị khóa vì cuộc hẹn không thuộc ngày hôm nay ({todayStr}).
-                                </div>
-                            )}
+                                <button
+                                    type="button"
+                                    onClick={() => handlePayDeposit(selectedAppointment.id)}
+                                    disabled={!canPayDeposit || isActionLoading}
+                                    className={`w-full sm:w-auto py-2.5 px-5 rounded-xl text-xs font-bold transition-all shadow-sm ${canPayDeposit && !isActionLoading
+                                        ? 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 active:scale-[0.98]'
+                                        : selectedAppointment.depositPaid
+                                            ? 'bg-slate-200/50 text-slate-400 cursor-default border border-transparent shadow-none'
+                                            : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-transparent shadow-none'
+                                        }`}
+                                >
+                                    {selectedAppointment.depositPaid ? "Đã ghi nhận cọc" : "Thu tiền cọc tại quầy"}
+                                </button>
+                            </div>
                         </div>
 
-                        {/* MODAL ACTIONS FOOTER */}
-                        <div className="p-4 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row justify-between items-center gap-3">
-                            {/* Nhóm hành động phụ (Bên trái) */}
-                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                        {/* MODAL FOOTER */}
+                        <div className="p-4 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3 px-6">
+                            <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+                                <span>Trạng thái hiện tại:</span>
+                                {getStatusBadge(selectedAppointment.status)}
+                            </div>
+
+                            <div className="flex w-full sm:w-auto gap-2.5 justify-end">
                                 <button
                                     type="button"
                                     onClick={() => handleCancel(selectedAppointment.id)}
                                     disabled={!canCancel || isActionLoading}
-                                    className={`flex-1 sm:flex-none py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm ${canCancel && !isActionLoading ?
-                                        'bg-white text-rose-600 border border-slate-200 hover:bg-rose-50 hover:border-rose-300 active:scale-[0.98]' : 'bg-slate-100 text-slate-300 border border-slate-200 cursor-not-allowed'
+                                    className={`w-full sm:w-auto py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${canCancel && !isActionLoading
+                                        ? 'bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 active:scale-[0.98]'
+                                        : 'bg-slate-100 text-slate-300 cursor-not-allowed border border-transparent'
                                         }`}
                                 >
                                     <CalendarX className="h-4 w-4" />
                                     Hủy lịch hẹn
                                 </button>
-                            </div>
-
-                            {/* Nhóm hành động quyết định tiến trình (Bên phải) */}
-                            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                                {canPayDeposit && (
-                                    <button
-                                        type="button"
-                                        disabled={isActionLoading}
-                                        onClick={() => handlePayDeposit(selectedAppointment.id)}
-                                        className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-[0.98]"
-                                    >
-                                        <Landmark className="h-4 w-4" />
-                                        Thu tiền cọc tại quầy
-                                    </button>
-                                )}
 
                                 <button
                                     type="button"
@@ -667,8 +641,7 @@ export default function ReceptionistDailyAppointmentsPage() {
                                     <UserCheck className="h-4 w-4" />
                                     {selectedAppointment.status === "ARRIVED"
                                         ? `Đã Check-in (STT: ${selectedAppointment.queue?.queueNumber ?? '...'})`
-                                        : "Xác nhận đã đến quầy & Cấp số khám"
-                                    }
+                                        : "Xác nhận đã đến quầy & Cấp số khám"}
                                 </button>
                             </div>
                         </div>

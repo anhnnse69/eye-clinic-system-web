@@ -30,8 +30,7 @@ export default async function ReceptionistLayout({ children }: { children: React
     {
       title: "Tổng quan",
       items: [
-        { label: "Dashboard", href: "/receptionist/dashboard", icon: "LayoutDashboard" },
-        { label: "Lịch hẹn hôm nay", href: "/receptionist/appointments/today", icon: "Calendar" },
+        { label: "Lịch hẹn hàng ngày", href: "/receptionist/appointments", icon: "CalendarDays" },
         { label: "Khung giờ trống", href: "/receptionist/available-slots", icon: "Clock" },
       ],
     },
@@ -39,7 +38,7 @@ export default async function ReceptionistLayout({ children }: { children: React
       title: "Quản lý",
       items: [
         { label: "Danh sách bệnh nhân", href: "/receptionist/patients", icon: "Users" },
-        { label: "Lịch hẹn hàng ngày", href: "/receptionist/appointments", icon: "CalendarDays" },
+        { label: "Đăng ký vãng lai", href: "/receptionist/walk-in-registration", icon: "UserPlus" }, // <--- THÊM MỤC MỚI VÀO ĐÂY
       ],
     },
     {

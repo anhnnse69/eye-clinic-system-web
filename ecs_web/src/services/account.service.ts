@@ -28,7 +28,7 @@ interface UpdateAccountData {
 export interface GetAccountsRequest {
   pageNumber: number;
   pageSize: number;
-  role?: number | string; 
+  role?: number | string;
   searchTerm?: string;
 }
 
@@ -48,7 +48,7 @@ export interface CreateAccountRequest {
   email?: string
   password?: string
   fullName: string
-  role: number 
+  role: number
   avatarUrl?: string
 }
 
@@ -61,6 +61,25 @@ export interface CreateAccountResponse {
   isActive: boolean
   avatarUrl: string | null
   createdAt: string
+}
+
+export interface EditAccountRequest {
+  id: string;
+  phone: string;
+  email: string | null;
+  fullName: string;
+  role: number; 
+  avatarUrl: string | null;
+}
+
+export interface EditAccountResponse {
+  id: string;
+  phone: string;
+  email: string | null;
+  fullName: string;
+  role: number; 
+  avatarUrl: string | null;
+  updatedAt: string;
 }
 
 class AccountService {
@@ -131,6 +150,21 @@ class AccountService {
       }
     )
     return response.data
+  }
+
+  async editAccount(params: EditAccountRequest): Promise<ApiResponse<EditAccountResponse>> {
+    const response = await apiClient.put<ApiResponse<EditAccountResponse>>(
+      "https://localhost:7070/api/v1/system-admin/account/edit",
+      {
+        id: params.id,
+        phone: params.phone,
+        email: params.email,
+        fullName: params.fullName,
+        role: params.role,
+        avatarUrl: params.avatarUrl,
+      }
+    );
+    return response.data;
   }
 }
 

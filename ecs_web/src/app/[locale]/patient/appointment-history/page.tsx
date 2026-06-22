@@ -20,19 +20,23 @@ import {
     CalendarX as CalendarXIcon,
     Loader2,
     RotateCcw,
+    XCircle,
 } from "lucide-react"
 
 import { appointmentHistoryService } from "@/services"
 import type { GetAppointmentHistoryResponse } from "@/services/appointment-history.service"
 import type { MetaResponse } from "@/types"
+import { ApiError } from "@/lib/axios"
 
 const STATUS_OPTIONS = [
     { value: "", label: "Tất cả", icon: Calendar, color: "text-gray-600", bgColor: "bg-gray-100", activeClass: "bg-gray-900 text-white border-gray-900" },
     { value: "PENDING", label: "Chờ xác nhận", icon: ClockIcon, color: "text-amber-600", bgColor: "bg-amber-50", activeClass: "bg-amber-600 text-white border-amber-600" },
-    { value: "CONFIRMED", label: "Đã xác nhận", icon: CalendarCheck, color: "text-blue-600", bgColor: "bg-blue-50", activeClass: "bg-blue-600 text-white border-blue-600" },
+    { value: "BOOKED", label: "Đã xác nhận", icon: CalendarCheck, color: "text-blue-600", bgColor: "bg-blue-50", activeClass: "bg-blue-600 text-white border-blue-600" },
     { value: "COMPLETED", label: "Đã khám xong", icon: CheckCircle, color: "text-emerald-600", bgColor: "bg-emerald-50", activeClass: "bg-emerald-600 text-white border-emerald-600" },
     { value: "CANCELLED", label: "Đã hủy lịch", icon: CalendarXIcon, color: "text-rose-600", bgColor: "bg-rose-50", activeClass: "bg-rose-600 text-white border-rose-600" },
 ]
+
+const CANCELLABLE_STATUSES = new Set(["PENDING"])
 
 export default function AppointmentHistoryPage() {
     const [appointments, setAppointments] = useState<GetAppointmentHistoryResponse[]>([])
@@ -49,14 +53,16 @@ export default function AppointmentHistoryPage() {
     const [pageNumber, setPageNumber] = useState(1)
     const [pageSize] = useState(10)
 
+    const [cancellingId, setCancellingId] = useState<string | null>(null)
+    const [showCancelModal, setShowCancelModal] = useState(false)
+    const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null)
+    const [cancelReason, setCancelReason] = useState("")
+
+    const [cancelError, setCancelError] = useState<string | null>(null)
+
     const router = useRouter()
     const params = useParams()
     const locale = (params?.locale as string) || ""
-
-    const handleViewDetail = (appointmentId: string) => {
-        const path = `/patient/appointment-history/detail?id=${appointmentId}`
-        router.push(locale ? `/${locale}${path}` : path)
-    }
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -97,11 +103,15 @@ export default function AppointmentHistoryPage() {
                 setMetadata(response.meta)
             }
         } catch (err: any) {
-            setError(
-                err?.response?.data?.message ||
-                err?.message ||
-                "Không thể tải lịch sử cuộc hẹn của bạn"
-            )
+            if (err instanceof ApiError) {
+                setError(err.codeMessage || "Không thể tải lịch sử cuộc hẹn của bạn")
+            } else {
+                setError(
+                    err?.response?.data?.message ||
+                    err?.message ||
+                    "Không thể tải lịch sử cuộc hẹn của bạn"
+                )
+            }
         } finally {
             setLoading(false)
         }
@@ -111,16 +121,94 @@ export default function AppointmentHistoryPage() {
         loadAppointments()
     }, [loadAppointments])
 
+    const handleCancelAppointment = async () => {
+        if (!selectedAppointmentId) return
+
+        try {
+            setCancellingId(selectedAppointmentId)
+            setCancelError(null)
+
+            const response = await appointmentHistoryService.cancelAppointment({
+                appointmentId: selectedAppointmentId,
+                reason: cancelReason || "Khách hàng hủy lịch hẹn"
+            })
+
+            if (response.data) {
+                setShowCancelModal(false)
+                setSelectedAppointmentId(null)
+                setCancelReason("")
+                await loadAppointments()
+            } else {
+                setCancelError("Không thể hủy lịch hẹn. Vui lòng thử lại.")
+            }
+        } catch (err: any) {
+            let errorMessage = "Không thể hủy lịch hẹn. Vui lòng thử lại."
+
+            if (err instanceof ApiError) {
+                switch (err.codeMessage) {
+                    case "APP_MESSAGE_4046":
+                        errorMessage = "Không tìm thấy lịch hẹn"
+                        break
+                    case "APP_MESSAGE_4047":
+                        errorMessage = "Lịch hẹn đã được hủy trước đó"
+                        break
+                    case "APP_MESSAGE_4048":
+                        errorMessage = "Không thể hủy lịch hẹn đã hoàn thành"
+                        break
+                    case "APP_MESSAGE_4049":
+                        errorMessage = "Không thể hủy lịch hẹn đang trong quá trình khám"
+                        break
+                    case "APP_MESSAGE_4050":
+                        errorMessage = "Không thể hủy lịch hẹn trong vòng 24 giờ trước giờ khám"
+                        break
+                    case "APP_MESSAGE_4051":
+                        errorMessage = "Lịch hẹn không thể hủy ở trạng thái hiện tại"
+                        break
+                    case "APP_MESSAGE_4053":
+                        errorMessage = "Bạn không có quyền hủy lịch hẹn này"
+                        break
+                    case "APP_MESSAGE_4001":
+                        errorMessage = "Vui lòng đăng nhập để thực hiện chức năng này"
+                        break
+                    default:
+                        errorMessage = err.codeMessage || "Không thể hủy lịch hẹn. Vui lòng thử lại."
+                }
+            } else {
+                errorMessage = err?.response?.data?.message || err?.message || "Không thể hủy lịch hẹn. Vui lòng thử lại."
+            }
+
+            setCancelError(errorMessage)
+        } finally {
+            setCancellingId(null)
+        }
+    }
+
+    const openCancelModal = (appointmentId: string) => {
+        setSelectedAppointmentId(appointmentId)
+        setShowCancelModal(true)
+        setCancelReason("")
+        setCancelError(null)
+    }
+
+    const closeCancelModal = () => {
+        setShowCancelModal(false)
+        setSelectedAppointmentId(null)
+        setCancelReason("")
+        setCancelError(null)
+    }
+
     const getStatusStyle = (status: string) => {
         switch (status.toUpperCase()) {
             case "PENDING":
                 return "bg-amber-50 text-amber-700 border border-amber-100"
-            case "CONFIRMED":
+            case "BOOKED":
                 return "bg-blue-50 text-blue-700 border border-blue-100"
             case "COMPLETED":
                 return "bg-emerald-50 text-emerald-700 border border-emerald-100"
             case "CANCELLED":
                 return "bg-rose-50 text-rose-700 border border-rose-100"
+            case "IN_PROGRESS":
+                return "bg-violet-50 text-violet-700 border border-violet-100"
             default:
                 return "bg-gray-50 text-gray-700 border border-gray-100"
         }
@@ -129,10 +217,48 @@ export default function AppointmentHistoryPage() {
     const getStatusText = (status: string) => {
         switch (status.toUpperCase()) {
             case "PENDING": return "Chờ xác nhận"
-            case "CONFIRMED": return "Đã xác nhận"
+            case "BOOKED": return "Đã xác nhận"
             case "COMPLETED": return "Đã khám xong"
             case "CANCELLED": return "Đã hủy lịch"
+            case "IN_PROGRESS": return "Đang khám"
             default: return status
+        }
+    }
+
+    const canCancelAppointment = (item: GetAppointmentHistoryResponse) => {
+        if (!CANCELLABLE_STATUSES.has(item.status.toUpperCase())) {
+            return false
+        }
+
+        try {
+            const dateParts = item.appointmentDate.split('/')
+            const timeParts = item.timeSlot.split(' - ')[0].split(':')
+
+            const appointmentDateTime = new Date(
+                parseInt(dateParts[2]),
+                parseInt(dateParts[1]) - 1,
+                parseInt(dateParts[0]),
+                parseInt(timeParts[0]),
+                parseInt(timeParts[1])
+            )
+
+            const now = new Date()
+            const hoursUntilAppointment = (appointmentDateTime.getTime() - now.getTime()) / (1000 * 60 * 60)
+
+            return hoursUntilAppointment > 24
+        } catch (error) {
+            console.error('Error parsing appointment date:', error)
+            return false
+        }
+    }
+
+    const getCancelUnavailableText = (status: string) => {
+        switch (status.toUpperCase()) {
+            case "CANCELLED": return "Đã hủy"
+            case "COMPLETED": return "Đã hoàn thành"
+            case "IN_PROGRESS": return "Đang khám"
+            case "BOOKED": return "Đã xác nhận, không thể hủy"
+            default: return "Không thể hủy"
         }
     }
 
@@ -140,6 +266,64 @@ export default function AppointmentHistoryPage() {
 
     return (
         <div className="space-y-6 p-4 md:p-6 max-w-7xl mx-auto antialiased">
+            {showCancelModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-xl">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-12 h-12 rounded-full bg-rose-50 flex items-center justify-center">
+                                <XCircle className="w-6 h-6 text-rose-600" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-900">Xác nhận hủy lịch hẹn</h3>
+                                <p className="text-sm text-gray-500">Bạn có chắc chắn muốn hủy lịch hẹn này?</p>
+                            </div>
+                        </div>
+
+                        {cancelError && (
+                            <div className="flex items-center gap-3 p-3 mb-4 text-sm text-red-800 border border-red-100 rounded-xl bg-red-50/50">
+                                <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                                <span className="font-medium">{cancelError}</span>
+                            </div>
+                        )}
+
+                        <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Lý do hủy (tùy chọn)
+                            </label>
+                            <textarea
+                                value={cancelReason}
+                                onChange={(e) => setCancelReason(e.target.value)}
+                                placeholder="Nhập lý do hủy lịch..."
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent resize-none"
+                                rows={3}
+                            />
+                        </div>
+
+                        <div className="flex gap-3">
+                            <button
+                                onClick={closeCancelModal}
+                                className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+                            >
+                                Quay lại
+                            </button>
+                            <button
+                                onClick={handleCancelAppointment}
+                                disabled={cancellingId === selectedAppointmentId}
+                                className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-rose-600 rounded-xl hover:bg-rose-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                {cancellingId === selectedAppointmentId ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        Đang xử lý...
+                                    </>
+                                ) : (
+                                    'Xác nhận hủy'
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-gray-100">
                 <div>
@@ -261,76 +445,98 @@ export default function AppointmentHistoryPage() {
                                     </tr>
                                 ))
                             ) : (
-                                appointments.map((item) => (
-                                    <tr
-                                        key={item.id_appointment}
-                                        className="hover:bg-gray-50/60 transition-colors duration-150"
-                                    >
-                                        <td className="px-6 py-4 max-w-[280px]">
-                                            <div className="flex flex-col gap-1">
-                                                <div className="flex items-start gap-2 font-semibold text-gray-900 leading-tight">
-                                                    <Building2 className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
-                                                    <span>{item.clinicName}</span>
+                                appointments.map((item) => {
+                                    const isCancelling = cancellingId === item.id_appointment
+                                    const canCancel = canCancelAppointment(item)
+
+                                    return (
+                                        <tr
+                                            key={item.id_appointment}
+                                            className="hover:bg-gray-50/60 transition-colors duration-150"
+                                        >
+                                            <td className="px-6 py-4 max-w-[280px]">
+                                                <div className="flex flex-col gap-1">
+                                                    <div className="flex items-start gap-2 font-semibold text-gray-900 leading-tight">
+                                                        <Building2 className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
+                                                        <span>{item.clinicName}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1 text-xs text-gray-400 pl-6 line-clamp-1">
+                                                        <MapPin className="w-3 h-3 text-gray-300 shrink-0" />
+                                                        <span>{item.clinicAddress}</span>
+                                                    </div>
                                                 </div>
-                                                <div className="flex items-center gap-1 text-xs text-gray-400 pl-6 line-clamp-1">
-                                                    <MapPin className="w-3 h-3 text-gray-300 shrink-0" />
-                                                    <span>{item.clinicAddress}</span>
+                                            </td>
+
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-2 font-medium text-gray-900">
+                                                    <div className="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+                                                        <User className="w-3.5 h-3.5" />
+                                                    </div>
+                                                    {item.patientName}
                                                 </div>
-                                            </div>
-                                        </td>
+                                            </td>
 
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-2 font-medium text-gray-900">
-                                                <div className="w-7 h-7 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
-                                                    <User className="w-3.5 h-3.5" />
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-2 text-gray-700 font-medium">
+                                                    <Stethoscope className="w-4 h-4 text-gray-400 shrink-0" />
+                                                    {item.doctorName}
                                                 </div>
-                                                {item.patientName}
-                                            </div>
-                                        </td>
+                                            </td>
 
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-2 text-gray-700 font-medium">
-                                                <Stethoscope className="w-4 h-4 text-gray-400 shrink-0" />
-                                                {item.doctorName}
-                                            </div>
-                                        </td>
-
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-col">
-                                                <span className="font-medium text-gray-800">{item.serviceName}</span>
-                                                <span className="text-xs text-blue-600 font-semibold mt-0.5">{item.servicePrice}</span>
-                                            </div>
-                                        </td>
-
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-col gap-1 text-gray-600">
-                                                <div className="flex items-center gap-1.5 text-xs">
-                                                    <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                                                    <span>{item.appointmentDate}</span>
+                                            <td className="px-6 py-4">
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium text-gray-800">{item.serviceName}</span>
+                                                    <span className="text-xs text-blue-600 font-semibold mt-0.5">{item.servicePrice}</span>
                                                 </div>
-                                                <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                                                    <Clock className="w-3.5 h-3.5 text-gray-400" />
-                                                    <span className="font-mono">{item.timeSlot}</span>
+                                            </td>
+
+                                            <td className="px-6 py-4">
+                                                <div className="flex flex-col gap-1 text-gray-600">
+                                                    <div className="flex items-center gap-1.5 text-xs">
+                                                        <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                                                        <span>{item.appointmentDate}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                                                        <Clock className="w-3.5 h-3.5 text-gray-400" />
+                                                        <span className="font-mono">{item.timeSlot}</span>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </td>
+                                            </td>
 
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold tracking-wide ${getStatusStyle(item.status)}`}>
-                                                {getStatusText(item.status)}
-                                            </span>
-                                        </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold tracking-wide ${getStatusStyle(item.status)}`}>
+                                                    {getStatusText(item.status)}
+                                                </span>
+                                            </td>
 
-                                        <td className="px-6 py-4 text-center">
-                                            <button
-                                                onClick={() => handleViewDetail(item.id_appointment)}
-                                                className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-semibold text-blue-600 bg-blue-50/70 rounded-lg hover:bg-blue-100 hover:text-blue-700 transition-colors"
-                                            >
-                                                Xem chi tiết
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
+                                            <td className="px-6 py-4 text-center">
+                                                {canCancel ? (
+                                                    <button
+                                                        onClick={() => openCancelModal(item.id_appointment)}
+                                                        disabled={isCancelling}
+                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-rose-600 bg-rose-50/70 rounded-lg hover:bg-rose-100 hover:text-rose-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                                                    >
+                                                        {isCancelling ? (
+                                                            <>
+                                                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                                                Đang hủy...
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <XCircle className="w-3.5 h-3.5" />
+                                                                Hủy lịch
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                ) : (
+                                                    <span className="text-xs text-gray-400 italic">
+                                                        {getCancelUnavailableText(item.status)}
+                                                    </span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    )
+                                })
                             )}
                         </tbody>
                     </table>

@@ -21,6 +21,19 @@ export interface GetAppointmentHistoryResponse {
     servicePrice: string
 }
 
+export interface CancelAppointmentRequest {
+    appointmentId: string
+    reason?: string
+}
+
+export interface CancelAppointmentResponse {
+    appointmentId: string
+    status: string
+    cancelledAt: string
+    cancellationReason?: string
+    message: string
+}
+
 class AppointmentHistoryService {
     async getAll(
         params: GetAppointmentHistoryRequest
@@ -32,6 +45,17 @@ class AppointmentHistoryService {
             ApiResponse<GetAppointmentHistoryResponse[]>
         >("/patient/appointments/history", {
             params: cleanParams,
+        })
+        return response.data
+    }
+
+    async cancelAppointment(
+        params: CancelAppointmentRequest
+    ): Promise<ApiResponse<CancelAppointmentResponse>> {
+        const response = await apiClient.patch<
+            ApiResponse<CancelAppointmentResponse>
+        >(`/patient/appointments/${params.appointmentId}/cancel`, {
+            reason: params.reason
         })
         return response.data
     }

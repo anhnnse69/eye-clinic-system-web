@@ -1,9 +1,17 @@
 import { apiClient } from "@/lib/axios"
-import type { ApiResponse, GetMedicalRecordsRequest, GetMedicalRecordsItem, GetMedicalRecordsMeta } from "@/types"
+import type {
+  ApiResponse,
+  GetMedicalRecordsRequest,
+  GetMedicalRecordsItem,
+  GetMedicalRecordsMeta,
+  GetMedicalRecordDetailResponse,
+} from "@/types"
 
 export interface GetMedicalRecordsApiResponse extends ApiResponse<GetMedicalRecordsItem[]> {
   meta?: GetMedicalRecordsMeta
 }
+
+export interface GetMedicalRecordDetailApiResponse extends ApiResponse<GetMedicalRecordDetailResponse> {}
 
 class MedicalRecordsService {
   async getMedicalRecords(
@@ -16,8 +24,8 @@ class MedicalRecordsService {
     return response.data
   }
 
-  async getMedicalRecordById(id: string): Promise<ApiResponse<GetMedicalRecordsItem>> {
-    const response = await apiClient.get<ApiResponse<GetMedicalRecordsItem>>(
+  async getMedicalRecordById(id: string): Promise<GetMedicalRecordDetailApiResponse> {
+    const response = await apiClient.get<GetMedicalRecordDetailApiResponse>(
       `/medical-records/${id}`
     )
     return response.data

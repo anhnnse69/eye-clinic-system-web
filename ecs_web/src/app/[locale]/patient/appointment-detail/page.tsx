@@ -328,28 +328,17 @@ export default function AppointmentDetailPage() {
                     </div>
                 </div>
 
-                {/* Symptoms & Notes */}
-                {(appointment.symptoms || appointment.noteReason) && (
+                {/* Symptoms */}
+                {(appointment.symptoms) && (
                     <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                         {appointment.symptoms && (
                             <div className="space-y-2">
                                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
                                     <FileText className="w-3.5 h-3.5 text-slate-400" />
-                                    Triệu chứng lâm sàng
+                                    Triệu chứng / Ghi chú
                                 </h4>
                                 <p className="text-sm text-slate-600 bg-slate-50 rounded-xl p-3.5 border border-slate-100 leading-relaxed font-medium">
                                     {appointment.symptoms}
-                                </p>
-                            </div>
-                        )}
-                        {appointment.noteReason && (
-                            <div className="space-y-2">
-                                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                                    <Smile className="w-3.5 h-3.5 text-slate-400" />
-                                    Ghi chú từ bệnh nhân
-                                </h4>
-                                <p className="text-sm text-slate-600 bg-slate-50 rounded-xl p-3.5 border border-slate-100 leading-relaxed font-medium">
-                                    {appointment.noteReason}
                                 </p>
                             </div>
                         )}

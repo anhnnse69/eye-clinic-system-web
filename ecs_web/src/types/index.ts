@@ -1603,3 +1603,656 @@ export interface ReceptionistCancelAppointmentResponse {
   isSuccess: boolean;
   message?: string;
 }
+export interface GetMedicalRecordDetailResponse {
+  id: string
+  appointmentId: string
+  patientId: string
+  doctorId: string
+  recordType: string
+  chiefComplaint?: string | null
+  illnessDayNumber?: number | null
+  medicalHistory?: string | null
+  personalHistoryEye?: string | null
+  personalHistorySystemic?: string | null
+  familyHistory?: string | null
+  vitalPulse?: number | null
+  vitalTemperature?: number | null
+  vitalBloodPressure?: string | null
+  vitalRespiratoryRate?: number | null
+  vitalWeightKg?: number | null
+  systemicExam?: string | null
+  diagnosisMain?: string | null
+  diagnosisComorbid?: string | null
+  diagnosisDifferential?: string | null
+  prognosis?: string | null
+  treatmentPlan?: string | null
+  notes?: string | null
+  isLocked: boolean
+  createdAt: string
+  updatedAt: string
+  patientFullName: string
+  patientDob?: string | null
+  patientPhone?: string | null
+  patientEmail?: string | null
+  patientGender?: string | null
+  patientAddress?: string | null
+  patientIdentityNumber?: string | null
+  doctorFullName: string
+  doctorTitle?: string | null
+  doctorSpecialty?: string | null
+  appointmentDate: string
+  appointmentStatus?: string | null
+  appointmentNotes?: string | null
+  rightEyeExamBasic?: MedicalRecordEyeExamBasicDetail | null
+  leftEyeExamBasic?: MedicalRecordEyeExamBasicDetail | null
+  rightEyeEyelidConjunctiva?: MedicalRecordEyeEyelidConjunctivaDetail | null
+  leftEyeEyelidConjunctiva?: MedicalRecordEyeEyelidConjunctivaDetail | null
+  rightEyeCornea?: MedicalRecordEyeCorneaDetail | null
+  leftEyeCornea?: MedicalRecordEyeCorneaDetail | null
+  rightEyeAcIris?: MedicalRecordEyeAnteriorChamberDetail | null
+  leftEyeAcIris?: MedicalRecordEyeAnteriorChamberDetail | null
+  rightEyeLensVitreous?: MedicalRecordEyeLensVitreousDetail | null
+  leftEyeLensVitreous?: MedicalRecordEyeLensVitreousDetail | null
+  rightEyeSclera?: MedicalRecordEyeScleraDetail | null
+  leftEyeSclera?: MedicalRecordEyeScleraDetail | null
+  rightEyeFundusDiscMacula?: MedicalRecordEyeFundusDiscMaculaDetail | null
+  leftEyeFundusDiscMacula?: MedicalRecordEyeFundusDiscMaculaDetail | null
+  rightEyeFundusRetinaVessel?: MedicalRecordEyeFundusRetinaVesselDetail | null
+  leftEyeFundusRetinaVessel?: MedicalRecordEyeFundusRetinaVesselDetail | null
+  lacrimalRecords: MedicalRecordLacrimalDetail[]
+  octResults: MedicalRecordOctDetail[]
+  visualFieldTests: MedicalRecordVisualFieldDetail[]
+  ultrasoundEyes: MedicalRecordUltrasoundDetail[]
+  traumaRecord?: MedicalRecordTraumaDetail | null
+  glaucomaRecord?: MedicalRecordGlaucomaDetail | null
+  strabismusPtosisRecord?: MedicalRecordStrabismusPtosisDetail | null
+  pediatricRecord?: MedicalRecordPediatricDetail | null
+  prescriptions: MedicalRecordPrescriptionDetail[]
+  glassesPrescriptions: MedicalRecordGlassesPrescriptionDetail[]
+  extras?: MedicalRecordExtrasDetail | null
+  documentAccessPermissions: MedicalRecordDocumentAccessPermissionDetail[]
+  canEdit: boolean
+  canViewOnly: boolean
+  editRestrictionReason?: string | null
+}
+
+export interface MedicalRecordEyeExamBasicDetail {
+  id: string
+  side: string
+  vaUncorrected?: string | null
+  vaCorrected?: string | null
+  vaNear?: string | null
+  vaPinhole?: string | null
+  vaWithGlasses?: string | null
+  iopMmhg?: string | null
+  iopMethod?: string | null
+  autoRefraction?: string | null
+  retinoscopy?: string | null
+  subjectiveRefraction?: string | null
+  eomStatus?: string | null
+  eomNote?: string | null
+  nystagmus?: string | null
+  nystagmusType?: string | null
+  visualField?: string | null
+  eyeballStatus?: string | null
+  eyeballTexture?: string | null
+  strabismusType?: string | null
+  coverTestResult?: string | null
+  hirschbergTest?: string | null
+  prismMeasurement?: string | null
+  pupilExamResult?: string | null
+  pupilReflexLight?: string | null
+  pupilAccommodation?: string | null
+  pupilRelativeAfferentDefect?: string | null
+  notes?: string | null
+}
+
+export interface MedicalRecordEyeEyelidConjunctivaDetail {
+  id: string
+  side: string
+  status?: string | null
+  ptosis: boolean
+  ptosisDegree?: string | null
+  laceration: boolean
+  lacerationExtent?: string | null
+  lacerationLocation?: string | null
+  lacerationSutured: boolean
+  lacerationUnsutured: boolean
+  lacrimalDuctStatus?: string | null
+  lacrimalDuctLocation?: string | null
+  scar: boolean
+  otherFindings?: string | null
+  entropion: boolean
+  epicanthus: boolean
+  entropionPediatric: boolean
+  fornixStatus?: string | null
+  symblepharonHeight?: string | null
+  symblepharonWidth?: string | null
+  chalazionHordeolum?: string | null
+  conjunctivaStatus?: string | null
+  conjunctivaCongestionType?: string | null
+  conjunctivaEdema: boolean
+  conjunctivaHemorrhage: boolean
+  conjunctivaHemorrhageLocation?: string | null
+  conjunctivaLaceration: boolean
+  conjunctivaLacerationLocation?: string | null
+  conjunctivaIschemia: boolean
+  conjunctivaPapilla: boolean
+  conjunctivaFollicle: boolean
+  conjunctivaKeratinization: boolean
+  conjunctivaScar: boolean
+  fluoresceinStain: boolean
+  pterygium: boolean
+  pterygiumLocation?: string | null
+  pterygiumSize?: string | null
+  hasTumor: boolean
+  tumorNature?: string | null
+  tumorLocation?: string | null
+  tumorSize?: string | null
+  lagophthalmos: boolean
+  otherFindingsConjunctiva?: string | null
+}
+
+export interface MedicalRecordEyeCorneaDetail {
+  id: string
+  side: string
+  clarity?: string | null
+  size?: string | null
+  shape?: string | null
+  diameterMm?: number | null
+  sensation?: string | null
+  epitheliumStatus?: string | null
+  epitheliumPunctate: boolean
+  epitheliumEdemaLevel?: string | null
+  epitheliumLoss?: string | null
+  stromaEdemaLevel?: string | null
+  stromaInfiltrate?: string | null
+  stromaThinning?: string | null
+  ulcer: boolean
+  ulcerLocation?: string | null
+  ulcerSize?: string | null
+  ulcerDescription?: string | null
+  abscess: boolean
+  descemetocele: boolean
+  bloodStaining: boolean
+  laceration: boolean
+  lacerationSize?: string | null
+  lacerationLocation?: string | null
+  lacerationType?: string | null
+  lacerationSutured?: boolean | null
+  anatomicalReduction?: boolean | null
+  perforation: boolean
+  perforationDiameterMm?: number | null
+  perforationLocation?: string | null
+  seidelTest?: string | null
+  neovascularization: boolean
+  neovascularizationDepth?: string | null
+  neovascularizationExtent?: string | null
+  limbalStatus?: string | null
+  cornealThickness?: number | null
+  drugDeposit?: string | null
+  otherFindings?: string | null
+  foreignBody: boolean
+}
+
+export interface MedicalRecordEyeAnteriorChamberDetail {
+  id: string
+  side: string
+  depth?: string | null
+  depthMm?: number | null
+  herickClassification?: string | null
+  vitreousInAC: boolean
+  pus: boolean
+  pusMm?: number | null
+  tyndall?: string | null
+  exudate: boolean
+  exudateDescription?: string | null
+  hemorrhage: boolean
+  hemorrhageLevel?: string | null
+  foreignBody: boolean
+  otherFindings?: string | null
+  irisColor?: string | null
+  irisCondition?: string | null
+  irisDegeneration: boolean
+  irisNeovascularization: boolean
+  irisCiliaryProcesses: boolean
+  koeppeNodules: boolean
+  busaccaNodules: boolean
+  irisRootTear: boolean
+  irisRootTearDegree?: string | null
+  irisLoss: boolean
+  irisPerforation: boolean
+  pupilShape?: string | null
+  pupilPosition?: string | null
+  pupilReflex?: string | null
+  pupilDilated: boolean
+  ptdtTest: boolean
+  fundusReflex?: string | null
+  angleFindings?: string | null
+  angleSynechiae: boolean
+  anglePigment: boolean
+  angleNeovascularization: boolean
+}
+
+export interface MedicalRecordEyeLensVitreousDetail {
+  id: string
+  side: string
+  lensStatus?: string | null
+  opacityType?: string | null
+  opacityLocation?: string | null
+  subluxation: boolean
+  lensInAnterior: boolean
+  lensInVitreous: boolean
+  purulent: boolean
+  anteriorPigmentation: boolean
+  iolPresent: boolean
+  iolStatus?: string | null
+  iolPosition?: string | null
+  status?: string | null
+  opacityLevel?: string | null
+  tyndall?: string | null
+  hemorrhage: boolean
+  organized: boolean
+  pvd: boolean
+  vitreousPurulent: boolean
+  foreignBody: boolean
+  otherFindings?: string | null
+}
+
+export interface MedicalRecordEyeScleraDetail {
+  id: string
+  side: string
+  status?: string | null
+  laceration: boolean
+  lacerationSize?: string | null
+  lacerationLocation?: string | null
+  lacerationSutured?: boolean | null
+  lacerationUnsutured: boolean
+  tissueEntrapped: boolean
+  otherFindings?: string | null
+}
+
+export interface MedicalRecordEyeFundusDiscMaculaDetail {
+  id: string
+  side: string
+  discStatus?: string | null
+  discColor?: string | null
+  cdRatio?: string | null
+  rimStatus?: string | null
+  rimLocation?: string | null
+  vesselChange?: string | null
+  discHemorrhage: boolean
+  neovascularization: boolean
+  discNotVisible: boolean
+  maculaStatus?: string | null
+  maculaReflexAbsent: boolean
+  maculaEdemaType?: string | null
+  maculaHoleDegree?: string | null
+  maculaScar: boolean
+  serousDetachment: boolean
+  maculaHemorrhage: boolean
+  choroidStatus?: string | null
+  choroidalFindings?: string | null
+  cnv: boolean
+  chorioretinitisActive: boolean
+  chorioretinitisScar: boolean
+  chorioretinitisCount?: number | null
+  chorioretinitisLocation?: string | null
+}
+
+export interface MedicalRecordEyeFundusRetinaVesselDetail {
+  id: string
+  side: string
+  vesselStatus?: string | null
+  arteryOcclusion?: string | null
+  veinOcclusion?: string | null
+  occlusionType?: string | null
+  occlusionEdema: boolean
+  occlusionIschemia: boolean
+  vasculitis: boolean
+  retinalNeovascularization: boolean
+  retinaStatus?: string | null
+  retinalCondition?: string | null
+  retinalEdema: boolean
+  edemaType?: string | null
+  hemorrhage: boolean
+  hemorrhageType?: string | null
+  degeneration: boolean
+  degenerationType?: string | null
+  degenerationDescription?: string | null
+  detachment: boolean
+  detachmentLevel?: string | null
+  retinalTear: boolean
+  tearCount?: number | null
+  tearLocation?: string | null
+  tearMorphology?: string | null
+  bmscDetachment: boolean
+  iofb: boolean
+  iofbLocation?: string | null
+  iofbSize?: string | null
+  combinedFindings?: string | null
+  otherFindings?: string | null
+}
+
+export interface MedicalRecordLacrimalDetail {
+  id: string
+  side: string
+  lacrimalDischarge?: string | null
+  nasolacrimalStatus?: string | null
+  irrigationFree: boolean
+  irrigationRegurgitationSame: boolean
+  irrigationRegurgitationOpposite: boolean
+  irrigationNote?: string | null
+  lacrimalOther?: string | null
+}
+
+export interface MedicalRecordOctDetail {
+  id: string
+  machineName?: string | null
+  scanPattern?: string | null
+  rnflAverageOd?: number | null
+  rnflAverageOs?: number | null
+  cmtOd?: number | null
+  cmtOs?: number | null
+  cupDiscRatioOd?: number | null
+  cupDiscRatioOs?: number | null
+  conclusion?: string | null
+  imageUrl?: string | null
+  examDate: string
+  technicianName?: string | null
+}
+
+export interface MedicalRecordVisualFieldDetail {
+  id: string
+  side: string
+  machine?: string | null
+  strategy?: string | null
+  mdValue?: number | null
+  psdValue?: number | null
+  vfiPercent?: number | null
+  reliable: boolean
+  resultSummary?: string | null
+  imageUrl?: string | null
+  testDate: string
+  technicianName?: string | null
+}
+
+export interface MedicalRecordUltrasoundDetail {
+  id: string
+  side: string
+  ultrasoundType?: string | null
+  axialLengthMm?: number | null
+  acDepthMm?: number | null
+  lensThicknessMm?: number | null
+  vitreousLengthMm?: number | null
+  lensStatus?: string | null
+  retinaStatus?: string | null
+  conclusion?: string | null
+  imageUrl?: string | null
+  examDate: string
+  technicianName?: string | null
+}
+
+export interface MedicalRecordTraumaDetail {
+  id: string
+  injuryCause?: string | null
+  injuryTime?: string | null
+  priorTreatment?: string | null
+  postTreatmentCourse?: string | null
+  odInjuries?: string | null
+  osInjuries?: string | null
+  injuryDetails?: string | null
+  traumaConclusion?: string | null
+  diagnosisClinical?: string | null
+  diagnosisCause?: string | null
+  treatmentProcess?: string | null
+  treatmentPlan?: string | null
+  surgeries: MedicalRecordTraumaSurgeryDetail[]
+}
+
+export interface MedicalRecordTraumaSurgeryDetail {
+  id: string
+  surgeryDate?: string | null
+  surgeryType?: string | null
+  surgeryDescription?: string | null
+  surgeonName?: string | null
+  anesthesiaType?: string | null
+  postSurgeryCondition?: string | null
+  notes?: string | null
+}
+
+export interface MedicalRecordGlaucomaDetail {
+  id: string
+  eyePainLevel?: string | null
+  visionSymptoms?: string | null
+  visionProgression?: string | null
+  hasPhotophobia: boolean
+  hasTearing: boolean
+  hasRedness: boolean
+  systemicSymptoms?: string | null
+  vaWithoutCorrectionOd?: string | null
+  vaWithoutCorrectionOs?: string | null
+  vaWithCorrectionOd?: string | null
+  vaWithCorrectionOs?: string | null
+  iopOd?: string | null
+  iopOs?: string | null
+  iopMethod?: string | null
+  iopTargetOd?: string | null
+  iopTargetOs?: string | null
+  historyEye?: string | null
+  historyEyeSurgery?: string | null
+  priorEyeSurgeryDetails?: string | null
+  steroidUse?: string | null
+  steroidPrescribed?: string | null
+  medicationDuration?: string | null
+  medicationRoute?: string | null
+  hasCardiovascularDisease: boolean
+  hasHypertension: boolean
+  hasDiabetes: boolean
+  hasCarotidFistula: boolean
+  otherSystemicDisease?: string | null
+  familyHasGlaucoma: boolean
+  familyGlaucomaRelation?: string | null
+  glaucomaMedications?: string | null
+  medicationChangeReason?: string | null
+  otherMedications?: string | null
+  treatmentProgress?: string | null
+  glaucomaType?: string | null
+  stageOd?: string | null
+  stageOs?: string | null
+  hasEyelidSwelling: boolean
+  hasConjunctivalInjection: boolean
+  hasFilteringBleb: boolean
+  blebLocation?: string | null
+  blebStatus?: string | null
+  conjunctivalScarLocation?: string | null
+  cornealTransparency?: string | null
+  cornealEdemaLevel?: string | null
+  cornealThickness?: string | null
+  hasScleralThinning: boolean
+  scleralScarLocation?: string | null
+  acDepthSmith?: string | null
+  acDepthHerick?: string | null
+  gonioscopyOd?: string | null
+  gonioscopyOs?: string | null
+  angleFindings?: string | null
+  irisColor?: string | null
+  irisCondition?: string | null
+  hasIrisNeovascularization: boolean
+  pupilDiameter?: string | null
+  pupilPigmentBorder?: string | null
+  pupilReflexResponse?: string | null
+  lensStatus?: string | null
+  fundusRetinaFindings?: string | null
+  fundusMaculaFindings?: string | null
+  hasCNV: boolean
+  hasRetinalHemorrhage: boolean
+  opticDiscDescription?: string | null
+  nerveRimOd?: string | null
+  nerveRimOs?: string | null
+  opticDiscCupRatio?: string | null
+  opticDiscVesselChange?: string | null
+  hasOpticDiscHemorrhage: boolean
+  hasRimAtrophy: boolean
+  eyeAxialLength?: string | null
+  treatmentPlanSurgery?: string | null
+  treatmentPlanLaser?: string | null
+  treatmentPlanMedication?: string | null
+  followUpPlan?: string | null
+  histories: MedicalRecordGlaucomaHistoryDetail[]
+}
+
+export interface MedicalRecordGlaucomaHistoryDetail {
+  id: string
+  historyType: string
+  eyeSide?: string | null
+  attemptNumber?: number | null
+  procedureType?: string | null
+  procedureDate?: string | null
+  facilityLevel?: string | null
+  drugName?: string | null
+  dosage?: string | null
+  duration?: string | null
+  route?: string | null
+  changeReason?: string | null
+}
+
+export interface MedicalRecordStrabismusPtosisDetail {
+  id: string
+  chiefStrabismus: boolean
+  chiefPtosis: boolean
+  congenital: boolean
+  acquired: boolean
+  acquiredOnset?: string | null
+  strabismusType?: string | null
+  nystagmus: boolean
+  nystagmusType?: string | null
+  priorAmblyopiaTreatment?: string | null
+  priorAmblyopiaResult?: string | null
+  priorSurgery?: string | null
+  priorSurgeryResult?: string | null
+  vaBeforeAtropineOd?: string | null
+  vaBeforeAtropineOs?: string | null
+  vaAfterAtropineOd?: string | null
+  vaAfterAtropineOs?: string | null
+  refractionPreAtropine?: string | null
+  refractionPostAtropine?: string | null
+  pupilShadowTestOd?: string | null
+  pupilShadowTestOs?: string | null
+  eomGazeTest?: string | null
+  eomGazeIncreaseOd?: string | null
+  eomGazeIncreaseOs?: string | null
+  eomGazeLimitOd?: string | null
+  eomGazeLimitOs?: string | null
+  eomInternalOd?: string | null
+  eomInternalOs?: string | null
+  convergencePoint?: string | null
+  coverTestResult?: string | null
+  hirschbergBeforeAtropine?: string | null
+  hirschbergAfterAtropine?: string | null
+  prismNear?: string | null
+  prismDistance?: string | null
+  prismUp?: string | null
+  prismDown?: string | null
+  strabismusSyndrome?: string | null
+  synoptophoreObjective?: string | null
+  synoptophoreSubjective?: string | null
+  binocularStatus?: string | null
+  fusionAmplitude?: string | null
+  retinalCorrespondence?: string | null
+  diplopia?: string | null
+  compensatoryHeadPosture?: string | null
+  ptosisDegreeOd?: string | null
+  ptosisDegreeOs?: string | null
+  levatorFunctionOd?: string | null
+  levatorFunctionOs?: string | null
+  marcusGunn?: string | null
+  bellPhenomenon?: string | null
+  fixationOd?: string | null
+  fixationOs?: string | null
+  palpebralReflexOd?: string | null
+  palpebralReflexOs?: string | null
+}
+
+export interface MedicalRecordPediatricDetail {
+  id: string
+  congenital: boolean
+  acquired: boolean
+  acquiredOnset?: string | null
+  priorTreatment?: string | null
+  pregnancyIllness: boolean
+  pregnancyIllnessDetail?: string | null
+  intellectualDevelopmentNormal: boolean
+  chiefSymptoms?: string | null
+  entropionOd: boolean
+  epicanthusOd: boolean
+  ptosisOd: boolean
+  eyelidTumor?: string | null
+  eyelidTumorLocation?: string | null
+  eyelidTumorSize?: string | null
+  eyeballOdStatus?: string | null
+  eyeballOsStatus?: string | null
+  eyeballTexture?: string | null
+  amblyopiaStatus?: string | null
+  fixationPreferenceOd?: string | null
+  fixationPreferenceOs?: string | null
+  fundusSummaryOd?: string | null
+  fundusSummaryOs?: string | null
+  intellectualDevelopmentStatus?: string | null
+  generalHealthStatus?: string | null
+}
+
+export interface MedicalRecordPrescriptionDetail {
+  id: string
+  notes?: string | null
+  createdAt: string
+  doctorName: string
+  items: MedicalRecordPrescriptionItemDetail[]
+}
+
+export interface MedicalRecordPrescriptionItemDetail {
+  id: string
+  medicineName: string
+  dosage: string
+  frequency?: string | null
+  durationDays?: number | null
+  quantity: number
+  instruction?: string | null
+}
+
+export interface MedicalRecordGlassesPrescriptionDetail {
+  id: string
+  sphOd?: number | null
+  cylOd?: number | null
+  axisOd?: number | null
+  addOd?: number | null
+  sphOs?: number | null
+  cylOs?: number | null
+  axisOs?: number | null
+  addOs?: number | null
+  pd?: number | null
+  lensType?: string | null
+  notes?: string | null
+  createdAt: string
+}
+
+export interface MedicalRecordExtrasDetail {
+  id: string
+  traumaSummary?: string | null
+  glaucomaSummary?: string | null
+  pediatricSummary?: string | null
+  labOrders?: string | null
+  imagingOrders?: string | null
+  dischargeSummary?: string | null
+  treatmentProcess?: string | null
+  updatedAt: string
+}
+
+export interface MedicalRecordDocumentAccessPermissionDetail {
+  id: string
+  grantedToUserName: string
+  grantedByUserName: string
+  isActive: boolean
+  expiresAt?: string | null
+  createdAt: string
+}

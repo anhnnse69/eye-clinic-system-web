@@ -18,49 +18,12 @@ import {
 
 const PAGE_SIZE = 10;
 
-const STATUS_OPTIONS = [
-  { value: "", label: "Tất cả" },
-  { value: "PENDING", label: "Chờ thanh toán" },
-  { value: "DEPOSIT_PAID", label: "Đã cọc" },
-  { value: "BOOKED", label: "Đã đặt lịch" },
-  { value: "ARRIVED", label: "Đã đến" },
-  { value: "IN_PROGRESS", label: "Đang khám" },
-  { value: "COMPLETED", label: "Hoàn thành" },
-  { value: "CANCELLED", label: "Đã hủy" },
-  { value: "NOSHOW", label: "Không đến" },
-];
-
-const STATUS_STYLE: Record<string, string> = {
-  PENDING: "bg-amber-50 text-amber-700 border-amber-200",
-  DEPOSIT_PAID: "bg-sky-50 text-sky-700 border-sky-200",
-  BOOKED: "bg-blue-50 text-blue-700 border-blue-200",
-  ARRIVED: "bg-purple-50 text-purple-700 border-purple-200",
-  IN_PROGRESS: "bg-indigo-50 text-indigo-700 border-indigo-200",
-  COMPLETED: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  CANCELLED: "bg-red-50 text-red-600 border-red-200",
-  NOSHOW: "bg-gray-50 text-gray-600 border-gray-200",
-};
-
-const STATUS_LABEL: Record<string, string> = {
-  PENDING: "Chờ thanh toán",
-  DEPOSIT_PAID: "Đã cọc",
-  BOOKED: "Đã đặt lịch",
-  ARRIVED: "Đã đến",
-  IN_PROGRESS: "Đang khám",
-  COMPLETED: "Hoàn thành",
-  CANCELLED: "Đã hủy",
-  NOSHOW: "Không đến",
-};
-
 const BOOKING_SOURCE_LABEL: Record<string, string> = {
   ONLINE: "Online",
   WEB: "Website",
   APP: "App",
   WALKIN: "Trực tiếp",
 };
-
-// Status được phép confirm/reject
-const ACTIONABLE_STATUSES = ["PENDING", "DEPOSIT_PAID"];
 
 // ── Helpers ───────────────────────────────────────────────
 
@@ -79,8 +42,7 @@ function Avatar({ name, url }: { name: string; url?: string }) {
 function calcAge(dob?: string) {
   if (!dob) return null;
   return Math.floor(
-    (Date.now() - new Date(dob).getTime()) /
-    (1000 * 60 * 60 * 24 * 365.25)
+    (Date.now() - new Date(dob).getTime()) / (1000 * 60 * 60 * 24 * 365.25)
   );
 }
 
@@ -96,7 +58,6 @@ export default function DoctorAppointmentsClient({
   const [error, setError] = useState<string | null>(null);
 
   const [page, setPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
@@ -120,16 +81,14 @@ export default function DoctorAppointmentsClient({
     setLoading(true);
     setError(null);
     try {
-      const result = await doctorAppointmentService.getAppointments(
-        doctorId,
-        {
-          pageNumber: page,
-          pageSize: PAGE_SIZE,
-          status: statusFilter || undefined,
-          date: dateFilter || undefined,
-          search: search || undefined,
-        }
-      );
+      const result = await doctorAppointmentService.getAppointments(doctorId, {
+        pageNumber: page,
+        pageSize: PAGE_SIZE,
+        // Luôn cố định filter PENDING — chỉ hiện lịch hẹn chờ xử lý
+        status: "PENDING",
+        date: dateFilter || undefined,
+        search: search || undefined,
+      });
 
       if (result?.data) {
         setData(result.data);
@@ -141,38 +100,34 @@ export default function DoctorAppointmentsClient({
     } finally {
       setLoading(false);
     }
-  }, [doctorId, page, statusFilter, dateFilter, search]);
+  }, [doctorId, page, dateFilter, search]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const clearFilters = () => {
-    setStatusFilter("");
     setDateFilter("");
     setSearchInput("");
     setSearch("");
     setPage(1);
   };
 
-  const hasFilter = statusFilter || dateFilter || search;
+  const hasFilter = dateFilter || search;
 
-  // ── Update local state sau khi confirm/reject thành công ──
-  const applyStatusUpdate = (
-    appointmentId: string,
-    newStatus: string,
-    noteReason?: string
-  ) => {
-    setData((prev) =>
-      prev
-        ? {
-          ...prev,
-          appointments: prev.appointments.map((a) =>
-            a.appointmentId === appointmentId
-              ? { ...a, status: newStatus as AppointmentItem["status"], noteReason }
-              : a
-          ),
-        }
-        : prev
-    );
+  // Xóa row khỏi list ngay sau khi confirm / reject thành công
+  const removeAppointment = (appointmentId: string) => {
+    setData((prev) => {
+      if (!prev) return prev;
+      const updated = prev.appointments.filter(
+        (a) => a.appointmentId !== appointmentId
+      );
+      return {
+        ...prev,
+        appointments: updated,
+        totalRecords: Math.max(0, prev.totalRecords - 1),
+      };
+    });
   };
 
   // ── Confirm ──
@@ -186,11 +141,7 @@ export default function DoctorAppointmentsClient({
         { decision: "CONFIRM" }
       );
       if (result?.data) {
-        applyStatusUpdate(
-          appt.appointmentId,
-          result.data.status,
-          result.data.noteReason
-        );
+        removeAppointment(appt.appointmentId);
       }
     } catch {
       setActionError("Không thể xác nhận lịch hẹn. Vui lòng thử lại.");
@@ -199,8 +150,7 @@ export default function DoctorAppointmentsClient({
     }
   };
 
-
-  // ── Reject (mở modal) ──
+  // ── Reject ──
   const openRejectModal = (appt: AppointmentItem) => {
     setRejectTarget(appt);
     setRejectReason("");
@@ -209,7 +159,6 @@ export default function DoctorAppointmentsClient({
 
   const handleRejectSubmit = async () => {
     if (!rejectTarget) return;
-
     setActionLoadingId(rejectTarget.appointmentId);
     setActionError(null);
     try {
@@ -222,11 +171,7 @@ export default function DoctorAppointmentsClient({
         }
       );
       if (result?.data) {
-        applyStatusUpdate(
-          rejectTarget.appointmentId,
-          result.data.status,
-          result.data.noteReason
-        );
+        removeAppointment(rejectTarget.appointmentId);
         setRejectTarget(null);
       }
     } catch {
@@ -243,10 +188,10 @@ export default function DoctorAppointmentsClient({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-gray-100">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-            Danh sách lịch hẹn
+            Lịch hẹn chờ xử lý
           </h1>
           <p className="text-gray-500 mt-1 text-sm">
-            Tất cả lịch hẹn của bệnh nhân với bạn
+            Các lịch hẹn cần bạn xác nhận hoặc từ chối
           </p>
         </div>
         <button
@@ -259,9 +204,9 @@ export default function DoctorAppointmentsClient({
         </button>
       </div>
 
-      {/* ── Filter bar ── */}
+      {/* ── Filter bar — chỉ Search + Date, bỏ Status ── */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -273,16 +218,6 @@ export default function DoctorAppointmentsClient({
               className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
             />
           </div>
-
-          <select
-            value={statusFilter}
-            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-            className="px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none cursor-pointer text-gray-900"
-          >
-            {STATUS_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
-            ))}
-          </select>
 
           <div className="flex gap-2">
             <input
@@ -309,16 +244,15 @@ export default function DoctorAppointmentsClient({
             <span className="font-semibold text-gray-800">
               {data.totalRecords}
             </span>{" "}
-            lịch hẹn
+            lịch hẹn chờ xử lý
             {dateFilter &&
               ` · Ngày ${new Date(dateFilter).toLocaleDateString("vi-VN")}`}
-            {statusFilter && ` · ${STATUS_LABEL[statusFilter] ?? statusFilter}`}
             {search && ` · "${search}"`}
           </p>
         )}
       </div>
 
-      {/* Action error toast (ngoài modal reject) */}
+      {/* Action error toast */}
       {actionError && !rejectTarget && (
         <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3 flex items-center justify-between">
           {actionError}
@@ -348,7 +282,7 @@ export default function DoctorAppointmentsClient({
                   <th className="p-4 pl-6">Bệnh nhân</th>
                   <th className="p-4">Thời gian khám</th>
                   <th className="p-4">Dịch vụ</th>
-                  <th className="p-4">Trạng thái</th>
+                  <th className="p-4">Trạng Thái</th>
                   <th className="p-4">Bệnh án</th>
                   <th className="p-4">Thao tác</th>
                 </tr>
@@ -369,9 +303,9 @@ export default function DoctorAppointmentsClient({
                       </td>
                       <td className="p-4"><div className="h-4 w-32 bg-gray-200 rounded" /></td>
                       <td className="p-4"><div className="h-4 w-28 bg-gray-200 rounded" /></td>
-                      <td className="p-4"><div className="h-6 w-24 bg-gray-200 rounded-full" /></td>
+                      <td className="p-4"><div className="h-4 w-20 bg-gray-200 rounded" /></td>
                       <td className="p-4"><div className="h-4 w-16 bg-gray-200 rounded" /></td>
-                      <td className="p-4"><div className="h-8 w-24 bg-gray-200 rounded-lg" /></td>
+                      <td className="p-4"><div className="h-8 w-36 bg-gray-200 rounded-lg" /></td>
                     </tr>
                   ))
                 ) : !data || data.appointments.length === 0 ? (
@@ -379,7 +313,9 @@ export default function DoctorAppointmentsClient({
                     <td colSpan={6} className="text-center py-16">
                       <div className="flex flex-col items-center gap-3 text-gray-400">
                         <CalendarDays className="w-10 h-10" />
-                        <p className="font-medium">Không có lịch hẹn nào</p>
+                        <p className="font-medium">
+                          Không có lịch hẹn nào đang chờ xử lý
+                        </p>
                         {hasFilter && (
                           <button
                             onClick={clearFilters}
@@ -428,9 +364,7 @@ export default function DoctorAppointmentsClient({
                 <ChevronLeft className="w-4 h-4 text-gray-600" />
               </button>
               <button
-                onClick={() =>
-                  setPage((p) => Math.min(data.totalPages, p + 1))
-                }
+                onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
                 disabled={page >= data.totalPages || loading}
                 className="p-2 border border-gray-200 bg-white hover:bg-gray-50 rounded-xl disabled:opacity-40 disabled:pointer-events-none transition shadow-sm"
               >
@@ -441,16 +375,10 @@ export default function DoctorAppointmentsClient({
         )}
       </div>
 
-      {/* ── Reject Reason Modal ── */}
+      {/* ── Reject Modal ── */}
       {rejectTarget && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white
-    rounded-2xl
-    shadow-xl
-    w-[700px]
-    max-w-[90vw]
-    p-8
-    space-y-6">
+          <div className="bg-white rounded-2xl shadow-xl w-[700px] max-w-[90vw] p-8 space-y-6">
             <div>
               <h3 className="font-bold text-lg text-gray-900">
                 Từ chối lịch hẹn
@@ -465,7 +393,8 @@ export default function DoctorAppointmentsClient({
 
             <div>
               <label className="text-sm font-medium text-gray-700 mb-1.5 block">
-                Lý do từ chối <span className="text-gray-400">(không bắt buộc)</span>
+                Lý do từ chối{" "}
+                <span className="text-gray-400">(không bắt buộc)</span>
               </label>
               <textarea
                 value={rejectReason}
@@ -519,7 +448,6 @@ function AppointmentRow({
   onReject: () => void;
 }) {
   const age = calcAge(appt.patientDob);
-  const canAct = ACTIONABLE_STATUSES.includes(appt.status);
 
   return (
     <tr className="hover:bg-gray-50/50 transition-colors">
@@ -594,21 +522,16 @@ function AppointmentRow({
         )}
       </td>
 
-      {/* Trạng thái */}
+      {/* Đặt cọc */}
       <td className="p-4">
-        <div className="space-y-1.5">
-          <span
-            className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold border ${STATUS_STYLE[appt.status] ?? "bg-gray-50 text-gray-600 border-gray-200"
-              }`}
-          >
-            {STATUS_LABEL[appt.status] ?? appt.status}
-          </span>
-          {appt.depositPaid && (
-            <p className="text-xs text-emerald-600 font-medium">
-              ✓ Đã cọc {appt.depositAmount.toLocaleString("vi-VN")}đ
-            </p>
-          )}
-        </div>
+        <span className="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold border bg-amber-50 text-amber-700 border-amber-200">
+          Chờ Xử Lý
+        </span>
+        {appt.depositPaid && (
+          <p className="text-xs text-emerald-600 font-medium mt-1">
+            ✓ Đã cọc {appt.depositAmount.toLocaleString("vi-VN")}đ
+          </p>
+        )}
       </td>
 
       {/* Bệnh án */}
@@ -626,49 +549,31 @@ function AppointmentRow({
       {/* Thao tác */}
       <td className="p-4">
         <div className="flex items-center gap-1.5 flex-wrap">
-          {canAct && (
-            <>
-              <button
-                onClick={onConfirm}
-                disabled={isActionLoading}
-                title="Xác nhận lịch hẹn"
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors disabled:opacity-50"
-              >
-                {isActionLoading ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <Check className="w-3.5 h-3.5" />
-                )}
-                Xác nhận
-              </button>
-              <button
-                onClick={onReject}
-                disabled={isActionLoading}
-                title="Từ chối lịch hẹn"
-                className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors disabled:opacity-50"
-              >
-                <Ban className="w-3.5 h-3.5" />
-                Từ chối
-              </button>
-            </>
-          )}
-
-          <Link
-            href={`/doctor/patients/${appt.patientId}`}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-lg transition-colors"
+          {/* Confirm */}
+          <button
+            onClick={onConfirm}
+            disabled={isActionLoading}
+            title="Xác nhận lịch hẹn"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors disabled:opacity-50"
           >
-            <User className="w-3.5 h-3.5" />
-            BN
-          </Link>
+            {isActionLoading ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Check className="w-3.5 h-3.5" />
+            )}
+            Xác nhận
+          </button>
 
-          {appt.symptoms && (
-            <span
-              title={appt.symptoms}
-              className="inline-flex items-center gap-1 px-2 py-1.5 text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded-lg cursor-help"
-            >
-              <Stethoscope className="w-3.5 h-3.5" />
-            </span>
-          )}
+          {/* Reject */}
+          <button
+            onClick={onReject}
+            disabled={isActionLoading}
+            title="Từ chối lịch hẹn"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors disabled:opacity-50"
+          >
+            <Ban className="w-3.5 h-3.5" />
+            Từ chối
+          </button>
         </div>
       </td>
     </tr>

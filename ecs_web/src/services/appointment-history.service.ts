@@ -21,6 +21,54 @@ export interface GetAppointmentHistoryResponse {
     servicePrice: string
 }
 
+export interface CancelAppointmentRequest {
+    appointmentId: string
+    reason?: string
+}
+
+export interface CancelAppointmentResponse {
+    appointmentId: string
+    status: string
+    cancelledAt: string
+    cancellationReason?: string
+    message: string
+}
+
+export interface GetAppointmentDetailRequest {
+    appointmentId: string
+}
+
+export interface GetAppointmentDetailResponse {
+    id_appointment: string
+    status: string
+    createdAt: string
+
+    patientName: string
+    patientPhone: string
+    patientEmail: string
+    patientDob: string
+    patientGender: string
+
+    clinicName: string
+    clinicAddress: string
+    clinicPhone: string
+    doctorName: string
+    doctorTitle: string
+    serviceName: string
+    appointmentDate: string
+    timeSlot: string
+    symptoms?: string
+    noteReason?: string
+
+    feedback?: {
+        ratingDoctor: number
+        ratingClinic: number
+        comment?: string
+        isPublic: boolean
+        createdAt: string
+    }
+}
+
 class AppointmentHistoryService {
     async getAll(
         params: GetAppointmentHistoryRequest
@@ -33,6 +81,26 @@ class AppointmentHistoryService {
         >("/patient/appointments/history", {
             params: cleanParams,
         })
+        return response.data
+    }
+
+    async cancelAppointment(
+        params: CancelAppointmentRequest
+    ): Promise<ApiResponse<CancelAppointmentResponse>> {
+        const response = await apiClient.patch<
+            ApiResponse<CancelAppointmentResponse>
+        >(`/patient/appointments/${params.appointmentId}/cancel`, {
+            reason: params.reason
+        })
+        return response.data
+    }
+
+    async getDetail(
+        params: GetAppointmentDetailRequest
+    ): Promise<ApiResponse<GetAppointmentDetailResponse>> {
+        const response = await apiClient.get<
+            ApiResponse<GetAppointmentDetailResponse>
+        >(`/patient/appointments/${params.appointmentId}`)
         return response.data
     }
 }

@@ -21,6 +21,7 @@ import {
     Loader2,
     RotateCcw,
     XCircle,
+    Eye,
 } from "lucide-react"
 
 import { appointmentHistoryService } from "@/services"
@@ -262,6 +263,11 @@ export default function AppointmentHistoryPage() {
         }
     }
 
+    // [THÊM] Kiểm tra xem có hiển thị nút "Xem chi tiết" không
+    const canViewDetail = (status: string) => {
+        return status.toUpperCase() === "COMPLETED"
+    }
+
     const selectedStatusInfo = STATUS_OPTIONS.find(opt => opt.value === selectedStatus)
 
     return (
@@ -448,6 +454,7 @@ export default function AppointmentHistoryPage() {
                                 appointments.map((item) => {
                                     const isCancelling = cancellingId === item.id_appointment
                                     const canCancel = canCancelAppointment(item)
+                                    const showDetail = canViewDetail(item.status)
 
                                     return (
                                         <tr
@@ -510,7 +517,17 @@ export default function AppointmentHistoryPage() {
                                             </td>
 
                                             <td className="px-6 py-4 text-center">
-                                                {canCancel ? (
+                                                {showDetail ? (
+                                                    <button
+                                                        onClick={() => {
+                                                            router.push(`/${locale}/patient/appointment-detail?id=${item.id_appointment}`)
+                                                        }}
+                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-blue-600 bg-blue-50/70 rounded-lg hover:bg-blue-100 hover:text-blue-700 transition-colors whitespace-nowrap"
+                                                    >
+                                                        <Eye className="w-3.5 h-3.5" />
+                                                        Xem chi tiết
+                                                    </button>
+                                                ) : canCancel ? (
                                                     <button
                                                         onClick={() => openCancelModal(item.id_appointment)}
                                                         disabled={isCancelling}

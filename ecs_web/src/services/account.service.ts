@@ -30,6 +30,7 @@ export interface GetAccountsRequest {
   pageSize: number;
   role?: number | string;
   searchTerm?: string;
+  isActive?: boolean;
 }
 
 export interface GetAccountResponse {
@@ -82,6 +83,17 @@ export interface EditAccountResponse {
   updatedAt: string;
 }
 
+export interface DeleteAccountRequest {
+  userId: string
+  isActive: boolean
+}
+
+export interface DeleteAccountResponse {
+  userId: string
+  isActive: boolean
+  updatedAt: string
+}
+
 class AccountService {
   async list(params?: AccountFilters): Promise<PaginatedResponse<User>> {
     const response = await apiClient.get<PaginatedResponse<User>>("/accounts", { params })
@@ -131,6 +143,7 @@ class AccountService {
           pageSize: params.pageSize,
           role: params.role || undefined,
           searchTerm: params.searchTerm || undefined,
+          isActive: params.isActive !== undefined ? params.isActive : undefined,
         },
       }
     );
@@ -165,6 +178,14 @@ class AccountService {
       }
     );
     return response.data;
+  }
+
+  async deleteAccount(body: DeleteAccountRequest): Promise<ApiResponse<DeleteAccountResponse>> {
+    const response = await apiClient.put<ApiResponse<DeleteAccountResponse>>(
+      "https://localhost:7070/api/v1/system-admin/accounts/delete",
+      body
+    )
+    return response.data
   }
 }
 

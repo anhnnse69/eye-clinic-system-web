@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 import { Sidebar, type NavSection } from "@/components/layout/Sidebar"
 import { authService } from "@/services/auth.service"
 import { cookies } from "next/headers"
+import { Bell } from "lucide-react";
 
 export default async function PatientLayout({
   children,
@@ -44,6 +45,7 @@ export default async function PatientLayout({
       title: "Cá nhân",
       items: [
         { label: "Trang chủ", href: `/${locale}/home`, icon: "Home" },
+        { label: "Thông Báo", href: `/${locale}/patient/notifications`, icon: "Bell" },
         { label: "Thông tin tài khoản", href: `/${locale}/patient/account-info`, icon: "User" },
         { label: "Đổi mật khẩu", href: `/${locale}/patient/change-password`, icon: "Key" },
         { label: "Hồ sơ bệnh nhân", href: `/${locale}/patient/profiles`, icon: "User" },

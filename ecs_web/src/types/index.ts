@@ -1542,6 +1542,67 @@ export interface GetMedicalRecordsResponse {
   meta: GetMedicalRecordsMeta
 }
 
+// Định nghĩa bổ sung cho mảng slots bên trong DoctorScheduleMatrixRow nếu chưa có
+export interface TimeSlotData {
+  slotId: string;
+  time: string; // Ví dụ: "08:00"
+  status: SlotStatus;
+  isExpired?: boolean;
+}
+
+// ==========================================
+// BỔ SUNG CÁC INTERFACE PHỤC VỤ NGHIỆP VỤ LỄ TÂN (WALK-IN / THANH TOÁN)
+// ==========================================
+export interface ClinicServiceItemResponse {
+  id: string;
+  name: string;
+  price: number;
+  description?: string;
+  isActive: boolean;
+}
+
+export interface ReceptionistWalkInRegistrationRequest {
+  patientProfileId: string;
+  doctorId: string;
+  slotId: string;  
+  serviceId?: string | null;
+  symptoms?: string | null; 
+}
+
+export interface QueueInlineRowDto {
+  id: string;
+  queueNumber: number;
+  status: string;
+  calledAt: string | null;
+}
+
+export interface ReceptionistWalkInRegistrationResponse {
+  appointmentId: string;
+  status: string;
+  walkInQueue: QueueInlineRowDto; 
+}
+
+export interface ReceptionistPayDepositRequest {
+  appointmentId: string;
+  amount: number;
+  paymentMethod: string;
+}
+
+export interface ReceptionistPayDepositResponse {
+  isSuccess: boolean;
+  transactionId: string;
+  status: string;
+}
+
+export interface ReceptionistCancelAppointmentRequest {
+  appointmentId: string;
+  reason: string;
+}
+
+export interface ReceptionistCancelAppointmentResponse {
+  isSuccess: boolean;
+  message?: string;
+}
 export interface GetMedicalRecordDetailResponse {
   id: string
   appointmentId: string

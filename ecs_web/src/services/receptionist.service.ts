@@ -196,6 +196,28 @@ export interface ReceptionistCancelAppointmentResponse {
   updatedAt: string;
 }
 
+export interface ReceptionistWalkInRegistrationRequest {
+  patientProfileId: string;
+  doctorId: string;
+  slotId: string;
+  serviceId?: string | null;
+  symptoms?: string | null;
+}
+
+export interface WalkInQueueInlineDto {
+  id: string;
+  queueNumber: number;
+  status: string;
+  calledAt: string | null;
+}
+
+export interface ReceptionistWalkInRegistrationResponse {
+  appointmentId: string;
+  status: string;
+  walkInQueue: WalkInQueueInlineDto;
+}
+
+
 class ReceptionistService {
   /**
    * Lấy danh sách hồ sơ bệnh nhân kèm bộ lọc và phân trang từ server
@@ -348,6 +370,15 @@ class ReceptionistService {
   return (
     await apiClient.post<ApiResponse<ReceptionistCancelAppointmentResponse>>(
       "/receptionist/appointments/cancel", 
+      payload
+    )
+  ).data;
+}
+
+async registerWalkIn(payload: ReceptionistWalkInRegistrationRequest): Promise<ApiResponse<ReceptionistWalkInRegistrationResponse>> {
+  return (
+    await apiClient.post<ApiResponse<ReceptionistWalkInRegistrationResponse>>(
+      "/receptionist/appointments/walk-in",
       payload
     )
   ).data;

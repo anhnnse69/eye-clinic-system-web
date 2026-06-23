@@ -225,12 +225,12 @@ export default function CreatePatientPage() {
             identityNumber: formData.identityNumber.trim() || null,
             bhytNumber: formData.bhytNumber.trim() || null,
             selectedUserId: formData.selectedUserId,
-            isHasAccount: hasAccount === true 
+            isHasAccount: hasAccount === true
         };
 
         try {
             const response = await receptionistService.createPatientProfile(payload);
-            if (response && response.data) { 
+            if (response && response.data) {
                 if (response.data.generatedPassword) {
                     setCreatedAccountInfo({
                         email: formData.email.trim(),
@@ -245,10 +245,10 @@ export default function CreatePatientPage() {
             }
         } catch (error: unknown) {
             const systemErrorCode = handleApiError(error);
-            
+
             setErrors(prev => {
                 const newErrors = { ...prev };
-                
+
                 switch (systemErrorCode) {
                     case "EMAIL_REQUIRED_FOR_NEW_ACCOUNT":
                         newErrors.email = "Vui lòng nhập Email. Luồng tạo tài khoản tự động bắt buộc phải có Email.";
@@ -259,22 +259,22 @@ export default function CreatePatientPage() {
                         newErrors.phoneNumber = "Số điện thoại này đã tồn tại trên một hồ sơ bệnh nhân khác.";
                         setTimeout(() => scrollToFieldError("phoneNumber"), 100);
                         break;
-                        
+
                     case "USER_EMAIL_EXISTS":
                         newErrors.email = "Địa chỉ email này đã được đăng ký bởi tài khoản khác.";
                         setTimeout(() => scrollToFieldError("email"), 100);
                         break;
-                        
+
                     case "APP_MESSAGE_4018":
                         newErrors.identityNumber = "Số CCCD/CMND này đã tồn tại trên hệ thống.";
                         setTimeout(() => scrollToFieldError("identityNumber"), 100);
                         break;
-                        
+
                     default:
                         newErrors.apiError = `Hệ thống từ chối ghi nhận. Mã lỗi: ${systemErrorCode}`;
                         break;
                 }
-                
+
                 return newErrors;
             });
         } finally {
@@ -360,22 +360,22 @@ export default function CreatePatientPage() {
 
                 {/* KHỐI THÔNG BÁO KHÔNG SỬ DỤNG - ĐÃ FIX LỖI CO CHỮ */}
                 {hasAccount === true && hasProfile === true && (
-    <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-center space-y-3 w-full">
-        <XCircle className="h-10 w-10 text-amber-500 mx-auto" />
-        <h3 className="font-bold text-slate-800 text-base">Thông báo: Không sử dụng chức năng này</h3>
-        {/* Thay đổi: Loại bỏ block/max-w ép dòng không cần thiết để văn bản tự động trải mượt theo chiều ngang */}
-        <p className="text-sm text-slate-600 leading-relaxed whitespace-normal px-4">
-            Bệnh nhân đã có cả tài khoản và hồ sơ y tế trên hệ thống. Lễ tân không cần làm lại bước tạo mới hồ sơ bệnh nhân này để tránh trùng lặp dữ liệu.
-        </p>
-        <button 
-            type="button" 
-            onClick={() => router.back()} 
-            className="mt-2 text-xs font-semibold px-4 py-2 bg-white text-slate-700 border border-slate-200 rounded-lg shadow-sm hover:bg-slate-50 transition-colors"
-        > 
-            Quay lại danh sách 
-        </button>
-    </div>
-)}
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-center space-y-3 w-full">
+                        <XCircle className="h-10 w-10 text-amber-500 mx-auto" />
+                        <h3 className="font-bold text-slate-800 text-base">Thông báo: Không sử dụng chức năng này</h3>
+                        {/* Thay đổi: Loại bỏ block/max-w ép dòng không cần thiết để văn bản tự động trải mượt theo chiều ngang */}
+                        <p className="text-sm text-slate-600 leading-relaxed whitespace-normal px-4">
+                            Bệnh nhân đã có cả tài khoản và hồ sơ y tế trên hệ thống. Lễ tân không cần làm lại bước tạo mới hồ sơ bệnh nhân này để tránh trùng lặp dữ liệu.
+                        </p>
+                        <button
+                            type="button"
+                            onClick={() => router.back()}
+                            className="mt-2 text-xs font-semibold px-4 py-2 bg-white text-slate-700 border border-slate-200 rounded-lg shadow-sm hover:bg-slate-50 transition-colors"
+                        >
+                            Quay lại danh sách
+                        </button>
+                    </div>
+                )}
 
                 {/* FORM CHÍNH */}
                 {hasProfile === false && (

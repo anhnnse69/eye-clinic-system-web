@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import {
   Calendar as CalendarIcon, Search, User, Stethoscope,
   CheckCircle2, XCircle, Ban, Loader2, RefreshCw, Layers,
-  DoorOpen
+  DoorOpen, UserPlus
 } from "lucide-react"
 
 import { receptionistService } from "@/services/receptionist.service"
@@ -47,6 +47,9 @@ export default function RealShiftTimeSchedulerPage() {
 
   const currentUserId = "F533F6FF-7601-47A7-A15F-1FFA2D79672E"
 
+  // 🌟 KIỂM TRA THỜI GIAN THỰC: Ngày đang chọn có trùng ngày hiện tại không
+  const isTodaySelected = dateFilter === getLocalCurrentDateString();
+
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedDoctor(searchDoctor), 400)
     return () => clearTimeout(handler)
@@ -80,7 +83,6 @@ export default function RealShiftTimeSchedulerPage() {
         shiftType: shiftFilter,
         specialtyId: specialtyFilter
       });
-
       setScheduleData(response.data || [])
     } catch (err) {
       const msg = handleApiError(err);
@@ -90,20 +92,29 @@ export default function RealShiftTimeSchedulerPage() {
     }
   }
 
-  const handleSelectSlot = (slotId: string, doctorName: string, timeLabel: string, roomName: string | null | undefined) => {
-    const encodedDoctor = encodeURIComponent(doctorName)
-    const encodedRoom = encodeURIComponent(roomName || "Chưa gán phòng")
-    router.push(`/receptionist/appointments/create-walk-in?slotId=${slotId}&doctor=${encodedDoctor}&time=${timeLabel}&date=${dateFilter}&room=${encodedRoom}`)
-  }
+  const handleSelectWalkInShift = (row: DoctorScheduleMatrixRow, shiftType: ShiftType) => {
+    const formattedWorkDate = dateFilter.toString().split('T')[0];
+    
+    const shiftLabels: Record<ShiftType, string> = {
+      [ShiftType.MORNING]: "Ca Sáng",
+      [ShiftType.AFTERNOON]: "Ca Chiều",
+      [ShiftType.EVENING]: "Ca Tối"
+    };
 
-  // CẬP NHẬT: So khớp khung giờ bằng chuỗi text thô, triệt tiêu hoàn toàn lệch múi giờ
-  const findSlotByTimeLabel = (slots: any[], timeLabel: string) => {
-    return slots.find(s => {
-      if (!s.startTime) return false;
-      const timePart = s.startTime.split("T")[1];
-      return timePart ? timePart.substring(0, 5) === timeLabel : false;
-    })
-  }
+    const walkInFlowData = {
+      step: 1,
+      doctorId: row.id, 
+      doctorName: row.doctorName,
+      specialtyName: row.specialtyName,
+      slotId: null, 
+      timeSlot: shiftLabels[shiftType] || shiftType, 
+      date: formattedWorkDate, 
+      roomName: row.roomName || "Chưa gán phòng"
+    };
+
+    sessionStorage.setItem("pending_walkin_appointment", JSON.stringify(walkInFlowData));
+    router.push(`/receptionist/patients`);
+  };
 
   const groupedByShift = scheduleData.reduce((acc, row) => {
     const type = row.shiftType as ShiftType;
@@ -114,7 +125,6 @@ export default function RealShiftTimeSchedulerPage() {
 
   return (
     <div className="space-y-6 w-full min-w-0 px-4 py-4">
-
       {/* Header */}
       <div>
         <h2 className="text-2xl font-bold text-slate-800">Quản lý Lịch trống Khám bệnh</h2>
@@ -201,7 +211,7 @@ export default function RealShiftTimeSchedulerPage() {
 
       {/* Legend trạng thái */}
       <div className="flex flex-wrap gap-4 bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs font-medium text-slate-600">
-        <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-green-50 border border-green-300"></div><span>Mở trống (Bấm xếp lịch vãng lai)</span></div>
+        <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-emerald-50 border border-emerald-300"></div><span>Mở trống (Xem để biết mật độ)</span></div>
         <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-amber-50 border border-amber-300"></div><span>Đã đặt kín chỗ (Booked)</span></div>
         <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-rose-50 border border-rose-200"></div><span>Khóa/Chặn (Blocked)</span></div>
         <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-slate-100 border border-slate-200"></div><span>Bác sĩ không đăng ký giờ này</span></div>
@@ -245,7 +255,9 @@ export default function RealShiftTimeSchedulerPage() {
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="border-b border-slate-200 bg-slate-50/50 text-[11px] font-bold text-slate-500 uppercase">
-                        <th className="px-6 py-3 w-[280px] border-r border-slate-200 sticky left-0 bg-slate-50 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.02)]">Bác sĩ & Phòng khám</th>
+                        <th className="px-6 py-3 w-[300px] border-r border-slate-200 sticky left-0 bg-slate-50 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.02)]">
+                          Bác sĩ & Phòng khám
+                        </th>
                         {timeLabels.map((time) => (
                           <th key={time} className="px-2 py-3 text-center border-r border-slate-200 min-w-[95px]">
                             {time}
@@ -256,36 +268,46 @@ export default function RealShiftTimeSchedulerPage() {
                     <tbody className="divide-y divide-slate-200">
                       {rows.map((row) => (
                         <tr key={row.id} className="hover:bg-slate-50/30 transition-colors">
-
-                          <td className="px-6 py-3.5 border-r border-slate-200 bg-white sticky left-0 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.01)]">
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0">
-                                <User className="h-3.5 w-3.5" />
-                              </div>
-                              <div className="flex flex-col min-w-0 space-y-1.5 w-full">
-                                <span className="font-bold text-xs text-slate-800 truncate">
-                                  {row.title ? `${row.title} ` : ""}{row.doctorName}
-                                </span>
-
-                                <div className="flex flex-col gap-1 w-full items-start">
-                                  {/* Chuyên khoa */}
-                                  <span className="text-[10px] text-indigo-700 font-semibold bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 rounded flex items-center gap-1 w-fit">
-                                    <Stethoscope className="h-2.5 w-2.5 text-indigo-500 flex-shrink-0" />
-                                    <span>{row.specialtyName}</span>
+                          <td className="px-6 py-4 border-r border-slate-200 bg-white sticky left-0 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.01)]">
+                            <div className="flex flex-col space-y-3">
+                              {/* Thông tin bác sĩ */}
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0">
+                                  <User className="h-3.5 w-3.5" />
+                                </div>
+                                <div className="flex flex-col min-w-0 space-y-1.5 w-full">
+                                  <span className="font-bold text-xs text-slate-800 truncate">
+                                    {row.title ? `${row.title} ` : ""}{row.doctorName}
                                   </span>
-
-                                  {/* Phòng khám */}
-                                  <span className="text-[10px] text-slate-700 font-medium bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded flex items-center gap-1 w-full break-words">
-                                    <DoorOpen className="h-2.5 w-2.5 text-slate-500 flex-shrink-0" />
-                                    <span>{row.roomName || "Chưa xếp phòng"}</span>
-                                  </span>
+                                  <div className="flex flex-col gap-1 w-full items-start">
+                                    <span className="text-[10px] text-indigo-700 font-semibold bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 rounded flex items-center gap-1 w-fit">
+                                      <Stethoscope className="h-2.5 w-2.5 text-indigo-500 flex-shrink-0" />
+                                      <span>{row.specialtyName}</span>
+                                    </span>
+                                    <span className="text-[10px] text-slate-700 font-medium bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded flex items-center gap-1 w-full break-words">
+                                      <DoorOpen className="h-2.5 w-2.5 text-slate-500 flex-shrink-0" />
+                                      <span>{row.roomName || "Chưa xếp phòng"}</span>
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
+
+                              {/* Nút Đăng ký vãng lai theo ca */}
+                              {/* 🌟 CẬP NHẬT: Thêm điều kiện chỉ render nút nếu isTodaySelected là true */}
+                              {isTodaySelected && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleSelectWalkInShift(row, currentShift)}
+                                  className="w-full py-1.5 px-3 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white rounded-lg text-[11px] font-bold flex items-center justify-center gap-1.5 shadow-sm shadow-blue-100 transition-all"
+                                >
+                                  <UserPlus className="h-3 w-3" />
+                                  <span>Đăng ký vãng lai (Theo ca)</span>
+                                </button>
+                              )}
                             </div>
                           </td>
 
                           {timeLabels.map((time) => {
-                            // CẬP NHẬT: So khớp khung giờ bằng chuỗi text thô tại ô Render
                             const slot = row.slots.find(s => {
                               if (!s.startTime) return false;
                               const timePart = s.startTime.split("T")[1];
@@ -295,46 +317,34 @@ export default function RealShiftTimeSchedulerPage() {
                             if (!slot) {
                               return (
                                 <td key={time} className="p-1.5 bg-slate-50 border-r border-slate-200 text-center text-[10px] text-slate-400 font-medium select-none">
-                                  <div className="w-full min-h-[44px] flex items-center justify-center border border-dashed border-slate-200 rounded-lg">
-                                    -
-                                  </div>
+                                  <div className="w-full min-h-[44px] flex items-center justify-center border border-dashed border-slate-200 rounded-lg">-</div>
                                 </td>
                               );
                             }
 
-                            // --- LOGIC KIỂM TRA THỜI GIAN THỰC CHÍNH XÁC ---
-                            // Trình duyệt sẽ tự động phân tích định dạng yyyy-MM-ddTHH:mm:ss theo múi giờ local
                             const slotStartTime = new Date(slot.startTime);
                             const currentTime = new Date();
-
-                            // Tính toán khoảng lệch phút thực tế
                             const diffInMinutes = (currentTime.getTime() - slotStartTime.getTime()) / (1000 * 60);
-
                             const todayStr = getLocalCurrentDateString();
                             const isPastDate = dateFilter < todayStr;
-
-                            // Hết hạn khi thuộc ngày cũ hoặc lố giờ hiện tại quá 30 phút
                             const isExpired = slot.status === SlotStatus.AVAILABLE && (isPastDate || diffInMinutes >= 30);
-
                             const effectiveStatus = isExpired ? SlotStatus.BLOCKED : slot.status;
-                            // ----------------------------------------------------
 
                             return (
                               <td key={time} className="p-1.5 border-r border-slate-200 text-center align-middle bg-white">
                                 {effectiveStatus === SlotStatus.AVAILABLE && (
-                                  <button
-                                    onClick={() => handleSelectSlot(slot.id, row.doctorName, time, row.roomName)}
-                                    title={`Bấm để xếp lịch khám tại ${row.roomName || 'phòng trực'}`}
-                                    className="w-full min-h-[44px] p-1 rounded-xl bg-green-50 hover:bg-green-600 border border-green-200 hover:border-green-700 text-center flex flex-col items-center justify-center transition-all duration-150 active:scale-95 shadow-sm group cursor-pointer"
+                                  <div
+                                    title={`Khung giờ còn trống (${slot.maxPatients - slot.currentPatients} chỗ)`}
+                                    className="w-full min-h-[44px] p-1 rounded-xl bg-emerald-50 border border-emerald-100 text-center flex flex-col items-center justify-center select-none shadow-sm"
                                   >
-                                    <div className="flex items-center gap-1 font-bold text-green-700 group-hover:text-white text-[11px] transition-colors">
-                                      <CheckCircle2 className="h-3 w-3 text-green-600 group-hover:text-white transition-colors" />
-                                      <span>Trống</span>
+                                    <div className="flex items-center gap-1 font-bold text-emerald-700 text-[11px]">
+                                      <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                                      <span>{slot.maxPatients - slot.currentPatients} trống</span>
                                     </div>
-                                    <span className="text-[9px] font-extrabold text-green-600 group-hover:text-green-700 bg-white border border-green-100 px-1 mt-0.5 rounded transition-colors">
+                                    <span className="text-[9px] font-extrabold text-emerald-600 bg-white border border-emerald-100 px-1 mt-0.5 rounded">
                                       {slot.currentPatients}/{slot.maxPatients} BN
                                     </span>
-                                  </button>
+                                  </div>
                                 )}
 
                                 {effectiveStatus === SlotStatus.BOOKED && (
@@ -352,20 +362,15 @@ export default function RealShiftTimeSchedulerPage() {
                                 {effectiveStatus === SlotStatus.BLOCKED && (
                                   <div
                                     className="w-full min-h-[44px] p-1 rounded-xl bg-rose-50 border border-rose-100 text-center flex flex-col items-center justify-center select-none cursor-not-allowed"
-                                    // Sửa lại ghi chú khi rê chuột vào (tooltip) cho rõ ràng
                                     title={isExpired ? "Lịch này đã quá giờ đăng ký quy định (hệ thống tự động khóa)" : undefined}
                                   >
                                     <Ban className="h-3 w-3 text-rose-400" />
-                                    <span className="text-[9px] font-bold text-rose-500 mt-0.5">
-                                      {/* SỬA TẠI ĐÂY: Thay vì hiện "Hết hạn", chúng ta ép hiển thị chữ "Khóa" luôn */}
-                                      Khóa
-                                    </span>
+                                    <span className="text-[9px] font-bold text-rose-500 mt-0.5">Khóa</span>
                                   </div>
                                 )}
                               </td>
                             )
                           })}
-
                         </tr>
                       ))}
                     </tbody>

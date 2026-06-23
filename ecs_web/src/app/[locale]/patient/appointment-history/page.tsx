@@ -22,12 +22,14 @@ import {
     RotateCcw,
     XCircle,
     Eye,
+    Star
 } from "lucide-react"
 
 import { appointmentHistoryService } from "@/services"
 import type { GetAppointmentHistoryResponse } from "@/services/appointment-history.service"
 import type { MetaResponse } from "@/types"
 import { ApiError } from "@/lib/axios"
+import SubmitFeedback from "@/components/submit-feedback/SubmitFeedback"
 
 const STATUS_OPTIONS = [
     { value: "", label: "Tất cả", icon: Calendar, color: "text-gray-600", bgColor: "bg-gray-100", activeClass: "bg-gray-900 text-white border-gray-900" },
@@ -60,6 +62,7 @@ export default function AppointmentHistoryPage() {
     const [cancelReason, setCancelReason] = useState("")
 
     const [cancelError, setCancelError] = useState<string | null>(null)
+    const [showFeedbackFor, setShowFeedbackFor] = useState<string | null>(null)
 
     const router = useRouter()
     const params = useParams()
@@ -266,6 +269,10 @@ export default function AppointmentHistoryPage() {
     // [THÊM] Kiểm tra xem có hiển thị nút "Xem chi tiết" không
     const canViewDetail = (status: string) => {
         return status.toUpperCase() === "COMPLETED"
+    }
+
+    const canRateAppointment = (item: GetAppointmentHistoryResponse) => {
+        return item.status.toUpperCase() === "COMPLETED" && !item.hasFeedback
     }
 
     const selectedStatusInfo = STATUS_OPTIONS.find(opt => opt.value === selectedStatus)
@@ -517,7 +524,15 @@ export default function AppointmentHistoryPage() {
                                             </td>
 
                                             <td className="px-6 py-4 text-center">
-                                                {showDetail ? (
+                                                {canRateAppointment(item) ? (
+                                                    <button
+                                                        onClick={() => setShowFeedbackFor(item.id_appointment)}
+                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-amber-600 bg-amber-50/70 rounded-lg hover:bg-amber-100 hover:text-amber-700 transition-colors whitespace-nowrap"
+                                                    >
+                                                        <Star className="w-3.5 h-3.5" />
+                                                        Đánh giá
+                                                    </button>
+                                                ) : showDetail ? (
                                                     <button
                                                         onClick={() => {
                                                             router.push(`/${locale}/patient/appointment-detail?id=${item.id_appointment}`)
@@ -612,6 +627,31 @@ export default function AppointmentHistoryPage() {
                     </div>
                 )}
             </div>
+            {/* Submit Feedback Modal */}
+            {showFeedbackFor && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
+                    <div className="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-xl my-8 max-h-[90vh] overflow-y-auto">
+                        {(() => {
+                            const appointment = appointments.find(a => a.id_appointment === showFeedbackFor)
+                            if (!appointment) return null
+                            return (
+                                <SubmitFeedback
+                                    appointmentId={appointment.id_appointment}
+                                    appointmentDate={appointment.appointmentDate}
+                                    clinicName={appointment.clinicName}
+                                    doctorName={appointment.doctorName}
+                                    serviceName={appointment.serviceName}
+                                    onSuccess={() => {
+                                        setShowFeedbackFor(null)
+                                        loadAppointments()
+                                    }}
+                                    onCancel={() => setShowFeedbackFor(null)}
+                                />
+                            )
+                        })()}
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

@@ -19,6 +19,7 @@ export interface GetAppointmentHistoryResponse {
     doctorName: string
     serviceName: string
     servicePrice: string
+    hasFeedback?: boolean
 }
 
 export interface CancelAppointmentRequest {
@@ -69,6 +70,25 @@ export interface GetAppointmentDetailResponse {
     }
 }
 
+export interface SubmitFeedbackRequest {
+    appointmentId: string
+    ratingDoctor: number
+    ratingClinic: number
+    comment?: string
+    isPublic?: boolean
+}
+
+export interface SubmitFeedbackResponse {
+    feedbackId: string
+    appointmentId: string
+    ratingDoctor: number
+    ratingClinic: number
+    comment?: string
+    isPublic: boolean
+    createdAt: string
+}
+
+
 class AppointmentHistoryService {
     async getAll(
         params: GetAppointmentHistoryRequest
@@ -101,6 +121,20 @@ class AppointmentHistoryService {
         const response = await apiClient.get<
             ApiResponse<GetAppointmentDetailResponse>
         >(`/patient/appointments/${params.appointmentId}`)
+        return response.data
+    }
+
+    async submitFeedback(
+        params: SubmitFeedbackRequest
+    ): Promise<ApiResponse<SubmitFeedbackResponse>> {
+        const response = await apiClient.post<
+            ApiResponse<SubmitFeedbackResponse>
+        >(`/patient/appointments/${params.appointmentId}/feedback`, {
+            ratingDoctor: params.ratingDoctor,
+            ratingClinic: params.ratingClinic,
+            comment: params.comment,
+            isPublic: params.isPublic ?? true
+        })
         return response.data
     }
 }

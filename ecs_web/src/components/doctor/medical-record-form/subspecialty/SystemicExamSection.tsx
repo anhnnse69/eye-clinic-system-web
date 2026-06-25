@@ -1,12 +1,12 @@
 "use client"
 
 import { Heart, Activity } from "lucide-react"
-import { CreateMedicalRecordRequest, SystemicExamData } from "@/types"
+import { UpdateMedicalRecordRequest, UpdateSystemicExamData } from "@/types"
 import CollapsibleSection from "../shared/CollapsibleSection"
 
 interface SystemicExamSectionProps {
-  formData: Partial<CreateMedicalRecordRequest>
-  updateFormData: (updates: Partial<CreateMedicalRecordRequest>) => void
+  formData: Partial<UpdateMedicalRecordRequest>
+  updateFormData: (updates: Partial<UpdateMedicalRecordRequest>) => void
   isExpanded: boolean
   onToggle: () => void
 }
@@ -17,9 +17,9 @@ export default function SystemicExamSection({
   isExpanded,
   onToggle,
 }: SystemicExamSectionProps) {
-  const updateRecord = (updates: Partial<SystemicExamData>) => {
+  const updateRecord = (updates: Partial<UpdateSystemicExamData>) => {
     updateFormData({
-      systemicExam: { ...formData.systemicExam, ...updates },
+      systemicExam: { ...formData.systemicExam, ...updates } as UpdateSystemicExamData,
     })
   }
 

@@ -15,8 +15,12 @@ export default function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   const hasLocalePrefix = pathname.match(/^\/(vi|en)\//)
+  const pathnameWithoutLocale = hasLocalePrefix
+    ? pathname.replace(/^\/(vi|en)/, "")
+    : pathname
+
   const isNoI18nPath = noI18nPrefixes.some((prefix) =>
-    pathname.startsWith(prefix) || pathname.startsWith(`/${prefix}`)
+    pathnameWithoutLocale.startsWith(prefix) || pathnameWithoutLocale.startsWith(`/${prefix}`)
   )
 
   if (hasLocalePrefix && isNoI18nPath) {

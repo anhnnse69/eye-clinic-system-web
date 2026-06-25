@@ -3,12 +3,14 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
   Loader2,
   User,
   Calendar,
   FileText,
+  Edit3,
   Stethoscope,
   Heart,
   Activity,
@@ -479,6 +481,7 @@ export default function MedicalRecordDetailClient({
   recordId,
   appointmentId,
 }: MedicalRecordDetailClientProps) {
+  const router = useRouter()
   const [record, setRecord] = useState<GetMedicalRecordDetailResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -503,6 +506,15 @@ export default function MedicalRecordDetailClient({
     fetchRecord()
   }, [recordId])
 
+  // Auto-redirect to edit page when record is editable
+  useEffect(() => {
+    if (record && record.canEdit && !record.isLocked) {
+      router.replace(
+        `/doctor/records/${recordId}/edit${appointmentId ? `?appointmentId=${appointmentId}` : ""}`
+      )
+    }
+  }, [record, recordId, appointmentId, router])
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -525,7 +537,7 @@ export default function MedicalRecordDetailClient({
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-10 text-center max-w-3xl w-full">
-          <div className="w-20 h-20 bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
+          <div className="w-20 h-20 bg-linear-to-br from-red-50 to-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <AlertCircle className="w-10 h-10 text-red-500" />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Oops! Đã xảy ra lỗi</h2>
@@ -574,7 +586,16 @@ export default function MedicalRecordDetailClient({
               <ArrowLeft className="w-4 h-4" />
               Quay lại danh sách hồ sơ
             </Link>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Chi tiết hồ sơ bệnh án</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-2">
+              {record.canEdit && !record.isLocked ? (
+                <>
+                  <Edit3 className="w-5 h-5 text-amber-600" />
+                  Chỉnh sửa bệnh án
+                </>
+              ) : (
+                "Chi tiết hồ sơ bệnh án"
+              )}
+            </h1>
             <p className="text-sm text-gray-500 mt-1">
               {recordTypeLabel} · Tạo: {new Date(record.createdAt).toLocaleDateString("vi-VN")}
             </p>
@@ -1209,14 +1230,25 @@ export default function MedicalRecordDetailClient({
             <Clock className="w-3.5 h-3.5" />
             <span>Cập nhật: {new Date(record.updatedAt).toLocaleString("vi-VN")}</span>
           </div>
-          {appointmentId && (
-            <Link
-              href={`/doctor/medical-records/create?appointmentId=${appointmentId}`}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-100 rounded-xl hover:bg-blue-100 active:bg-blue-200 transition-colors"
-            >
-              Tạo hồ sơ bệnh án mới
-            </Link>
-          )}
+          <div className="flex items-center gap-3">
+            {record.canEdit && !record.isLocked && (
+              <Link
+                href={`/doctor/records/${record.id}/edit${appointmentId ? `?appointmentId=${appointmentId}` : ""}`}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-100 rounded-xl hover:bg-blue-100 active:bg-blue-200 transition-colors"
+              >
+                <FileText className="w-4 h-4" />
+                Xem chi tiết
+              </Link>
+            )}
+            {appointmentId && (
+              <Link
+                href={`/doctor/medical-records/create?appointmentId=${appointmentId}`}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-100 rounded-xl hover:bg-blue-100 active:bg-blue-200 transition-colors"
+              >
+                Tạo hồ sơ bệnh án mới
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     </div>

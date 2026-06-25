@@ -1,12 +1,12 @@
 "use client"
 
 import { Pill, Plus, X } from "lucide-react"
-import { CreateMedicalRecordRequest, PrescriptionItemData, SurgeryPlanData } from "@/types"
+import { UpdateMedicalRecordRequest, UpdatePrescriptionData, UpdatePrescriptionItemData } from "@/types"
 import CollapsibleSection from "../shared/CollapsibleSection"
 
 interface PrescriptionStepProps {
-  formData: Partial<CreateMedicalRecordRequest>
-  updateFormData: (updates: Partial<CreateMedicalRecordRequest>) => void
+  formData: Partial<UpdateMedicalRecordRequest>
+  updateFormData: (updates: Partial<UpdateMedicalRecordRequest>) => void
 }
 
 export default function PrescriptionStep({
@@ -14,70 +14,39 @@ export default function PrescriptionStep({
   updateFormData,
 }: PrescriptionStepProps) {
   const addPrescription = () => {
-    const currentPrescriptions = formData.prescriptions || []
+    const currentItems = formData.prescriptionItems || []
     updateFormData({
-      prescriptions: [
-        ...currentPrescriptions,
+      prescriptionItems: [
+        ...currentItems,
         {
-          medicationName: "",
+          medicineName: "",
           dosage: "",
-          frequency: "",
-          duration: "",
-          quantity: 0,
-          instructions: "",
-        } as PrescriptionItemData,
+        } as UpdatePrescriptionItemData,
       ],
     })
   }
 
   const updatePrescription = (
     index: number,
-    updates: Partial<PrescriptionItemData>
+    updates: Partial<UpdatePrescriptionItemData>
   ) => {
-    const currentPrescriptions = formData.prescriptions || []
-    const newPrescriptions = [...currentPrescriptions]
-    newPrescriptions[index] = { ...newPrescriptions[index], ...updates }
-    updateFormData({ prescriptions: newPrescriptions })
+    const currentItems = formData.prescriptionItems || []
+    const newItems = [...currentItems]
+    newItems[index] = { ...newItems[index], ...updates }
+    updateFormData({ prescriptionItems: newItems })
   }
 
   const removePrescription = (index: number) => {
-    const currentPrescriptions = formData.prescriptions || []
+    const currentItems = formData.prescriptionItems || []
     updateFormData({
-      prescriptions: currentPrescriptions.filter((_, i) => i !== index),
+      prescriptionItems: currentItems.filter((_, i) => i !== index),
     })
   }
 
-  const addSurgeryPlan = () => {
-    const currentPlans = formData.surgeryPlans || []
+  const updatePrescriptionNotes = (notes: string) => {
+    const existing = formData.prescription
     updateFormData({
-      surgeryPlans: [
-        ...currentPlans,
-        {
-          surgeryName: "",
-          surgeryType: "",
-          eye: "",
-          surgeon: "",
-          plannedDate: "",
-          notes: "",
-        } as SurgeryPlanData,
-      ],
-    })
-  }
-
-  const updateSurgeryPlan = (
-    index: number,
-    updates: Partial<SurgeryPlanData>
-  ) => {
-    const currentPlans = formData.surgeryPlans || []
-    const newPlans = [...currentPlans]
-    newPlans[index] = { ...newPlans[index], ...updates }
-    updateFormData({ surgeryPlans: newPlans })
-  }
-
-  const removeSurgeryPlan = (index: number) => {
-    const currentPlans = formData.surgeryPlans || []
-    updateFormData({
-      surgeryPlans: currentPlans.filter((_, i) => i !== index),
+      prescription: { ...existing, notes } as UpdatePrescriptionData,
     })
   }
 
@@ -85,16 +54,34 @@ export default function PrescriptionStep({
     <div className="space-y-6">
       <div>
         <h2 className="text-lg font-semibold text-gray-900 mb-2">
-          Điều trị & Kế hoạch
+          Điều trị & Kê đơn
         </h2>
         <p className="text-sm text-gray-500">
           Nhập đơn thuốc và kế hoạch điều trị
         </p>
       </div>
 
-      {/* Prescription Section */}
+      {/* Prescription Notes */}
       <CollapsibleSection
-        title="Đơn thuốc"
+        title="Ghi chú đơn thuốc"
+        icon={<Pill className="w-5 h-5" />}
+        isExpanded={true}
+        onToggle={() => {}}
+      >
+        <div>
+          <textarea
+            value={formData.prescription?.notes || ""}
+            onChange={(e) => updatePrescriptionNotes(e.target.value)}
+            rows={3}
+            placeholder="Ghi chú chung cho đơn thuốc..."
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm resize-none"
+          />
+        </div>
+      </CollapsibleSection>
+
+      {/* Prescription Items */}
+      <CollapsibleSection
+        title="Danh sách thuốc"
         icon={<Pill className="w-5 h-5" />}
         isExpanded={true}
         onToggle={() => {}}
@@ -110,14 +97,14 @@ export default function PrescriptionStep({
             </button>
           </div>
 
-          {formData.prescriptions?.length === 0 && (
+          {(formData.prescriptionItems == null || formData.prescriptionItems.length === 0) && (
             <div className="text-center py-8 text-gray-500">
-              <p>Chưa có đơn thuốc nào</p>
-              <p className="text-sm">Nhấn "Thêm thuốc" để bắt đầu</p>
+              <p>Chưa có thuốc nào</p>
+              <p className="text-sm">Nhấn &quot;Thêm thuốc&quot; để bắt đầu</p>
             </div>
           )}
 
-          {formData.prescriptions?.map((prescription, index) => (
+          {formData.prescriptionItems?.map((prescription, index) => (
             <PrescriptionItem
               key={index}
               prescription={prescription}
@@ -129,92 +116,21 @@ export default function PrescriptionStep({
         </div>
       </CollapsibleSection>
 
-      {/* Surgery Plan Section */}
-      <CollapsibleSection
-        title="Kế hoạch phẫu thuật"
-        icon={<Pill className="w-5 h-5" />}
-        isExpanded={true}
-        onToggle={() => {}}
-      >
-        <div className="space-y-4">
-          <div className="flex justify-end">
-            <button
-              onClick={addSurgeryPlan}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-sm"
-            >
-              <Plus className="w-4 h-4" />
-              Thêm phẫu thuật
-            </button>
-          </div>
-
-          {formData.surgeryPlans?.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              <p>Chưa có kế hoạch phẫu thuật nào</p>
-              <p className="text-sm">Nhấn "Thêm phẫu thuật" để bắt đầu</p>
-            </div>
-          )}
-
-          {formData.surgeryPlans?.map((plan, index) => (
-            <SurgeryPlanItem
-              key={index}
-              plan={plan}
-              index={index}
-              onUpdate={(updates) => updateSurgeryPlan(index, updates)}
-              onRemove={() => removeSurgeryPlan(index)}
-            />
-          ))}
-        </div>
-      </CollapsibleSection>
-
-      {/* Follow-up */}
+      {/* Follow-up Plan */}
       <CollapsibleSection
         title="Tái khám"
         icon={<Pill className="w-5 h-5" />}
         isExpanded={true}
         onToggle={() => {}}
       >
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Ngày tái khám
-              </label>
-              <input
-                type="date"
-                value={formData.followUpDate || ""}
-                onChange={(e) => updateFormData({ followUpDate: e.target.value })}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Số ngày tái khám
-              </label>
-              <input
-                type="number"
-                value={formData.followUpDays || ""}
-                onChange={(e) =>
-                  updateFormData({
-                    followUpDays: e.target.value ? parseInt(e.target.value) : undefined,
-                  })
-                }
-                placeholder="VD: 7"
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Ghi chú tái khám
-            </label>
-            <textarea
-              value={formData.followUpNote || ""}
-              onChange={(e) => updateFormData({ followUpNote: e.target.value })}
-              rows={3}
-              placeholder="Hướng dẫn sau tái khám..."
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm resize-none"
-            />
-          </div>
+        <div>
+          <textarea
+            value={formData.followUpPlan || ""}
+            onChange={(e) => updateFormData({ followUpPlan: e.target.value })}
+            rows={3}
+            placeholder="VD: Tái khám sau 7 ngày. Nếu đau nhức nhiều quay lại ngay..."
+            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm resize-none"
+          />
         </div>
       </CollapsibleSection>
     </div>
@@ -222,9 +138,9 @@ export default function PrescriptionStep({
 }
 
 interface PrescriptionItemProps {
-  prescription: PrescriptionItemData
+  prescription: UpdatePrescriptionItemData
   index: number
-  onUpdate: (updates: Partial<PrescriptionItemData>) => void
+  onUpdate: (updates: Partial<UpdatePrescriptionItemData>) => void
   onRemove: () => void
 }
 
@@ -251,25 +167,25 @@ function PrescriptionItem({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div>
           <label className="block text-xs font-medium text-gray-500 mb-1">
-            Tên thuốc
+            Tên thuốc <span className="text-red-400">*</span>
           </label>
           <input
             type="text"
-            value={prescription.medicationName || prescription.medicineName || ""}
-            onChange={(e) => onUpdate({ medicationName: e.target.value, medicineName: e.target.value })}
-            placeholder="VD: Tobradex"
+            value={prescription.medicineName || ""}
+            onChange={(e) => onUpdate({ medicineName: e.target.value })}
+            placeholder="VD: Tobramycin 0.3%"
             className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
           />
         </div>
         <div>
           <label className="block text-xs font-medium text-gray-500 mb-1">
-            Liều dùng
+            Liều dùng <span className="text-red-400">*</span>
           </label>
           <input
             type="text"
             value={prescription.dosage || ""}
             onChange={(e) => onUpdate({ dosage: e.target.value })}
-            placeholder="VD: 1 giọt"
+            placeholder="VD: 1-2 giọt"
             className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
           />
         </div>
@@ -287,21 +203,12 @@ function PrescriptionItem({
             <option value="2 lần/ngày">2 lần/ngày</option>
             <option value="3 lần/ngày">3 lần/ngày</option>
             <option value="4 lần/ngày">4 lần/ngày</option>
+            <option value="5 lần/ngày">5 lần/ngày</option>
+            <option value="Mỗi 1 giờ">Mỗi 1 giờ</option>
             <option value="Mỗi 2 giờ">Mỗi 2 giờ</option>
             <option value="Mỗi 4 giờ">Mỗi 4 giờ</option>
+            <option value="Khi cần">Khi cần</option>
           </select>
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">
-            Thời gian
-          </label>
-          <input
-            type="text"
-            value={prescription.duration || ""}
-            onChange={(e) => onUpdate({ duration: e.target.value })}
-            placeholder="VD: 7 ngày"
-            className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
-          />
         </div>
         <div>
           <label className="block text-xs font-medium text-gray-500 mb-1">
@@ -311,8 +218,23 @@ function PrescriptionItem({
             type="number"
             value={prescription.quantity || ""}
             onChange={(e) =>
-              onUpdate({ quantity: e.target.value ? parseInt(e.target.value) : undefined })
+              onUpdate({ quantity: e.target.value ? parseInt(e.target.value) : 0 })
             }
+            placeholder="VD: 1"
+            className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">
+            Số ngày
+          </label>
+          <input
+            type="number"
+            value={prescription.durationDays || ""}
+            onChange={(e) =>
+              onUpdate({ durationDays: e.target.value ? parseInt(e.target.value) : undefined })
+            }
+            placeholder="VD: 7"
             className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
           />
         </div>
@@ -322,121 +244,9 @@ function PrescriptionItem({
           </label>
           <input
             type="text"
-            value={prescription.instructions || prescription.instruction || ""}
-            onChange={(e) => onUpdate({ instructions: e.target.value, instruction: e.target.value })}
-            placeholder="VD: Nhỏ mắt phải"
-            className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
-          />
-        </div>
-      </div>
-    </div>
-  )
-}
-
-interface SurgeryPlanItemProps {
-  plan: SurgeryPlanData
-  index: number
-  onUpdate: (updates: Partial<SurgeryPlanData>) => void
-  onRemove: () => void
-}
-
-function SurgeryPlanItem({
-  plan,
-  index,
-  onUpdate,
-  onRemove,
-}: SurgeryPlanItemProps) {
-  return (
-    <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-      <div className="flex justify-between items-start mb-4">
-        <span className="text-sm font-medium text-gray-700">
-          Phẫu thuật #{index + 1}
-        </span>
-        <button
-          onClick={onRemove}
-          className="p-1 text-red-500 hover:bg-red-50 rounded"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">
-            Tên phẫu thuật
-          </label>
-          <input
-            type="text"
-            value={plan.surgeryName || ""}
-            onChange={(e) => onUpdate({ surgeryName: e.target.value })}
-            placeholder="VD: Phaco + IOL"
-            className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">
-            Loại phẫu thuật
-          </label>
-          <select
-            value={plan.surgeryType || ""}
-            onChange={(e) => onUpdate({ surgeryType: e.target.value })}
-            className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
-          >
-            <option value="">Chọn...</option>
-            <option value="Cắt bỏ">Cắt bỏ</option>
-            <option value="Nối">Nối</option>
-            <option value="Ghép">Ghép</option>
-            <option value="Laser">Laser</option>
-            <option value="Khác">Khác</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">
-            Mắt
-          </label>
-          <select
-            value={plan.eye || ""}
-            onChange={(e) => onUpdate({ eye: e.target.value })}
-            className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
-          >
-            <option value="">Chọn...</option>
-            <option value="OD">Mắt phải (OD)</option>
-            <option value="OS">Mắt trái (OS)</option>
-            <option value="OU">Hai mắt (OU)</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">
-            Phẫu thuật viên
-          </label>
-          <input
-            type="text"
-            value={plan.surgeon || ""}
-            onChange={(e) => onUpdate({ surgeon: e.target.value })}
-            placeholder="Tên bác sĩ"
-            className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">
-            Ngày dự kiến
-          </label>
-          <input
-            type="date"
-            value={plan.plannedDate || ""}
-            onChange={(e) => onUpdate({ plannedDate: e.target.value })}
-            className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">
-            Ghi chú
-          </label>
-          <input
-            type="text"
-            value={plan.notes || ""}
-            onChange={(e) => onUpdate({ notes: e.target.value })}
-            placeholder="Ghi chú khác"
+            value={prescription.instruction || ""}
+            onChange={(e) => onUpdate({ instruction: e.target.value })}
+            placeholder="VD: Nhỏ mắt phải, nằm ngửa 5 phút"
             className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
           />
         </div>

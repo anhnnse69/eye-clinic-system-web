@@ -1,7 +1,7 @@
 "use client"
 
 import { Microscope } from "lucide-react"
-import { CreateMedicalRecordRequest, LacrimalRecordData } from "@/types"
+import { UpdateMedicalRecordRequest, UpdateLacrimalRecordData } from "@/types"
 import CollapsibleSection from "../shared/CollapsibleSection"
 
 const EYE_SIDE_OPTIONS = [
@@ -11,8 +11,8 @@ const EYE_SIDE_OPTIONS = [
 ]
 
 interface AnteriorSubspecialtySectionProps {
-  formData: Partial<CreateMedicalRecordRequest>
-  updateFormData: (updates: Partial<CreateMedicalRecordRequest>) => void
+  formData: Partial<UpdateMedicalRecordRequest>
+  updateFormData: (updates: Partial<UpdateMedicalRecordRequest>) => void
   isExpanded: boolean
   onToggle: () => void
 }
@@ -23,9 +23,9 @@ export default function AnteriorSubspecialtySection({
   isExpanded,
   onToggle,
 }: AnteriorSubspecialtySectionProps) {
-  const updateLacrimalRecord = (updates: Partial<LacrimalRecordData>) => {
+  const updateLacrimalRecord = (updates: Partial<UpdateLacrimalRecordData>) => {
     updateFormData({
-      lacrimalRecord: { side: "OU", ...formData.lacrimalRecord, ...updates },
+      lacrimalRecord: { side: "OU", ...formData.lacrimalRecord, ...updates } as UpdateLacrimalRecordData,
     })
   }
 

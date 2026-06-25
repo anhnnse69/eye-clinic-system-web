@@ -1,12 +1,12 @@
 "use client"
 
 import { Eye } from "lucide-react"
-import { RecordType, CreateMedicalRecordRequest } from "@/types"
+import { RecordType, UpdateMedicalRecordRequest } from "@/types"
 import EyeExaminationCard from "../shared/EyeExaminationCard"
 
 interface EyeExamStepProps {
-  formData: Partial<CreateMedicalRecordRequest>
-  updateFormData: (updates: Partial<CreateMedicalRecordRequest>) => void
+  formData: Partial<UpdateMedicalRecordRequest>
+  updateFormData: (updates: Partial<UpdateMedicalRecordRequest>) => void
   recordType: RecordType
 }
 

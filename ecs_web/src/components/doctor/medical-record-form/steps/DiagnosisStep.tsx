@@ -1,12 +1,12 @@
 "use client"
 
 import { FileSearch, Plus, X } from "lucide-react"
-import { CreateMedicalRecordRequest, DiagnosisData } from "@/types"
+import { UpdateMedicalRecordRequest, type DiagnosisData } from "@/types"
 import CollapsibleSection from "../shared/CollapsibleSection"
 
 interface DiagnosisStepProps {
-  formData: Partial<CreateMedicalRecordRequest>
-  updateFormData: (updates: Partial<CreateMedicalRecordRequest>) => void
+  formData: Partial<UpdateMedicalRecordRequest>
+  updateFormData: (updates: Partial<UpdateMedicalRecordRequest>) => void
 }
 
 export default function DiagnosisStep({

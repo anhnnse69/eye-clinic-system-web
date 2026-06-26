@@ -258,7 +258,7 @@ export default function SearchDoctorsPage() {
                     {visibleDoctors.map((doctor) => (
                       <Link
                         key={doctor.id}
-                        href={`/${locale}/doctors/${doctor.id}/slots`}
+                        href={`/${locale}/detail-doctor/${doctor.id}/slots`}
                         className={cn(
                           "group bg-white rounded-2xl border border-slate-200/80 p-5",
                           "hover:border-primary/40 hover:shadow-[0_8px_30px_rgba(59,130,246,0.12)]",

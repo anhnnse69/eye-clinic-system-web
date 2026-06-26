@@ -290,7 +290,6 @@ function PatientRow({ patient }: { patient: PatientAppointmentItem }) {
       </td>
 
       <td className="p-4">
-        <div className="flex items-center gap-2">
         <Link
           href={`/doctor/patients/${patient.patientId}`}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-lg transition-colors"
@@ -298,14 +297,6 @@ function PatientRow({ patient }: { patient: PatientAppointmentItem }) {
           <Eye className="w-3.5 h-3.5" />
           Xem chi tiết
         </Link>
-        <Link
-          href={`/doctor/patient-demographics/${patient.patientId}?appointmentId=${patient.appointmentId}`}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 rounded-lg transition-colors"
-        >
-          <FileText className="w-3.5 h-3.5" />
-          Nhập thông tin y tế
-        </Link>
-        </div>
       </td>
     </tr>
   );

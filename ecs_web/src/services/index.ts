@@ -22,3 +22,4 @@ export { createMedicalRecordService } from "./create-medical-record.service"
 export { receptionistService } from "./receptionist.service";
 export { patientAppointmentService } from "./patient-appointment.service";
 export { appointmentHistoryService } from "./appointment-history.service";
+export { queueService } from "./queue.service";

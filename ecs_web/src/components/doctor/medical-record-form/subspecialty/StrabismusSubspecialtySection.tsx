@@ -1,12 +1,12 @@
 "use client"
 
 import { Brain } from "lucide-react"
-import { CreateMedicalRecordRequest, StrabismusPtosisRecordData } from "@/types"
+import { UpdateMedicalRecordRequest, UpdateStrabismusPtosisRecordData } from "@/types"
 import CollapsibleSection from "../shared/CollapsibleSection"
 
 interface StrabismusSubspecialtySectionProps {
-  formData: Partial<CreateMedicalRecordRequest>
-  updateFormData: (updates: Partial<CreateMedicalRecordRequest>) => void
+  formData: Partial<UpdateMedicalRecordRequest>
+  updateFormData: (updates: Partial<UpdateMedicalRecordRequest>) => void
   isExpanded: boolean
   onToggle: () => void
 }
@@ -17,9 +17,9 @@ export default function StrabismusSubspecialtySection({
   isExpanded,
   onToggle,
 }: StrabismusSubspecialtySectionProps) {
-  const updateRecord = (updates: Partial<StrabismusPtosisRecordData>) => {
+  const updateRecord = (updates: Partial<UpdateStrabismusPtosisRecordData>) => {
     updateFormData({
-      strabismusPtosisRecord: { ...formData.strabismusPtosisRecord, ...updates },
+      strabismusPtosisRecord: { ...formData.strabismusPtosisRecord, ...updates } as UpdateStrabismusPtosisRecordData,
     })
   }
 

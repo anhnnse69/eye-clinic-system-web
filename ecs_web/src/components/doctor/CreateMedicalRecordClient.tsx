@@ -17,6 +17,7 @@ import {
 } from "lucide-react"
 import { RecordType, RECORD_TYPE_LABELS, CreateMedicalRecordRequest } from "@/types"
 import { createMedicalRecordService } from "@/services/create-medical-record.service"
+import { getMessage } from "@/constants/messages"
 
 // Import extracted components
 import RecordTypeStep from "./medical-record-form/steps/RecordTypeStep"
@@ -161,14 +162,11 @@ export default function CreateMedicalRecordClient({
           : `/doctor/appointments`
         router.push(redirectUrl)
       } else {
-        setError(response.codeMessage || "Có lỗi xảy ra khi tạo bệnh án")
+        setError(getMessage(response.codeMessage) || "Có lỗi xảy ra khi tạo bệnh án")
       }
     } catch (err: any) {
-      setError(
-        err?.response?.data?.codeMessage ||
-          err?.message ||
-          "Có lỗi xảy ra khi tạo bệnh án"
-      )
+      const codeMessage = err?.response?.data?.codeMessage || err?.codeMessage
+      setError(getMessage(codeMessage) || "Có lỗi xảy ra khi tạo bệnh án")
     } finally {
       setIsSubmitting(false)
     }

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Activity, Plus, X } from "lucide-react"
-import { CreateMedicalRecordRequest, GlaucomaRecordData, GlaucomaHistoryData } from "@/types"
+import { UpdateMedicalRecordRequest, UpdateGlaucomaRecordData, UpdateGlaucomaHistoryData } from "@/types"
 import CollapsibleSection from "../shared/CollapsibleSection"
 
 const EYE_SIDE_OPTIONS = [
@@ -12,8 +12,8 @@ const EYE_SIDE_OPTIONS = [
 ]
 
 interface GlaucomaSubspecialtySectionProps {
-  formData: Partial<CreateMedicalRecordRequest>
-  updateFormData: (updates: Partial<CreateMedicalRecordRequest>) => void
+  formData: Partial<UpdateMedicalRecordRequest>
+  updateFormData: (updates: Partial<UpdateMedicalRecordRequest>) => void
   isExpanded: boolean
   onToggle: () => void
 }
@@ -24,20 +24,20 @@ export default function GlaucomaSubspecialtySection({
   isExpanded,
   onToggle,
 }: GlaucomaSubspecialtySectionProps) {
-  const updateGlaucomaRecord = (updates: Partial<GlaucomaRecordData>) => {
+  const updateGlaucomaRecord = (updates: Partial<UpdateGlaucomaRecordData>) => {
     updateFormData({
-      glaucomaRecord: { ...formData.glaucomaRecord, ...updates },
+      glaucomaRecord: { ...formData.glaucomaRecord, ...updates } as UpdateGlaucomaRecordData,
     })
   }
 
   const addHistory = () => {
     const currentHistories = formData.glaucomaHistories || []
     updateFormData({
-      glaucomaHistories: [...currentHistories, {} as GlaucomaHistoryData],
+      glaucomaHistories: [...currentHistories, {} as UpdateGlaucomaHistoryData],
     })
   }
 
-  const updateHistory = (index: number, updates: Partial<GlaucomaHistoryData>) => {
+  const updateHistory = (index: number, updates: Partial<UpdateGlaucomaHistoryData>) => {
     const currentHistories = formData.glaucomaHistories || []
     const newHistories = [...currentHistories]
     newHistories[index] = { ...newHistories[index], ...updates }
@@ -372,9 +372,9 @@ function HistoryItem({
   onUpdate,
   onRemove,
 }: {
-  history: GlaucomaHistoryData
+  history: UpdateGlaucomaHistoryData
   index: number
-  onUpdate: (updates: Partial<GlaucomaHistoryData>) => void
+  onUpdate: (updates: Partial<UpdateGlaucomaHistoryData>) => void
   onRemove: () => void
 }) {
   return (

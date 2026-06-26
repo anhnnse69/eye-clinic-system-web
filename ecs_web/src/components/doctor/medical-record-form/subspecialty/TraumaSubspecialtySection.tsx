@@ -2,12 +2,12 @@
 
 import { useState } from "react"
 import { AlertCircle, Plus, X } from "lucide-react"
-import { CreateMedicalRecordRequest, TraumaRecordData, TraumaSurgeryData } from "@/types"
+import { UpdateMedicalRecordRequest, UpdateTraumaRecordData, UpdateTraumaSurgeryData } from "@/types"
 import CollapsibleSection from "../shared/CollapsibleSection"
 
 interface TraumaSubspecialtySectionProps {
-  formData: Partial<CreateMedicalRecordRequest>
-  updateFormData: (updates: Partial<CreateMedicalRecordRequest>) => void
+  formData: Partial<UpdateMedicalRecordRequest>
+  updateFormData: (updates: Partial<UpdateMedicalRecordRequest>) => void
   isExpanded: boolean
   onToggle: () => void
 }
@@ -18,20 +18,20 @@ export default function TraumaSubspecialtySection({
   isExpanded,
   onToggle,
 }: TraumaSubspecialtySectionProps) {
-  const updateTraumaRecord = (updates: Partial<TraumaRecordData>) => {
+  const updateTraumaRecord = (updates: Partial<UpdateTraumaRecordData>) => {
     updateFormData({
-      traumaRecord: { ...formData.traumaRecord, ...updates },
+      traumaRecord: { ...formData.traumaRecord, ...updates } as UpdateTraumaRecordData,
     })
   }
 
   const addSurgery = () => {
     const currentSurgeries = formData.traumaSurgeries || []
     updateFormData({
-      traumaSurgeries: [...currentSurgeries, {} as TraumaSurgeryData],
+      traumaSurgeries: [...currentSurgeries, {} as UpdateTraumaSurgeryData],
     })
   }
 
-  const updateSurgery = (index: number, updates: Partial<TraumaSurgeryData>) => {
+  const updateSurgery = (index: number, updates: Partial<UpdateTraumaSurgeryData>) => {
     const currentSurgeries = formData.traumaSurgeries || []
     const newSurgeries = [...currentSurgeries]
     newSurgeries[index] = { ...newSurgeries[index], ...updates }
@@ -149,9 +149,9 @@ function SurgeryItem({
   onUpdate,
   onRemove,
 }: {
-  surgery: TraumaSurgeryData
+  surgery: UpdateTraumaSurgeryData
   index: number
-  onUpdate: (updates: Partial<TraumaSurgeryData>) => void
+  onUpdate: (updates: Partial<UpdateTraumaSurgeryData>) => void
   onRemove: () => void
 }) {
   return (

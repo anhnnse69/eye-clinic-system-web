@@ -1,12 +1,12 @@
 "use client"
 
 import { Baby } from "lucide-react"
-import { CreateMedicalRecordRequest, PediatricRecordData } from "@/types"
+import { UpdateMedicalRecordRequest, UpdatePediatricRecordData } from "@/types"
 import CollapsibleSection from "../shared/CollapsibleSection"
 
 interface PediatricSubspecialtySectionProps {
-  formData: Partial<CreateMedicalRecordRequest>
-  updateFormData: (updates: Partial<CreateMedicalRecordRequest>) => void
+  formData: Partial<UpdateMedicalRecordRequest>
+  updateFormData: (updates: Partial<UpdateMedicalRecordRequest>) => void
   isExpanded: boolean
   onToggle: () => void
 }
@@ -17,9 +17,9 @@ export default function PediatricSubspecialtySection({
   isExpanded,
   onToggle,
 }: PediatricSubspecialtySectionProps) {
-  const updateRecord = (updates: Partial<PediatricRecordData>) => {
+  const updateRecord = (updates: Partial<UpdatePediatricRecordData>) => {
     updateFormData({
-      pediatricRecord: { ...formData.pediatricRecord, ...updates },
+      pediatricRecord: { ...formData.pediatricRecord, ...updates } as UpdatePediatricRecordData,
     })
   }
 

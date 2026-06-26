@@ -1251,15 +1251,12 @@ export interface PrescriptionData {
 }
 
 export interface PrescriptionItemData {
-  medicationName?: string
   dosage?: string
   frequency?: string
-  duration?: string
-  quantity?: number
-  instructions?: string
-  medicineName?: string
   durationDays?: number
+  quantity?: number
   instruction?: string
+  medicineName?: string
 }
 
 export interface GlassesPrescriptionData {
@@ -2255,4 +2252,740 @@ export interface MedicalRecordDocumentAccessPermissionDetail {
   isActive: boolean
   expiresAt?: string | null
   createdAt: string
+}
+
+// ==========================================
+// Update Medical Record Request/Response (UC41)
+// ==========================================
+
+export interface UpdateMedicalRecordRequest {
+  recordType?: string
+
+  // Administrative
+  maYeuTo?: string
+  age?: number
+
+  // Patient Management
+  admissionDate?: string
+  admissionType?: string
+  referralSource?: string
+  admissionNumber?: number
+  departmentAdmissionDate?: string
+  departmentName?: string
+  bedNumber?: string
+  transferDate?: string
+  transferToDepartment?: string
+  transferReason?: string
+  dischargeDate?: string
+  dischargeType?: string
+  transferToFacility?: string
+  totalTreatmentDays?: number
+
+  // Diagnosis Codes
+  diagnosisAtReferral?: string
+  diagnosisAtER?: string
+  diagnosisAtAdmission?: string
+  diagnosisComplication?: string
+  diagnosisComplicationType?: string
+  postSurgeryTreatmentDays?: number
+  totalSurgeryCount?: number
+  diagnosisAtDischarge?: string
+  diagnosisCause?: string
+  diagnosisComorbidities?: string
+  diagnosisPreSurgery?: string
+  diagnosisPostSurgery?: string
+
+  // Discharge Status
+  treatmentResult?: string
+  pathologyResult?: string
+  deathTime?: string
+  deathWithinHours?: string
+  deathCause?: string
+  deathCauseType?: string
+  autopsyPerformed?: boolean
+  autopsyDiagnosis?: string
+
+  // Chief Complaint & History
+  chiefComplaint?: string
+  illnessDayNumber?: number
+  medicalHistory?: string
+  personalHistoryEye?: string
+  personalHistorySystemic?: string
+  familyHistory?: string
+
+  // MS21 Trauma History
+  traumaCause?: string
+  traumaTime?: string
+  traumaPriorTreatment?: string
+  traumaPostTreatmentCourse?: string
+
+  // MS24 Glaucoma History
+  glaucomaSymptomDuration?: string
+  glaucomaPriorFacility?: string
+  glaucomaPriorTreatment?: string
+  glaucomaHistoryEye?: string
+  glaucomaSteroidUse?: string
+  glaucomaFamilyHistory?: string
+
+  // MS25 Strabismus History
+  strabismusCongenital?: boolean
+  strabismusAcquired?: boolean
+  strabismusOnsetTime?: string
+  strabismusMainSymptom?: string
+
+  // MS26 Pediatric History
+  pediatricPregnancyHistory?: string
+  pediatricDevelopment?: string
+
+  // Eye Examinations
+  rightEyeBasic?: UpdateEyeBasicExamData
+  leftEyeBasic?: UpdateEyeBasicExamData
+  rightEyeEyelid?: UpdateEyeEyelidData
+  leftEyeEyelid?: UpdateEyeEyelidData
+  rightEyeConjunctiva?: UpdateEyeConjunctivaData
+  leftEyeConjunctiva?: UpdateEyeConjunctivaData
+  rightEyeCornea?: UpdateEyeCorneaExamData
+  leftEyeCornea?: UpdateEyeCorneaExamData
+  rightEyeSclera?: UpdateEyeScleraExamData
+  leftEyeSclera?: UpdateEyeScleraExamData
+  rightEyeAnteriorChamber?: UpdateEyeAnteriorChamberData
+  leftEyeAnteriorChamber?: UpdateEyeAnteriorChamberData
+  rightEyeIrisPupil?: UpdateEyeIrisPupilData
+  leftEyeIrisPupil?: UpdateEyeIrisPupilData
+  rightEyeLens?: UpdateEyeLensData
+  leftEyeLens?: UpdateEyeLensData
+  rightEyeVitreous?: UpdateEyeVitreousData
+  leftEyeVitreous?: UpdateEyeVitreousData
+  rightEyeFundusDiscMacula?: UpdateEyeFundusDiscMaculaData
+  leftEyeFundusDiscMacula?: UpdateEyeFundusDiscMaculaData
+  rightEyeFundusRetinaVessel?: UpdateEyeFundusRetinaVesselData
+  leftEyeFundusRetinaVessel?: UpdateEyeFundusRetinaVesselData
+  rightEyeOrbit?: UpdateEyeOrbitData
+  leftEyeOrbit?: UpdateEyeOrbitData
+  systemicExam?: UpdateSystemicExamData
+
+  // Misc
+  requiredTests?: string
+  summary?: string
+  clinicalSummary?: string
+  diagnosisMain?: string
+  diagnosisComorbid?: string
+  diagnosisDifferential?: string
+  diagnoses?: DiagnosisData[]
+  prognosis?: string
+  treatmentPlan?: string
+  dietPlan?: string
+  carePlan?: string
+  vitalPulse?: number
+  vitalTemperature?: number
+  vitalBloodPressure?: string
+  vitalRespiratoryRate?: number
+  vitalWeightKg?: number
+  notes?: string
+
+  // Summary
+  finalDiagnosisClinical?: string
+  finalDiagnosisCause?: string
+  treatmentProcessSummary?: string
+  surgerySummary?: string
+  dischargeConditionSummary?: string
+  dischargeVaOd?: string
+  dischargeVaOs?: string
+  dischargeIopOd?: string
+  dischargeIopOs?: string
+  followUpPlan?: string
+
+  // Subspecialty Records
+  traumaRecord?: UpdateTraumaRecordData
+  traumaSurgeries?: UpdateTraumaSurgeryData[]
+  lacrimalRecord?: UpdateLacrimalRecordData
+  glaucomaRecord?: UpdateGlaucomaRecordData
+  glaucomaHistories?: UpdateGlaucomaHistoryData[]
+  strabismusPtosisRecord?: UpdateStrabismusPtosisRecordData
+  pediatricRecord?: UpdatePediatricRecordData
+
+  // Prescriptions
+  prescription?: UpdatePrescriptionData
+  prescriptionItems?: UpdatePrescriptionItemData[]
+  glassesPrescription?: UpdateGlassesPrescriptionData
+}
+
+// Eye Exam Update Data Classes
+export interface UpdateEyeBasicExamData {
+  vaUncorrected?: string
+  vaCorrected?: string
+  vaNear?: string
+  vaPinhole?: string
+  vaWithGlasses?: string
+  iopMmhg?: string
+  iopMethod?: string
+  autoRefraction?: string
+  retinoscopy?: string
+  subjectiveRefraction?: string
+  visualField?: string
+  eomStatus?: string
+  eomNote?: string
+  nystagmus?: string
+  nystagmusType?: string
+}
+
+export interface UpdateEyeEyelidData {
+  status?: string
+  ptosis?: boolean
+  ptosisDegree?: string
+  laceration?: boolean
+  lacerationExtent?: string
+  lacerationLocation?: string
+  lacerationSutured?: boolean
+  lacerationUnsutured?: boolean
+  lacrimalDuctStatus?: string
+  lacrimalDuctLocation?: string
+  scar?: boolean
+  scarDescription?: string
+  otherFindings?: string
+  entropion?: boolean
+  epicanthus?: boolean
+  epicanthusType?: string
+  hasTumor?: boolean
+  tumorNature?: string
+  tumorLocation?: string
+  tumorSize?: string
+  lagophthalmos?: boolean
+  lowerLidRetraction?: boolean
+  eyelidDefect?: string
+  chalazionHordeolum?: string
+}
+
+export interface UpdateEyeConjunctivaData {
+  status?: string
+  congestionType?: string
+  congestionLocation?: string
+  hemorrhage?: boolean
+  hemorrhageDescription?: string
+  laceration?: boolean
+  lacerationLocation?: string
+  ischemia?: boolean
+  edema?: boolean
+  papilla?: boolean
+  follicle?: boolean
+  keratinization?: boolean
+  scar?: boolean
+  discharge?: string
+  fluoresceinStain?: boolean
+  pterygium?: boolean
+  pterygiumLocation?: string
+  pterygiumSize?: string
+  hasTumor?: boolean
+  tumorNature?: string
+  tumorLocation?: string
+  tumorSize?: string
+  fornixStatus?: string
+  symblepharonHeight?: string
+  symblepharonWidth?: string
+  otherFindings?: string
+}
+
+export interface UpdateEyeCorneaExamData {
+  clarity?: string
+  scar?: string
+  size?: string
+  shape?: string
+  diameterMm?: number
+  epitheliumStatus?: string
+  epitheliumPunctate?: boolean
+  epitheliumEdemaLevel?: string
+  epitheliumLoss?: string
+  posteriorDeposit?: string
+  posteriorDepositLocation?: string
+  stromaEdemaLevel?: string
+  stromaInfiltrate?: string
+  stromaThinning?: string
+  ulcer?: boolean
+  ulcerLocation?: string
+  ulcerSize?: string
+  ulcerDescription?: string
+  abscess?: boolean
+  descemetocele?: boolean
+  bloodStaining?: boolean
+  laceration?: boolean
+  lacerationSize?: string
+  lacerationLocation?: string
+  lacerationType?: string
+  lacerationSutured?: boolean
+  anatomicalReduction?: boolean
+  perforation?: boolean
+  perforationDiameterMm?: number
+  perforationLocation?: string
+  seidelTest?: string
+  neovascularization?: boolean
+  neovascularizationDepth?: string
+  neovascularizationExtent?: string
+  limbalStatus?: string
+  sensation?: string
+  inflammationType?: string
+  inflammationDepth?: string
+  episcleritis?: boolean
+  staphyloma?: boolean
+  foreignBody?: boolean
+  foreignBodyDescription?: string
+  otherFindings?: string
+}
+
+export interface UpdateEyeScleraExamData {
+  status?: string
+  laceration?: boolean
+  lacerationSize?: string
+  lacerationLocation?: string
+  lacerationSutured?: boolean
+  lacerationUnsutured?: boolean
+  tissueEntrapped?: boolean
+  otherFindings?: string
+}
+
+export interface UpdateEyeAnteriorChamberData {
+  depth?: string
+  depthMm?: number
+  herickClassification?: string
+  vitreousInAC?: boolean
+  pus?: boolean
+  pusMm?: number
+  exudate?: boolean
+  exudateDescription?: string
+  tyndall?: string
+  hemorrhage?: boolean
+  hemorrhageLevel?: string
+  foreignBody?: boolean
+  otherFindings?: string
+}
+
+export interface UpdateEyeIrisPupilData {
+  irisColor?: string
+  irisCondition?: string
+  irisDegeneration?: boolean
+  irisNeovascularization?: boolean
+  irisCiliaryProcesses?: boolean
+  koeppeNodules?: boolean
+  busaccaNodules?: boolean
+  irisRootTear?: boolean
+  irisRootTearDegree?: string
+  irisLoss?: boolean
+  irisPerforation?: boolean
+  pupilDiameterMm?: number
+  pupilShape?: string
+  pupilPosition?: string
+  pupilReflex?: string
+  pupilDilated?: boolean
+  ptdtTest?: boolean
+  fundusReflex?: string
+  otherFindings?: string
+}
+
+export interface UpdateEyeLensData {
+  status?: string
+  opacityType?: string
+  opacityLocation?: string
+  subluxation?: boolean
+  lensInAnterior?: boolean
+  lensInVitreous?: boolean
+  purulent?: boolean
+  anteriorPigmentation?: boolean
+  iolPresent?: boolean
+  iolStatus?: string
+  iolPosition?: string
+  otherFindings?: string
+}
+
+export interface UpdateEyeVitreousData {
+  status?: string
+  opacityLevel?: string
+  tyndall?: string
+  hemorrhage?: boolean
+  organized?: boolean
+  pvd?: boolean
+  purulent?: boolean
+  foreignBody?: boolean
+  otherFindings?: string
+}
+
+export interface UpdateEyeFundusDiscMaculaData {
+  discStatus?: string
+  discColor?: string
+  cdRatio?: string
+  rimStatus?: string
+  rimLocation?: string
+  vesselChange?: string
+  discHemorrhage?: boolean
+  neovascularization?: boolean
+  neovascularizationDegree?: string
+  discNotVisible?: boolean
+  maculaStatus?: string
+  maculaReflexAbsent?: boolean
+  maculaEdemaType?: string
+  maculaHoleDegree?: string
+  maculaScar?: boolean
+  serousDetachment?: boolean
+  maculaHemorrhage?: boolean
+  maculaCondition?: string
+  choroidStatus?: string
+  choroidFindings?: string
+  cnv?: boolean
+  chorioretinitisActive?: boolean
+  chorioretinitisScar?: boolean
+  chorioretinitisCount?: number
+  chorioretinitisLocation?: string
+  otherFindings?: string
+}
+
+export interface UpdateEyeFundusRetinaVesselData {
+  vesselStatus?: string
+  arteryOcclusion?: string
+  veinOcclusion?: string
+  occlusionType?: string
+  vasculitis?: boolean
+  retinalNeovascularization?: boolean
+  retinaStatus?: string
+  retinalCondition?: string
+  retinalEdema?: boolean
+  edemaType?: string
+  hemorrhage?: boolean
+  hemorrhageType?: string
+  exudateType?: string
+  degeneration?: boolean
+  degenerationType?: string
+  degenerationDescription?: string
+  detachment?: boolean
+  detachmentLevel?: string
+  retinalTear?: boolean
+  tearCount?: number
+  tearLocation?: string
+  tearMorphology?: string
+  bmscDetachment?: boolean
+  iofb?: boolean
+  iofbLocation?: string
+  iofbSize?: string
+  combinedFindings?: string
+  otherFindings?: string
+}
+
+export interface UpdateEyeOrbitData {
+  status?: string
+  foreignBody?: boolean
+  foreignBodyDescription?: string
+  eomStatus?: string
+  eomFindings?: string
+  eyeballStatus?: string
+  eyeballTexture?: string
+}
+
+export interface UpdateSystemicExamData {
+  bloodPressure?: string
+  temperature?: string
+  pulse?: string
+  respiratoryRate?: string
+  endocrineStatus?: string
+  endocrineFindings?: string
+  neuroStatus?: string
+  neuroFindings?: string
+  cardiovascularStatus?: string
+  cardiovascularFindings?: string
+  respiratoryStatus?: string
+  respiratoryFindings?: string
+  digestiveStatus?: string
+  digestiveFindings?: string
+  musculoskeletalStatus?: string
+  musculoskeletalFindings?: string
+  urogenitalStatus?: string
+  urogenitalFindings?: string
+  otherFindings?: string
+}
+
+// Subspecialty Update Data Classes
+export interface UpdateTraumaRecordData {
+  injuryCause?: string
+  injuryTime?: string
+  priorTreatment?: string
+  postTreatmentCourse?: string
+  odInjuries?: string
+  osInjuries?: string
+  injuryDetails?: string
+  traumaConclusion?: string
+}
+
+export interface UpdateTraumaSurgeryData {
+  id?: string
+  surgeryDate?: string
+  surgeryType?: string
+  surgeryDescription?: string
+  surgeonName?: string
+  anesthesiaType?: string
+  postSurgeryCondition?: string
+  notes?: string
+}
+
+export interface UpdateLacrimalRecordData {
+  side: string
+  irrigationFree: boolean
+  irrigationRegurgitationSame: boolean
+  irrigationRegurgitationOpposite: boolean
+  irrigationNote?: string
+  lacrimalOther?: string
+}
+
+export interface UpdateGlaucomaRecordData {
+  eyePainLevel?: string
+  visionSymptoms?: string
+  visionProgression?: string
+  hasPhotophobia?: boolean
+  hasTearing?: boolean
+  hasRedness?: boolean
+  systemicSymptoms?: string
+  vaWithoutCorrectionOd?: string
+  vaWithoutCorrectionOs?: string
+  vaWithCorrectionOd?: string
+  vaWithCorrectionOs?: string
+  iopOd?: string
+  iopOs?: string
+  iopMethod?: string
+  iopTargetOd?: string
+  iopTargetOs?: string
+  historyEye?: string
+  historyEyeSurgery?: string
+  priorEyeSurgeryDetails?: string
+  steroidUse?: string
+  steroidPrescribed?: string
+  medicationDuration?: string
+  medicationRoute?: string
+  hasCardiovascularDisease?: boolean
+  hasHypertension?: boolean
+  hasDiabetes?: boolean
+  hasCarotidFistula?: boolean
+  otherSystemicDisease?: string
+  familyHasGlaucoma?: boolean
+  familyGlaucomaRelation?: string
+  glaucomaMedications?: string
+  otherMedications?: string
+  treatmentProgress?: string
+  medicationChangeReason?: string
+  glaucomaType?: string
+  stageOd?: string
+  stageOs?: string
+  hasEyelidSwelling?: boolean
+  hasConjunctivalInjection?: boolean
+  hasFilteringBleb?: boolean
+  blebLocation?: string
+  blebStatus?: string
+  conjunctivalScarLocation?: string
+  cornealTransparency?: string
+  cornealEdemaLevel?: string
+  cornealThickness?: string
+  hasScleralThinning?: boolean
+  scleralScarLocation?: string
+  acDepthSmith?: string
+  acDepthHerick?: string
+  gonioscopyOd?: string
+  gonioscopyOs?: string
+  angleFindings?: string
+  irisColor?: string
+  irisCondition?: string
+  hasIrisNeovascularization?: boolean
+  pupilDiameter?: string
+  pupilPigmentBorder?: string
+  pupilReflexResponse?: string
+  lensStatus?: string
+  fundusRetinaFindings?: string
+  fundusMaculaFindings?: string
+  hasCNV?: boolean
+  hasRetinalHemorrhage?: boolean
+  opticDiscDescription?: string
+  nerveRimOd?: string
+  nerveRimOs?: string
+  opticDiscCupRatio?: string
+  opticDiscVesselChange?: string
+  hasOpticDiscHemorrhage?: boolean
+  hasRimAtrophy?: boolean
+  eyeAxialLength?: string
+  treatmentPlanSurgery?: string
+  treatmentPlanLaser?: string
+  treatmentPlanMedication?: string
+  followUpPlan?: string
+}
+
+export interface UpdateGlaucomaHistoryData {
+  id?: string
+  historyType: string
+  eyeSide?: string
+  attemptNumber?: number
+  procedureType?: string
+  procedureDate?: string
+  facilityLevel?: string
+  drugName?: string
+  dosage?: string
+  duration?: string
+  route?: string
+  changeReason?: string
+}
+
+export interface UpdateStrabismusPtosisRecordData {
+  chiefStrabismus?: boolean
+  chiefPtosis?: boolean
+  congenital?: boolean
+  acquired?: boolean
+  acquiredOnset?: string
+  strabismusType?: string
+  nystagmus?: boolean
+  nystagmusType?: string
+  priorAmblyopiaTreatment?: string
+  priorAmblyopiaResult?: string
+  priorSurgery?: string
+  priorSurgeryResult?: string
+  vaBeforeAtropineOd?: string
+  vaBeforeAtropineOs?: string
+  vaAfterAtropineOd?: string
+  vaAfterAtropineOs?: string
+  refractionPreAtropine?: string
+  refractionPostAtropine?: string
+  pupilShadowTestOd?: string
+  pupilShadowTestOs?: string
+  eomGazeTest?: string
+  eomGazeIncreaseOd?: string
+  eomGazeIncreaseOs?: string
+  eomGazeLimitOd?: string
+  eomGazeLimitOs?: string
+  eomInternalOd?: string
+  eomInternalOs?: string
+  convergencePoint?: string
+  coverTestResult?: string
+  hirschbergBeforeAtropine?: string
+  hirschbergAfterAtropine?: string
+  prismNear?: string
+  prismDistance?: string
+  prismUp?: string
+  prismDown?: string
+  strabismusSyndrome?: string
+  synoptophoreObjective?: string
+  synoptophoreSubjective?: string
+  binocularStatus?: string
+  fusionAmplitude?: string
+  retinalCorrespondence?: string
+  diplopia?: string
+  compensatoryHeadPosture?: string
+  ptosisDegreeOd?: string
+  ptosisDegreeOs?: string
+  levatorFunctionOd?: string
+  levatorFunctionOs?: string
+  marcusGunn?: string
+  bellPhenomenon?: string
+  fixationOd?: string
+  fixationOs?: string
+  palpebralReflexOd?: string
+  palpebralReflexOs?: string
+  epicanthus?: string
+  hemmingAngle?: string
+}
+
+export interface UpdatePediatricRecordData {
+  congenital?: boolean
+  acquired?: boolean
+  acquiredOnset?: string
+  priorTreatment?: string
+  pregnancyIllness?: boolean
+  pregnancyIllnessDetail?: string
+  intellectualDevelopmentNormal?: boolean
+  chiefSymptoms?: string
+  entropionOd?: boolean
+  epicanthusOd?: boolean
+  ptosisOd?: boolean
+  eyelidTumor?: string
+  eyelidTumorLocation?: string
+  eyelidTumorSize?: string
+  eyeballOdStatus?: string
+  eyeballOsStatus?: string
+  eyeballTexture?: string
+  amblyopiaStatus?: string
+  fixationPreferenceOd?: string
+  fixationPreferenceOs?: string
+  fundusSummaryOd?: string
+  fundusSummaryOs?: string
+  intellectualDevelopmentStatus?: string
+  generalHealthStatus?: string
+}
+
+// Prescription Update Data Classes
+export interface UpdatePrescriptionData {
+  notes?: string
+}
+
+export interface UpdatePrescriptionItemData {
+  id?: string
+  medicineName: string
+  dosage: string
+  frequency?: string
+  durationDays?: number
+  quantity: number
+  instruction?: string
+}
+
+export interface UpdateGlassesPrescriptionData {
+  sphOd?: number
+  cylOd?: number
+  axisOd?: number
+  addOd?: number
+  sphOs?: number
+  cylOs?: number
+  axisOs?: number
+  addOs?: number
+  pd?: number
+  lensType?: string
+  notes?: string
+}
+
+export interface UpdateMedicalRecordResponse {
+  medicalRecordId: string
+  patientName?: string
+  recordTypeLabel?: string
+  appointmentDate?: string
+  doctorName?: string
+  updatedAt: string
+  isSuccess: boolean
+}
+
+// Queue types
+export enum QueueStatus {
+  WAITING = "WAITING",
+  CALLING = "CALLING",
+  IN_PROGRESS = "IN_PROGRESS",
+  COMPLETED = "COMPLETED",
+  CANCELLED = "CANCELLED",
+  NO_SHOW = "NO_SHOW",
+}
+
+export interface QueueItem {
+  queueId: string
+  queueNumber: number
+  appointmentId: string
+  patientId: string
+  patientName: string
+  patientPhone?: string
+  patientDateOfBirth?: string
+  patientGender?: string
+  appointmentTime: string
+  symptoms?: string
+  roomId?: string
+  roomName?: string
+  status: QueueStatus
+  statusText: string
+  calledAt?: string
+  completedAt?: string
+  hasMedicalRecord: boolean
+  serviceName?: string
+  bookingSource: string
+}
+
+export interface QueueListResponse {
+  date: string
+  totalPatients: number
+  waitingCount: number
+  inProgressCount: number
+  completedCount: number
+  items: QueueItem[]
 }

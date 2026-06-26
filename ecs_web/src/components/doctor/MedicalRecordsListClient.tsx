@@ -11,6 +11,8 @@ import {
   Filter,
   ChevronLeft,
   ChevronRight,
+  PenSquare,
+  FileText,
 } from "lucide-react"
 import Link from "next/link"
 import { medicalRecordsService } from "@/services"
@@ -400,13 +402,25 @@ export default function MedicalRecordsListClient() {
                       </td>
 
                       <td className="px-5 py-4">
-                        <Link
-                          href={`/doctor/records/${record.id}?appointmentId=${record.appointmentId}`}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-100 rounded-lg hover:bg-blue-100 active:bg-blue-200 transition-colors"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                          Chi tiết
-                        </Link>
+                        <div className="flex items-center gap-2">
+                          {record.canEdit && !record.isLocked ? (
+                            <Link
+                              href={`/doctor/records/${record.id}/edit?appointmentId=${record.appointmentId || ""}`}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-100 rounded-lg hover:bg-amber-100 active:bg-amber-200 transition-colors"
+                            >
+                              <PenSquare className="w-3.5 h-3.5" />
+                              Chỉnh sửa
+                            </Link>
+                          ) : (
+                            <Link
+                              href={`/doctor/records/${record.id}?appointmentId=${record.appointmentId || ""}`}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-100 rounded-lg hover:bg-blue-100 active:bg-blue-200 transition-colors"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              Chi tiết
+                            </Link>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}

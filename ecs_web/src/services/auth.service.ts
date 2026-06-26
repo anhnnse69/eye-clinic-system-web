@@ -50,12 +50,13 @@ export interface AuthState {
 }
 
 interface TokenPayload {
-  sub: string
+  sub?: string
+  "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"?: string
   role?: string
+  "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"?: string
   email: string
   "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"?: string
   "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"?: string
-  "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"?: string
   FullName?: string
   Phone?: string
   jti: string
@@ -168,13 +169,13 @@ class AuthService {
 
         const decodedToken = this.decodeToken(response.data.data.token)
         if (decodedToken) {
-          // .NET uses "http://schemas.microsoft.com/ws/2008/06/identity/claims/role" for role
+          const userId = decodedToken.sub || decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] || ""
           const role = decodedToken.role ||
             decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ||
             ""
 
           const user: User = {
-            id: decodedToken.sub,
+            id: userId,
             email: decodedToken.email || decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] || "",
             name: decodedToken.FullName || decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || "",
             role: role as Role,

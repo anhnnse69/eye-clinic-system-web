@@ -1,18 +1,16 @@
 "use client"
 
-import { useState } from "react"
-import { Stethoscope } from "lucide-react"
-import { RecordType, CreateMedicalRecordRequest } from "@/types"
+import { useState, useEffect } from "react"
+import { RecordType, UpdateMedicalRecordRequest } from "@/types"
 import TraumaSubspecialtySection from "../subspecialty/TraumaSubspecialtySection"
 import AnteriorSubspecialtySection from "../subspecialty/AnteriorSubspecialtySection"
 import GlaucomaSubspecialtySection from "../subspecialty/GlaucomaSubspecialtySection"
 import StrabismusSubspecialtySection from "../subspecialty/StrabismusSubspecialtySection"
 import PediatricSubspecialtySection from "../subspecialty/PediatricSubspecialtySection"
-import SystemicExamSection from "../subspecialty/SystemicExamSection"
 
 interface SubspecialtyStepProps {
-  formData: Partial<CreateMedicalRecordRequest>
-  updateFormData: (updates: Partial<CreateMedicalRecordRequest>) => void
+  formData: Partial<UpdateMedicalRecordRequest>
+  updateFormData: (updates: Partial<UpdateMedicalRecordRequest>) => void
   recordType: RecordType
 }
 
@@ -21,14 +19,17 @@ export default function SubspecialtyStep({
   updateFormData,
   recordType,
 }: SubspecialtyStepProps) {
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    systemic: true,
-    trauma: recordType === "MS21_TRAUMA",
-    lacrimal: recordType === "MS22_ANTERIOR",
-    glaucoma: recordType === "MS24_GLAUCOMA",
-    strabismus: recordType === "MS25_STRABISMUS_PTOSIS",
-    pediatric: recordType === "MS26_PEDIATRIC",
-  })
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({})
+
+  useEffect(() => {
+    setExpandedSections({
+      trauma: recordType === "MS21_TRAUMA",
+      lacrimal: recordType === "MS22_ANTERIOR",
+      glaucoma: recordType === "MS24_GLAUCOMA",
+      strabismus: recordType === "MS25_STRABISMUS_PTOSIS",
+      pediatric: recordType === "MS26_PEDIATRIC",
+    })
+  }, [recordType])
 
   const toggleSection = (key: string) => {
     setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }))
@@ -44,14 +45,6 @@ export default function SubspecialtyStep({
           Nhập thông tin khám chuyên khoa mắt theo loại bệnh án
         </p>
       </div>
-
-      {/* Systemic Exam - Always visible */}
-      <SystemicExamSection
-        formData={formData}
-        updateFormData={updateFormData}
-        isExpanded={expandedSections.systemic}
-        onToggle={() => toggleSection("systemic")}
-      />
 
       {/* Trauma Section - MS21 */}
       {recordType === "MS21_TRAUMA" && (

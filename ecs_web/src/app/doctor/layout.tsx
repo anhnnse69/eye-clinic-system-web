@@ -31,7 +31,7 @@ export default async function DoctorLayout({ children }: { children: React.React
       title: "Tổng quan",
       items: [
         { label: "Dashboard", href: "/doctor/dashboard", icon: "LayoutDashboard" },
-        { label: "Lịch cá nhân", href: "/doctor/schedule", icon: "Calendar" },
+        { label: "Lịch cá nhân", href: "/doctor/schedule", icon: "CalendarDays" },
         { label: "Ca làm việc", href: "/doctor/shifts", icon: "Clock" },
       ],
     },
@@ -39,7 +39,7 @@ export default async function DoctorLayout({ children }: { children: React.React
       title: "Khám bệnh",
       items: [
         { label: "Danh sách lịch hẹn", href: "/doctor/appointments", icon: "Calendar" },
-        { label: "Danh sách bệnh nhân",href: "/doctor/patients", icon: "Users" },
+        { label: "Danh sách bệnh nhân", href: "/doctor/patients", icon: "Users" },
         { label: "Hàng đợi", href: "/doctor/queue", icon: "Stethoscope" },
       ],
     },
@@ -55,7 +55,7 @@ export default async function DoctorLayout({ children }: { children: React.React
       title: "Cá nhân",
       items: [
         { label: "Hồ sơ cá nhân", href: "/doctor/profile", icon: "User" },
-        { label: "Thông tin tài khoản", href: "/doctor/account-info", icon: "User" },
+        { label: "Thông tin tài khoản", href: "/doctor/account-info", icon: "UserCog" },
       ],
     },
   ]

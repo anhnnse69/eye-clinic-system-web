@@ -5,6 +5,8 @@ import type {
   GetMedicalRecordsItem,
   GetMedicalRecordsMeta,
   GetMedicalRecordDetailResponse,
+  UpdateMedicalRecordRequest,
+  UpdateMedicalRecordResponse,
 } from "@/types"
 
 export interface GetMedicalRecordsApiResponse extends ApiResponse<GetMedicalRecordsItem[]> {
@@ -12,6 +14,8 @@ export interface GetMedicalRecordsApiResponse extends ApiResponse<GetMedicalReco
 }
 
 export interface GetMedicalRecordDetailApiResponse extends ApiResponse<GetMedicalRecordDetailResponse> {}
+
+export interface UpdateMedicalRecordApiResponse extends ApiResponse<UpdateMedicalRecordResponse> {}
 
 class MedicalRecordsService {
   async getMedicalRecords(
@@ -27,6 +31,17 @@ class MedicalRecordsService {
   async getMedicalRecordById(id: string): Promise<GetMedicalRecordDetailApiResponse> {
     const response = await apiClient.get<GetMedicalRecordDetailApiResponse>(
       `/medical-records/${id}`
+    )
+    return response.data
+  }
+
+  async updateMedicalRecord(
+    id: string,
+    data: UpdateMedicalRecordRequest
+  ): Promise<UpdateMedicalRecordApiResponse> {
+    const response = await apiClient.put<UpdateMedicalRecordApiResponse>(
+      `/medical-records/${id}`,
+      data
     )
     return response.data
   }

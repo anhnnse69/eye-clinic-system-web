@@ -4,26 +4,32 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
   LayoutDashboard,
-  Building2,
+  Calendar,
+  Clock,
   Users,
   FileText,
-  Shield,
-  Activity,
-  Settings,
-  Home,
-  Key,
+  Stethoscope,
+  ClipboardList,
+  Image as ImageIcon,
+  Pill,
+  User,
+  UserCog,
+  CalendarDays,
 } from "lucide-react"
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   LayoutDashboard,
-  Building2,
+  Calendar,
+  CalendarDays,
+  Clock,
   Users,
   FileText,
-  Shield,
-  Activity,
-  Settings,
-  Home,
-  Key,
+  Stethoscope,
+  ClipboardList,
+  ImageIcon,
+  Pill,
+  User,
+  UserCog,
 }
 
 export interface NavItem {

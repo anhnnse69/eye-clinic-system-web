@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   FileText,
   Stethoscope,
@@ -10,12 +10,12 @@ import {
   Brain,
   Baby,
 } from "lucide-react"
-import { RecordType, CreateMedicalRecordRequest } from "@/types"
+import { RecordType, UpdateMedicalRecordRequest } from "@/types"
 import CollapsibleSection from "../shared/CollapsibleSection"
 
 interface HistoryStepProps {
-  formData: Partial<CreateMedicalRecordRequest>
-  updateFormData: (updates: Partial<CreateMedicalRecordRequest>) => void
+  formData: Partial<UpdateMedicalRecordRequest>
+  updateFormData: (updates: Partial<UpdateMedicalRecordRequest>) => void
   recordType: RecordType
 }
 
@@ -24,15 +24,19 @@ export default function HistoryStep({
   updateFormData,
   recordType,
 }: HistoryStepProps) {
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    chiefComplaint: true,
-    history: true,
-    vitals: true,
-    trauma: recordType === "MS21_TRAUMA",
-    glaucoma: recordType === "MS24_GLAUCOMA",
-    strabismus: recordType === "MS25_STRABISMUS_PTOSIS",
-    pediatric: recordType === "MS26_PEDIATRIC",
-  })
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({})
+
+  useEffect(() => {
+    setExpandedSections({
+      chiefComplaint: true,
+      history: true,
+      vitals: true,
+      trauma: recordType === "MS21_TRAUMA",
+      glaucoma: recordType === "MS24_GLAUCOMA",
+      strabismus: recordType === "MS25_STRABISMUS_PTOSIS",
+      pediatric: recordType === "MS26_PEDIATRIC",
+    })
+  }, [recordType])
 
   const toggleSection = (key: string) => {
     setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }))
@@ -140,8 +144,8 @@ function ChiefComplaintFields({
   formData,
   updateFormData,
 }: {
-  formData: Partial<CreateMedicalRecordRequest>
-  updateFormData: (updates: Partial<CreateMedicalRecordRequest>) => void
+  formData: Partial<UpdateMedicalRecordRequest>
+  updateFormData: (updates: Partial<UpdateMedicalRecordRequest>) => void
 }) {
   return (
     <div className="space-y-4">
@@ -185,8 +189,8 @@ function HistoryFields({
   formData,
   updateFormData,
 }: {
-  formData: Partial<CreateMedicalRecordRequest>
-  updateFormData: (updates: Partial<CreateMedicalRecordRequest>) => void
+  formData: Partial<UpdateMedicalRecordRequest>
+  updateFormData: (updates: Partial<UpdateMedicalRecordRequest>) => void
 }) {
   return (
     <div className="space-y-4">
@@ -249,8 +253,8 @@ function VitalSignsFields({
   formData,
   updateFormData,
 }: {
-  formData: Partial<CreateMedicalRecordRequest>
-  updateFormData: (updates: Partial<CreateMedicalRecordRequest>) => void
+  formData: Partial<UpdateMedicalRecordRequest>
+  updateFormData: (updates: Partial<UpdateMedicalRecordRequest>) => void
 }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
@@ -322,8 +326,8 @@ function TraumaHistoryFields({
   formData,
   updateFormData,
 }: {
-  formData: Partial<CreateMedicalRecordRequest>
-  updateFormData: (updates: Partial<CreateMedicalRecordRequest>) => void
+  formData: Partial<UpdateMedicalRecordRequest>
+  updateFormData: (updates: Partial<UpdateMedicalRecordRequest>) => void
 }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -374,8 +378,8 @@ function GlaucomaHistoryFields({
   formData,
   updateFormData,
 }: {
-  formData: Partial<CreateMedicalRecordRequest>
-  updateFormData: (updates: Partial<CreateMedicalRecordRequest>) => void
+  formData: Partial<UpdateMedicalRecordRequest>
+  updateFormData: (updates: Partial<UpdateMedicalRecordRequest>) => void
 }) {
   return (
     <div className="space-y-4">
@@ -449,8 +453,8 @@ function StrabismusHistoryFields({
   formData,
   updateFormData,
 }: {
-  formData: Partial<CreateMedicalRecordRequest>
-  updateFormData: (updates: Partial<CreateMedicalRecordRequest>) => void
+  formData: Partial<UpdateMedicalRecordRequest>
+  updateFormData: (updates: Partial<UpdateMedicalRecordRequest>) => void
 }) {
   return (
     <div className="space-y-4">
@@ -509,8 +513,8 @@ function PediatricHistoryFields({
   formData,
   updateFormData,
 }: {
-  formData: Partial<CreateMedicalRecordRequest>
-  updateFormData: (updates: Partial<CreateMedicalRecordRequest>) => void
+  formData: Partial<UpdateMedicalRecordRequest>
+  updateFormData: (updates: Partial<UpdateMedicalRecordRequest>) => void
 }) {
   return (
     <div className="space-y-4">

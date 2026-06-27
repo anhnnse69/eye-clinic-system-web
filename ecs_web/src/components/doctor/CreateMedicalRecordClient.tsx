@@ -30,6 +30,21 @@ import PrescriptionStep from "./medical-record-form/steps/PrescriptionStep"
 interface CreateMedicalRecordClientProps {
   appointmentId: string
   patientProfileId?: string
+  patientName?: string
+  triageData?: {
+    urgencyLevel?: string
+    recommendedAction?: string
+    symptoms?: {
+      hasVisionChange?: boolean
+      hasEyeRedness?: boolean
+      hasEyeDischarge?: boolean
+      hasLightSensitivity?: boolean
+      hasEyePain?: boolean
+      hasHeadache?: boolean
+      hasForeignBody?: boolean
+    }
+    quickVisualAssessment?: string
+  } | null
 }
 
 const STEPS = [
@@ -44,6 +59,8 @@ const STEPS = [
 export default function CreateMedicalRecordClient({
   appointmentId,
   patientProfileId,
+  patientName,
+  triageData,
 }: CreateMedicalRecordClientProps) {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
@@ -157,10 +174,8 @@ export default function CreateMedicalRecordClient({
       })
 
       if (response.codeMessage === "APP_MESSAGE_2005") {
-        const redirectUrl = patientProfileId
-          ? `/doctor/patient-demographics/${patientProfileId}?appointmentId=${appointmentId}`
-          : `/doctor/appointments`
-        router.push(redirectUrl)
+        // Redirect to medical records list after successful creation
+        router.push(`/doctor/records`)
       } else {
         setError(getMessage(response.codeMessage) || "Có lỗi xảy ra khi tạo bệnh án")
       }
@@ -208,15 +223,25 @@ export default function CreateMedicalRecordClient({
             >
               <ArrowLeft className="w-5 h-5 text-gray-600" />
             </button>
-            <div>
+            <div className="flex-1">
               <h1 className="text-xl font-semibold text-gray-900">
                 Tạo bệnh án mới
               </h1>
-              <p className="text-sm text-gray-500">
-                {selectedRecordType
-                  ? RECORD_TYPE_LABELS[selectedRecordType]
-                  : "Chọn loại bệnh án"}
-              </p>
+              <div className="flex items-center gap-3 text-sm text-gray-500">
+                {patientName && <span>Bệnh nhân: {patientName}</span>}
+                {triageData?.urgencyLevel && (
+                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                    triageData.urgencyLevel === "Emergency" ? "bg-red-100 text-red-700" :
+                    triageData.urgencyLevel === "High" ? "bg-orange-100 text-orange-700" :
+                    triageData.urgencyLevel === "Medium" ? "bg-yellow-100 text-yellow-700" :
+                    "bg-green-100 text-green-700"
+                  }`}>
+                    {triageData.urgencyLevel === "Emergency" ? "Cấp cứu" :
+                     triageData.urgencyLevel === "High" ? "Khẩn cấp" :
+                     triageData.urgencyLevel === "Medium" ? "Trung bình" : "Thấp"}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>

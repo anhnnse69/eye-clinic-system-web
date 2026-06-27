@@ -8,6 +8,8 @@ import {
   Phone,
   FileText,
   CheckCircle,
+  Check,
+  ClipboardCheck,
   XCircle,
   RefreshCw,
   ChevronLeft,
@@ -19,6 +21,7 @@ import {
   CalendarDays,
 } from "lucide-react"
 import { queueService } from "@/services/queue.service"
+import { queueCompleteService } from "@/services/queue-complete.service"
 import type { QueueListResponse, QueueItem } from "@/types"
 import { QueueStatus } from "@/types"
 import { getMessage } from "@/constants/messages"
@@ -54,7 +57,10 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
   const [filter, setFilter] = useState<string>("ALL")
 
   const formatDate = (date: Date): string => {
-    return date.toISOString().split("T")[0]
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, "0")
+    const day = String(date.getDate()).padStart(2, "0")
+    return `${year}-${month}-${day}`
   }
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -158,7 +164,8 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
   }
 
   const filteredItems = queueData?.items?.filter((item) => {
-    if (filter === "ALL") return true
+    if (filter === "ALL") return item.status !== "COMPLETED"
+    if (filter === "COMPLETED") return item.status === "COMPLETED"
     return item.status === filter
   }) || []
 
@@ -169,9 +176,17 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
   }
 
   const handleStartExamination = (item: QueueItem) => {
-    router.push(
-      `/doctor/records/create?appointmentId=${item.appointmentId}&patientId=${item.patientId}`
-    )
+    // Nếu đã có preliminary diagnosis → chuyển thẳng đến form tạo bệnh án
+    if (item.hasPreliminaryDiagnosis || item.hasMedicalRecord) {
+      router.push(
+        `/doctor/records/create?appointmentId=${item.appointmentId}&patientId=${item.patientId}&continue=true`
+      )
+    } else {
+      // Chưa có → điền form sơ bộ trước
+      router.push(
+        `/doctor/records/preliminary-diagnosis?appointmentId=${item.appointmentId}&patientId=${item.patientId}&patientName=${encodeURIComponent(item.patientName)}`
+      )
+    }
   }
 
   const handleContinueExamination = (item: QueueItem) => {
@@ -180,8 +195,15 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
     )
   }
 
-  const handleViewPatient = (item: QueueItem) => {
-    router.push(`/doctor/patients/${item.patientId}`)
+  const handleCompleteQueue = async (item: QueueItem, e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!confirm(`Xác nhận hoàn thành khám cho bệnh nhân "${item.patientName}"?`)) return
+    try {
+      await queueCompleteService.completeQueue({ queueId: item.queueId })
+      fetchQueueData()
+    } catch {
+      alert("Có lỗi xảy ra, vui lòng thử lại")
+    }
   }
 
   const statusCounts = queueData?.items?.reduce(
@@ -192,6 +214,11 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
     {} as Record<string, number>
   ) || {}
 
+  // Count for "Tất cả" excludes COMPLETED
+  const activeTotal = Object.entries(statusCounts).reduce((sum, [status, count]) => {
+    return status !== "COMPLETED" ? sum + count : sum
+  }, 0)
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -200,7 +227,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Danh sách hàng đợi</h1>
             <p className="text-sm text-gray-500 mt-1">
-              {queueData?.totalCount || 0} bệnh nhân • {isToday ? "Hôm nay" : selectedDate.toLocaleDateString("vi-VN", { day: "numeric", month: "short", year: "numeric" })}
+              {queueData?.totalPatients || 0} bệnh nhân • <span suppressHydrationWarning>{isToday ? "Hôm nay" : selectedDate.toLocaleDateString("vi-VN", { day: "numeric", month: "short", year: "numeric" })}</span>
             </p>
           </div>
           <button
@@ -227,19 +254,19 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
           <div className="flex items-center gap-4 flex-1 justify-center">
             {/* Date Card */}
             <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl px-5 py-4 text-white shadow-lg min-w-[100px]">
-              <div className="text-center">
-                <div className="text-xs font-medium text-blue-100 uppercase tracking-wider">
+              <div className="text-center" suppressHydrationWarning>
+                <div className="text-xs font-medium text-blue-100 uppercase tracking-wider" suppressHydrationWarning>
                   {selectedDate.toLocaleDateString("vi-VN", { weekday: "short" })}
                 </div>
-                <div className="text-4xl font-bold mt-1">
+                <div className="text-4xl font-bold mt-1" suppressHydrationWarning>
                   {selectedDate.getDate()}
                 </div>
               </div>
             </div>
             
             {/* Month/Year & Full Weekday */}
-            <div className="text-left">
-              <div className="text-xl font-semibold text-gray-900">
+            <div className="text-left" suppressHydrationWarning>
+              <div className="text-xl font-semibold text-gray-900" suppressHydrationWarning>
                 {selectedDate.toLocaleDateString("vi-VN", { month: "long", year: "numeric" })}
               </div>
               <div className="text-sm text-gray-500 mt-1">
@@ -249,7 +276,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                     Hôm nay
                   </span>
                 ) : (
-                  selectedDate.toLocaleDateString("vi-VN", { weekday: "long" })
+                  <span suppressHydrationWarning>{selectedDate.toLocaleDateString("vi-VN", { weekday: "long" })}</span>
                 )}
               </div>
             </div>
@@ -271,7 +298,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
               className="inline-flex items-center gap-3 px-4 py-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-blue-300 transition-all shadow-sm"
             >
               <CalendarDays className="w-5 h-5 text-blue-500" />
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium text-gray-700" suppressHydrationWarning>
                 {selectedDate.toLocaleDateString("vi-VN", { day: "numeric", month: "long", year: "numeric" })}
               </span>
             </button>
@@ -287,7 +314,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                   >
                     <ChevronLeft className="w-5 h-5 text-gray-600" />
                   </button>
-                  <span className="text-base font-semibold text-gray-900">
+                  <span className="text-base font-semibold text-gray-900" suppressHydrationWarning>
                     {calendarDate.toLocaleDateString("vi-VN", { month: "long", year: "numeric" })}
                   </span>
                   <button
@@ -366,7 +393,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                 : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
           >
-            Tất cả ({queueData?.totalCount || 0})
+            Tất cả ({activeTotal})
           </button>
           {Object.entries(STATUS_LABELS).map(([status, label]) => {
             const count = statusCounts[status] || 0
@@ -409,10 +436,16 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <Users className="w-12 h-12 text-gray-400 mb-4" />
             <p className="text-gray-700 font-medium">
-              {filter === "ALL" ? "Không có bệnh nhân trong ngày này" : "Không có bệnh nhân với trạng thái này"}
+              {filter === "ALL" 
+                ? "Không có bệnh nhân đang chờ" 
+                : filter === "COMPLETED"
+                ? "Chưa có bệnh nhân hoàn thành khám"
+                : "Không có bệnh nhân với trạng thái này"}
             </p>
             <p className="text-gray-500 text-sm mt-1">
-              {filter === "ALL" ? "Danh sách hàng đợi trống" : "Thử chọn bộ lọc khác"}
+              {filter === "ALL" 
+                ? "Danh sách hàng đợi trống" 
+                : "Thử chọn bộ lọc khác"}
             </p>
           </div>
         ) : (
@@ -427,8 +460,9 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                   <div className="flex items-start gap-4">
                     {/* Queue Number Badge */}
                     <div className="shrink-0">
-                      <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
-                        {item.queueNumber}
+                      <div className="w-12 h-12 rounded-2xl bg-blue-500 text-white flex flex-col items-center justify-center shadow-md">
+                        <span className="text-[11px] font-medium text-blue-100 leading-none mb-px">STT</span>
+                        <span className="text-lg font-bold leading-none">{item.queueNumber}</span>
                       </div>
                     </div>
 
@@ -459,7 +493,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                         )}
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4 text-gray-400" />
-                          <span>{new Date(item.appointmentTime).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}</span>
+                          <span suppressHydrationWarning>{new Date(item.appointmentTime).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}</span>
                         </div>
                         {item.symptoms && (
                           <div className="flex items-center gap-2 col-span-2">
@@ -481,23 +515,15 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                         )}
                       </div>
 
-                      {item.calledAt && (
-                        <p className="mt-2 text-xs text-gray-500">
-                          Được gọi lúc: {new Date(item.calledAt).toLocaleTimeString("vi-VN")}
+                      {item.completedAt && (
+                        <p className="mt-2 text-xs text-green-600 font-medium" suppressHydrationWarning>
+                          Hoàn thành: {new Date(item.completedAt).toLocaleTimeString("vi-VN")}
                         </p>
                       )}
 
                       {/* Action Buttons */}
                       <div className="mt-3 flex flex-wrap gap-2">
-                        <button
-                          onClick={() => handleViewPatient(item)}
-                          className="flex items-center gap-1 px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-                        >
-                          <Eye className="w-4 h-4" />
-                          Xem bệnh nhân
-                        </button>
-
-                        {item.hasMedicalRecord ? (
+                        {item.hasMedicalRecord && (
                           <button
                             onClick={() => handleViewRecord(item)}
                             className="flex items-center gap-1 px-3 py-1.5 text-sm bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
@@ -505,32 +531,46 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                             <FileText className="w-4 h-4" />
                             Xem bệnh án
                           </button>
-                        ) : item.status === QueueStatus.WAITING || item.status === QueueStatus.CALLING ? (
-                          <button
-                            onClick={() => handleStartExamination(item)}
-                            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                          >
-                            <CheckCircle className="w-4 h-4" />
-                            Bắt đầu khám
-                          </button>
+                        )}
+
+                        {item.status === QueueStatus.WAITING || item.status === QueueStatus.CALLING ? (
+                          !item.hasMedicalRecord && (
+                            <button
+                              onClick={() => handleStartExamination(item)}
+                              className="flex items-center gap-1 px-3 py-1.5 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                            >
+                              <CheckCircle className="w-4 h-4" />
+                              Bắt đầu khám
+                            </button>
+                          )
                         ) : item.status === QueueStatus.IN_PROGRESS ? (
-                          <button
-                            onClick={() => handleContinueExamination(item)}
-                            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
-                          >
-                            <Activity className="w-4 h-4" />
-                            Tiếp tục khám
-                          </button>
+                          <>
+                            <button
+                              onClick={() => handleContinueExamination(item)}
+                              className="flex items-center gap-1 px-3 py-1.5 text-sm bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
+                            >
+                              <Activity className="w-4 h-4" />
+                              Tiếp tục khám
+                            </button>
+                            {item.hasMedicalRecord && (
+                              <button
+                                onClick={(e) => handleCompleteQueue(item, e)}
+                                className="flex items-center gap-1 px-3 py-1.5 text-sm bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
+                              >
+                                <ClipboardCheck className="w-4 h-4" />
+                                Hoàn thành khám
+                              </button>
+                            )}
+                          </>
                         ) : null}
 
-                        {item.status === QueueStatus.WAITING && (
+                        {item.status === QueueStatus.WAITING && item.hasMedicalRecord && (
                           <button
-                            onClick={() => {
-                              // TODO: Call patient
-                            }}
-                            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors"
+                            onClick={(e) => handleCompleteQueue(item, e)}
+                            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
                           >
-                            Gọi bệnh nhân
+                            <ClipboardCheck className="w-4 h-4" />
+                            Hoàn thành khám
                           </button>
                         )}
 

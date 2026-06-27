@@ -35,7 +35,7 @@ export default async function PatientLayout({
       SYSTEM_ADMIN: "/system-admin/dashboard",
       CLINIC_ADMIN: "/clinic-admin/dashboard",
       DOCTOR: "/doctor/dashboard",
-      RECEPTIONIST: "/receptionist/dashboard",
+      RECEPTIONIST: "/receptionist/appointments",
     }
     redirect(roleMapping[role] || `/${locale}/login`)
   }

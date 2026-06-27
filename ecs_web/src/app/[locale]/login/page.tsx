@@ -171,7 +171,7 @@ export default function LoginPage() {
             SYSTEM_ADMIN: "/system-admin/dashboard",
             CLINIC_ADMIN: "/clinic-admin/dashboard",
             DOCTOR: "/doctor/dashboard",
-            RECEPTIONIST: "/receptionist/dashboard",
+            RECEPTIONIST: "/receptionist/appointments",
             PATIENT: `/${locale}/patient/profiles`,
           };
           redirectPath = roleMapping[role] || redirectPath;

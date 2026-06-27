@@ -22,7 +22,12 @@ export class ApiError extends Error {
 
 const getAccessToken = (): string | null => {
   if (typeof window === "undefined") return null
-  return localStorage.getItem("accessToken")
+  // Try localStorage first (for API calls from components)
+  const localToken = localStorage.getItem("accessToken")
+  if (localToken) return localToken
+  // Fallback to cookie (for SSR-compatible auth)
+  const cookieMatch = document.cookie.match(/(?:^|;\s*)auth_token=([^;]*)/)
+  return cookieMatch ? decodeURIComponent(cookieMatch[1]) : null
 }
 
 const createApiClient = (): AxiosInstance => {

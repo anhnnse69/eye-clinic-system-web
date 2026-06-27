@@ -5,7 +5,13 @@ import { authService } from "@/services/auth.service"
 import CreateMedicalRecordClient from "@/components/doctor/CreateMedicalRecordClient"
 
 interface PageProps {
-  searchParams: Promise<{ appointmentId?: string; patientId?: string; continue?: string }>
+  searchParams: Promise<{ 
+    appointmentId?: string
+    patientId?: string
+    patientName?: string
+    continue?: string
+    triageData?: string
+  }>
 }
 
 export default async function CreateMedicalRecordPage({
@@ -29,11 +35,28 @@ export default async function CreateMedicalRecordPage({
   if (role !== "DOCTOR") redirect("/login")
 
   const resolvedSearchParams = await searchParams
-  const { appointmentId, patientId } = resolvedSearchParams
+  const { appointmentId, patientId, patientName, triageData } = resolvedSearchParams
 
   if (!appointmentId || !patientId) {
     redirect("/doctor/queue")
   }
 
-  return <CreateMedicalRecordClient appointmentId={appointmentId} patientProfileId={patientId} />
+  // Parse triage data if available
+  let parsedTriageData = null
+  if (triageData) {
+    try {
+      parsedTriageData = JSON.parse(decodeURIComponent(triageData))
+    } catch {
+      parsedTriageData = null
+    }
+  }
+
+  return (
+    <CreateMedicalRecordClient 
+      appointmentId={appointmentId} 
+      patientProfileId={patientId}
+      patientName={patientName}
+      triageData={parsedTriageData}
+    />
+  )
 }

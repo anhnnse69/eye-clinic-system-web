@@ -1488,6 +1488,49 @@ export interface CreateMedicalRecordResponse {
   isSuccess: boolean
 }
 
+export interface PreliminaryDiagnosisRequest {
+  appointmentId: string
+  // ==================== TRIAGE / SCREENING ====================
+  /** Urgency level for queue prioritization */
+  urgencyLevel: TriageUrgencyLevel
+  /** Pain level on scale 1-10 */
+  painLevel?: number | null
+  /** Quick visual assessment notes by triage doctor */
+  quickVisualAssessment?: string | null
+  // ==================== SYMPTOM CHECK ====================
+  hasVisionChange: boolean
+  hasEyeRedness: boolean
+  hasEyeDischarge: boolean
+  hasLightSensitivity: boolean
+  hasEyePain: boolean
+  hasHeadache: boolean
+  hasForeignBody: boolean
+  // ==================== INITIAL ACTIONS ====================
+  recommendedAction?: string | null
+  isReferralNeeded: boolean
+  referralTo?: string | null
+  followUpInstructions?: string | null
+  checkInTime?: string | null
+}
+
+export enum TriageUrgencyLevel {
+  Low = "Low",
+  Medium = "Medium",
+  High = "High",
+  Emergency = "Emergency",
+}
+
+export interface PreliminaryDiagnosisResponse {
+  preliminaryDiagnosisId: string
+  patientName?: string
+  appointmentDate?: string
+  doctorName?: string
+  triageCompletedAt: string
+  urgencyLevel: string
+  recommendedAction?: string | null
+  isSuccess: boolean
+}
+
 // ==========================================
 // Get Medical Records (UC - View List Medical Records)
 // Doctor views history of medical records they created
@@ -2977,6 +3020,7 @@ export interface QueueItem {
   calledAt?: string
   completedAt?: string
   hasMedicalRecord: boolean
+  hasPreliminaryDiagnosis?: boolean
   serviceName?: string
   bookingSource: string
 }
@@ -2988,4 +3032,18 @@ export interface QueueListResponse {
   inProgressCount: number
   completedCount: number
   items: QueueItem[]
+}
+
+export interface CompleteQueueRequest {
+  queueId: string
+}
+
+export interface CompleteQueueResponse {
+  queueId: string
+  appointmentId: string
+  patientName?: string
+  queueNumber: number
+  previousStatus: string
+  completedAt: string
+  isSuccess: boolean
 }

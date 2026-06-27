@@ -26,7 +26,7 @@ export default async function SystemAdminLayout({ children }: { children: React.
     const roleMapping: Record<string, string> = {
       CLINIC_ADMIN: "/clinic-admin/dashboard",
       DOCTOR: "/doctor/dashboard",
-      RECEPTIONIST: "/receptionist/dashboard",
+      RECEPTIONIST: "/receptionist/appointments",
       PATIENT: "/patient/dashboard",
     }
     redirect(roleMapping[role] || "/login")

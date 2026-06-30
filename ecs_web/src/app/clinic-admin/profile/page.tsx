@@ -15,6 +15,8 @@ interface ClinicProfile {
     isActive: boolean
     ratingAvg?: number
     reviewCount?: number
+    openTime: string
+    closeTime: string
 }
 
 export default function ClinicProfilePage() {
@@ -43,6 +45,8 @@ export default function ClinicProfilePage() {
                         isActive: d.isActive,
                         ratingAvg: d.ratingAvg,
                         reviewCount: d.reviewCount,
+                        openTime: d.openTime,
+                        closeTime: d.closeTime,
                     })
                 } else {
                     setError("Không thể tải thông tin phòng khám lúc này.")
@@ -61,6 +65,13 @@ export default function ClinicProfilePage() {
         }
     }, [])
 
+    // Helper function để format time
+    const formatTime = (time?: string) => {
+        if (!time) return "--:--"
+        // Nếu time có định dạng "HH:mm:ss" thì cắt lấy "HH:mm"
+        return time.length > 5 ? time.substring(0, 5) : time
+    }
+
     if (loading) {
         return (
             <div className="max-w-4xl mx-auto p-12 text-center text-gray-500 font-medium text-lg flex flex-col items-center justify-center gap-3">
@@ -77,7 +88,7 @@ export default function ClinicProfilePage() {
         return (
             <div className="max-w-4xl mx-auto my-8 p-6 border border-error bg-error-container/10 text-error rounded-2xl font-semibold text-center flex items-center justify-center gap-2">
                 <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                 </svg>
                 {error}
             </div>
@@ -112,7 +123,7 @@ export default function ClinicProfilePage() {
             </div>
 
             <div className="bg-white border border-gray-200 shadow-sm rounded-2xl overflow-hidden">
-                
+
                 <div className="p-6 md:p-8 bg-gray-50/50 border-b border-gray-100 flex flex-col md:flex-row items-center md:items-start gap-6">
                     <div className="w-24 h-24 bg-white border border-gray-200 rounded-2xl p-1.5 shadow-inner shrink-0 flex items-center justify-center overflow-hidden">
                         {clinic.logo ? (
@@ -130,11 +141,10 @@ export default function ClinicProfilePage() {
                                 {clinic.name}
                             </h2>
                             <div>
-                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-bold rounded-full tracking-wide border ${
-                                    clinic.isActive
-                                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                        : "bg-rose-50 text-rose-700 border-rose-200"
-                                }`}>
+                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-bold rounded-full tracking-wide border ${clinic.isActive
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                    : "bg-rose-50 text-rose-700 border-rose-200"
+                                    }`}>
                                     <span className={`w-1.5 h-1.5 rounded-full ${clinic.isActive ? "bg-emerald-500" : "bg-rose-500"}`} />
                                     {clinic.isActive ? "Đang hoạt động" : "Ngưng hoạt động"}
                                 </span>
@@ -160,7 +170,8 @@ export default function ClinicProfilePage() {
 
                 <div className="p-6 md:p-8 space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        
+
+                        {/* Địa chỉ - chiếm 2 cột */}
                         <div className="flex gap-3.5 items-start p-4 rounded-xl border border-gray-100 hover:bg-gray-50/40 transition md:col-span-2">
                             <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl shrink-0">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -174,6 +185,7 @@ export default function ClinicProfilePage() {
                             </div>
                         </div>
 
+                        {/* Số điện thoại */}
                         <div className="flex gap-3.5 items-start p-4 rounded-xl border border-gray-100 hover:bg-gray-50/40 transition">
                             <div className="p-2.5 bg-purple-50 text-purple-600 rounded-xl shrink-0">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -186,6 +198,7 @@ export default function ClinicProfilePage() {
                             </div>
                         </div>
 
+                        {/* Email */}
                         <div className="flex gap-3.5 items-start p-4 rounded-xl border border-gray-100 hover:bg-gray-50/40 transition">
                             <div className="p-2.5 bg-teal-50 text-teal-600 rounded-xl shrink-0">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -195,6 +208,38 @@ export default function ClinicProfilePage() {
                             <div className="space-y-0.5 w-full overflow-hidden">
                                 <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block">Địa chỉ Email</span>
                                 <p className="text-gray-800 font-bold text-base break-all">{clinic.email || "Chưa cập nhật"}</p>
+                            </div>
+                        </div>
+
+                        {/* THÊM: Giờ mở cửa */}
+                        <div className="flex gap-3.5 items-start p-4 rounded-xl border border-gray-100 hover:bg-gray-50/40 transition">
+                            <div className="p-2.5 bg-green-50 text-green-600 rounded-xl shrink-0">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div className="space-y-0.5">
+                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block">Giờ mở cửa</span>
+                                <p className="text-gray-800 font-bold text-base">
+                                    {formatTime(clinic.openTime)} - {formatTime(clinic.closeTime)}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* THÊM: Trạng thái hoạt động (có thể để ở đây hoặc giữ ở header) */}
+                        <div className="flex gap-3.5 items-start p-4 rounded-xl border border-gray-100 hover:bg-gray-50/40 transition">
+                            <div className={`p-2.5 rounded-xl shrink-0 ${clinic.isActive ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+                                }`}>
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div className="space-y-0.5">
+                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block">Trạng thái hoạt động</span>
+                                <p className={`font-bold text-base ${clinic.isActive ? "text-emerald-600" : "text-rose-600"
+                                    }`}>
+                                    {clinic.isActive ? "Đang hoạt động" : "Tạm ngưng"}
+                                </p>
                             </div>
                         </div>
 

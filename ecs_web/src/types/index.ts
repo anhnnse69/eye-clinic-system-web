@@ -35,6 +35,8 @@ export interface Clinic {
   isActive: boolean
   ratingAvg?: number
   reviewCount?: number
+  openTime: string
+  closeTime: string
   createdAt?: string
   updatedAt?: string
 }
@@ -1604,9 +1606,9 @@ export interface ClinicServiceItemResponse {
 export interface ReceptionistWalkInRegistrationRequest {
   patientProfileId: string;
   doctorId: string;
-  slotId: string;  
+  slotId: string;
   serviceId?: string | null;
-  symptoms?: string | null; 
+  symptoms?: string | null;
 }
 
 export interface QueueInlineRowDto {
@@ -1619,7 +1621,7 @@ export interface QueueInlineRowDto {
 export interface ReceptionistWalkInRegistrationResponse {
   appointmentId: string;
   status: string;
-  walkInQueue: QueueInlineRowDto; 
+  walkInQueue: QueueInlineRowDto;
 }
 
 export interface ReceptionistPayDepositRequest {

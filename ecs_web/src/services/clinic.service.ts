@@ -8,7 +8,7 @@ import type {
 
 export interface GetClinicsParams {
   searchTerm?: string
-  status?: string      
+  status?: string
   pageNumber?: number
   pageSize?: number
 }
@@ -21,6 +21,8 @@ export interface UpdateClinicRequest {
   email: string | null
   logoUrl: string | null
   description: string | null
+  openTime: string
+  closeTime: string
 }
 
 
@@ -34,6 +36,8 @@ export interface GetClinicByIdDetail {
   isActive: boolean
   ratingAvg: number
   reviewCount: number
+  openTime: string
+  closeTime: string
 }
 
 class ClinicsService {
@@ -106,14 +110,14 @@ class ClinicsService {
     return response.data;
   }
 
-  
+
   async deleteClinic(id: string): Promise<ApiResponse<any>> {
     const response = await apiClient.delete<ApiResponse<any>>(
       `/system-admin/clinics/${id}`
     )
     return response.data
   }
-  
+
   /**
    * Bổ sung hàm Vô hiệu hóa  (Nếu có endpoint tương ứng xử lý trên UI)
    */
@@ -133,7 +137,7 @@ class ClinicsService {
     return response.data;
   }
 
-  
+
   async getClinicById(id: string): Promise<ApiResponse<GetClinicByIdDetail>> {
     const response = await apiClient.get<ApiResponse<GetClinicByIdDetail>>(
       `/system-admin/clinics/${id}`
@@ -141,7 +145,7 @@ class ClinicsService {
     return response.data;
   }
 
-  
+
   async updateClinic(id: string, data: UpdateClinicRequest): Promise<ApiResponse<any>> {
     const response = await apiClient.put<ApiResponse<any>>(
       `/system-admin/clinics/${id}`,

@@ -95,6 +95,23 @@ export interface BookAppointmentResponse {
     bookingSource: string
 }
 
+export interface ClinicSlotOption {
+    id: string
+    startTime: string
+    endTime: string
+    isAvailable: boolean
+    clinicId: string
+    date: string
+}
+
+export interface BookAppointmentByClinicRequest {
+    clinicId: string
+    patientId: string
+    slotId: string
+    serviceId?: string
+    symptoms?: string
+}
+
 function formatTimeHHmm(isoOrTime: string): string {
     if (/^\d{2}:\d{2}$/.test(isoOrTime)) return isoOrTime
     try {
@@ -191,6 +208,37 @@ class PatientAppointmentService {
             {
                 patientId: payload.patientId,
                 doctorId: payload.doctorId,
+                slotId: payload.slotId,
+                serviceId: payload.serviceId ?? null,
+                symptoms: payload.symptoms ?? null,
+            }
+        )
+        return res.data
+    }
+
+    async getClinicAvailableSlots(
+        clinicId: string,
+        date: string,
+        serviceId?: string
+    ): Promise<ApiResponse<ClinicSlotOption[]>> {
+        const params = new URLSearchParams({
+            date: date,
+            ...(serviceId && { serviceId })
+        })
+        const res = await apiClient.get<ApiResponse<ClinicSlotOption[]>>(
+            `/clinics/${clinicId}/available-slots?${params.toString()}`
+        )
+        return res.data
+    }
+
+    async bookAppointmentByClinic(
+        payload: BookAppointmentByClinicRequest
+    ): Promise<ApiResponse<BookAppointmentResponse>> {
+        const res = await apiClient.post<ApiResponse<BookAppointmentResponse>>(
+            "/appointments/by-clinic",
+            {
+                clinicId: payload.clinicId,
+                patientId: payload.patientId,
                 slotId: payload.slotId,
                 serviceId: payload.serviceId ?? null,
                 symptoms: payload.symptoms ?? null,

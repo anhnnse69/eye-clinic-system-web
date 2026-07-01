@@ -184,8 +184,8 @@ export default function CreateAccountPage() {
               onChange={handleChange}
               className="w-full px-4 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors cursor-pointer font-medium"
             >
-              <option value={2}>Quản trị viên Phòng khám (CLINIC_ADMIN)</option>
-              <option value={4}>Quản trị viên Hệ thống (SYSTEM_ADMIN)</option>
+              {/* <option value={2}>Quản trị viên Phòng khám (CLINIC_ADMIN)</option> */}
+              {/* <option value={4}>Quản trị viên Hệ thống (SYSTEM_ADMIN)</option> */}
               <option value={1}>Bác sĩ chuyên khoa (DOCTOR)</option>
               <option value={3}>Nhân viên tiếp đón (STAFF)</option>
             </select>

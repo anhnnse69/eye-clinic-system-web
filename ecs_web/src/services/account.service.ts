@@ -94,6 +94,20 @@ export interface DeleteAccountResponse {
   updatedAt: string
 }
 
+export interface CreateClinicAdminRequest {
+  clinicId: string
+  phone: string
+  email: string
+  fullName: string
+}
+
+export interface CreateClinicAdminResponse {
+  userId: string
+  clinicId: string
+  email: string
+  role: string
+}
+
 class AccountService {
   async list(params?: AccountFilters): Promise<PaginatedResponse<User>> {
     const response = await apiClient.get<PaginatedResponse<User>>("/accounts", { params })
@@ -184,6 +198,19 @@ class AccountService {
     const response = await apiClient.put<ApiResponse<DeleteAccountResponse>>(
       "https://localhost:7070/api/v1/system-admin/accounts/delete",
       body
+    )
+    return response.data
+  }
+
+  async createClinicAdmin(params: CreateClinicAdminRequest): Promise<ApiResponse<CreateClinicAdminResponse>> {
+    const response = await apiClient.post<ApiResponse<CreateClinicAdminResponse>>(
+      "https://localhost:7070/api/v1/system-admin/accounts/clinic-admin",
+      {
+        clinicId: params.clinicId,
+        phone: params.phone,
+        email: params.email,
+        fullName: params.fullName,
+      }
     )
     return response.data
   }

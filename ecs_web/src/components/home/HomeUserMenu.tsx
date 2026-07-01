@@ -87,7 +87,7 @@ export default function HomeUserMenu({ accountInfoHref }: HomeUserMenuProps) {
 
   const handleBookAppointment = () => {
     setOpen(false)
-    router.push("home/book-appointment")
+    router.push(`/${locale}/book-appointment`)
   }
 
   const handleNotifications = () => {

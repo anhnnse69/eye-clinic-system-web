@@ -7,7 +7,7 @@ import {
   MapPin, Phone, Mail, Star, Globe, Loader2,
   Stethoscope, Clock, DollarSign, ChevronLeft,
   Building2, MessageSquare, ChevronRight, ShieldCheck,
-  CalendarDays, ArrowRight, Sparkles
+  CalendarDays, ArrowRight, Sparkles, User
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Header from "@/components/layout/Header";
@@ -296,7 +296,7 @@ export default function ClinicProfilePage() {
         />
 
         <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8">
-          
+
           {/* Breadcrumb quay lại */}
           <div className="mb-6">
             <button
@@ -309,14 +309,14 @@ export default function ClinicProfilePage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
+
             {/* CỘT TRÁI & GIỮA: Thông tin chính */}
             <div className="lg:col-span-2 space-y-6">
-              
+
               {/* 1. Profile Hero Card */}
               <div className="bg-white rounded-3xl border border-slate-200/80 p-6 md:p-8 shadow-sm flex flex-col md:flex-row gap-6 items-start relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-[100px] pointer-events-none" />
-                
+
                 <ClinicLogo url={clinic.logoUrl} name={clinic.name} />
 
                 <div className="flex-1 space-y-3 min-w-0">
@@ -378,11 +378,11 @@ export default function ClinicProfilePage() {
 
               {/* 3. Chi tiết nội dung các Tabs */}
               <div className="space-y-6">
-                
+
                 {/* ── Tab: Overview ── */}
                 {activeTab === "overview" && (
                   <div className="space-y-6 animate-fadeIn">
-                    
+
                     {/* Quick Stats Grid */}
                     <div className="grid grid-cols-3 gap-3">
                       <div className="bg-white rounded-2xl border border-slate-200/80 p-4 text-center hover:shadow-sm transition-shadow">
@@ -567,7 +567,7 @@ export default function ClinicProfilePage() {
                 {/* ── Tab: Reviews ── */}
                 {activeTab === "reviews" && (
                   <div className="space-y-4 animate-fadeIn">
-                    
+
                     {/* Tóm tắt điểm số */}
                     {clinic.ratingAvg && (
                       <div className="bg-white rounded-2xl border border-slate-200/80 p-5 flex items-center gap-4">
@@ -650,11 +650,11 @@ export default function ClinicProfilePage() {
             {/* CỘT PHẢI: Card CTA / Đặt lịch trực tuyến */}
             <div className="lg:col-span-1">
               <div className="sticky top-6 space-y-4">
-                
+
                 {/* Booking CTA card */}
                 <div className="bg-white rounded-3xl border border-slate-200/80 p-6 shadow-sm space-y-5 relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-full h-1.5 bg-primary" />
-                  
+
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-blue-50 text-primary flex items-center justify-center shrink-0">
                       <CalendarDays className="w-5 h-5" />
@@ -675,13 +675,34 @@ export default function ClinicProfilePage() {
                       : "Pre-select services and preferred doctors to reduce waiting time at the clinic."}
                   </p>
 
-                  <Link
-                    href={`/${locale}/book-appointment?clinicId=${clinic.id}`}
-                    className="flex items-center justify-center gap-2 w-full py-3.5 bg-primary hover:bg-primary/95 text-white rounded-2xl font-bold shadow-[0_4px_16px_rgba(59,130,246,0.25)] hover:shadow-[0_6px_20px_rgba(59,130,246,0.35)] transition-all transform active:scale-95 text-xs text-center"
-                  >
-                    <Stethoscope className="w-4 h-4 shrink-0" />
-                    {isVI ? "ĐẶT LỊCH NGAY" : "BOOK APPOINTMENT"}
-                  </Link>
+                  <div className="space-y-2.5">
+                    <Link
+                      href={`/${locale}/book-by-clinic?clinicId=${clinic.id}`}
+                      className="flex items-center justify-center gap-2 w-full py-3.5 bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 text-white rounded-2xl font-bold shadow-[0_4px_16px_rgba(59,130,246,0.25)] hover:shadow-[0_6px_20px_rgba(59,130,246,0.35)] transition-all transform active:scale-95 text-xs text-center"
+                    >
+                      <Building2 className="w-4 h-4 shrink-0" />
+                      {isVI ? "ĐẶT LỊCH HẸN NGAY" : "BOOK BY CLINIC"}
+                    </Link>
+
+                    <Link
+                      href={`/${locale}/book-appointment?clinicId=${clinic.id}`}
+                      className="flex items-center justify-center gap-2 w-full py-3.5 bg-white border-2 border-primary text-primary hover:bg-primary/5 rounded-2xl font-bold transition-all transform active:scale-95 text-xs text-center"
+                    >
+                      <User className="w-4 h-4 shrink-0" />
+                      {isVI ? "ĐẶT LỊCH THEO BÁC SĨ" : "BOOK BY DOCTOR"}
+                    </Link>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <div className="text-[9px] text-slate-400 bg-slate-50/80 rounded-xl p-2 text-center border border-slate-100">
+                      <span className="block font-semibold text-primary text-[10px]"> Nhanh chóng</span>
+                      {isVI ? "Tự động phân công bác sĩ phù hợp" : "Auto-assign best doctor"}
+                    </div>
+                    <div className="text-[9px] text-slate-400 bg-slate-50/80 rounded-xl p-2 text-center border border-slate-100">
+                      <span className="block font-semibold text-primary text-[10px]"> Chính xác</span>
+                      {isVI ? "Chọn đúng bác sĩ bạn muốn" : "Pick your preferred doctor"}
+                    </div>
+                  </div>
 
                   <hr className="border-slate-100" />
 

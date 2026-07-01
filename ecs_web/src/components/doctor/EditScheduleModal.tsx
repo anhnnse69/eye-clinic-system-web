@@ -42,7 +42,8 @@ export default function EditScheduleModal({
     const loadRooms = async () => {
       setLoadingRooms(true);
       try {
-        const res = await doctorScheduleService.getActiveRooms(doctorId);
+        // ── Lễ tân: lấy danh sách phòng active trong clinic của mình ──
+        const res = await doctorScheduleService.getActiveRoomsForReceptionist();
         const list = res.data ?? [];
         setRooms(list);
 
@@ -65,7 +66,7 @@ export default function EditScheduleModal({
       }
     };
     loadRooms();
-  }, [doctorId, schedule.roomId]);
+  }, [schedule.roomId]);
 
   const handleSubmit = async () => {
     if (workDate < todayStr) {
@@ -84,13 +85,12 @@ export default function EditScheduleModal({
     try {
       await doctorScheduleService.editSchedule(doctorId, schedule.scheduleId, {
         workDate: workDate !== currentWorkDate ? workDate : undefined,
-
         roomId: roomId,
       });
       setSuccess("Cập nhật ca trực thành công.");
       setTimeout(() => {
         onUpdated();
-      }, 3500);
+      }, 1500);
     } catch (err: any) {
       setError(
         err?.response?.data?.message ||

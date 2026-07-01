@@ -13,7 +13,7 @@ export default async function SystemAdminLayout({ children }: { children: React.
   }
 
   const decodedToken = authService.decodeToken(token)
-  
+
   if (!decodedToken) {
     redirect("/login")
   }

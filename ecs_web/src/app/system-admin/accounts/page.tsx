@@ -77,11 +77,11 @@ export default function SystemAccountsManagementPage() {
       setError(null)
 
       const roleParam = roleFilter === "all" ? undefined : roleFilter
-      
+
       // BỔ SUNG: Chuẩn hóa dữ liệu trạng thái từ select string sang boolean | undefined
-      const statusParam = 
-        statusFilter === "active" ? true : 
-        statusFilter === "locked" ? false : undefined
+      const statusParam =
+        statusFilter === "active" ? true :
+          statusFilter === "locked" ? false : undefined
 
       const response = await accountService.getAccounts({
         pageNumber,
@@ -107,14 +107,14 @@ export default function SystemAccountsManagementPage() {
       }
     } catch (err: any) {
       const errCode = err?.response?.data?.codeMessage || err?.codeMessage || err?.data?.codeMessage;
-      
+
       const errorMessages: Record<string, string> = {
         "APP_MESSAGE_4001": "Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại!",
         "APP_MESSAGE_4014": "Tài khoản quản trị hệ thống không hợp lệ hoặc không có quyền truy cập vùng dữ liệu này!",
         "APP_MESSAGE_4015": "Bạn không có quyền thực hiện thao tác này trên hệ thống!",
         "APP_MESSAGE_4020": "Không tìm thấy thông tin cấu hình gắn liền với tài khoản của bạn!"
       };
-      
+
       const fallbackMessage = "Không thể kết nối tới máy chủ hệ thống hoặc dữ liệu không hợp lệ. Vui lòng thử lại sau!";
       setError(errorMessages[errCode] || fallbackMessage);
     } finally {
@@ -145,12 +145,12 @@ export default function SystemAccountsManagementPage() {
       )
     } catch (err: any) {
       const errCode = err?.response?.data?.codeMessage || err?.codeMessage || err?.data?.codeMessage;
-      
+
       const errorMessages: Record<string, string> = {
         "APP_MESSAGE_4015": "Bạn không có quyền thay đổi trạng thái tài khoản này!",
         "APP_MESSAGE_4020": "Không tìm thấy thông tin tài khoản đích cần xử lý trên hệ thống!"
       };
-      
+
       alert(errorMessages[errCode] || "Cập nhật trạng thái tài khoản thất bại. Vui lòng thử lại!");
     } finally {
       setUpdatingId(null)
@@ -171,15 +171,26 @@ export default function SystemAccountsManagementPage() {
             <Users className="h-6 w-6 text-primary shrink-0" />
             Danh sách tài khoản hệ thống
           </h2>
-          <p className="text-body-md text-on-surface-variant">Quản lý phân quyền, trạng thái hoạt động và thông tin nhân sự toàn hệ thống</p>
+          <p className="text-body-md text-on-surface-variant">
+            Quản lý phân quyền, trạng thái hoạt động và thông tin nhân sự toàn hệ thống
+          </p>
         </div>
 
-        <Link
-          href="/system-admin/accounts/create"
-          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-on-primary rounded-xl hover:opacity-90 transition-all text-label-md font-medium shadow-sm shrink-0"
-        >
-          <Plus className="h-4 w-4" /> Thêm tài khoản
-        </Link>
+        {/* Nhóm các nút hành động lại gần nhau */}
+        <div className="flex items-center gap-2 self-start sm:self-center shrink-0 w-full sm:w-auto overflow-x-auto no-scrollbar">
+          <Link
+            href="/system-admin/accounts/clinic-admin"
+            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-primary/10 text-primary border border-primary/20 rounded-xl hover:bg-primary/20 transition-all text-label-md font-semibold whitespace-nowrap"
+          >
+            <Plus className="h-4 w-4" /> Thêm Clinic Admin
+          </Link>
+          <Link
+            href="/system-admin/accounts/create"
+            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-primary text-on-primary rounded-xl hover:opacity-90 transition-all text-label-md font-semibold shadow-sm whitespace-nowrap"
+          >
+            <Plus className="h-4 w-4" /> Thêm tài khoản
+          </Link>
+        </div>
       </div>
 
       {/* Bộ Lọc Điều Kiện & Thanh Tìm Kiếm */}
@@ -194,7 +205,7 @@ export default function SystemAccountsManagementPage() {
             className="w-full pl-10 pr-4 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-body-md placeholder:text-on-surface-variant/60 focus:outline-none focus:border-primary transition-colors"
           />
         </div>
-        
+
         {/* Khu vực chứa các bộ lọc Select Option */}
         <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto shrink-0">
           {/* Lọc theo Vai Trò */}
@@ -315,19 +326,16 @@ export default function SystemAccountsManagementPage() {
                               type="button"
                               disabled={updatingId !== null}
                               onClick={() => handleToggleActive(account.id, account.isActive)}
-                              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                                account.isActive ? "bg-emerald-500" : "bg-neutral-300"
-                              } ${updatingId === account.id ? "opacity-40 cursor-wait" : ""}`}
+                              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${account.isActive ? "bg-emerald-500" : "bg-neutral-300"
+                                } ${updatingId === account.id ? "opacity-40 cursor-wait" : ""}`}
                             >
                               <span
-                                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                                  account.isActive ? "translate-x-5" : "translate-x-0"
-                                }`}
+                                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${account.isActive ? "translate-x-5" : "translate-x-0"
+                                  }`}
                               />
                             </button>
-                            <span className={`text-[11px] font-bold tracking-wide uppercase ${
-                              account.isActive ? "text-emerald-600" : "text-neutral-500"
-                            }`}>
+                            <span className={`text-[11px] font-bold tracking-wide uppercase ${account.isActive ? "text-emerald-600" : "text-neutral-500"
+                              }`}>
                               {account.isActive ? "Hoạt động" : "Khóa"}
                             </span>
                           </div>

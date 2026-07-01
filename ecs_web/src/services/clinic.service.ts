@@ -40,6 +40,11 @@ export interface GetClinicByIdDetail {
   closeTime: string
 }
 
+export interface GetClinicLookupResponse {
+  id: string
+  name: string
+}
+
 class ClinicsService {
   /**
    * Lấy danh sách các phòng khám (Master list)
@@ -152,6 +157,13 @@ class ClinicsService {
       data
     );
     return response.data;
+  }
+
+  async getClinicLookup(): Promise<ApiResponse<GetClinicLookupResponse[]>> {
+    const response = await apiClient.get<ApiResponse<GetClinicLookupResponse[]>>(
+      "https://localhost:7070/api/v1/system-admin/clinics/lookup"
+    )
+    return response.data
   }
 }
 

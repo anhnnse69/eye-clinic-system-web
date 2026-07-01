@@ -159,7 +159,7 @@ export default function CreateStaffPage() {
                                 className="w-full block px-4 py-2.5 bg-surface-container-low border border-outline rounded-xl text-body-md text-on-surface focus:outline-none"
                             >
                                 <option value={StaffRoleEnum.RECEPTIONIST}>Tiếp tân</option>
-                                <option value={StaffRoleEnum.CLINIC_ADMIN}>Quản trị phòng khám</option>
+                                {/* <option value={StaffRoleEnum.CLINIC_ADMIN}>Quản trị phòng khám</option> */}
                                 <option value={StaffRoleEnum.DOCTOR}>Bác sĩ</option>
                             </select>
                         </div>

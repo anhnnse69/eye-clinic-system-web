@@ -236,9 +236,9 @@ export default function EditAccountPage() {
             <option value="" disabled>-- Lựa chọn vai trò quản trị --</option>
             <option value="PATIENT">Bệnh nhân</option>
             <option value="DOCTOR">Bác sĩ</option>
-            <option value="CLINIC_ADMIN">Clinic Admin</option>
+            {/* <option value="CLINIC_ADMIN">Clinic Admin</option> */}
             <option value="RECEPTIONIST">Nhân viên lễ tân</option>
-            <option value="SYSTEM_ADMIN">System Admin</option>
+            {/* <option value="SYSTEM_ADMIN">System Admin</option> */}
           </select>
         </div>
 

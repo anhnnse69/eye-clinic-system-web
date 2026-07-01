@@ -5,12 +5,15 @@ import { useRouter } from "next/navigation"
 import {
   Calendar as CalendarIcon, Search, User, Stethoscope,
   CheckCircle2, XCircle, Ban, Loader2, RefreshCw, Layers,
-  DoorOpen, UserPlus
+  DoorOpen, UserPlus, Plus, Pencil, Trash2
 } from "lucide-react"
 
 import { receptionistService } from "@/services/receptionist.service"
 import { handleApiError } from "@/lib/axios"
 import { ShiftType, SlotStatus, type DoctorScheduleMatrixRow, type SpecialtyCategoryResponse } from "@/types"
+import CreateScheduleModal from "@/components/doctor/CreateScheduleModal"
+import { doctorScheduleService } from "@/services/doctor.schedule.service"
+import EditScheduleModal from "@/components/doctor/EditScheduleModal"
 
 const SHIFT_TIMELINE_MAP: Record<ShiftType, string[]> = {
   [ShiftType.MORNING]: ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30"],
@@ -44,7 +47,33 @@ export default function RealShiftTimeSchedulerPage() {
 
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
+  const [showCreateModal, setShowCreateModal] = useState<boolean>(false)
+  const [editingRow, setEditingRow] = useState<DoctorScheduleMatrixRow | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<DoctorScheduleMatrixRow | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
+  const handleDeleteSchedule = (row: DoctorScheduleMatrixRow) => {
+    if (row.hasBookedSlot) return;
+    setDeleteTarget(row);
+  };
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    setError(null);
+    try {
+      await doctorScheduleService.deleteSchedule(deleteTarget.doctorId, deleteTarget.id);
+      setDeleteTarget(null);
+      fetchData();
+    } catch (err: any) {
+      setError(
+        err?.response?.data?.message ||
+        "Không thể xóa ca này. Ca đã có bệnh nhân đặt lịch."
+      );
+      setDeleteTarget(null);
+    } finally {
+      setDeleting(false);
+    }
+  };
   const currentUserId = "F533F6FF-7601-47A7-A15F-1FFA2D79672E"
 
   // 🌟 KIỂM TRA THỜI GIAN THỰC: Ngày đang chọn có trùng ngày hiện tại không
@@ -91,10 +120,19 @@ export default function RealShiftTimeSchedulerPage() {
       setLoading(false)
     }
   }
+  const handleToggleSlot = async (doctorId: string, slotId: string, block: boolean) => {
+    try {
+      await doctorScheduleService.toggleSlotBlockForReceptionist(doctorId, slotId, block);
+      fetchData();
+    } catch (err) {
+      setError(handleApiError(err));
+    }
+  };
+
 
   const handleSelectWalkInShift = (row: DoctorScheduleMatrixRow, shiftType: ShiftType) => {
     const formattedWorkDate = dateFilter.toString().split('T')[0];
-    
+
     const shiftLabels: Record<ShiftType, string> = {
       [ShiftType.MORNING]: "Ca Sáng",
       [ShiftType.AFTERNOON]: "Ca Chiều",
@@ -103,12 +141,12 @@ export default function RealShiftTimeSchedulerPage() {
 
     const walkInFlowData = {
       step: 1,
-      doctorId: row.id, 
+      doctorId: row.doctorId,
       doctorName: row.doctorName,
       specialtyName: row.specialtyName,
-      slotId: null, 
-      timeSlot: shiftLabels[shiftType] || shiftType, 
-      date: formattedWorkDate, 
+      slotId: null,
+      timeSlot: shiftLabels[shiftType] || shiftType,
+      date: formattedWorkDate,
       roomName: row.roomName || "Chưa gán phòng"
     };
 
@@ -126,9 +164,21 @@ export default function RealShiftTimeSchedulerPage() {
   return (
     <div className="space-y-6 w-full min-w-0 px-4 py-4">
       {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold text-slate-800">Quản lý Lịch trống Khám bệnh</h2>
-        <p className="text-sm text-slate-500 mt-0.5">Hệ thống hiển thị trạng thái lịch thực tế của bác sĩ và vị trí phòng chức năng phụ trách</p>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-800">Quản lý Lịch trống Khám bệnh</h2>
+          <p className="text-sm text-slate-500 mt-0.5">Hệ thống hiển thị trạng thái lịch thực tế của bác sĩ và vị trí phòng chức năng phụ trách</p>
+        </div>
+
+        {/* 🌟 CHÈN BUTTON TẠO LỊCH TRỰC VÀO ĐÂY */}
+        <button
+          type="button"
+          onClick={() => setShowCreateModal(true)}
+          className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl shadow-sm transition-colors active:scale-95"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Tạo lịch trực</span>
+        </button>
       </div>
 
       {/* Thanh Bộ Lọc */}
@@ -287,6 +337,26 @@ export default function RealShiftTimeSchedulerPage() {
                                     <span className="text-[10px] text-slate-700 font-medium bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded flex items-center gap-1 w-full break-words">
                                       <DoorOpen className="h-2.5 w-2.5 text-slate-500 flex-shrink-0" />
                                       <span>{row.roomName || "Chưa xếp phòng"}</span>
+                                      <div className="flex items-center gap-1.5 mt-0.5">
+                                        <button
+                                          type="button"
+                                          onClick={() => setEditingRow(row)}
+                                          disabled={row.hasBookedSlot}
+                                          title={row.hasBookedSlot ? "Ca đã có bệnh nhân, không thể sửa" : "Sửa ca trực"}
+                                          className="p-1 rounded hover:bg-blue-50 text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                                        >
+                                          <Pencil className="h-3 w-3" />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDeleteSchedule(row)}
+                                          disabled={row.hasBookedSlot}
+                                          title={row.hasBookedSlot ? "Ca đã có bệnh nhân, không thể xóa" : "Xóa ca trực"}
+                                          className="p-1 rounded hover:bg-rose-50 text-rose-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                                        >
+                                          <Trash2 className="h-3 w-3" />
+                                        </button>
+                                      </div>
                                     </span>
                                   </div>
                                 </div>
@@ -332,10 +402,11 @@ export default function RealShiftTimeSchedulerPage() {
 
                             return (
                               <td key={time} className="p-1.5 border-r border-slate-200 text-center align-middle bg-white">
-                                {effectiveStatus === SlotStatus.AVAILABLE && (
+                                {effectiveStatus === SlotStatus.AVAILABLE && !isExpired && (
                                   <div
-                                    title={`Khung giờ còn trống (${slot.maxPatients - slot.currentPatients} chỗ)`}
-                                    className="w-full min-h-[44px] p-1 rounded-xl bg-emerald-50 border border-emerald-100 text-center flex flex-col items-center justify-center select-none shadow-sm"
+                                    onClick={() => handleToggleSlot(row.doctorId, slot.id, true)}
+                                    title="Bấm để khóa slot này"
+                                    className="w-full min-h-[44px] p-1 rounded-xl bg-emerald-50 border border-emerald-100 hover:bg-emerald-100 text-center flex flex-col items-center justify-center select-none shadow-sm cursor-pointer transition-colors"
                                   >
                                     <div className="flex items-center gap-1 font-bold text-emerald-700 text-[11px]">
                                       <CheckCircle2 className="h-3 w-3 text-emerald-500" />
@@ -360,13 +431,26 @@ export default function RealShiftTimeSchedulerPage() {
                                 )}
 
                                 {effectiveStatus === SlotStatus.BLOCKED && (
-                                  <div
-                                    className="w-full min-h-[44px] p-1 rounded-xl bg-rose-50 border border-rose-100 text-center flex flex-col items-center justify-center select-none cursor-not-allowed"
-                                    title={isExpired ? "Lịch này đã quá giờ đăng ký quy định (hệ thống tự động khóa)" : undefined}
-                                  >
-                                    <Ban className="h-3 w-3 text-rose-400" />
-                                    <span className="text-[9px] font-bold text-rose-500 mt-0.5">Khóa</span>
-                                  </div>
+                                  isExpired ? (
+                                    // Hết giờ — không thể thao tác
+                                    <div
+                                      className="w-full min-h-[44px] p-1 rounded-xl bg-slate-50 border border-slate-200 text-center flex flex-col items-center justify-center select-none cursor-not-allowed"
+                                      title="Slot đã hết giờ đăng ký"
+                                    >
+                                      <Ban className="h-3 w-3 text-slate-300" />
+                                      <span className="text-[9px] font-bold text-slate-400 mt-0.5">Hết giờ</span>
+                                    </div>
+                                  ) : (
+                                    // Bị khóa thủ công — lễ tân có thể mở lại
+                                    <div
+                                      onClick={() => handleToggleSlot(row.doctorId, slot.id, false)}
+                                      title="Bấm để mở lại slot này"
+                                      className="w-full min-h-[44px] p-1 rounded-xl bg-rose-50 border border-rose-200 hover:bg-rose-100 text-center flex flex-col items-center justify-center select-none cursor-pointer transition-colors"
+                                    >
+                                      <Ban className="h-3 w-3 text-rose-400" />
+                                      <span className="text-[9px] font-bold text-rose-500 mt-0.5">Khóa</span>
+                                    </div>
+                                  )
                                 )}
                               </td>
                             )
@@ -377,8 +461,69 @@ export default function RealShiftTimeSchedulerPage() {
                   </table>
                 </div>
               </div>
+
             )
           })}
+        </div>
+      )}
+      {showCreateModal && (
+        <CreateScheduleModal
+          onClose={() => setShowCreateModal(false)}
+          onCreated={fetchData} // Gọi lại hàm fetchData để cập nhật sơ đồ ngay lập tức sau khi tạo
+        />
+      )}
+      {editingRow && (
+        <EditScheduleModal
+          doctorId={editingRow.doctorId}
+          schedule={{
+            scheduleId: editingRow.id,
+            shiftType: editingRow.shiftType,
+            roomId: editingRow.roomId ?? undefined,
+            slots: editingRow.slots.map((s) => ({
+              slotId: s.slotId,
+              startTime: s.startTime,
+              endTime: s.endTime,
+              maxPatients: s.maxPatients,
+              currentPatients: s.currentPatients,
+              status: s.status,
+              appointments: [],
+            })),
+          }}
+          onClose={() => setEditingRow(null)}
+          onUpdated={() => {
+            setEditingRow(null);
+            fetchData();
+          }}
+        />
+      )}
+      {deleteTarget && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl p-6 space-y-4">
+            <h3 className="font-bold text-lg text-slate-800">Xóa ca trực</h3>
+            <p className="text-sm text-slate-600">
+              Bạn chắc chắn muốn xóa ca trực của{" "}
+              <span className="font-semibold">{deleteTarget.doctorName}</span>{" "}
+              ngày <span className="font-semibold">{dateFilter}</span>?
+              Hành động này không thể hoàn tác.
+            </p>
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                disabled={deleting}
+                className="px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition disabled:opacity-50"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                disabled={deleting}
+                className="px-5 py-2.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-xl transition disabled:opacity-50 flex items-center gap-2"
+              >
+                {deleting && <Loader2 className="w-4 h-4 animate-spin" />}
+                Xác nhận xóa
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

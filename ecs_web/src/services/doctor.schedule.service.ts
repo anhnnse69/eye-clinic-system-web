@@ -48,6 +48,16 @@ export interface ClinicRoomItem {
   isActive: boolean;
 }
 
+// ── Doctor (dùng cho lễ tân chọn doctor trước khi tạo lịch) ──
+
+export interface DoctorOptionItem {
+  doctorId: string;
+  fullName: string;
+  specialty?: string;
+  avatarUrl?: string;
+  isActive: boolean;
+}
+
 // ── Create Schedule ──
 
 export interface CreateDoctorScheduleRequest {
@@ -102,6 +112,7 @@ export interface DeleteDoctorScheduleResponse {
 }
 
 class DoctorScheduleService {
+  // ── Doctor xem lịch của chính mình ──
   async getPersonalSchedule(
     doctorId: string,
     params: ViewDoctorPersonalScheduleRequest
@@ -113,26 +124,32 @@ class DoctorScheduleService {
     return response.data;
   }
 
-  async getActiveRooms(
-    doctorId: string
-  ): Promise<ApiResponse<ClinicRoomItem[]>> {
-    const response = await apiClient.get<
-      ApiResponse<ClinicRoomItem[]>>(
-        `/doctors/${doctorId}/rooms`
-      );
+  // ── Lễ tân: danh sách phòng active của clinic mình ──
+  async getActiveRoomsForReceptionist(): Promise<ApiResponse<ClinicRoomItem[]>> {
+    const response = await apiClient.get<ApiResponse<ClinicRoomItem[]>>(
+      `/receptionist/rooms`
+    );
     return response.data;
   }
 
+  // ── Lễ tân: danh sách doctor để chọn trước khi tạo lịch ──
+  async getActiveDoctors(): Promise<ApiResponse<DoctorOptionItem[]>> {
+    const response = await apiClient.get<ApiResponse<DoctorOptionItem[]>>(
+      `/receptionist/doctors`
+    );
+    return response.data;
+  }
+
+  // ── Lễ tân: tạo lịch trực cho doctor đã chọn ──
   async createSchedule(
     doctorId: string,
     payload: CreateDoctorScheduleRequest
   ): Promise<ApiResponse<CreateDoctorScheduleResponse>> {
     const response = await apiClient.post<
       ApiResponse<CreateDoctorScheduleResponse>
-    >(`/doctors/${doctorId}/schedule`, payload);
+    >(`/receptionist/doctors/${doctorId}/schedule`, payload);
     return response.data;
   }
-
 
   async editSchedule(
     doctorId: string,
@@ -140,20 +157,8 @@ class DoctorScheduleService {
     payload: EditDoctorScheduleRequest
   ): Promise<ApiResponse<EditDoctorScheduleResponse>> {
     const response = await apiClient.put<ApiResponse<EditDoctorScheduleResponse>>(
-      `/doctors/${doctorId}/schedule/${scheduleId}`,
+      `/receptionist/doctors/${doctorId}/schedule/${scheduleId}`,
       payload
-    );
-    return response.data;
-  }
-
-  async toggleSlotBlock(
-    doctorId: string,
-    slotId: string,
-    block: boolean
-  ): Promise<ApiResponse<string>> {
-    const response = await apiClient.patch<ApiResponse<string>>(
-      `/doctors/${doctorId}/schedule/slots/${slotId}/block`,
-      { block }
     );
     return response.data;
   }
@@ -163,7 +168,20 @@ class DoctorScheduleService {
     scheduleId: string
   ): Promise<ApiResponse<DeleteDoctorScheduleResponse>> {
     const response = await apiClient.delete<ApiResponse<DeleteDoctorScheduleResponse>>(
-      `/doctors/${doctorId}/schedule/${scheduleId}`
+      `/receptionist/doctors/${doctorId}/schedule/${scheduleId}`
+    );
+    return response.data;
+  }
+
+  // ── Doctor: chỉ còn quyền khóa/mở slot của chính mình ──
+  async toggleSlotBlockForReceptionist(
+    doctorId: string,
+    slotId: string,
+    block: boolean
+  ): Promise<ApiResponse<string>> {
+    const response = await apiClient.patch<ApiResponse<string>>(
+      `/receptionist/doctors/${doctorId}/schedule/slots/${slotId}/block`,
+      { block }
     );
     return response.data;
   }

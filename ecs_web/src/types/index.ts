@@ -438,6 +438,9 @@ export interface TimeSlotData {
 
 export interface DoctorScheduleMatrixRow {
   id: string
+  doctorId: string
+  scheduleId: string
+  hasBookedSlot: boolean
   shiftType: ShiftType
   doctorName: string
   title?: string | null

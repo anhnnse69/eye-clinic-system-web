@@ -13,7 +13,8 @@ import {
   AlertCircle,
   RotateCcw,
   Trash2,
-  CheckCircle2, // Import thêm icon thông báo thành công
+  CheckCircle2,
+  X,
 } from "lucide-react"
 
 import { clinicFeedbackService } from "@/services"
@@ -26,7 +27,7 @@ export default function ClinicFeedbackPage() {
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null) // State thông báo thành công
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   const [searchTerm, setSearchTerm] = useState("")
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
@@ -37,11 +38,13 @@ export default function ClinicFeedbackPage() {
 
   const [pageNumber, setPageNumber] = useState(1)
   const [pageSize] = useState(10)
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [selectedFeedbackId, setSelectedFeedbackId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const isFiltering = searchTerm !== "" || ratingDoctor !== "" || ratingClinic !== "" || feedbackDate !== ""
 
-  // Tự động ẩn thông báo thành công sau 3 giây
   useEffect(() => {
     if (successMessage) {
       const timer = setTimeout(() => {
@@ -106,23 +109,34 @@ export default function ClinicFeedbackPage() {
     setPageNumber(1)
   }
 
-  const handleDelete = async (id: string) => {
-    const confirmed = confirm("Bạn có chắc chắn muốn xóa đánh giá này không?")
-    if (!confirmed) return
+  const openDeleteModal = (id: string) => {
+    setSelectedFeedbackId(id)
+    setIsDeleteModalOpen(true)
+  }
+
+  const closeDeleteModal = () => {
+    setIsDeleteModalOpen(false)
+    setSelectedFeedbackId(null)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!selectedFeedbackId) return
 
     try {
-      setDeletingId(id)
+      setDeletingId(selectedFeedbackId)
       setError(null)
-      setSuccessMessage(null) // Xóa thông báo cũ trước khi thực hiện hành động mới
+      setSuccessMessage(null)
 
-      await clinicFeedbackService.delete(id)
+      await clinicFeedbackService.delete(selectedFeedbackId)
 
-      setSuccessMessage("Xóa đánh giá thành công!") // Thiết lập thông báo thành công
+      setSuccessMessage("Xóa đánh giá thành công!")
+      closeDeleteModal()
       await loadFeedbacks()
     } catch (err: any) {
       setError(
         err?.response?.data?.message || err?.message || "Xóa đánh giá thất bại"
       )
+      closeDeleteModal()
     } finally {
       setDeletingId(null)
     }
@@ -229,7 +243,6 @@ export default function ClinicFeedbackPage() {
         </div>
       </div>
 
-      {/* Thông báo Lỗi */}
       {error && (
         <div className="flex items-center gap-3 p-4 text-sm text-red-800 border border-red-200 rounded-xl bg-red-50 transition-all">
           <AlertCircle className="w-5 h-5 flex-shrink-0 text-red-600" />
@@ -237,7 +250,6 @@ export default function ClinicFeedbackPage() {
         </div>
       )}
 
-      {/* Thông báo Thành Công */}
       {successMessage && (
         <div className="flex items-center gap-3 p-4 text-sm text-emerald-800 border border-emerald-200 rounded-xl bg-emerald-50 transition-all duration-300 animate-in fade-in slide-in-from-top-2">
           <CheckCircle2 className="w-5 h-5 flex-shrink-0 text-emerald-600" />
@@ -322,7 +334,7 @@ export default function ClinicFeedbackPage() {
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end">
                           <button
-                            onClick={() => handleDelete(item.id_feedback)}
+                            onClick={() => openDeleteModal(item.id_feedback)}
                             disabled={deletingId === item.id_feedback}
                             className={`inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-lg border transition-all duration-150 ${deletingId === item.id_feedback
                               ? "opacity-60 cursor-not-allowed bg-white text-gray-400 border-gray-200"
@@ -353,7 +365,6 @@ export default function ClinicFeedbackPage() {
           </div>
         )}
 
-        {/* Pagination Section */}
         {metadata && metadata.totalPages > 1 && (
           <div className="flex items-center justify-between px-6 py-4 bg-white border-t border-gray-200">
             <div className="text-sm text-gray-500">
@@ -381,6 +392,65 @@ export default function ClinicFeedbackPage() {
           </div>
         )}
       </div>
+
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="fixed inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity"
+            onClick={closeDeleteModal}
+          />
+
+          <div className="relative bg-white rounded-2xl max-w-3xl w-full p-6 shadow-xl border border-gray-100 overflow-hidden transform transition-all animate-in fade-in zoom-in-95 duration-200">
+            <button
+              onClick={closeDeleteModal}
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-start gap-4">
+              <div className="p-3 rounded-full bg-red-50 border border-red-100 text-red-600 flex-shrink-0">
+                <AlertCircle className="w-6 h-6" />
+              </div>
+
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 tracking-tight">
+                  Xác nhận xóa đánh giá
+                </h3>
+                <p className="text-sm text-gray-500 mt-2 leading-relaxed">
+                  Bạn có chắc chắn muốn xóa đánh giá này không?
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 mt-6">
+              <button
+                type="button"
+                onClick={closeDeleteModal}
+                disabled={deletingId !== null}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all disabled:opacity-50"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                disabled={deletingId !== null}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 active:scale-[0.98] rounded-xl shadow-sm shadow-red-100 transition-all disabled:opacity-50"
+              >
+                {deletingId !== null ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Đang xóa...</span>
+                  </>
+                ) : (
+                  <span>Xác nhận xóa</span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

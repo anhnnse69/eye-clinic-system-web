@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { clinicsService } from "@/services/clinic.service"
+import { handleApiError } from "@/lib/axios"
 import Link from "next/link"
 
 interface ClinicProfile {
@@ -13,6 +14,9 @@ interface ClinicProfile {
     logo?: string
     description?: string
     isActive: boolean
+    isPublished?: boolean
+    isPublicationRequested?: boolean
+    publicationRequestedAt?: string | null
     ratingAvg?: number
     reviewCount?: number
     openTime: string
@@ -23,39 +27,52 @@ export default function ClinicProfilePage() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [clinic, setClinic] = useState<ClinicProfile | null>(null)
+    const [publishing, setPublishing] = useState(false)
+    const [publishSuccess, setPublishSuccess] = useState<string | null>(null)
+    const [publishError, setPublishError] = useState<string | null>(null)
+    const [showPublishModal, setShowPublishModal] = useState(false)
+
+    const loadClinicData = async () => {
+        try {
+            setLoading(true)
+            setError(null)
+            const res = await clinicsService.getProfile()
+            if (res && res.data) {
+                const d = res.data as any
+                setClinic({
+                    id: d.id,
+                    name: d.name,
+                    address: d.address,
+                    phone: d.phone,
+                    email: d.email,
+                    logo: d.logoUrl || d.logo,
+                    description: d.description,
+                    isActive: d.isActive,
+                    ratingAvg: d.ratingAvg,
+                    reviewCount: d.reviewCount,
+                    openTime: d.openTime,
+                    closeTime: d.closeTime,
+                    isPublished: d.isPublished,
+                    isPublicationRequested: d.isPublicationRequested,
+                    publicationRequestedAt: d.publicationRequestedAt
+                })
+            } else {
+                setError("Không thể tải thông tin phòng khám lúc này.")
+            }
+        } catch (err) {
+            const errorMessage = handleApiError(err)
+            setError(errorMessage || "Đã xảy ra lỗi khi tải dữ liệu. Vui lòng thử lại.")
+        } finally {
+            setLoading(false)
+        }
+    }
 
     useEffect(() => {
         let mounted = true
 
         const load = async () => {
-            try {
-                const res = await clinicsService.getProfile()
-                if (!mounted) return
-
-                if (res && res.data) {
-                    const d = res.data as any
-                    setClinic({
-                        id: d.id,
-                        name: d.name,
-                        address: d.address,
-                        phone: d.phone,
-                        email: d.email,
-                        logo: d.logoUrl || d.logo,
-                        description: d.description,
-                        isActive: d.isActive,
-                        ratingAvg: d.ratingAvg,
-                        reviewCount: d.reviewCount,
-                        openTime: d.openTime,
-                        closeTime: d.closeTime,
-                    })
-                } else {
-                    setError("Không thể tải thông tin phòng khám lúc này.")
-                }
-            } catch (err) {
-                setError("Đã xảy ra lỗi khi kết nối đến máy chủ.")
-            } finally {
-                if (mounted) setLoading(false)
-            }
+            if (!mounted) return
+            await loadClinicData()
         }
 
         load()
@@ -65,11 +82,52 @@ export default function ClinicProfilePage() {
         }
     }, [])
 
-    // Helper function để format time
     const formatTime = (time?: string) => {
         if (!time) return "--:--"
-        // Nếu time có định dạng "HH:mm:ss" thì cắt lấy "HH:mm"
         return time.length > 5 ? time.substring(0, 5) : time
+    }
+
+    const handleOpenPublishModal = () => {
+        setShowPublishModal(true)
+    }
+
+    const handleClosePublishModal = () => {
+        setShowPublishModal(false)
+        setPublishError(null)
+    }
+
+    const handleConfirmPublish = async () => {
+        if (!clinic) return
+
+        try {
+            setPublishing(true)
+            setPublishError(null)
+            setPublishSuccess(null)
+
+            const response = await clinicsService.requestPublishClinic(clinic.id)
+
+            if (response && response.codeMessage === "APP_MESSAGE_2000") {
+                setClinic(prev => {
+                    if (!prev) return prev
+                    return {
+                        ...prev,
+                        isPublicationRequested: true,
+                        publicationRequestedAt: new Date().toISOString()
+                    }
+                })
+
+                setPublishSuccess("Yêu cầu công khai phòng khám đã được gửi thành công! Vui lòng chờ quản trị viên xác nhận.")
+                setShowPublishModal(false)
+                await loadClinicData()
+            } else {
+                setPublishError(response?.codeMessage || "Gửi yêu cầu thất bại. Vui lòng thử lại.")
+            }
+        } catch (err) {
+            const errorMessage = handleApiError(err)
+            setPublishError(errorMessage || "Đã xảy ra lỗi khi gửi yêu cầu. Vui lòng thử lại.")
+        } finally {
+            setPublishing(false)
+        }
     }
 
     if (loading) {
@@ -122,6 +180,26 @@ export default function ClinicProfilePage() {
                 </Link>
             </div>
 
+            {/* Success message */}
+            {publishSuccess && (
+                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-2xl text-green-700 font-medium flex items-start gap-3">
+                    <svg className="w-5 h-5 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span>{publishSuccess}</span>
+                </div>
+            )}
+
+            {/* Error message */}
+            {publishError && !showPublishModal && (
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700 font-medium flex items-start gap-3">
+                    <svg className="w-5 h-5 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    <span>{publishError}</span>
+                </div>
+            )}
+
             <div className="bg-white border border-gray-200 shadow-sm rounded-2xl overflow-hidden">
 
                 <div className="p-6 md:p-8 bg-gray-50/50 border-b border-gray-100 flex flex-col md:flex-row items-center md:items-start gap-6">
@@ -140,15 +218,6 @@ export default function ClinicProfilePage() {
                             <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 leading-snug">
                                 {clinic.name}
                             </h2>
-                            <div>
-                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-bold rounded-full tracking-wide border ${clinic.isActive
-                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                    : "bg-rose-50 text-rose-700 border-rose-200"
-                                    }`}>
-                                    <span className={`w-1.5 h-1.5 rounded-full ${clinic.isActive ? "bg-emerald-500" : "bg-rose-500"}`} />
-                                    {clinic.isActive ? "Đang hoạt động" : "Ngưng hoạt động"}
-                                </span>
-                            </div>
                         </div>
 
                         <div className="flex items-center justify-center md:justify-start gap-2 text-sm text-gray-500">
@@ -171,7 +240,6 @@ export default function ClinicProfilePage() {
                 <div className="p-6 md:p-8 space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                        {/* Địa chỉ - chiếm 2 cột */}
                         <div className="flex gap-3.5 items-start p-4 rounded-xl border border-gray-100 hover:bg-gray-50/40 transition md:col-span-2">
                             <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl shrink-0">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -185,7 +253,6 @@ export default function ClinicProfilePage() {
                             </div>
                         </div>
 
-                        {/* Số điện thoại */}
                         <div className="flex gap-3.5 items-start p-4 rounded-xl border border-gray-100 hover:bg-gray-50/40 transition">
                             <div className="p-2.5 bg-purple-50 text-purple-600 rounded-xl shrink-0">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -198,7 +265,6 @@ export default function ClinicProfilePage() {
                             </div>
                         </div>
 
-                        {/* Email */}
                         <div className="flex gap-3.5 items-start p-4 rounded-xl border border-gray-100 hover:bg-gray-50/40 transition">
                             <div className="p-2.5 bg-teal-50 text-teal-600 rounded-xl shrink-0">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -211,7 +277,6 @@ export default function ClinicProfilePage() {
                             </div>
                         </div>
 
-                        {/* THÊM: Giờ mở cửa */}
                         <div className="flex gap-3.5 items-start p-4 rounded-xl border border-gray-100 hover:bg-gray-50/40 transition">
                             <div className="p-2.5 bg-green-50 text-green-600 rounded-xl shrink-0">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -226,20 +291,63 @@ export default function ClinicProfilePage() {
                             </div>
                         </div>
 
-                        {/* THÊM: Trạng thái hoạt động (có thể để ở đây hoặc giữ ở header) */}
                         <div className="flex gap-3.5 items-start p-4 rounded-xl border border-gray-100 hover:bg-gray-50/40 transition">
-                            <div className={`p-2.5 rounded-xl shrink-0 ${clinic.isActive ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+                            <div className={`p-2.5 rounded-xl shrink-0 ${clinic.isPublished
+                                ? "bg-blue-50 text-blue-600"
+                                : clinic.isPublicationRequested
+                                    ? "bg-amber-50 text-amber-600"
+                                    : "bg-gray-50 text-gray-400"
                                 }`}>
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9" />
                                 </svg>
                             </div>
-                            <div className="space-y-0.5">
-                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block">Trạng thái hoạt động</span>
-                                <p className={`font-bold text-base ${clinic.isActive ? "text-emerald-600" : "text-rose-600"
-                                    }`}>
-                                    {clinic.isActive ? "Đang hoạt động" : "Tạm ngưng"}
-                                </p>
+                            <div className="space-y-0.5 flex-1">
+                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block">Trạng thái công khai</span>
+                                <div className="flex flex-wrap items-center justify-between gap-4">
+                                    <p className={`font-bold text-base ${clinic.isPublished
+                                        ? "text-blue-600"
+                                        : clinic.isPublicationRequested
+                                            ? "text-amber-600"
+                                            : "text-gray-500"
+                                        }`}>
+                                        {clinic.isPublished
+                                            ? "Đã công khai"
+                                            : clinic.isPublicationRequested
+                                                ? "Đang chờ xác nhận"
+                                                : "Chưa công khai"}
+                                    </p>
+
+                                    {!clinic.isPublished && !clinic.isPublicationRequested && clinic.isActive && (
+                                        <button
+                                            onClick={handleOpenPublishModal}
+                                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-all active:scale-95"
+                                        >
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            Yêu cầu công khai
+                                        </button>
+                                    )}
+
+                                    {clinic.isPublicationRequested && !clinic.isPublished && (
+                                        <span className="text-xs text-amber-600 font-medium bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200 flex items-center gap-1.5">
+                                            <svg className="w-3.5 h-3.5 animate-pulse" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            Đã gửi yêu cầu - Đang chờ xác nhận
+                                        </span>
+                                    )}
+
+                                    {clinic.isPublished && (
+                                        <span className="text-xs text-blue-600 font-medium bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-200 flex items-center gap-1.5">
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            Đã công khai
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
@@ -258,6 +366,87 @@ export default function ClinicProfilePage() {
 
                 </div>
             </div>
+
+            {showPublishModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
+                    <div className="bg-white rounded-2xl max-w-3xl w-full shadow-2xl animate-scaleIn overflow-hidden">
+                        {/* Header */}
+                        <div className="p-6 border-b border-gray-100">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-blue-50 rounded-full">
+                                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900">Xác nhận yêu cầu công khai</h3>
+                            </div>
+                        </div>
+
+                        {/* Body */}
+                        <div className="p-6 space-y-4">
+                            <p className="text-gray-600 text-base leading-relaxed">
+                                Bạn có chắc chắn muốn gửi yêu cầu công khai phòng khám <strong className="text-gray-900">{clinic.name}</strong>?
+                            </p>
+
+                            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
+                                <div className="flex items-start gap-3">
+                                    <svg className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9a1 1 0 00-1-1z" clipRule="evenodd" />
+                                    </svg>
+                                    <div className="text-sm text-blue-700">
+                                        <p className="font-semibold">Lưu ý:</p>
+                                        <ul className="list-disc list-inside space-y-1 mt-1">
+                                            <li>Sau khi gửi yêu cầu, phòng khám sẽ được xem xét bởi quản trị viên</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {publishError && (
+                                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-start gap-2">
+                                    <svg className="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                    </svg>
+                                    <span>{publishError}</span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="p-6 bg-gray-50 border-t border-gray-100 flex flex-col sm:flex-row gap-3 justify-end">
+                            <button
+                                onClick={handleClosePublishModal}
+                                disabled={publishing}
+                                className="px-4 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-xl font-semibold hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Hủy bỏ
+                            </button>
+                            <button
+                                onClick={handleConfirmPublish}
+                                disabled={publishing}
+                                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 min-w-[120px]"
+                            >
+                                {publishing ? (
+                                    <>
+                                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                        </svg>
+                                        Đang xử lý...
+                                    </>
+                                ) : (
+                                    <>
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        Xác nhận
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

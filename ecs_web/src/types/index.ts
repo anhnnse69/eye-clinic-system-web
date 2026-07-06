@@ -33,6 +33,9 @@ export interface Clinic {
   logoUrl?: string
   description?: string
   isActive: boolean
+  isPublished?: boolean
+  isPublicationRequested?: boolean
+  publicationRequestedAt?: string | null
   ratingAvg?: number
   reviewCount?: number
   openTime: string
@@ -234,6 +237,9 @@ export interface ClinicManagementItem {
   contactPhone: string
   createdAt: string
   status: "ACTIVE" | "INACTIVE"
+  isPublished: boolean
+  isPublicationRequested: boolean
+  publicationRequestedAt: string | null
 }
 
 export interface AdminSystemDashboardResponse {

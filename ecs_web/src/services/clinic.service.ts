@@ -21,8 +21,8 @@ export interface UpdateClinicRequest {
   email: string | null
   logoUrl: string | null
   description: string | null
-  openTime: string
-  closeTime: string
+  openTime?: string | null
+  closeTime?: string | null
 }
 
 
@@ -164,6 +164,21 @@ class ClinicsService {
       "https://localhost:7070/api/v1/system-admin/clinics/lookup"
     )
     return response.data
+  }
+
+  async requestPublishClinic(clinicId: string): Promise<ApiResponse<boolean>> {
+    const response = await apiClient.post<ApiResponse<boolean>>(
+      `/clinic-admin/clinics/${clinicId}/request-publish`,
+      { clinicId }
+    );
+    return response.data;
+  }
+
+  async approveClinicPublication(id: string): Promise<ApiResponse<boolean>> {
+    const response = await apiClient.post<ApiResponse<boolean>>(
+      `/system-admin/clinics/${id}/approve-publication`
+    );
+    return response.data;
   }
 }
 

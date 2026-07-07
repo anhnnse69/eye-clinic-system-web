@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { X, Loader2, DoorOpen, CalendarIcon } from "lucide-react";
+import { ApiError } from "@/lib/axios";
 import {
   doctorScheduleService,
   type ClinicRoomItem,
@@ -13,6 +14,28 @@ function toDateStr(d: Date) {
   return new Date(d.getTime() - tzoffset).toISOString().split("T")[0];
 }
 
+function resolveEditErrorMessage(err: unknown): string {
+  const code = err instanceof ApiError ? err.codeMessage : undefined;
+
+  switch (code) {
+    case "APP_MESSAGE_4058": // Phòng đã bị bác sĩ khác chiếm cùng ngày/ca
+      return "Phòng này đã được bác sĩ khác sử dụng trong cùng ngày và ca làm việc. Vui lòng chọn phòng khác.";
+    case "APP_MESSAGE_4015":
+      return "Bác sĩ đã có ca trực khác trùng ngày và loại ca này. Vui lòng chọn ngày khác.";
+    case "APP_MESSAGE_4013":
+      return "Không thể sửa ca này vì đã có bệnh nhân đặt lịch trong ca.";
+    case "APP_MESSAGE_4019":
+      return "Phòng khám không hợp lệ hoặc không còn hoạt động. Vui lòng chọn lại.";
+    case "APP_MESSAGE_4012":
+      return "Không tìm thấy ca trực này. Có thể ca đã bị xoá.";
+    case "APP_MESSAGE_4011":
+      return "Không tìm thấy bác sĩ này hoặc bác sĩ không còn hoạt động.";
+    case "APP_MESSAGE_4008":
+      return "Bạn không có quyền chỉnh sửa ca trực này.";
+    default:
+      return "Không thể cập nhật ca. Có thể ca này đã có bệnh nhân đặt lịch hoặc đã có ca.";
+  }
+}
 export default function EditScheduleModal({
   doctorId,
   schedule,
@@ -92,10 +115,7 @@ export default function EditScheduleModal({
         onUpdated();
       }, 1500);
     } catch (err: any) {
-      setError(
-        err?.response?.data?.message ||
-        "Không thể cập nhật ca. Có thể ca này đã có bệnh nhân đặt lịch hoặc đã có ca."
-      );
+      setError(resolveEditErrorMessage(err));
     } finally {
       setSubmitting(false);
     }

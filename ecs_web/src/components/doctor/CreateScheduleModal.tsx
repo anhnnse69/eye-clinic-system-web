@@ -1,23 +1,31 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   X, Loader2, CheckCircle2, AlertCircle,
-  ChevronLeft, ChevronRight, DoorOpen, Stethoscope, Search, ArrowLeft,
+  ChevronLeft, ChevronRight, DoorOpen, Search, ArrowLeft, Trash2,
+  CalendarPlus,
 } from "lucide-react";
 import {
   doctorScheduleService,
   type ClinicRoomItem,
   type DoctorOptionItem,
-  type CreateDoctorScheduleResponse,
+  type ShiftRangeItem,
+  type BatchCreateDoctorScheduleResponse,
 } from "@/services/doctor.schedule.service";
 import { ShiftType } from "@/types";
 
-const SHIFT_OPTIONS = [
-  { value: ShiftType.MORNING,   label: "Ca Sáng (8h - 12h)" },
-  { value: ShiftType.AFTERNOON, label: "Ca Chiều (12h - 17h)" },
-  { value: ShiftType.EVENING,   label: "Ca Tối (17h - 20h)" },
-];
+const SHIFT_LABELS: Record<ShiftType, string> = {
+  [ShiftType.MORNING]: "Ca Sáng",
+  [ShiftType.AFTERNOON]: "Ca Chiều",
+  [ShiftType.EVENING]: "Ca Tối",
+};
+
+function formatHm(time: string) {
+  const [h, m] = time.split(":");
+  const hour = parseInt(h, 10);
+  return m === "00" ? `${hour}h` : `${hour}h${m}`;
+}
 
 function toDateStr(d: Date) {
   const tzoffset = d.getTimezoneOffset() * 60000;
@@ -37,78 +45,169 @@ function getMonthMatrix(year: number, month: number) {
   return cells;
 }
 
-export default function CreateScheduleModal({
+/** doctorId -> roomId đã gán, giữ Map để nhớ thứ tự chọn */
+type SelectionMap = Map<string, string>;
+
+export default function BatchCreateScheduleModal({
   onClose,
   onCreated,
 }: {
   onClose: () => void;
   onCreated: () => void;
 }) {
-  // ── Bước 1: chọn doctor ──
+  const [step, setStep] = useState<1 | 2>(1);
+
+  // ── Data dùng chung: doctor + room, load song song lúc mở modal ──
   const [doctors, setDoctors] = useState<DoctorOptionItem[]>([]);
-  const [loadingDoctors, setLoadingDoctors] = useState(true);
+  const [rooms, setRooms] = useState<ClinicRoomItem[]>([]);
+  const [loadingData, setLoadingData] = useState(true);
   const [doctorSearch, setDoctorSearch] = useState("");
-  const [selectedDoctor, setSelectedDoctor] = useState<DoctorOptionItem | null>(null);
+
+  const [shiftOptions, setShiftOptions] = useState<
+    { value: ShiftType; label: string }[]
+  >([]);
+  const [loadingShifts, setLoadingShifts] = useState(true);
 
   useEffect(() => {
-    const loadDoctors = async () => {
-      setLoadingDoctors(true);
+    const loadAll = async () => {
+      setLoadingData(true);
       try {
-        const res = await doctorScheduleService.getActiveDoctors();
-        setDoctors((res.data ?? []).filter((d) => d.isActive));
+        const [doctorRes, roomRes] = await Promise.all([
+          doctorScheduleService.getActiveDoctors(),
+          doctorScheduleService.getActiveRoomsForReceptionist(),
+        ]);
+        setDoctors((doctorRes.data ?? []).filter((d) => d.isActive));
+        setRooms(roomRes.data ?? []);
       } catch {
-        setError("Không thể tải danh sách bác sĩ.");
+        setError("Không thể tải danh sách bác sĩ / phòng khám.");
       } finally {
-        setLoadingDoctors(false);
+        setLoadingData(false);
       }
     };
-    loadDoctors();
+    loadAll();
   }, []);
+
+  useEffect(() => {
+    const loadShiftRanges = async () => {
+      setLoadingShifts(true);
+      try {
+        const res = await doctorScheduleService.getShiftRanges();
+        const options = (res.data ?? []).map((r: ShiftRangeItem) => ({
+          value: r.shiftType,
+          label: `${SHIFT_LABELS[r.shiftType]} (${formatHm(r.startTime)} - ${formatHm(r.endTime)})`,
+        }));
+        setShiftOptions(options);
+      } catch {
+        setError("Không thể tải khung giờ ca làm việc của phòng khám.");
+      } finally {
+        setLoadingShifts(false);
+      }
+    };
+    loadShiftRanges();
+  }, []);
+
+  // ── Bước 1: chọn nhiều doctor + phòng cho từng doctor ──
+  const [selection, setSelection] = useState<SelectionMap>(new Map());
 
   const filteredDoctors = doctors.filter((d) =>
     d.fullName.toLowerCase().includes(doctorSearch.trim().toLowerCase())
   );
 
-  // ── Bước 2: form tạo lịch (chỉ hiện sau khi đã chọn doctor) ──
+  const defaultRoomId = rooms.length > 0 ? rooms[0].roomId : "";
+
+  const toggleDoctor = (doctorId: string) => {
+    setSelection((prev) => {
+      const next = new Map(prev);
+      if (next.has(doctorId)) {
+        next.delete(doctorId);
+      } else {
+        next.set(doctorId, defaultRoomId);
+      }
+      return next;
+    });
+  };
+
+  const setDoctorRoom = (doctorId: string, roomId: string) => {
+    setSelection((prev) => {
+      const next = new Map(prev);
+      next.set(doctorId, roomId);
+      return next;
+    });
+  };
+
+  const removeDoctor = (doctorId: string) => {
+    setSelection((prev) => {
+      const next = new Map(prev);
+      next.delete(doctorId);
+      return next;
+    });
+  };
+
+  const selectedDoctors = useMemo(
+    () =>
+      Array.from(selection.keys())
+        .map((id) => doctors.find((d) => d.doctorId === id))
+        .filter((d): d is DoctorOptionItem => !!d),
+    [selection, doctors]
+  );
+
+  const allRoomsAssigned =
+    selection.size > 0 &&
+    Array.from(selection.values()).every((roomId) => !!roomId);
+
+  // ── Bước 2: ngày + ca ──
   const today = new Date();
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
-
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
   const [selectedShifts, setSelectedShifts] = useState<Set<ShiftType>>(new Set());
-  const [roomId, setRoomId] = useState("");
-  const [note, setNote] = useState("");
-
-  const [rooms, setRooms] = useState<ClinicRoomItem[]>([]);
-  const [loadingRooms, setLoadingRooms] = useState(false);
-
-  const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<CreateDoctorScheduleResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   const todayStr = toDateStr(today);
 
-  useEffect(() => {
-    if (!selectedDoctor) return;
-    const loadRooms = async () => {
-      setLoadingRooms(true);
-      try {
-        const res = await doctorScheduleService.getActiveRoomsForReceptionist();
-        setRooms(res.data ?? []);
-        if (res.data && res.data.length > 0) setRoomId(res.data[0].roomId);
-      } catch {
-        setError("Không thể tải danh sách phòng.");
-      } finally {
-        setLoadingRooms(false);
+  // ── Helper: Lấy tất cả ngày trong tháng hiện tại (từ ngày hôm nay trở đi) ──
+  const getAllDatesInCurrentMonth = () => {
+    const dates: string[] = [];
+    const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+    
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = new Date(viewYear, viewMonth, d);
+      const dateStr = toDateStr(date);
+      // Chỉ lấy ngày từ hôm nay trở đi
+      if (dateStr >= todayStr) {
+        dates.push(dateStr);
       }
-    };
-    loadRooms();
-  }, [selectedDoctor]);
+    }
+    return dates;
+  };
+
+  // ── Handler: Chọn tất cả ngày trong tháng ──
+  const handleSelectAllMonth = () => {
+    const allDates = getAllDatesInCurrentMonth();
+    setSelectedDates((prev) => {
+      const next = new Set(prev);
+      // Kiểm tra xem có phải đã chọn hết chưa để toggle
+      const isAllSelected = allDates.every((d) => prev.has(d));
+      
+      if (isAllSelected) {
+        // Nếu đã chọn hết thì bỏ chọn tất cả
+        allDates.forEach((d) => next.delete(d));
+      } else {
+        // Nếu chưa chọn hết thì chọn tất cả
+        allDates.forEach((d) => next.add(d));
+      }
+      return next;
+    });
+  };
+
+  // ── Kiểm tra xem đã chọn hết ngày trong tháng chưa ──
+  const isAllMonthSelected = useMemo(() => {
+    const allDates = getAllDatesInCurrentMonth();
+    return allDates.length > 0 && allDates.every((d) => selectedDates.has(d));
+  }, [selectedDates, viewYear, viewMonth]);
 
   const toggleDate = (date: Date) => {
     const str = toDateStr(date);
     if (str < todayStr) return;
-
     setSelectedDates((prev) => {
       const next = new Set(prev);
       if (next.has(str)) next.delete(str);
@@ -135,23 +234,37 @@ export default function CreateScheduleModal({
     setViewYear(y);
   };
 
-  const totalCombinations = selectedDates.size * selectedShifts.size;
+  const totalCombinations =
+    selection.size * selectedDates.size * selectedShifts.size;
 
-  const handleBackToDoctorSelect = () => {
-    setSelectedDoctor(null);
+  // ── Submit ──
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState<BatchCreateDoctorScheduleResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleGoToStep2 = () => {
+    if (selection.size === 0) {
+      setError("Vui lòng chọn ít nhất 1 bác sĩ.");
+      return;
+    }
+    if (!allRoomsAssigned) {
+      setError("Vui lòng chọn phòng khám cho tất cả bác sĩ đã chọn.");
+      return;
+    }
+    setError(null);
+    setStep(2);
+  };
+
+  const handleReset = () => {
+    setStep(1);
+    setSelection(new Map());
     setSelectedDates(new Set());
     setSelectedShifts(new Set());
-    setRoomId("");
-    setRooms([]);
     setResult(null);
     setError(null);
   };
 
   const handleSubmit = async () => {
-    if (!selectedDoctor) {
-      setError("Vui lòng chọn bác sĩ.");
-      return;
-    }
     if (selectedDates.size === 0) {
       setError("Vui lòng chọn ít nhất 1 ngày.");
       return;
@@ -160,25 +273,24 @@ export default function CreateScheduleModal({
       setError("Vui lòng chọn ít nhất 1 ca làm việc.");
       return;
     }
-    if (!roomId) {
-      setError("Vui lòng chọn phòng khám.");
-      return;
-    }
 
     setSubmitting(true);
     setError(null);
     try {
-      const res = await doctorScheduleService.createSchedule(selectedDoctor.doctorId, {
+      const res = await doctorScheduleService.batchCreateSchedule({
+        assignments: Array.from(selection.entries()).map(([doctorId, roomId]) => ({
+          doctorId,
+          roomId,
+        })),
         workDates: Array.from(selectedDates).sort(),
         shiftTypes: Array.from(selectedShifts),
-        roomId,
       });
       if (res?.data) {
         setResult(res.data);
-        if (res.data.created.length > 0) onCreated();
+        if (res.data.totalCreated > 0) onCreated();
       }
     } catch {
-      setError("Không thể tạo lịch. Vui lòng thử lại.");
+      setError("Không thể tạo lịch hàng loạt. Vui lòng thử lại.");
     } finally {
       setSubmitting(false);
     }
@@ -187,6 +299,9 @@ export default function CreateScheduleModal({
   const monthCells = getMonthMatrix(viewYear, viewMonth);
   const weekdayLabels = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
 
+  const roomName = (roomId: string) =>
+    rooms.find((r) => r.roomId === roomId)?.roomName ?? "—";
+
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -194,26 +309,24 @@ export default function CreateScheduleModal({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
           <div className="flex items-center gap-2">
-            {selectedDoctor && !result && (
+            {step === 2 && !result && (
               <button
-                onClick={handleBackToDoctorSelect}
+                onClick={() => setStep(1)}
                 className="p-1.5 -ml-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition"
-                title="Chọn lại bác sĩ"
+                title="Quay lại chọn bác sĩ"
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
             )}
             <div>
               <h3 className="font-bold text-lg text-slate-800">
-                {selectedDoctor ? "Tạo lịch trực mới" : "Chọn bác sĩ"}
+                Tạo lịch trực hàng loạt
               </h3>
-              {selectedDoctor && (
-                <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1">
-                  <Stethoscope className="w-3 h-3" />
-                  {selectedDoctor.fullName}
-                  {selectedDoctor.specialty ? ` · ${selectedDoctor.specialty}` : ""}
-                </p>
-              )}
+              <p className="text-xs text-slate-500 mt-0.5">
+                {step === 1
+                  ? "Bước 1: Chọn bác sĩ và phòng khám"
+                  : "Bước 2: Chọn ngày và ca làm việc"}
+              </p>
             </div>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
@@ -221,8 +334,8 @@ export default function CreateScheduleModal({
           </button>
         </div>
 
-        {/* ── Bước 1: chọn doctor ── */}
-        {!selectedDoctor && (
+        {/* ── Bước 1 ── */}
+        {step === 1 && (
           <div className="p-6 space-y-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -241,87 +354,170 @@ export default function CreateScheduleModal({
             )}
 
             <div className="space-y-2 max-h-[420px] overflow-y-auto">
-              {loadingDoctors ? (
+              {loadingData ? (
                 <div className="flex items-center justify-center py-10 text-slate-400 gap-2">
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  <span className="text-sm">Đang tải danh sách bác sĩ...</span>
+                  <span className="text-sm">Đang tải dữ liệu...</span>
                 </div>
               ) : filteredDoctors.length === 0 ? (
                 <p className="text-center text-sm text-slate-400 py-10">
                   Không tìm thấy bác sĩ nào.
                 </p>
               ) : (
-                filteredDoctors.map((d) => (
-                  <button
-                    key={d.doctorId}
-                    onClick={() => setSelectedDoctor(d)}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition text-left"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold shrink-0">
-                      {d.fullName?.charAt(0)?.toUpperCase() ?? "?"}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-slate-800 truncate">
-                        {d.fullName}
-                      </p>
-                      {d.specialty && (
-                        <p className="text-xs text-slate-500 truncate">{d.specialty}</p>
+                filteredDoctors.map((d) => {
+                  const isChecked = selection.has(d.doctorId);
+                  const roomId = selection.get(d.doctorId) ?? "";
+                  return (
+                    <div
+                      key={d.doctorId}
+                      className={`rounded-xl border transition ${
+                        isChecked
+                          ? "border-blue-400 bg-blue-50/50"
+                          : "border-slate-200"
+                      }`}
+                    >
+                      <label className="w-full flex items-center gap-3 px-4 py-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => toggleDoctor(d.doctorId)}
+                          className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 shrink-0"
+                        />
+                        <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold shrink-0 text-sm">
+                          {d.fullName?.charAt(0)?.toUpperCase() ?? "?"}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-slate-800 truncate">
+                            {d.fullName}
+                          </p>
+                          {d.specialty && (
+                            <p className="text-xs text-slate-500 truncate">{d.specialty}</p>
+                          )}
+                        </div>
+                      </label>
+
+                      {isChecked && (
+                        <div className="px-4 pb-3 pl-16">
+                          <div className="relative">
+                            <DoorOpen className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                            <select
+                              value={roomId}
+                              onChange={(e) => setDoctorRoom(d.doctorId, e.target.value)}
+                              className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500 text-slate-700"
+                            >
+                              {rooms.length === 0 ? (
+                                <option value="">Không có phòng nào</option>
+                              ) : (
+                                rooms.map((r) => (
+                                  <option key={r.roomId} value={r.roomId}>
+                                    {r.roomName} ({r.roomType})
+                                  </option>
+                                ))
+                              )}
+                            </select>
+                          </div>
+                        </div>
                       )}
                     </div>
-                  </button>
-                ))
+                  );
+                })
               )}
+            </div>
+
+            {selection.size > 0 && (
+              <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-700">
+                Đã chọn <span className="font-bold">{selection.size}</span> bác sĩ
+              </div>
+            )}
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                onClick={onClose}
+                className="px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleGoToStep2}
+                disabled={selection.size === 0}
+                className="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition disabled:opacity-50"
+              >
+                Tiếp tục
+              </button>
             </div>
           </div>
         )}
 
-        {/* ── Bước 2: form tạo lịch ── */}
-        {selectedDoctor && (
+        {/* ── Bước 2 ── */}
+        {step === 2 && (
           <div className="p-6 space-y-6">
 
             {/* Result summary */}
             {result && (
               <div className="space-y-3">
-                {result.created.length > 0 && (
-                  <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-                    <p className="text-sm font-semibold text-emerald-700 flex items-center gap-2 mb-2">
-                      <CheckCircle2 className="w-4 h-4" />
-                      Đã tạo {result.created.length} lịch trực
-                    </p>
-                    <div className="space-y-1 max-h-[200px] overflow-y-auto">
-                      {result.created.map((c) => (
-                        <p key={c.scheduleId} className="text-xs text-emerald-700">
-                          {new Date(c.workDate).toLocaleDateString("vi-VN")} —{" "}
-                          {SHIFT_OPTIONS.find((s) => s.value === c.shiftType)?.label}
-                          {" · "}{c.slotCount} slot
-                        </p>
-                      ))}
+                <div className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 flex items-center gap-4">
+                  <span className="flex items-center gap-1.5 text-emerald-700 font-semibold">
+                    <CheckCircle2 className="w-4 h-4" /> {result.totalCreated} đã tạo
+                  </span>
+                  <span className="flex items-center gap-1.5 text-amber-700 font-semibold">
+                    <AlertCircle className="w-4 h-4" /> {result.totalSkipped} bị bỏ qua
+                  </span>
+                </div>
+
+                <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+                  {result.results.map((r) => (
+                    <div key={r.doctorId} className="border border-slate-200 rounded-xl p-3">
+                      <p className="text-sm font-bold text-slate-800 mb-2">{r.doctorName}</p>
+
+                      {r.created.length > 0 && (
+                        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-2">
+                          <p className="text-xs font-semibold text-emerald-700 mb-1.5">
+                            Đã tạo {r.created.length} lịch trực
+                          </p>
+                          <div className="space-y-1 max-h-[140px] overflow-y-auto">
+                            {r.created.map((c) => (
+                              <p key={c.scheduleId} className="text-xs text-emerald-700">
+                                {new Date(c.workDate).toLocaleDateString("vi-VN")} —{" "}
+                                {shiftOptions.find((s) => s.value === c.shiftType)?.label ??
+                                  SHIFT_LABELS[c.shiftType]}
+                                {" · "}{c.slotCount} slot
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {r.skipped.length > 0 && (
+                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                          <p className="text-xs font-semibold text-amber-700 mb-1.5">
+                            Bỏ qua {r.skipped.length} ca
+                          </p>
+                          <div className="space-y-1 max-h-[140px] overflow-y-auto">
+                            {r.skipped.map((s, i) => (
+                              <p key={i} className="text-xs text-amber-700">
+                                {new Date(s.workDate).toLocaleDateString("vi-VN")} —{" "}
+                                {shiftOptions.find((x) => x.value === s.shiftType)?.label ??
+                                  SHIFT_LABELS[s.shiftType]}
+                                {" · "}{s.reason}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {r.created.length === 0 && r.skipped.length === 0 && (
+                        <p className="text-xs text-slate-400">Không có thay đổi nào.</p>
+                      )}
                     </div>
-                  </div>
-                )}
-                {result.skipped.length > 0 && (
-                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                    <p className="text-sm font-semibold text-amber-700 flex items-center gap-2 mb-2">
-                      <AlertCircle className="w-4 h-4" />
-                      Đã tồn tại {result.skipped.length} ca trực, không thể tạo
-                    </p>
-                    <div className="space-y-1 max-h-[200px] overflow-y-auto">
-                      {result.skipped.map((s, i) => (
-                        <p key={i} className="text-xs text-amber-700">
-                          {new Date(s.workDate).toLocaleDateString("vi-VN")} —{" "}
-                          {SHIFT_OPTIONS.find((x) => x.value === s.shiftType)?.label}
-                          {" · "}{s.reason}
-                        </p>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                  ))}
+                </div>
+
                 <div className="flex items-center gap-2 pt-2">
                   <button
-                    onClick={handleBackToDoctorSelect}
+                    onClick={handleReset}
                     className="flex-1 px-4 py-2.5 text-slate-700 font-medium rounded-xl border border-slate-200 hover:bg-slate-50 transition"
                   >
-                    Tạo lịch cho bác sĩ khác
+                    Tạo lịch hàng loạt khác
                   </button>
                   <button
                     onClick={onClose}
@@ -336,11 +532,55 @@ export default function CreateScheduleModal({
             {/* Form */}
             {!result && (
               <>
-                {/* Calendar */}
+                {/* Recap doctor đã chọn */}
                 <div>
                   <label className="text-sm font-semibold text-slate-600 mb-2 block">
-                    Chọn ngày làm việc ({selectedDates.size} ngày đã chọn)
+                    Bác sĩ đã chọn ({selectedDoctors.length})
                   </label>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedDoctors.map((d) => (
+                      <div
+                        key={d.doctorId}
+                        className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-full pl-3 pr-1.5 py-1.5"
+                      >
+                        <span className="text-xs font-medium text-slate-700">
+                          {d.fullName}
+                        </span>
+                        <span className="text-[11px] text-slate-400">
+                          · {roomName(selection.get(d.doctorId) ?? "")}
+                        </span>
+                        <button
+                          onClick={() => removeDoctor(d.doctorId)}
+                          className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition"
+                          title="Bỏ bác sĩ này"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Calendar */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-sm font-semibold text-slate-600">
+                      Chọn ngày làm việc ({selectedDates.size} ngày đã chọn)
+                    </label>
+                    <button
+                      onClick={handleSelectAllMonth}
+                      className={`
+                        flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition
+                        ${isAllMonthSelected 
+                          ? "bg-blue-100 text-blue-700 hover:bg-blue-200" 
+                          : "bg-slate-100 text-slate-600 hover:bg-slate-200"}
+                      `}
+                    >
+                      <CalendarPlus className="w-3.5 h-3.5" />
+                      {isAllMonthSelected ? "Bỏ chọn cả tháng" : "Chọn cả tháng"}
+                    </button>
+                  </div>
+
                   <div className="border border-slate-200 rounded-xl p-4">
                     <div className="flex items-center justify-between mb-3">
                       <button
@@ -396,71 +636,53 @@ export default function CreateScheduleModal({
                   </div>
                 </div>
 
-                {/* Multi-select Ca */}
+                {/* Multi-select ca */}
                 <div>
                   <label className="text-sm font-semibold text-slate-600 mb-2 block">
                     Chọn ca làm việc ({selectedShifts.size} ca đã chọn)
                   </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    {SHIFT_OPTIONS.map((s) => {
-                      const isSelected = selectedShifts.has(s.value);
-                      return (
-                        <button
-                          key={s.value}
-                          onClick={() => toggleShift(s.value)}
-                          className={`
-                            px-4 py-3 rounded-xl border text-sm font-medium transition-all text-left
-                            ${isSelected
-                              ? "bg-blue-50 border-blue-400 text-blue-700 ring-1 ring-blue-400"
-                              : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"}
-                          `}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span>{s.label}</span>
-                            {isSelected && <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
+                  {loadingShifts ? (
+                    <div className="flex items-center justify-center py-6 text-slate-400 gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span className="text-sm">Đang tải khung giờ ca làm việc...</span>
+                    </div>
+                  ) : shiftOptions.length === 0 ? (
+                    <p className="text-center text-sm text-slate-400 py-6">
+                      Không có ca làm việc nào khả dụng.
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      {shiftOptions.map((s) => {
+                        const isSelected = selectedShifts.has(s.value);
+                        return (
+                          <button
+                            key={s.value}
+                            onClick={() => toggleShift(s.value)}
+                            className={`
+                              px-4 py-3 rounded-xl border text-sm font-medium transition-all text-left
+                              ${isSelected
+                                ? "bg-blue-50 border-blue-400 text-blue-700 ring-1 ring-blue-400"
+                                : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"}
+                            `}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span>{s.label}</span>
+                              {isSelected && <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 {/* Summary tổ hợp */}
                 {totalCombinations > 0 && (
                   <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-700">
                     Sẽ tạo <span className="font-bold">{totalCombinations}</span> lịch trực
-                    {" "}cho <span className="font-bold">{selectedDoctor.fullName}</span>
-                    {" "}({selectedDates.size} ngày × {selectedShifts.size} ca)
+                    {" "}({selection.size} bác sĩ × {selectedDates.size} ngày × {selectedShifts.size} ca)
                   </div>
                 )}
-
-                {/* Room */}
-                <div>
-                  <label className="text-sm font-semibold text-slate-600 mb-1.5 block">
-                    Phòng khám
-                  </label>
-                  <div className="relative">
-                    <DoorOpen className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <select
-                      value={roomId}
-                      onChange={(e) => setRoomId(e.target.value)}
-                      disabled={loadingRooms}
-                      className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-slate-700 disabled:opacity-50"
-                    >
-                      {loadingRooms ? (
-                        <option>Đang tải...</option>
-                      ) : rooms.length === 0 ? (
-                        <option>Không có phòng nào</option>
-                      ) : (
-                        rooms.map((r) => (
-                          <option key={r.roomId} value={r.roomId}>
-                            {r.roomName} ({r.roomType})
-                          </option>
-                        ))
-                      )}
-                    </select>
-                  </div>
-                </div>
 
                 {error && (
                   <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">

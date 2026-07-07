@@ -397,6 +397,8 @@ export default function RealShiftTimeSchedulerPage() {
                             const diffInMinutes = (currentTime.getTime() - slotStartTime.getTime()) / (1000 * 60);
                             const todayStr = getLocalCurrentDateString();
                             const isPastDate = dateFilter < todayStr;
+
+                            // 🌟 SỬA: Nếu slot đã qua giờ (quá 30 phút) thì chuyển thành BLOCKED
                             const isExpired = slot.status === SlotStatus.AVAILABLE && (isPastDate || diffInMinutes >= 30);
                             const effectiveStatus = isExpired ? SlotStatus.BLOCKED : slot.status;
 
@@ -431,26 +433,16 @@ export default function RealShiftTimeSchedulerPage() {
                                 )}
 
                                 {effectiveStatus === SlotStatus.BLOCKED && (
-                                  isExpired ? (
-                                    // Hết giờ — không thể thao tác
-                                    <div
-                                      className="w-full min-h-[44px] p-1 rounded-xl bg-slate-50 border border-slate-200 text-center flex flex-col items-center justify-center select-none cursor-not-allowed"
-                                      title="Slot đã hết giờ đăng ký"
-                                    >
-                                      <Ban className="h-3 w-3 text-slate-300" />
-                                      <span className="text-[9px] font-bold text-slate-400 mt-0.5">Hết giờ</span>
-                                    </div>
-                                  ) : (
-                                    // Bị khóa thủ công — lễ tân có thể mở lại
-                                    <div
-                                      onClick={() => handleToggleSlot(row.doctorId, slot.id, false)}
-                                      title="Bấm để mở lại slot này"
-                                      className="w-full min-h-[44px] p-1 rounded-xl bg-rose-50 border border-rose-200 hover:bg-rose-100 text-center flex flex-col items-center justify-center select-none cursor-pointer transition-colors"
-                                    >
-                                      <Ban className="h-3 w-3 text-rose-400" />
-                                      <span className="text-[9px] font-bold text-rose-500 mt-0.5">Khóa</span>
-                                    </div>
-                                  )
+                                  // 🌟 SỬA: Tất cả BLOCKED đều hiển thị như nhau và không thể thao tác
+                                  <div
+                                    className="w-full min-h-[44px] p-1 rounded-xl bg-rose-50 border border-rose-200 text-center flex flex-col items-center justify-center select-none cursor-not-allowed"
+                                    title={isExpired ? "Slot đã hết giờ đăng ký" : "Slot đã bị khóa"}
+                                  >
+                                    <Ban className="h-3 w-3 text-rose-400" />
+                                    <span className="text-[9px] font-bold text-rose-500 mt-0.5">
+                                      {isExpired ? "Hết giờ" : "Khóa"}
+                                    </span>
+                                  </div>
                                 )}
                               </td>
                             )

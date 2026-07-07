@@ -111,6 +111,38 @@ export interface DeleteDoctorScheduleResponse {
   deletedAt: string;
 }
 
+export interface ShiftRangeItem {
+  shiftType: ShiftType;
+  startTime: string; // "HH:mm:ss"
+  endTime: string;   // "HH:mm:ss"
+}
+
+// ── Batch Create Schedule ──
+
+export interface DoctorRoomAssignment {
+  doctorId: string;
+  roomId: string;
+}
+
+export interface BatchCreateDoctorScheduleRequest {
+  assignments: DoctorRoomAssignment[];
+  workDates: string[];
+  shiftTypes: string[];
+}
+
+export interface DoctorBatchResult {
+  doctorId: string;
+  doctorName: string;
+  created: CreatedScheduleItem[];
+  skipped: SkippedScheduleItem[];
+}
+
+export interface BatchCreateDoctorScheduleResponse {
+  results: DoctorBatchResult[];
+  totalCreated: number;
+  totalSkipped: number;
+}
+
 class DoctorScheduleService {
   // ── Doctor xem lịch của chính mình ──
   async getPersonalSchedule(
@@ -140,6 +172,13 @@ class DoctorScheduleService {
     return response.data;
   }
 
+  async getShiftRanges(): Promise<ApiResponse<ShiftRangeItem[]>> {
+    const response = await apiClient.get<ApiResponse<ShiftRangeItem[]>>(
+      `/receptionist/clinic/shift-ranges`
+    );
+    return response.data;
+  }
+
   // ── Lễ tân: tạo lịch trực cho doctor đã chọn ──
   async createSchedule(
     doctorId: string,
@@ -148,6 +187,16 @@ class DoctorScheduleService {
     const response = await apiClient.post<
       ApiResponse<CreateDoctorScheduleResponse>
     >(`/receptionist/doctors/${doctorId}/schedule`, payload);
+    return response.data;
+  }
+
+    // ── Lễ tân: tạo lịch trực hàng loạt cho nhiều bác sĩ ──
+  async batchCreateSchedule(
+    payload: BatchCreateDoctorScheduleRequest
+  ): Promise<ApiResponse<BatchCreateDoctorScheduleResponse>> {
+    const response = await apiClient.post<
+      ApiResponse<BatchCreateDoctorScheduleResponse>
+    >(`/receptionist/doctors/schedule/batch`, payload);
     return response.data;
   }
 

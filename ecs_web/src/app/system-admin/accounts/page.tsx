@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   ToggleLeft
 } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { accountService } from "@/services/account.service"
 import type { GetAccountResponse } from "@/services/account.service"
 
@@ -29,6 +30,9 @@ const roleMapping: Record<string, string> = {
 }
 
 export default function SystemAccountsManagementPage() {
+  const t = useTranslations("systemAdmin.accounts")
+  const tCommon = useTranslations("systemAdmin.common")
+
   const router = useRouter()
   const [accountsList, setAccountsList] = useState<GetAccountResponse[]>([])
   const [loading, setLoading] = useState<boolean>(true)
@@ -109,18 +113,18 @@ export default function SystemAccountsManagementPage() {
       const errCode = err?.response?.data?.codeMessage || err?.codeMessage || err?.data?.codeMessage;
 
       const errorMessages: Record<string, string> = {
-        "APP_MESSAGE_4001": "Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại!",
-        "APP_MESSAGE_4014": "Tài khoản quản trị hệ thống không hợp lệ hoặc không có quyền truy cập vùng dữ liệu này!",
-        "APP_MESSAGE_4015": "Bạn không có quyền thực hiện thao tác này trên hệ thống!",
-        "APP_MESSAGE_4020": "Không tìm thấy thông tin cấu hình gắn liền với tài khoản của bạn!"
+        "APP_MESSAGE_4001": t("sessionExpired"),
+        "APP_MESSAGE_4014": t("invalidAdmin"),
+        "APP_MESSAGE_4015": t("noPermission"),
+        "APP_MESSAGE_4020": t("clinicNotFound")
       };
 
-      const fallbackMessage = "Không thể kết nối tới máy chủ hệ thống hoặc dữ liệu không hợp lệ. Vui lòng thử lại sau!";
+      const fallbackMessage = t("connectionError");
       setError(errorMessages[errCode] || fallbackMessage);
     } finally {
       setLoading(false)
     }
-  }, [pageNumber, pageSize, roleFilter, statusFilter, debouncedSearch]) // BỔ SUNG: Thêm statusFilter vào dependency array
+  }, [pageNumber, pageSize, roleFilter, statusFilter, debouncedSearch, t]) // BỔ SUNG: Thêm statusFilter vào dependency array
 
   // Tự động tải lại dữ liệu khi các tham số thay đổi
   useEffect(() => {
@@ -147,11 +151,11 @@ export default function SystemAccountsManagementPage() {
       const errCode = err?.response?.data?.codeMessage || err?.codeMessage || err?.data?.codeMessage;
 
       const errorMessages: Record<string, string> = {
-        "APP_MESSAGE_4015": "Bạn không có quyền thay đổi trạng thái tài khoản này!",
-        "APP_MESSAGE_4020": "Không tìm thấy thông tin tài khoản đích cần xử lý trên hệ thống!"
+        "APP_MESSAGE_4015": t("permissionDenied"),
+        "APP_MESSAGE_4020": t("accountNotFound")
       };
 
-      alert(errorMessages[errCode] || "Cập nhật trạng thái tài khoản thất bại. Vui lòng thử lại!");
+      alert(errorMessages[errCode] || t("updateFailed"));
     } finally {
       setUpdatingId(null)
     }
@@ -169,10 +173,10 @@ export default function SystemAccountsManagementPage() {
         <div>
           <h2 className="text-headline-md font-bold text-on-surface flex items-center gap-2">
             <Users className="h-6 w-6 text-primary shrink-0" />
-            Danh sách tài khoản hệ thống
+            {t("listTitle")}
           </h2>
           <p className="text-body-md text-on-surface-variant">
-            Quản lý phân quyền, trạng thái hoạt động và thông tin nhân sự toàn hệ thống
+            {t("listSubtitle")}
           </p>
         </div>
 
@@ -182,13 +186,13 @@ export default function SystemAccountsManagementPage() {
             href="/system-admin/accounts/clinic-admin"
             className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-primary/10 text-primary border border-primary/20 rounded-xl hover:bg-primary/20 transition-all text-label-md font-semibold whitespace-nowrap"
           >
-            <Plus className="h-4 w-4" /> Thêm Clinic Admin
+            <Plus className="h-4 w-4" /> {t("addClinicAdmin")}
           </Link>
           <Link
             href="/system-admin/accounts/create"
             className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-primary text-on-primary rounded-xl hover:opacity-90 transition-all text-label-md font-semibold shadow-sm whitespace-nowrap"
           >
-            <Plus className="h-4 w-4" /> Thêm tài khoản
+            <Plus className="h-4 w-4" /> {t("addAccount")}
           </Link>
         </div>
       </div>
@@ -199,7 +203,7 @@ export default function SystemAccountsManagementPage() {
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-on-surface-variant" />
           <input
             type="text"
-            placeholder="Tìm kiếm theo họ tên, số điện thoại..."
+            placeholder={t("searchPlaceholder")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-body-md placeholder:text-on-surface-variant/60 focus:outline-none focus:border-primary transition-colors"
@@ -211,7 +215,7 @@ export default function SystemAccountsManagementPage() {
           {/* Lọc theo Vai Trò */}
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <span className="flex items-center gap-1 text-label-md font-medium text-on-surface-variant shrink-0">
-              <Filter className="h-4 w-4" /> Vai trò:
+              <Filter className="h-4 w-4" /> {t("role")}:
             </span>
             <select
               value={roleFilter}
@@ -221,30 +225,30 @@ export default function SystemAccountsManagementPage() {
               }}
               className="w-full sm:w-40 px-3 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors cursor-pointer font-medium"
             >
-              <option value="all">Tất cả</option>
-              <option value="SYSTEM_ADMIN">System Admin</option>
-              <option value="CLINIC_ADMIN">Clinic Admin</option>
-              <option value="DOCTOR">Bác sĩ</option>
-              <option value="RECEPTIONIST">Tiếp tân</option>
+              <option value="all">{t("allRoles")}</option>
+              <option value="SYSTEM_ADMIN">{tCommon("systemAdmin")}</option>
+              <option value="CLINIC_ADMIN">{tCommon("clinicAdmin")}</option>
+              <option value="DOCTOR">{tCommon("doctor")}</option>
+              <option value="RECEPTIONIST">{tCommon("receptionist")}</option>
             </select>
           </div>
 
           {/* BỔ SUNG: Bộ Lọc theo Trạng Thái Hoạt Động */}
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <span className="flex items-center gap-1 text-label-md font-medium text-on-surface-variant shrink-0">
-              <ToggleLeft className="h-4 w-4" /> Trạng thái:
+              <ToggleLeft className="h-4 w-4" /> {t("isActive")}:
             </span>
             <select
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value)
-                setPageNumber(1) // Reset về trang 1 khi đổi bộ lọc
+                setPageNumber(1)
               }}
               className="w-full sm:w-40 px-3 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors cursor-pointer font-medium"
             >
-              <option value="all">Tất cả trạng thái</option>
-              <option value="active">Hoạt động</option>
-              <option value="locked">Đang bị khóa</option>
+              <option value="all">{t("allStatuses")}</option>
+              <option value="active">{t("statusActive")}</option>
+              <option value="locked">{t("statusLocked")}</option>
             </select>
           </div>
         </div>
@@ -254,7 +258,7 @@ export default function SystemAccountsManagementPage() {
       {loading && (
         <div className="flex justify-center items-center py-12 bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-sm">
           <p className="text-body-md text-on-surface-variant animate-pulse">
-            Đang tải danh sách tài khoản từ máy chủ hệ thống...
+            {t("loadingData")}
           </p>
         </div>
       )}
@@ -275,19 +279,19 @@ export default function SystemAccountsManagementPage() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-surface-container-low border-b border-outline-variant text-label-md text-on-surface-variant font-medium">
-                    <th className="p-4">Họ và tên</th>
-                    <th className="p-4">Số điện thoại / Email</th>
-                    <th className="p-4">Vai trò quản trị</th>
-                    <th className="p-4">Ngày khởi tạo</th>
-                    <th className="p-4 text-center">Trạng thái</th>
-                    <th className="p-4 text-center">Thao tác</th>
+                    <th className="p-4">{t("fullName")}</th>
+                    <th className="p-4">{t("phoneEmail")}</th>
+                    <th className="p-4">{t("roleAdmin")}</th>
+                    <th className="p-4">{t("createdAt")}</th>
+                    <th className="p-4 text-center">{t("isActive")}</th>
+                    <th className="p-4 text-center">{t("actions")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant text-body-md text-on-surface">
                   {accountsList.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="p-12 text-center text-on-surface-variant">
-                        Không tìm thấy tài khoản nào khớp với điều kiện tìm kiếm.
+                        {t("noResults")}
                       </td>
                     </tr>
                   ) : (
@@ -336,7 +340,7 @@ export default function SystemAccountsManagementPage() {
                             </button>
                             <span className={`text-[11px] font-bold tracking-wide uppercase ${account.isActive ? "text-emerald-600" : "text-neutral-500"
                               }`}>
-                              {account.isActive ? "Hoạt động" : "Khóa"}
+                              {account.isActive ? t("statusActive") : t("statusLocked")}
                             </span>
                           </div>
                         </td>
@@ -346,7 +350,7 @@ export default function SystemAccountsManagementPage() {
                             onClick={() => handleEditRedirect(account)}
                             className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 border border-outline-variant rounded-xl text-label-sm text-primary font-medium bg-surface-container-lowest hover:bg-primary/5 transition-colors shadow-sm cursor-pointer"
                           >
-                            <Pencil className="h-3.5 w-3.5" /> Sửa
+                            <Pencil className="h-3.5 w-3.5" /> {tCommon("edit")}
                           </button>
                         </td>
                       </tr>
@@ -361,9 +365,11 @@ export default function SystemAccountsManagementPage() {
           {meta.total > 0 && (
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-surface-container-low px-4 py-3 border border-outline-variant rounded-2xl shadow-sm text-label-md text-on-surface-variant">
               <div>
-                Hiển thị dòng <span className="font-semibold text-on-surface">{Math.min((meta.page - 1) * meta.size + 1, meta.total)}</span> đến{" "}
-                <span className="font-semibold text-on-surface">{Math.min(meta.page * meta.size, meta.total)}</span> trên tổng số{" "}
-                <span className="font-semibold text-on-surface">{meta.total}</span> tài khoản.
+                {t("showingRows", { 
+                  from: Math.min((meta.page - 1) * meta.size + 1, meta.total), 
+                  to: Math.min(meta.page * meta.size, meta.total), 
+                  total: meta.total 
+                })}
               </div>
               <div className="flex items-center gap-2">
                 <select
@@ -374,16 +380,16 @@ export default function SystemAccountsManagementPage() {
                   }}
                   className="bg-surface-container-lowest border border-outline-variant text-on-surface px-2 py-1.5 rounded-lg text-label-md focus:outline-none cursor-pointer mr-2 font-medium"
                 >
-                  <option value={5}>5 dòng / trang</option>
-                  <option value={10}>10 dòng / trang</option>
-                  <option value={20}>20 dòng / trang</option>
-                  <option value={50}>50 dòng / trang</option>
+                  <option value={5}>5 {t("rowsPerPage")}</option>
+                  <option value={10}>10 {t("rowsPerPage")}</option>
+                  <option value={20}>20 {t("rowsPerPage")}</option>
+                  <option value={50}>50 {t("rowsPerPage")}</option>
                 </select>
                 <button
                   disabled={!meta.hasPrevious || loading}
                   onClick={() => setPageNumber(prev => Math.max(prev - 1, 1))}
                   className="inline-flex items-center justify-center p-2 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-surface-container-lowest transition-colors"
-                  title="Trang trước"
+                  title={t("previousPage")}
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
@@ -394,7 +400,7 @@ export default function SystemAccountsManagementPage() {
                   disabled={!meta.hasNext || loading}
                   onClick={() => setPageNumber(prev => Math.min(prev + 1, meta.totalPages))}
                   className="inline-flex items-center justify-center p-2 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-surface-container-lowest transition-colors"
-                  title="Trang kế tiếp"
+                  title={t("nextPage")}
                 >
                   <ChevronRight className="h-4 w-4" />
                 </button>

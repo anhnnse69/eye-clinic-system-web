@@ -1,0 +1,14 @@
+{
+  "feedback": {
+    "title": "Phản hồi",
+    "submit": "Gửi đánh giá",
+    "rating": "Đánh giá",
+    "comment": "Bình luận",
+    "submitSuccess": "Gửi phản hồi thành công",
+    "listTitle": "Danh sách phản hồi",
+    "patient": "Bệnh nhân",
+    "doctor": "Bác sĩ",
+    "date": "Ngày",
+    "noFeedback": "Chưa có phản hồi nào"
+  }
+}

@@ -3,6 +3,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import {
   Search,
   RefreshCw,
@@ -21,16 +22,6 @@ import type {
 } from "@/types";
 
 const PAGE_SIZE = 10;
-
-const STATUS_OPTIONS: { value: string; label: string }[] = [
-  { value: "", label: "Tất cả trạng thái" },
-  { value: "SCHEDULED", label: "Đã lên lịch" },
-  { value: "CHECKED_IN", label: "Đã check-in" },
-  { value: "IN_PROGRESS", label: "Đang khám" },
-  { value: "COMPLETED", label: "Hoàn thành" },
-  { value: "CANCELLED", label: "Đã hủy" },
-  { value: "NO_SHOW", label: "Không đến" },
-];
 
 function getStatusBadgeClass(status: string): string {
   switch (status) {
@@ -51,15 +42,6 @@ function getStatusBadgeClass(status: string): string {
   }
 }
 
-const STATUS_LABEL_VI: Record<string, string> = {
-  SCHEDULED: "Đã lên lịch",
-  CHECKED_IN: "Đã check-in",
-  IN_PROGRESS: "Đang khám",
-  COMPLETED: "Hoàn thành",
-  CANCELLED: "Đã hủy",
-  NO_SHOW: "Không đến",
-};
-
 function Avatar({ name, url }: { name: string; url?: string }) {
   return (
     <div className="w-8 h-8 rounded-full bg-blue-100 shrink-0 overflow-hidden flex items-center justify-center font-bold text-blue-600 text-sm">
@@ -73,11 +55,32 @@ function Avatar({ name, url }: { name: string; url?: string }) {
 }
 
 export default function DoctorPatientListClient() {
+  const t = useTranslations("doctor.patient")
+
   const [data, setData] = useState<ViewListPatientResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string>("");
+
+  const STATUS_OPTIONS = [
+    { value: "", label: t("allStatuses") },
+    { value: "SCHEDULED", label: t("statusOptions.scheduled") },
+    { value: "CHECKED_IN", label: t("statusOptions.checkedIn") },
+    { value: "IN_PROGRESS", label: t("statusOptions.inProgress") },
+    { value: "COMPLETED", label: t("statusOptions.completed") },
+    { value: "CANCELLED", label: t("statusOptions.cancelled") },
+    { value: "NO_SHOW", label: t("statusOptions.noShow") },
+  ];
+
+  const STATUS_LABELS: Record<string, string> = {
+    SCHEDULED: t("statusOptions.scheduled"),
+    CHECKED_IN: t("statusOptions.checkedIn"),
+    IN_PROGRESS: t("statusOptions.inProgress"),
+    COMPLETED: t("statusOptions.completed"),
+    CANCELLED: t("statusOptions.cancelled"),
+    NO_SHOW: t("statusOptions.noShow"),
+  };
 
   const loadPatients = useCallback(async () => {
     setLoading(true);
@@ -95,14 +98,14 @@ export default function DoctorPatientListClient() {
       if (json?.data) {
         setData(json.data);
       } else {
-        setError("Không thể tải danh sách bệnh nhân");
+        setError(t("error.loadFailed"));
       }
     } catch {
-      setError("Không thể tải danh sách bệnh nhân");
+      setError(t("error.loadFailed"));
     } finally {
       setLoading(false);
     }
-  }, [page, statusFilter]);
+  }, [page, statusFilter, t]);
 
   useEffect(() => {
     loadPatients();
@@ -114,10 +117,10 @@ export default function DoctorPatientListClient() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-gray-100">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-            Danh Sách Bệnh Nhân
+            {t("listTitle")}
           </h1>
           <p className="text-gray-500 mt-1 text-sm">
-            Xem và tìm kiếm danh sách bệnh nhân đã đặt lịch với bạn
+            {t("listSubtitle")}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -127,7 +130,7 @@ export default function DoctorPatientListClient() {
             className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-100 active:scale-95 transition-all disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-            Làm mới
+            {t("refresh") || "Refresh"}
           </button>
         </div>
       </div>
@@ -162,7 +165,7 @@ export default function DoctorPatientListClient() {
             onClick={loadPatients}
             className="px-5 py-2 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition active:scale-95 shadow-sm"
           >
-            Thử lại
+            {t("retry")}
           </button>
         </div>
       ) : (
@@ -171,11 +174,11 @@ export default function DoctorPatientListClient() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50/70 border-b border-gray-100 text-gray-500 text-xs font-bold uppercase tracking-wider">
-                  <th className="p-4 pl-6">Bệnh nhân</th>
-                  <th className="p-4">Số điện thoại</th>
-                  <th className="p-4">Ngày hẹn</th>
-                  <th className="p-4">Trạng thái</th>
-                  <th className="p-4">Thao tác</th>
+                  <th className="p-4 pl-6">{t("patient")}</th>
+                  <th className="p-4">{t("phoneNumber")}</th>
+                  <th className="p-4">{t("appointmentDate")}</th>
+                  <th className="p-4">{t("status")}</th>
+                  <th className="p-4">{t("actions")}</th>
                 </tr>
               </thead>
 
@@ -196,14 +199,19 @@ export default function DoctorPatientListClient() {
                   ))
                 ) : data && data.patients.length > 0 ? (
                   data.patients.map((p) => (
-                    <PatientRow key={p.appointmentId} patient={p} />
+                    <PatientRow 
+                      key={p.appointmentId} 
+                      patient={p} 
+                      t={t}
+                      statusLabels={STATUS_LABELS}
+                    />
                   ))
                 ) : (
                   <tr>
                     <td colSpan={5} className="text-center py-16">
                       <div className="flex flex-col items-center gap-3 text-gray-400">
                         <Users className="w-10 h-10" />
-                        <p className="font-medium">Chưa có bệnh nhân nào</p>
+                        <p className="font-medium">{t("noPatients")}</p>
                       </div>
                     </td>
                   </tr>
@@ -216,13 +224,13 @@ export default function DoctorPatientListClient() {
           {data && data.totalPages > 1 && (
             <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-t border-gray-100">
               <p className="text-xs sm:text-sm text-gray-500 font-medium">
-                Trang{" "}
+                {t("page")}{" "}
                 <span className="font-bold text-gray-800">{data.pageNumber}</span>
                 {" / "}
                 <span className="font-bold text-gray-800">{data.totalPages}</span>
-                {" "}(Tổng{" "}
+                {" ("}{t("total")}{" "}
                 <span className="font-bold text-gray-800">{data.totalRecords}</span>
-                {" "}bệnh nhân)
+                {" "}{t("patients")})
               </p>
               <div className="flex items-center gap-2">
                 <button
@@ -248,7 +256,15 @@ export default function DoctorPatientListClient() {
   );
 }
 
-function PatientRow({ patient }: { patient: PatientAppointmentItem }) {
+function PatientRow({ 
+  patient, 
+  t,
+  statusLabels 
+}: { 
+  patient: PatientAppointmentItem;
+  t: ReturnType<typeof useTranslations<string>>;
+  statusLabels: Record<string, string>;
+}) {
   return (
     <tr className="hover:bg-gray-50/50 transition-colors">
       <td className="p-4 pl-6">
@@ -274,7 +290,7 @@ function PatientRow({ patient }: { patient: PatientAppointmentItem }) {
       <td className="p-4">
         <div className="flex items-center gap-1.5 font-medium text-gray-900">
           <CalendarDays className="w-3.5 h-3.5 text-gray-400" />
-          {new Date(patient.appointmentDate).toLocaleString("vi-VN", {
+          {new Date(patient.appointmentDate).toLocaleString(undefined, {
             dateStyle: "medium",
             timeStyle: "short",
           })}
@@ -285,7 +301,7 @@ function PatientRow({ patient }: { patient: PatientAppointmentItem }) {
         <span
           className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusBadgeClass(patient.status)}`}
         >
-          {STATUS_LABEL_VI[patient.status] ?? patient.status}
+          {statusLabels[patient.status] ?? patient.status}
         </span>
       </td>
 
@@ -295,7 +311,7 @@ function PatientRow({ patient }: { patient: PatientAppointmentItem }) {
           className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-lg transition-colors"
         >
           <Eye className="w-3.5 h-3.5" />
-          Xem chi tiết
+          {t("viewDetails")}
         </Link>
       </td>
     </tr>

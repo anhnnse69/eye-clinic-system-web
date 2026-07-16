@@ -88,11 +88,21 @@ export default function PatientDemographicsClient({
   // ── Medical Demographics form state ────────────────────────────────
   const [showMedicalForm, setShowMedicalForm] = useState(false);
   const [medicalFormData, setMedicalFormData] = useState({
+    // Administrative Info (pre-filled from PatientProfile, editable by doctor)
+    fullName: "",
+    dateOfBirth: "",
+    gender: "",
+    phoneNumber: "",
+    identityNumber: "",
+    bhytNumber: "",
+    address: "",
+    // Medical Background Section
     bloodType: "",
     allergies: "",
     medicalHistory: "",
     familyHistory: "",
     lifestyleFactors: "",
+    // Ophthalmology-specific fields
     currentEyeMedications: "",
     previousEyeSurgery: "",
     eyeVisionHistory: "",
@@ -197,11 +207,21 @@ export default function PatientDemographicsClient({
     setMedicalFormError(null);
     setMedicalFormSuccess(null);
     setMedicalFormData({
+      // Administrative Info (pre-filled from PatientProfile)
+      fullName: demographics?.fullName || "",
+      dateOfBirth: demographics?.dob || "",
+      gender: demographics?.gender || "",
+      phoneNumber: demographics?.phoneNumber || "",
+      identityNumber: demographics?.identityNumber || "",
+      bhytNumber: demographics?.bhytNumber || "",
+      address: demographics?.address || "",
+      // Medical Background Section
       bloodType: demographics?.bloodType || "",
       allergies: demographics?.allergies || "",
       medicalHistory: demographics?.medicalHistory || "",
       familyHistory: demographics?.familyHistory || "",
       lifestyleFactors: demographics?.lifestyleFactors || "",
+      // Ophthalmology-specific fields
       currentEyeMedications: demographics?.currentEyeMedications || "",
       previousEyeSurgery: demographics?.previousEyeSurgery || "",
       eyeVisionHistory: demographics?.eyeVisionHistory || "",
@@ -211,11 +231,21 @@ export default function PatientDemographicsClient({
   // ── Open form with existing data ────────────────────────────────────
   const handleOpenForm = () => {
     setMedicalFormData({
+      // Administrative Info (pre-filled from PatientProfile)
+      fullName: demographics?.fullName || "",
+      dateOfBirth: demographics?.dob || "",
+      gender: demographics?.gender || "",
+      phoneNumber: demographics?.phoneNumber || "",
+      identityNumber: demographics?.identityNumber || "",
+      bhytNumber: demographics?.bhytNumber || "",
+      address: demographics?.address || "",
+      // Medical Background Section
       bloodType: demographics?.bloodType || "",
       allergies: demographics?.allergies || "",
       medicalHistory: demographics?.medicalHistory || "",
       familyHistory: demographics?.familyHistory || "",
       lifestyleFactors: demographics?.lifestyleFactors || "",
+      // Ophthalmology-specific fields
       currentEyeMedications: demographics?.currentEyeMedications || "",
       previousEyeSurgery: demographics?.previousEyeSurgery || "",
       eyeVisionHistory: demographics?.eyeVisionHistory || "",
@@ -234,11 +264,21 @@ export default function PatientDemographicsClient({
 
       const request: CreatePatientDemographicsRequest = {
         patientProfileId,
+        // === Administrative Info (editable by doctor) ===
+        ...(medicalFormData.fullName.trim() && { fullName: medicalFormData.fullName.trim() }),
+        ...(medicalFormData.dateOfBirth && { dateOfBirth: medicalFormData.dateOfBirth }),
+        ...(medicalFormData.gender && { gender: medicalFormData.gender }),
+        ...(medicalFormData.phoneNumber.trim() && { phoneNumber: medicalFormData.phoneNumber.trim() }),
+        ...(medicalFormData.identityNumber.trim() && { identityNumber: medicalFormData.identityNumber.trim() }),
+        ...(medicalFormData.bhytNumber.trim() && { bhytNumber: medicalFormData.bhytNumber.trim() }),
+        ...(medicalFormData.address.trim() && { address: medicalFormData.address.trim() }),
+        // === Medical Background Section ===
         ...(medicalFormData.bloodType && { bloodType: medicalFormData.bloodType }),
         ...(medicalFormData.allergies.trim() && { allergies: medicalFormData.allergies.trim() }),
         ...(medicalFormData.medicalHistory.trim() && { medicalHistory: medicalFormData.medicalHistory.trim() }),
         ...(medicalFormData.familyHistory.trim() && { familyHistory: medicalFormData.familyHistory.trim() }),
         ...(medicalFormData.lifestyleFactors.trim() && { lifestyleFactors: medicalFormData.lifestyleFactors.trim() }),
+        // === Ophthalmology-specific fields ===
         ...(medicalFormData.currentEyeMedications.trim() && { currentEyeMedications: medicalFormData.currentEyeMedications.trim() }),
         ...(medicalFormData.previousEyeSurgery.trim() && { previousEyeSurgery: medicalFormData.previousEyeSurgery.trim() }),
         ...(medicalFormData.eyeVisionHistory.trim() && { eyeVisionHistory: medicalFormData.eyeVisionHistory.trim() }),
@@ -430,6 +470,152 @@ export default function PatientDemographicsClient({
               >
                 <X className="w-4 h-4" />
               </button>
+            </div>
+
+            {/* Administrative Info Section */}
+            <div className="mb-6 p-4 bg-white rounded-xl border border-gray-200">
+              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
+                <Users className="w-4 h-4 text-gray-500" />
+                Thông tin hành chính (có thể chỉnh sửa)
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Full Name */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-gray-600 flex items-center gap-1">
+                    <User className="w-3 h-3 text-gray-400" />
+                    Họ tên
+                  </label>
+                  <input
+                    type="text"
+                    value={medicalFormData.fullName}
+                    onChange={(e) =>
+                      setMedicalFormData((prev) => ({
+                        ...prev,
+                        fullName: e.target.value,
+                      }))
+                    }
+                    placeholder="VD: Nguyễn Văn A"
+                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
+                  />
+                </div>
+
+                {/* Gender */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-gray-600">
+                    Giới tính
+                  </label>
+                  <select
+                    value={medicalFormData.gender}
+                    onChange={(e) =>
+                      setMedicalFormData((prev) => ({
+                        ...prev,
+                        gender: e.target.value,
+                      }))
+                    }
+                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all cursor-pointer"
+                  >
+                    <option value="">Chưa xác định</option>
+                    <option value="MALE">Nam</option>
+                    <option value="FEMALE">Nữ</option>
+                  </select>
+                </div>
+
+                {/* Date of Birth */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-gray-600 flex items-center gap-1">
+                    <Calendar className="w-3 h-3 text-gray-400" />
+                    Ngày sinh
+                  </label>
+                  <input
+                    type="date"
+                    value={medicalFormData.dateOfBirth}
+                    onChange={(e) =>
+                      setMedicalFormData((prev) => ({
+                        ...prev,
+                        dateOfBirth: e.target.value,
+                      }))
+                    }
+                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
+                  />
+                </div>
+
+                {/* Phone Number */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-gray-600 flex items-center gap-1">
+                    <Phone className="w-3 h-3 text-gray-400" />
+                    Số điện thoại
+                  </label>
+                  <input
+                    type="text"
+                    value={medicalFormData.phoneNumber}
+                    onChange={(e) =>
+                      setMedicalFormData((prev) => ({
+                        ...prev,
+                        phoneNumber: e.target.value,
+                      }))
+                    }
+                    placeholder="VD: 0901234567"
+                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
+                  />
+                </div>
+
+                {/* Identity Number */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-gray-600">
+                    CCCD/CMND
+                  </label>
+                  <input
+                    type="text"
+                    value={medicalFormData.identityNumber}
+                    onChange={(e) =>
+                      setMedicalFormData((prev) => ({
+                        ...prev,
+                        identityNumber: e.target.value,
+                      }))
+                    }
+                    placeholder="VD: 012345678901"
+                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
+                  />
+                </div>
+
+                {/* BHYT Number */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-gray-600">
+                    Mã BHYT
+                  </label>
+                  <input
+                    type="text"
+                    value={medicalFormData.bhytNumber}
+                    onChange={(e) =>
+                      setMedicalFormData((prev) => ({
+                        ...prev,
+                        bhytNumber: e.target.value,
+                      }))
+                    }
+                    placeholder="VD: DN1234567890123"
+                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
+                  />
+                </div>
+
+                {/* Address */}
+                <div className="space-y-1.5 md:col-span-2">
+                  <label className="text-xs font-medium text-gray-600">
+                    Địa chỉ
+                  </label>
+                  <input
+                    type="text"
+                    value={medicalFormData.address}
+                    onChange={(e) =>
+                      setMedicalFormData((prev) => ({
+                        ...prev,
+                        address: e.target.value,
+                      }))
+                    }
+                    placeholder="VD: 123 Đường ABC, Phường X, Quận Y, TP HCM"
+                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Medical Background Section */}

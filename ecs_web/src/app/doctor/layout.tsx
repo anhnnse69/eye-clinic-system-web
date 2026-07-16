@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation"
+import { getTranslations } from "next-intl/server"
 import { Sidebar, type NavSection } from "@/components/layout/Sidebar"
 import DashboardHeader from "@/components/layout/DashboardHeader"
 import { authService } from "@/services/auth.service"
@@ -26,54 +27,56 @@ export default async function DoctorLayout({ children }: { children: React.React
     redirect("/login")
   }
 
+  const t = await getTranslations("doctor")
+  const tNav = await getTranslations("doctor.nav")
+
   const sections: NavSection[] = [
     {
-      title: "Tổng quan",
+      title: tNav("dashboard"),
       items: [
-        { label: "Dashboard", href: "/doctor/dashboard", icon: "LayoutDashboard" },
-        { label: "Lịch cá nhân", href: "/doctor/schedule", icon: "CalendarDays" },
-        { label: "Ca làm việc", href: "/doctor/shifts", icon: "Clock" },
+        { label: tNav("dashboard"), href: "/doctor/dashboard", icon: "LayoutDashboard" },
+        { label: tNav("schedule"), href: "/doctor/schedule", icon: "CalendarDays" },
       ],
     },
     {
-      title: "Khám bệnh",
+      title: tNav("appointments"),
       items: [
-        { label: "Danh sách lịch hẹn", href: "/doctor/appointments", icon: "Calendar" },
-        { label: "Danh sách bệnh nhân", href: "/doctor/patients", icon: "Users" },
-        { label: "Hàng đợi", href: "/doctor/queue", icon: "Stethoscope" },
+        { label: tNav("appointments"), href: "/doctor/appointments", icon: "Calendar" },
+        { label: tNav("patients"), href: "/doctor/patients", icon: "Users" },
+        { label: tNav("queue"), href: "/doctor/queue", icon: "Stethoscope" },
       ],
     },
     {
-      title: "Y khoa",
+      title: tNav("medicalRecords"),
       items: [
-        { label: "Hồ sơ bệnh án", href: "/doctor/records", icon: "FileText" },
-        { label: "Cận lâm sàng", href: "/doctor/paraclinical", icon: "ImageIcon" },
-        { label: "Đơn thuốc", href: "/doctor/prescriptions", icon: "Pill" },
+        { label: tNav("medicalRecords"), href: "/doctor/records", icon: "FileText" },
+        { label: t("paraclinical") || "Paraclinical", href: "/doctor/paraclinical", icon: "ImageIcon" },
+        { label: t("prescriptions") || "Prescriptions", href: "/doctor/prescriptions", icon: "Pill" },
       ],
     },
     {
-      title: "Cá nhân",
+      title: tNav("profile"),
       items: [
-        { label: "Hồ sơ cá nhân", href: "/doctor/profile", icon: "User" },
-        { label: "Thông tin tài khoản", href: "/doctor/account-info", icon: "UserCog" },
+        { label: tNav("profile"), href: "/doctor/profile", icon: "User" },
+        { label: tNav("accountInfo"), href: "/doctor/account-info", icon: "UserCog" },
       ],
     },
   ]
 
-  const userName = decodedToken.FullName || decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || "Bác sĩ"
+  const userName = decodedToken.FullName || decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || t("title")
   const userEmail = decodedToken.email || decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] || ""
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar sections={sections} logo="Eye Clinic Support System" role="Bác sĩ" />
+      <Sidebar sections={sections} logo="Eye Clinic Support System" role={t("title")} />
       <div className="flex-1 flex flex-col min-w-0">
         <DashboardHeader
-          title="Bác sĩ"
+          title={t("title")}
           accountInfoHref="/doctor/account-info"
           user={{
             name: userName,
             email: userEmail,
-            role: "Bác sĩ",
+            role: t("title"),
             avatar: null,
           }}
         />

@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation"
+import { getTranslations } from "next-intl/server"
 import { Sidebar, type NavSection } from "@/components/layout/Sidebar"
 import { authService } from "@/services/auth.service"
 import { cookies } from "next/headers"
-import { Bell } from "lucide-react";
 
 export default async function PatientLayout({
   children,
@@ -40,29 +40,31 @@ export default async function PatientLayout({
     redirect(roleMapping[role] || `/${locale}/login`)
   }
 
+  const t = await getTranslations("patient")
+  const tNav = await getTranslations("patient.nav")
+
   const sections: NavSection[] = [
     {
-      title: "Cá nhân",
+      title: tNav("dashboard"),
       items: [
-        { label: "Trang chủ", href: `/${locale}/home`, icon: "Home" },
-        { label: "Thông Báo", href: `/${locale}/patient/notifications`, icon: "Bell" },
-        { label: "Thông tin tài khoản", href: `/${locale}/patient/account-info`, icon: "User" },
-        { label: "Đổi mật khẩu", href: `/${locale}/patient/change-password`, icon: "Key" },
-        { label: "Hồ sơ bệnh nhân", href: `/${locale}/patient/profiles`, icon: "User" },
+        { label: tNav("dashboard"), href: `/${locale}/home`, icon: "Home" },
+        { label: tNav("accountInfo"), href: `/${locale}/patient/account-info`, icon: "User" },
+        { label: tNav("profile"), href: `/${locale}/patient/profiles`, icon: "User" },
       ],
     },
     {
-      title: "Lịch sử",
+      title: tNav("appointments") || "Appointments",
       items: [
-        { label: "Lịch hẹn", href: "/patient/appointment-history", icon: "Calendar" },
-        { label: "Phản hồi", href: "/patient/feedback-history", icon: "MessageSquare" },
+        { label: tNav("appointments") || "Appointments", href: `/${locale}/patient/appointment-history`, icon: "Calendar" },
+        { label: tNav("medicalRecords") || "Medical Records", href: `/${locale}/patient/medical-records`, icon: "FileText" },
+        { label: tNav("feedback") || "Feedback", href: `/${locale}/patient/feedback-history`, icon: "MessageSquare" },
       ],
     }
   ]
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar sections={sections} logo="Eye Clinic Support System" role="Bệnh nhân" />
+      <Sidebar sections={sections} logo="Eye Clinic Support System" role={t("title")} />
       <main className="flex-1 p-gutter overflow-y-auto">{children}</main>
     </div>
   )

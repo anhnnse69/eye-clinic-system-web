@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import {
   Calendar,
   Clock,
@@ -39,17 +40,12 @@ const STATUS_COLORS: Record<string, { bg: string; text: string; icon: string }> 
   CANCELLED: { bg: "bg-gray-100", text: "text-gray-700", icon: "bg-gray-500" },
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  WAITING: "Đang chờ",
-  CALLING: "Đang gọi",
-  IN_PROGRESS: "Đang khám",
-  COMPLETED: "Hoàn thành",
-  NO_SHOW: "Không đến",
-  CANCELLED: "Đã hủy",
-}
-
 export default function QueueClient({ doctorId }: QueueClientProps) {
+  const t = useTranslations("doctor")
+  const tQueue = useTranslations("doctor.queue")
+  const tErrors = useTranslations("doctor.errors")
   const router = useRouter()
+  
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [queueData, setQueueData] = useState<QueueListResponse | null>(null)
   const [loading, setLoading] = useState(true)
@@ -69,7 +65,6 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
     setSelectedDate(newDate)
   }
 
-  // Calendar state
   const [showCalendar, setShowCalendar] = useState(false)
   const [calendarDate, setCalendarDate] = useState(new Date())
 
@@ -103,7 +98,6 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
 
   const weeks = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"]
 
-  // Close calendar when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement
@@ -127,15 +121,15 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
       if (response.data) {
         setQueueData(response.data)
       } else {
-        setError(getMessage(response.codeMessage) || "Không thể tải danh sách hàng đợi")
+        setError(getMessage(response.codeMessage) || tErrors("loadFailed"))
       }
     } catch (err: any) {
       const errorCode = err?.response?.data?.codeMessage
-      setError(getMessage(errorCode) || "Đã xảy ra lỗi khi tải dữ liệu")
+      setError(getMessage(errorCode) || tErrors("loadFailed"))
     } finally {
       setLoading(false)
     }
-  }, [selectedDate])
+  }, [selectedDate, tErrors])
 
   useEffect(() => {
     fetchQueueData()
@@ -176,13 +170,11 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
   }
 
   const handleStartExamination = (item: QueueItem) => {
-    // Nếu đã có preliminary diagnosis → chuyển thẳng đến form tạo bệnh án
     if (item.hasPreliminaryDiagnosis || item.hasMedicalRecord) {
       router.push(
         `/doctor/records/create?appointmentId=${item.appointmentId}&patientId=${item.patientId}&continue=true`
       )
     } else {
-      // Chưa có → điền form sơ bộ trước
       router.push(
         `/doctor/records/preliminary-diagnosis?appointmentId=${item.appointmentId}&patientId=${item.patientId}&patientName=${encodeURIComponent(item.patientName)}`
       )
@@ -197,12 +189,12 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
 
   const handleCompleteQueue = async (item: QueueItem, e: React.MouseEvent) => {
     e.stopPropagation()
-    if (!confirm(`Xác nhận hoàn thành khám cho bệnh nhân "${item.patientName}"?`)) return
+    if (!confirm(tQueue("confirmComplete", { name: item.patientName }))) return
     try {
       await queueCompleteService.completeQueue({ queueId: item.queueId })
       fetchQueueData()
     } catch {
-      alert("Có lỗi xảy ra, vui lòng thử lại")
+      alert(tQueue("errorOccurred"))
     }
   }
 
@@ -214,10 +206,18 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
     {} as Record<string, number>
   ) || {}
 
-  // Count for "Tất cả" excludes COMPLETED
   const activeTotal = Object.entries(statusCounts).reduce((sum, [status, count]) => {
     return status !== "COMPLETED" ? sum + count : sum
   }, 0)
+
+  const STATUS_LABELS: Record<string, string> = {
+    WAITING: tQueue("waiting"),
+    CALLING: tQueue("called"),
+    IN_PROGRESS: tQueue("inProgress") || tQueue("called"),
+    COMPLETED: tQueue("completed"),
+    NO_SHOW: tQueue("noShow"),
+    CANCELLED: tQueue("cancelled") || tQueue("noShow"),
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -225,9 +225,9 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
       <div className="bg-white border-b border-gray-200 px-4 py-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Danh sách hàng đợi</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{tQueue("listTitle")}</h1>
             <p className="text-sm text-gray-500 mt-1">
-              {queueData?.totalPatients || 0} bệnh nhân • <span suppressHydrationWarning>{isToday ? "Hôm nay" : selectedDate.toLocaleDateString("vi-VN", { day: "numeric", month: "short", year: "numeric" })}</span>
+              {tQueue("patientCount", { count: queueData?.totalPatients || 0 })} • <span suppressHydrationWarning>{isToday ? tQueue("today") : selectedDate.toLocaleDateString()}</span>
             </p>
           </div>
           <button
@@ -236,7 +236,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
             className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors disabled:opacity-50 shadow-sm"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-            Làm mới
+            {tQueue("refresh")}
           </button>
         </div>
       </div>
@@ -252,11 +252,10 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
           </button>
           
           <div className="flex items-center gap-4 flex-1 justify-center">
-            {/* Date Card */}
-            <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl px-5 py-4 text-white shadow-lg min-w-[100px]">
+            <div className="bg-linear-to-br from-blue-500 to-blue-600 rounded-2xl px-5 py-4 text-white shadow-lg min-w-[100px]">
               <div className="text-center" suppressHydrationWarning>
                 <div className="text-xs font-medium text-blue-100 uppercase tracking-wider" suppressHydrationWarning>
-                  {selectedDate.toLocaleDateString("vi-VN", { weekday: "short" })}
+                  {selectedDate.toLocaleDateString(undefined, { weekday: "short" })}
                 </div>
                 <div className="text-4xl font-bold mt-1" suppressHydrationWarning>
                   {selectedDate.getDate()}
@@ -264,19 +263,18 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
               </div>
             </div>
             
-            {/* Month/Year & Full Weekday */}
             <div className="text-left" suppressHydrationWarning>
               <div className="text-xl font-semibold text-gray-900" suppressHydrationWarning>
-                {selectedDate.toLocaleDateString("vi-VN", { month: "long", year: "numeric" })}
+                {selectedDate.toLocaleDateString(undefined, { month: "long", year: "numeric" })}
               </div>
               <div className="text-sm text-gray-500 mt-1">
                 {isToday ? (
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
                     <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-                    Hôm nay
+                    {tQueue("today")}
                   </span>
                 ) : (
-                  <span suppressHydrationWarning>{selectedDate.toLocaleDateString("vi-VN", { weekday: "long" })}</span>
+                  <span suppressHydrationWarning>{selectedDate.toLocaleDateString(undefined, { weekday: "long" })}</span>
                 )}
               </div>
             </div>
@@ -290,7 +288,6 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
           </button>
         </div>
         
-        {/* Date Picker */}
         <div className="flex justify-center mt-4">
           <div className="relative">
             <button
@@ -299,14 +296,12 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
             >
               <CalendarDays className="w-5 h-5 text-blue-500" />
               <span className="text-sm font-medium text-gray-700" suppressHydrationWarning>
-                {selectedDate.toLocaleDateString("vi-VN", { day: "numeric", month: "long", year: "numeric" })}
+                {selectedDate.toLocaleDateString()}
               </span>
             </button>
 
-            {/* Custom Calendar Dropdown */}
             {showCalendar && (
               <div className="calendar-dropdown absolute top-full mt-2 left-1/2 -translate-x-1/2 z-50 bg-white rounded-2xl shadow-xl border border-gray-100 p-5 w-[340px]">
-                {/* Calendar Header */}
                 <div className="flex items-center justify-between mb-4">
                   <button
                     onClick={prevMonth}
@@ -315,7 +310,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                     <ChevronLeft className="w-5 h-5 text-gray-600" />
                   </button>
                   <span className="text-base font-semibold text-gray-900" suppressHydrationWarning>
-                    {calendarDate.toLocaleDateString("vi-VN", { month: "long", year: "numeric" })}
+                    {calendarDate.toLocaleDateString(undefined, { month: "long", year: "numeric" })}
                   </span>
                   <button
                     onClick={nextMonth}
@@ -325,7 +320,6 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                   </button>
                 </div>
 
-                {/* Week Headers */}
                 <div className="grid grid-cols-7 gap-1 mb-2">
                   {weeks.map((week) => (
                     <div key={week} className="text-center text-xs font-medium text-gray-400 py-2">
@@ -334,18 +328,15 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                   ))}
                 </div>
 
-                {/* Days Grid */}
                 <div className="grid grid-cols-7 gap-1.5">
-                  {/* Empty cells for days before first day of month */}
                   {Array.from({ length: startingDay }).map((_, i) => (
                     <div key={`empty-${i}`} className="w-11 h-11" />
                   ))}
-                  {/* Day buttons */}
                   {Array.from({ length: daysInMonth }).map((_, i) => {
                     const day = i + 1
                     const date = new Date(year, month, day)
                     const isSelected = formatDate(date) === formatDate(selectedDate)
-                    const isToday = formatDate(date) === formatDate(new Date())
+                    const isTodayDate = formatDate(date) === formatDate(new Date())
                     return (
                       <button
                         key={day}
@@ -353,7 +344,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                         className={`w-11 h-11 rounded-xl text-sm font-medium transition-all ${
                           isSelected
                             ? "bg-blue-500 text-white shadow-md"
-                            : isToday
+                            : isTodayDate
                             ? "bg-blue-50 text-blue-600 hover:bg-blue-100"
                             : "text-gray-700 hover:bg-gray-100"
                         }`}
@@ -364,7 +355,6 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                   })}
                 </div>
 
-                {/* Today Button */}
                 <div className="mt-4 pt-3 border-t border-gray-100">
                   <button
                     onClick={() => {
@@ -373,7 +363,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                     }}
                     className="w-full py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                   >
-                    Hôm nay
+                    {tQueue("today")}
                   </button>
                 </div>
               </div>
@@ -393,7 +383,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                 : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
           >
-            Tất cả ({activeTotal})
+            {tQueue("all")} ({activeTotal})
           </button>
           {Object.entries(STATUS_LABELS).map(([status, label]) => {
             const count = statusCounts[status] || 0
@@ -429,7 +419,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
               onClick={fetchQueueData}
               className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
             >
-              Thử lại
+              {tQueue("refresh")}
             </button>
           </div>
         ) : filteredItems.length === 0 ? (
@@ -437,15 +427,15 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
             <Users className="w-12 h-12 text-gray-400 mb-4" />
             <p className="text-gray-700 font-medium">
               {filter === "ALL" 
-                ? "Không có bệnh nhân đang chờ" 
+                ? tQueue("noWaitingPatients") 
                 : filter === "COMPLETED"
-                ? "Chưa có bệnh nhân hoàn thành khám"
-                : "Không có bệnh nhân với trạng thái này"}
+                ? tQueue("noCompletedPatients")
+                : tQueue("noPatientsStatus")}
             </p>
             <p className="text-gray-500 text-sm mt-1">
               {filter === "ALL" 
-                ? "Danh sách hàng đợi trống" 
-                : "Thử chọn bộ lọc khác"}
+                ? tQueue("emptyQueue") 
+                : tQueue("tryOtherFilter")}
             </p>
           </div>
         ) : (
@@ -458,7 +448,6 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                   className="bg-gray-50 rounded-xl p-4 border border-gray-200 hover:border-blue-300 transition-colors"
                 >
                   <div className="flex items-start gap-4">
-                    {/* Queue Number Badge */}
                     <div className="shrink-0">
                       <div className="w-12 h-12 rounded-2xl bg-blue-500 text-white flex flex-col items-center justify-center shadow-md">
                         <span className="text-[11px] font-medium text-blue-100 leading-none mb-px">STT</span>
@@ -466,7 +455,6 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                       </div>
                     </div>
 
-                    {/* Patient Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="text-lg font-semibold text-gray-900">
@@ -479,7 +467,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                         </span>
                         {item.hasMedicalRecord && (
                           <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                            Đã có bệnh án
+                            {tQueue("hasMedicalRecord")}
                           </span>
                         )}
                       </div>
@@ -493,7 +481,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                         )}
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4 text-gray-400" />
-                          <span suppressHydrationWarning>{new Date(item.appointmentTime).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}</span>
+                          <span suppressHydrationWarning>{new Date(item.appointmentTime).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}</span>
                         </div>
                         {item.symptoms && (
                           <div className="flex items-center gap-2 col-span-2">
@@ -517,11 +505,10 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
 
                       {item.completedAt && (
                         <p className="mt-2 text-xs text-green-600 font-medium" suppressHydrationWarning>
-                          Hoàn thành: {new Date(item.completedAt).toLocaleTimeString("vi-VN")}
+                          {tQueue("completedAt", { time: new Date(item.completedAt).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }) })}
                         </p>
                       )}
 
-                      {/* Action Buttons */}
                       <div className="mt-3 flex flex-wrap gap-2">
                         {item.hasMedicalRecord && (
                           <button
@@ -529,7 +516,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                             className="flex items-center gap-1 px-3 py-1.5 text-sm bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
                           >
                             <FileText className="w-4 h-4" />
-                            Xem bệnh án
+                            {tQueue("viewRecord")}
                           </button>
                         )}
 
@@ -540,7 +527,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                               className="flex items-center gap-1 px-3 py-1.5 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                             >
                               <CheckCircle className="w-4 h-4" />
-                              Bắt đầu khám
+                              {tQueue("startExam")}
                             </button>
                           )
                         ) : item.status === QueueStatus.IN_PROGRESS ? (
@@ -550,7 +537,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                               className="flex items-center gap-1 px-3 py-1.5 text-sm bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
                             >
                               <Activity className="w-4 h-4" />
-                              Tiếp tục khám
+                              {tQueue("continueExam")}
                             </button>
                             {item.hasMedicalRecord && (
                               <button
@@ -558,7 +545,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                                 className="flex items-center gap-1 px-3 py-1.5 text-sm bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
                               >
                                 <ClipboardCheck className="w-4 h-4" />
-                                Hoàn thành khám
+                                {tQueue("completeExam")}
                               </button>
                             )}
                           </>
@@ -570,19 +557,17 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                             className="flex items-center gap-1 px-3 py-1.5 text-sm bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
                           >
                             <ClipboardCheck className="w-4 h-4" />
-                            Hoàn thành khám
+                            {tQueue("completeExam")}
                           </button>
                         )}
 
                         {item.status === QueueStatus.CALLING && (
                           <button
-                            onClick={() => {
-                              // TODO: Mark as no-show
-                            }}
+                            onClick={() => {}}
                             className="flex items-center gap-1 px-3 py-1.5 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
                           >
                             <XCircle className="w-4 h-4" />
-                            Không đến
+                            {tQueue("noShow")}
                           </button>
                         )}
                       </div>

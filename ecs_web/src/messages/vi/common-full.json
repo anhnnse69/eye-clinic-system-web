@@ -1,0 +1,240 @@
+{
+  "common": {
+    "brand": "Eye Clinic Support",
+    "login": "Đăng nhập",
+    "logout": "Đăng xuất",
+    "requestDemo": "Yêu cầu Demo",
+    "getStarted": "Bắt đầu",
+    "learnMore": "Tìm hiểu thêm",
+    "viewMore": "Xem thêm",
+    "viewTour": "Xem Demo",
+    "userMenu": {
+      "accountInfo": "Thông tin tài khoản",
+      "accountInfoSubtitle": "Xem và cập nhật thông tin cá nhân",
+      "logout": "Đăng xuất",
+      "signedInAs": "Đăng nhập với tư cách",
+      "patient": "Bệnh nhân"
+    },
+    "nav": {
+      "solutions": "Giải pháp",
+      "features": "Tính năng",
+      "forDoctors": "Dành cho Bác sĩ",
+      "forPatients": "Dành cho Bệnh nhân",
+      "login": "Đăng nhập",
+      "requestDemo": "Yêu cầu Demo"
+    },
+    "footer": {
+      "tagline": "Độ chính xác trong Tầm nhìn. Hệ điều hành tiên tiến nhất thế giới cho mạng lưới nhãn khoa.",
+      "hipaa": "TUÂN THỦ HIPAA",
+      "soc2": "SOC2 TYPE II",
+      "product": "Sản phẩm",
+      "company": "Công ty",
+      "legal": "Pháp lý",
+      "features": "Tính năng",
+      "integrations": "Tích hợp",
+      "pricing": "Bảng giá",
+      "changelog": "Nhật ký thay đổi",
+      "aboutUs": "Về chúng tôi",
+      "careers": "Tuyển dụng",
+      "contact": "Liên hệ",
+      "partners": "Đối tác",
+      "privacy": "Chính sách bảo mật",
+      "terms": "Điều khoản dịch vụ",
+      "hipaaCompliance": "Tuân thủ HIPAA",
+      "accessibility": "Hỗ trợ tiếp cận",
+      "copyright": "© 2024 Eye Clinic Support. Độ chính xác trong Tầm nhìn."
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Đăng nhập",
+      "subtitle": "Đăng nhập để truy cập tài khoản của bạn",
+      "email": "Email",
+      "password": "Mật khẩu",
+      "forgotPassword": "Quên mật khẩu?",
+      "submit": "Đăng nhập",
+      "noAccount": "Chưa có tài khoản?",
+      "register": "Đăng ký ngay",
+      "invalidCredentials": "Email hoặc mật khẩu không đúng",
+      "loginFailed": "Đăng nhập thất bại"
+    },
+    "register": {
+      "title": "Đăng ký",
+      "subtitle": "Tạo tài khoản mới",
+      "fullName": "Họ và tên",
+      "email": "Email",
+      "phone": "Số điện thoại",
+      "password": "Mật khẩu",
+      "confirmPassword": "Xác nhận mật khẩu",
+      "termsAgree": "Tôi đồng ý với",
+      "termsOfService": "Điều khoản dịch vụ",
+      "privacyPolicy": "Chính sách bảo mật",
+      "submit": "Đăng ký",
+      "hasAccount": "Đã có tài khoản?",
+      "signIn": "Đăng nhập",
+      "passwordMismatch": "Mật khẩu không khớp",
+      "emailExists": "Email đã tồn tại",
+      "registrationFailed": "Đăng ký thất bại"
+    },
+    "forgotPassword": {
+      "title": "Quên mật khẩu",
+      "subtitle": "Nhập email để khôi phục mật khẩu",
+      "email": "Email",
+      "submit": "Gửi yêu cầu",
+      "backToLogin": "Quay lại đăng nhập",
+      "emailNotFound": "Email không tồn tại trong hệ thống",
+      "emailSent": "Email khôi phục đã được gửi"
+    },
+    "resetPassword": {
+      "title": "Đặt lại mật khẩu",
+      "subtitle": "Nhập mật khẩu mới",
+      "password": "Mật khẩu mới",
+      "confirmPassword": "Xác nhận mật khẩu mới",
+      "submit": "Đặt lại mật khẩu",
+      "backToLogin": "Quay lại đăng nhập",
+      "passwordMismatch": "Mật khẩu không khớp",
+      "resetFailed": "Đặt lại mật khẩu thất bại",
+      "resetSuccess": "Đặt lại mật khẩu thành công"
+    },
+    "changePassword": {
+      "title": "Đổi mật khẩu",
+      "currentPassword": "Mật khẩu hiện tại",
+      "newPassword": "Mật khẩu mới",
+      "confirmPassword": "Xác nhận mật khẩu mới",
+      "submit": "Đổi mật khẩu",
+      "currentPasswordIncorrect": "Mật khẩu hiện tại không đúng",
+      "passwordMismatch": "Mật khẩu mới không khớp",
+      "changeFailed": "Đổi mật khẩu thất bại",
+      "changeSuccess": "Đổi mật khẩu thành công"
+    }
+  },
+  "home": {
+    "hero": {
+      "title": "Hệ thống Quản lý Phòng khám Mắt Thông minh",
+      "subtitle": "Nền tảng quản lý toàn diện cho phòng khám mắt chuyên khoa, kết nối bác sĩ và bệnh nhân một cách hiệu quả",
+      "cta": "Bắt đầu ngay"
+    },
+    "features": {
+      "title": "Tính năng nổi bật",
+      "appointments": {
+        "title": "Đặt lịch thông minh",
+        "description": "Bệnh nhân dễ dàng đặt lịch khám trực tuyến 24/7"
+      },
+      "records": {
+        "title": "Hồ sơ điện tử",
+        "description": "Lưu trữ và quản lý hồ sơ bệnh án khoa học"
+      },
+      "queue": {
+        "title": "Quản lý hàng chờ",
+        "description": "Tối ưu quy trình khám bệnh với hệ thống hàng đợi thông minh"
+      },
+      "ai": {
+        "title": "AI hỗ trợ chẩn đoán",
+        "description": "Công nghệ AI giúp phân tích hình ảnh OCT chính xác"
+      }
+    },
+    "cta": {
+      "title": "Sẵn sàng nâng cấp phòng khám của bạn?",
+      "subtitle": "Tham gia cùng hàng trăm phòng khám đã sử dụng ECS Clinic System",
+      "button": "Liên hệ tư vấn"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard"
+  },
+  "appointment": {
+    "title": "Lịch hẹn",
+    "booking": {
+      "title": "Đặt lịch khám",
+      "selectClinic": "Chọn phòng khám",
+      "selectDoctor": "Chọn bác sĩ",
+      "selectDate": "Chọn ngày",
+      "selectTime": "Chọn giờ",
+      "selectService": "Chọn dịch vụ",
+      "patient": "Bệnh nhân",
+      "symptoms": "Triệu chứng",
+      "submit": "Xác nhận đặt lịch",
+      "success": "Đặt lịch thành công",
+      "failed": "Đặt lịch thất bại"
+    },
+    "status": {
+      "pending": "Chờ xác nhận",
+      "depositPaid": "Đã đặt cọc",
+      "confirmed": "Đã xác nhận",
+      "booked": "Đã đặt lịch",
+      "arrived": "Đã đến",
+      "inProgress": "Đang khám",
+      "completed": "Hoàn thành",
+      "cancelled": "Đã hủy",
+      "noShow": "Không đến"
+    },
+    "type": {
+      "newPatient": "Bệnh nhân mới",
+      "followUp": "Tái khám",
+      "routine": "Khám định kỳ",
+      "emergency": "Cấp cứu"
+    }
+  },
+  "queue": {
+    "title": "Hàng chờ",
+    "status": {
+      "waiting": "Đang chờ",
+      "calling": "Đang gọi",
+      "completed": "Hoàn thành",
+      "noShow": "Không đến"
+    },
+    "action": {
+      "callNext": "Gọi tiếp",
+      "callPatient": "Gọi bệnh nhân",
+      "complete": "Hoàn thành"
+    }
+  },
+  "medicalRecord": {
+    "title": "Hồ sơ bệnh án",
+    "type": {
+      "trauma": "Chấn thương",
+      "anterior": "Bán phần trước",
+      "fundus": "Đáy mắt",
+      "glaucoma": "Glôcôm",
+      "strabismus": "Lác & Sụp mi",
+      "pediatric": "Nhi"
+    }
+  },
+  "feedback": {
+    "title": "Phản hồi",
+    "submit": "Gửi đánh giá",
+    "rating": "Đánh giá",
+    "comment": "Bình luận",
+    "submitSuccess": "Gửi phản hồi thành công"
+  },
+  "notification": {
+    "title": "Thông báo",
+    "markRead": "Đánh dấu đã đọc",
+    "markAllRead": "Đánh dấu tất cả đã đọc",
+    "noNotifications": "Không có thông báo nào"
+  },
+  "errors": {
+    "required": "Trường này là bắt buộc",
+    "invalidEmail": "Email không hợp lệ",
+    "invalidPhone": "Số điện thoại không hợp lệ",
+    "serverError": "Lỗi server",
+    "networkError": "Lỗi kết nối mạng",
+    "unauthorized": "Bạn không có quyền truy cập",
+    "notFound": "Không tìm thấy"
+  },
+  "messages": {
+    "loading": "Đang tải...",
+    "saving": "Đang lưu...",
+    "saved": "Đã lưu",
+    "deleted": "Đã xóa",
+    "error": "Đã xảy ra lỗi",
+    "success": "Thành công",
+    "confirm": "Xác nhận",
+    "cancel": "Hủy",
+    "yes": "Có",
+    "no": "Không",
+    "ok": "OK",
+    "retry": "Thử lại",
+    "close": "Đóng"
+  }
+}

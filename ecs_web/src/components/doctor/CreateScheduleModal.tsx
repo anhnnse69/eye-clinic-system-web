@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import {
   X, Loader2, CheckCircle2, AlertCircle,
   ChevronLeft, ChevronRight, DoorOpen, Search, ArrowLeft, Trash2,
@@ -14,12 +15,6 @@ import {
   type BatchCreateDoctorScheduleResponse,
 } from "@/services/doctor.schedule.service";
 import { ShiftType } from "@/types";
-
-const SHIFT_LABELS: Record<ShiftType, string> = {
-  [ShiftType.MORNING]: "Ca Sáng",
-  [ShiftType.AFTERNOON]: "Ca Chiều",
-  [ShiftType.EVENING]: "Ca Tối",
-};
 
 function formatHm(time: string) {
   const [h, m] = time.split(":");
@@ -45,7 +40,6 @@ function getMonthMatrix(year: number, month: number) {
   return cells;
 }
 
-/** doctorId -> roomId đã gán, giữ Map để nhớ thứ tự chọn */
 type SelectionMap = Map<string, string>;
 
 export default function BatchCreateScheduleModal({
@@ -55,9 +49,10 @@ export default function BatchCreateScheduleModal({
   onClose: () => void;
   onCreated: () => void;
 }) {
+  const t = useTranslations("doctor.schedule")
+
   const [step, setStep] = useState<1 | 2>(1);
 
-  // ── Data dùng chung: doctor + room, load song song lúc mở modal ──
   const [doctors, setDoctors] = useState<DoctorOptionItem[]>([]);
   const [rooms, setRooms] = useState<ClinicRoomItem[]>([]);
   const [loadingData, setLoadingData] = useState(true);
@@ -79,13 +74,13 @@ export default function BatchCreateScheduleModal({
         setDoctors((doctorRes.data ?? []).filter((d) => d.isActive));
         setRooms(roomRes.data ?? []);
       } catch {
-        setError("Không thể tải danh sách bác sĩ / phòng khám.");
+        setError(t("submitError"));
       } finally {
         setLoadingData(false);
       }
     };
     loadAll();
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     const loadShiftRanges = async () => {
@@ -94,19 +89,18 @@ export default function BatchCreateScheduleModal({
         const res = await doctorScheduleService.getShiftRanges();
         const options = (res.data ?? []).map((r: ShiftRangeItem) => ({
           value: r.shiftType,
-          label: `${SHIFT_LABELS[r.shiftType]} (${formatHm(r.startTime)} - ${formatHm(r.endTime)})`,
+          label: `${t(`morning`) || t(`afternoon`) || t(`evening`)} (${formatHm(r.startTime)} - ${formatHm(r.endTime)})`,
         }));
         setShiftOptions(options);
       } catch {
-        setError("Không thể tải khung giờ ca làm việc của phòng khám.");
+        setError(t("submitError"));
       } finally {
         setLoadingShifts(false);
       }
     };
     loadShiftRanges();
-  }, []);
+  }, [t]);
 
-  // ── Bước 1: chọn nhiều doctor + phòng cho từng doctor ──
   const [selection, setSelection] = useState<SelectionMap>(new Map());
 
   const filteredDoctors = doctors.filter((d) =>
@@ -155,7 +149,6 @@ export default function BatchCreateScheduleModal({
     selection.size > 0 &&
     Array.from(selection.values()).every((roomId) => !!roomId);
 
-  // ── Bước 2: ngày + ca ──
   const today = new Date();
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
@@ -164,7 +157,6 @@ export default function BatchCreateScheduleModal({
 
   const todayStr = toDateStr(today);
 
-  // ── Helper: Lấy tất cả ngày trong tháng hiện tại (từ ngày hôm nay trở đi) ──
   const getAllDatesInCurrentMonth = () => {
     const dates: string[] = [];
     const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
@@ -172,7 +164,6 @@ export default function BatchCreateScheduleModal({
     for (let d = 1; d <= daysInMonth; d++) {
       const date = new Date(viewYear, viewMonth, d);
       const dateStr = toDateStr(date);
-      // Chỉ lấy ngày từ hôm nay trở đi
       if (dateStr >= todayStr) {
         dates.push(dateStr);
       }
@@ -180,26 +171,21 @@ export default function BatchCreateScheduleModal({
     return dates;
   };
 
-  // ── Handler: Chọn tất cả ngày trong tháng ──
   const handleSelectAllMonth = () => {
     const allDates = getAllDatesInCurrentMonth();
     setSelectedDates((prev) => {
       const next = new Set(prev);
-      // Kiểm tra xem có phải đã chọn hết chưa để toggle
       const isAllSelected = allDates.every((d) => prev.has(d));
       
       if (isAllSelected) {
-        // Nếu đã chọn hết thì bỏ chọn tất cả
         allDates.forEach((d) => next.delete(d));
       } else {
-        // Nếu chưa chọn hết thì chọn tất cả
         allDates.forEach((d) => next.add(d));
       }
       return next;
     });
   };
 
-  // ── Kiểm tra xem đã chọn hết ngày trong tháng chưa ──
   const isAllMonthSelected = useMemo(() => {
     const allDates = getAllDatesInCurrentMonth();
     return allDates.length > 0 && allDates.every((d) => selectedDates.has(d));
@@ -237,18 +223,17 @@ export default function BatchCreateScheduleModal({
   const totalCombinations =
     selection.size * selectedDates.size * selectedShifts.size;
 
-  // ── Submit ──
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<BatchCreateDoctorScheduleResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleGoToStep2 = () => {
     if (selection.size === 0) {
-      setError("Vui lòng chọn ít nhất 1 bác sĩ.");
+      setError(t("step1Error"));
       return;
     }
     if (!allRoomsAssigned) {
-      setError("Vui lòng chọn phòng khám cho tất cả bác sĩ đã chọn.");
+      setError(t("step1RoomError"));
       return;
     }
     setError(null);
@@ -266,11 +251,11 @@ export default function BatchCreateScheduleModal({
 
   const handleSubmit = async () => {
     if (selectedDates.size === 0) {
-      setError("Vui lòng chọn ít nhất 1 ngày.");
+      setError(t("step2DateError"));
       return;
     }
     if (selectedShifts.size === 0) {
-      setError("Vui lòng chọn ít nhất 1 ca làm việc.");
+      setError(t("step2ShiftError"));
       return;
     }
 
@@ -290,7 +275,7 @@ export default function BatchCreateScheduleModal({
         if (res.data.totalCreated > 0) onCreated();
       }
     } catch {
-      setError("Không thể tạo lịch hàng loạt. Vui lòng thử lại.");
+      setError(t("submitError"));
     } finally {
       setSubmitting(false);
     }
@@ -306,26 +291,25 @@ export default function BatchCreateScheduleModal({
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
 
-        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
           <div className="flex items-center gap-2">
             {step === 2 && !result && (
               <button
                 onClick={() => setStep(1)}
                 className="p-1.5 -ml-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition"
-                title="Quay lại chọn bác sĩ"
+                title={t("back") || "Back"}
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
             )}
             <div>
               <h3 className="font-bold text-lg text-slate-800">
-                Tạo lịch trực hàng loạt
+                {t("batchCreateTitle")}
               </h3>
               <p className="text-xs text-slate-500 mt-0.5">
                 {step === 1
-                  ? "Bước 1: Chọn bác sĩ và phòng khám"
-                  : "Bước 2: Chọn ngày và ca làm việc"}
+                  ? t("step1SelectDoctor")
+                  : t("step2SelectDateShift")}
               </p>
             </div>
           </div>
@@ -334,7 +318,6 @@ export default function BatchCreateScheduleModal({
           </button>
         </div>
 
-        {/* ── Bước 1 ── */}
         {step === 1 && (
           <div className="p-6 space-y-4">
             <div className="relative">
@@ -342,7 +325,7 @@ export default function BatchCreateScheduleModal({
               <input
                 value={doctorSearch}
                 onChange={(e) => setDoctorSearch(e.target.value)}
-                placeholder="Tìm bác sĩ theo tên..."
+                placeholder={t("searchDoctorPlaceholder")}
                 className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-slate-700"
               />
             </div>
@@ -357,11 +340,11 @@ export default function BatchCreateScheduleModal({
               {loadingData ? (
                 <div className="flex items-center justify-center py-10 text-slate-400 gap-2">
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  <span className="text-sm">Đang tải dữ liệu...</span>
+                  <span className="text-sm">{t("loadingData")}</span>
                 </div>
               ) : filteredDoctors.length === 0 ? (
                 <p className="text-center text-sm text-slate-400 py-10">
-                  Không tìm thấy bác sĩ nào.
+                  {t("noDoctorsFound")}
                 </p>
               ) : (
                 filteredDoctors.map((d) => {
@@ -406,7 +389,7 @@ export default function BatchCreateScheduleModal({
                               className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500 text-slate-700"
                             >
                               {rooms.length === 0 ? (
-                                <option value="">Không có phòng nào</option>
+                                <option value="">{t("noRoomsAvailable")}</option>
                               ) : (
                                 rooms.map((r) => (
                                   <option key={r.roomId} value={r.roomId}>
@@ -426,7 +409,7 @@ export default function BatchCreateScheduleModal({
 
             {selection.size > 0 && (
               <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-700">
-                Đã chọn <span className="font-bold">{selection.size}</span> bác sĩ
+                {t("selectedCount", { count: selection.size })}
               </div>
             )}
 
@@ -435,32 +418,30 @@ export default function BatchCreateScheduleModal({
                 onClick={onClose}
                 className="px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition"
               >
-                Hủy
+                {t("cancel")}
               </button>
               <button
                 onClick={handleGoToStep2}
                 disabled={selection.size === 0}
                 className="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition disabled:opacity-50"
               >
-                Tiếp tục
+                {t("continue")}
               </button>
             </div>
           </div>
         )}
 
-        {/* ── Bước 2 ── */}
         {step === 2 && (
           <div className="p-6 space-y-6">
 
-            {/* Result summary */}
             {result && (
               <div className="space-y-3">
                 <div className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-700 flex items-center gap-4">
                   <span className="flex items-center gap-1.5 text-emerald-700 font-semibold">
-                    <CheckCircle2 className="w-4 h-4" /> {result.totalCreated} đã tạo
+                    <CheckCircle2 className="w-4 h-4" /> {t("created")} {result.totalCreated}
                   </span>
                   <span className="flex items-center gap-1.5 text-amber-700 font-semibold">
-                    <AlertCircle className="w-4 h-4" /> {result.totalSkipped} bị bỏ qua
+                    <AlertCircle className="w-4 h-4" /> {t("skipped")} {result.totalSkipped}
                   </span>
                 </div>
 
@@ -472,15 +453,14 @@ export default function BatchCreateScheduleModal({
                       {r.created.length > 0 && (
                         <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-2">
                           <p className="text-xs font-semibold text-emerald-700 mb-1.5">
-                            Đã tạo {r.created.length} lịch trực
+                            {t("schedulesCreated", { count: r.created.length })}
                           </p>
                           <div className="space-y-1 max-h-[140px] overflow-y-auto">
                             {r.created.map((c) => (
                               <p key={c.scheduleId} className="text-xs text-emerald-700">
-                                {new Date(c.workDate).toLocaleDateString("vi-VN")} —{" "}
-                                {shiftOptions.find((s) => s.value === c.shiftType)?.label ??
-                                  SHIFT_LABELS[c.shiftType]}
-                                {" · "}{c.slotCount} slot
+                                {new Date(c.workDate).toLocaleDateString()} —{" "}
+                                {shiftOptions.find((s) => s.value === c.shiftType)?.label ?? c.shiftType}
+                                {" · "}{c.slotCount} {t("slots")}
                               </p>
                             ))}
                           </div>
@@ -490,14 +470,13 @@ export default function BatchCreateScheduleModal({
                       {r.skipped.length > 0 && (
                         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
                           <p className="text-xs font-semibold text-amber-700 mb-1.5">
-                            Bỏ qua {r.skipped.length} ca
+                            {t("skippedCount", { count: r.skipped.length })}
                           </p>
                           <div className="space-y-1 max-h-[140px] overflow-y-auto">
                             {r.skipped.map((s, i) => (
                               <p key={i} className="text-xs text-amber-700">
-                                {new Date(s.workDate).toLocaleDateString("vi-VN")} —{" "}
-                                {shiftOptions.find((x) => x.value === s.shiftType)?.label ??
-                                  SHIFT_LABELS[s.shiftType]}
+                                {new Date(s.workDate).toLocaleDateString()} —{" "}
+                                {shiftOptions.find((x) => x.value === s.shiftType)?.label ?? s.shiftType}
                                 {" · "}{s.reason}
                               </p>
                             ))}
@@ -506,7 +485,7 @@ export default function BatchCreateScheduleModal({
                       )}
 
                       {r.created.length === 0 && r.skipped.length === 0 && (
-                        <p className="text-xs text-slate-400">Không có thay đổi nào.</p>
+                        <p className="text-xs text-slate-400">{t("noChanges")}</p>
                       )}
                     </div>
                   ))}
@@ -517,25 +496,23 @@ export default function BatchCreateScheduleModal({
                     onClick={handleReset}
                     className="flex-1 px-4 py-2.5 text-slate-700 font-medium rounded-xl border border-slate-200 hover:bg-slate-50 transition"
                   >
-                    Tạo lịch hàng loạt khác
+                    {t("createAnother")}
                   </button>
                   <button
                     onClick={onClose}
                     className="flex-1 px-4 py-2.5 bg-slate-800 text-white font-medium rounded-xl hover:bg-slate-900 transition"
                   >
-                    Đóng
+                    {t("close")}
                   </button>
                 </div>
               </div>
             )}
 
-            {/* Form */}
             {!result && (
               <>
-                {/* Recap doctor đã chọn */}
                 <div>
                   <label className="text-sm font-semibold text-slate-600 mb-2 block">
-                    Bác sĩ đã chọn ({selectedDoctors.length})
+                    {t("selectedDoctors", { count: selectedDoctors.length })}
                   </label>
                   <div className="flex flex-wrap gap-2">
                     {selectedDoctors.map((d) => (
@@ -552,7 +529,7 @@ export default function BatchCreateScheduleModal({
                         <button
                           onClick={() => removeDoctor(d.doctorId)}
                           className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition"
-                          title="Bỏ bác sĩ này"
+                          title={t("removeDoctor")}
                         >
                           <Trash2 className="w-3 h-3" />
                         </button>
@@ -561,11 +538,10 @@ export default function BatchCreateScheduleModal({
                   </div>
                 </div>
 
-                {/* Calendar */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="text-sm font-semibold text-slate-600">
-                      Chọn ngày làm việc ({selectedDates.size} ngày đã chọn)
+                      {t("selectDates", { count: selectedDates.size })}
                     </label>
                     <button
                       onClick={handleSelectAllMonth}
@@ -577,7 +553,7 @@ export default function BatchCreateScheduleModal({
                       `}
                     >
                       <CalendarPlus className="w-3.5 h-3.5" />
-                      {isAllMonthSelected ? "Bỏ chọn cả tháng" : "Chọn cả tháng"}
+                      {isAllMonthSelected ? t("deselectAllMonth") : t("selectAllMonth")}
                     </button>
                   </div>
 
@@ -590,7 +566,7 @@ export default function BatchCreateScheduleModal({
                         <ChevronLeft className="w-4 h-4 text-slate-600" />
                       </button>
                       <span className="font-semibold text-sm text-slate-800">
-                        Tháng {viewMonth + 1} / {viewYear}
+                        {t("month") || "Month"} {viewMonth + 1} / {viewYear}
                       </span>
                       <button
                         onClick={() => changeMonth(1)}
@@ -636,19 +612,18 @@ export default function BatchCreateScheduleModal({
                   </div>
                 </div>
 
-                {/* Multi-select ca */}
                 <div>
                   <label className="text-sm font-semibold text-slate-600 mb-2 block">
-                    Chọn ca làm việc ({selectedShifts.size} ca đã chọn)
+                    {t("selectShifts", { count: selectedShifts.size })}
                   </label>
                   {loadingShifts ? (
                     <div className="flex items-center justify-center py-6 text-slate-400 gap-2">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span className="text-sm">Đang tải khung giờ ca làm việc...</span>
+                      <span className="text-sm">{t("loadingShiftRanges")}</span>
                     </div>
                   ) : shiftOptions.length === 0 ? (
                     <p className="text-center text-sm text-slate-400 py-6">
-                      Không có ca làm việc nào khả dụng.
+                      {t("noShiftsAvailable")}
                     </p>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -676,11 +651,14 @@ export default function BatchCreateScheduleModal({
                   )}
                 </div>
 
-                {/* Summary tổ hợp */}
                 {totalCombinations > 0 && (
                   <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-700">
-                    Sẽ tạo <span className="font-bold">{totalCombinations}</span> lịch trực
-                    {" "}({selection.size} bác sĩ × {selectedDates.size} ngày × {selectedShifts.size} ca)
+                    {t("willCreateSchedule", { 
+                      count: totalCombinations,
+                      doctorCount: selection.size,
+                      dateCount: selectedDates.size,
+                      shiftCount: selectedShifts.size
+                    })}
                   </div>
                 )}
 
@@ -690,14 +668,13 @@ export default function BatchCreateScheduleModal({
                   </div>
                 )}
 
-                {/* Actions */}
                 <div className="flex items-center justify-end gap-2 pt-2">
                   <button
                     onClick={onClose}
                     disabled={submitting}
                     className="px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition disabled:opacity-50"
                   >
-                    Hủy
+                    {t("cancel")}
                   </button>
                   <button
                     onClick={handleSubmit}
@@ -705,7 +682,7 @@ export default function BatchCreateScheduleModal({
                     className="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition disabled:opacity-50 flex items-center gap-2"
                   >
                     {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                    Tạo {totalCombinations > 0 ? `${totalCombinations} lịch` : "lịch"}
+                    {totalCombinations > 0 ? `${t("create")} ${totalCombinations}` : t("create")}
                   </button>
                 </div>
               </>

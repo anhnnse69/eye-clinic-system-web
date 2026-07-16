@@ -5,16 +5,23 @@ import { authService } from "@/services/auth.service"
 import CreateMedicalRecordClient from "@/components/doctor/CreateMedicalRecordClient"
 
 interface PageProps {
-  searchParams: Promise<{ 
+  searchParams: Promise<{
     appointmentId?: string
     patientId?: string
-    patientName?: string
-    continue?: string
-    triageData?: string
+    recordType?: string
   }>
 }
 
-export default async function CreateMedicalRecordPage({
+/**
+ * Route cũ `/doctor/records/create` — chuyển tiếp sang form tạo bệnh án mới
+ * (Cloudinary-backed, không còn version 2).
+ *
+ * URL params:
+ *   - appointmentId   : ID lịch hẹn (bắt buộc)
+ *   - patientId       : ID bệnh nhân (UUID) (bắt buộc)
+ *   - recordType      : optional, nếu biết trước
+ */
+export default async function CreateMedicalRecordRedirectPage({
   searchParams,
 }: PageProps) {
   const cookieStore = await cookies()
@@ -34,29 +41,18 @@ export default async function CreateMedicalRecordPage({
 
   if (role !== "DOCTOR") redirect("/login")
 
-  const resolvedSearchParams = await searchParams
-  const { appointmentId, patientId, patientName, triageData } = resolvedSearchParams
+  const sp = await searchParams
+  const { appointmentId, patientId, recordType } = sp
 
   if (!appointmentId || !patientId) {
     redirect("/doctor/queue")
   }
 
-  // Parse triage data if available
-  let parsedTriageData = null
-  if (triageData) {
-    try {
-      parsedTriageData = JSON.parse(decodeURIComponent(triageData))
-    } catch {
-      parsedTriageData = null
-    }
-  }
-
   return (
-    <CreateMedicalRecordClient 
-      appointmentId={appointmentId} 
+    <CreateMedicalRecordClient
+      appointmentId={appointmentId}
       patientProfileId={patientId}
-      patientName={patientName}
-      triageData={parsedTriageData}
+      initialRecordType={recordType}
     />
   )
 }

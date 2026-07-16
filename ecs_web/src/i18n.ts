@@ -7,12 +7,12 @@ const messagesMap: Record<string, object> = {
   en: en,
 };
 
-export const defaultLocale = 'vi';
+export const defaultLocale = 'en';
 
 export default getRequestConfig(async () => {
   return {
-    locale: 'vi',
-    messages: vi,
+    locale: 'en',
+    messages: en,
     timeZone: 'Asia/Ho_Chi_Minh',
     now: new Date(),
   };

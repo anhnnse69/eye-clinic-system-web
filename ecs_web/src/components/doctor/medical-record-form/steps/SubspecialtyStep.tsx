@@ -1,100 +1,17 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { RecordType, UpdateMedicalRecordRequest } from "@/types"
-import TraumaSubspecialtySection from "../subspecialty/TraumaSubspecialtySection"
-import AnteriorSubspecialtySection from "../subspecialty/AnteriorSubspecialtySection"
-import GlaucomaSubspecialtySection from "../subspecialty/GlaucomaSubspecialtySection"
-import StrabismusSubspecialtySection from "../subspecialty/StrabismusSubspecialtySection"
-import PediatricSubspecialtySection from "../subspecialty/PediatricSubspecialtySection"
-
+/**
+ * Stub SubspecialtyStep — xem HistoryStep để biết lý do.
+ */
 interface SubspecialtyStepProps {
-  formData: Partial<UpdateMedicalRecordRequest>
-  updateFormData: (updates: Partial<UpdateMedicalRecordRequest>) => void
-  recordType: RecordType
+  formData: unknown
+  updateFormData: (updates: unknown) => void
 }
 
-export default function SubspecialtyStep({
-  formData,
-  updateFormData,
-  recordType,
-}: SubspecialtyStepProps) {
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({})
-
-  useEffect(() => {
-    setExpandedSections({
-      trauma: recordType === "MS21_TRAUMA",
-      lacrimal: recordType === "MS22_ANTERIOR",
-      glaucoma: recordType === "MS24_GLAUCOMA",
-      strabismus: recordType === "MS25_STRABISMUS_PTOSIS",
-      pediatric: recordType === "MS26_PEDIATRIC",
-    })
-  }, [recordType])
-
-  const toggleSection = (key: string) => {
-    setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }))
-  }
-
+export default function SubspecialtyStep(_: SubspecialtyStepProps) {
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-2">
-          Khám chuyên khoa
-        </h2>
-        <p className="text-sm text-gray-500">
-          Nhập thông tin khám chuyên khoa mắt theo loại bệnh án
-        </p>
-      </div>
-
-      {/* Trauma Section - MS21 */}
-      {recordType === "MS21_TRAUMA" && (
-        <TraumaSubspecialtySection
-          formData={formData}
-          updateFormData={updateFormData}
-          isExpanded={expandedSections.trauma}
-          onToggle={() => toggleSection("trauma")}
-        />
-      )}
-
-      {/* Anterior Section - MS22 */}
-      {recordType === "MS22_ANTERIOR" && (
-        <AnteriorSubspecialtySection
-          formData={formData}
-          updateFormData={updateFormData}
-          isExpanded={expandedSections.lacrimal}
-          onToggle={() => toggleSection("lacrimal")}
-        />
-      )}
-
-      {/* Glaucoma Section - MS24 */}
-      {recordType === "MS24_GLAUCOMA" && (
-        <GlaucomaSubspecialtySection
-          formData={formData}
-          updateFormData={updateFormData}
-          isExpanded={expandedSections.glaucoma}
-          onToggle={() => toggleSection("glaucoma")}
-        />
-      )}
-
-      {/* Strabismus Section - MS25 */}
-      {recordType === "MS25_STRABISMUS_PTOSIS" && (
-        <StrabismusSubspecialtySection
-          formData={formData}
-          updateFormData={updateFormData}
-          isExpanded={expandedSections.strabismus}
-          onToggle={() => toggleSection("strabismus")}
-        />
-      )}
-
-      {/* Pediatric Section - MS26 */}
-      {recordType === "MS26_PEDIATRIC" && (
-        <PediatricSubspecialtySection
-          formData={formData}
-          updateFormData={updateFormData}
-          isExpanded={expandedSections.pediatric}
-          onToggle={() => toggleSection("pediatric")}
-        />
-      )}
+    <div className="rounded-lg border border-dashed border-amber-300 bg-amber-50 p-4 text-sm text-amber-800">
+      <strong>SubspecialtyStep (stub)</strong>.
     </div>
   )
 }

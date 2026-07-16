@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useTranslations } from "next-intl";
 import {
   Loader2, RefreshCw, DoorOpen, User, Phone,
   CheckCircle2, Ban, ChevronLeft, ChevronRight, CalendarDays,
@@ -66,6 +67,10 @@ export default function DoctorPersonalScheduleClient({
 }: {
   doctorId: string;
 }) {
+  const t = useTranslations("doctor")
+  const tSchedule = useTranslations("doctor.schedule")
+  const tPersonal = useTranslations("doctor.schedule.personalSchedule")
+
   const todayStr = toLocalDateString(new Date());
 
   const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
@@ -97,11 +102,11 @@ export default function DoctorPersonalScheduleClient({
       dateStrings.forEach((d, i) => { next[d] = results[i]; });
       setShiftsByDate(next);
     } catch {
-      setError("Không thể tải lịch tuần này. Vui lòng thử lại.");
+      setError(tPersonal("loadFailed"));
     } finally {
       setLoading(false);
     }
-  }, [doctorId, weekDays]);
+  }, [doctorId, weekDays, tPersonal]);
 
   useEffect(() => { fetchWeek(); }, [fetchWeek]);
 
@@ -129,8 +134,8 @@ export default function DoctorPersonalScheduleClient({
 
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-slate-800">Lịch cá nhân</h2>
-        <p className="text-sm text-slate-500 mt-0.5">Lịch trực và lịch hẹn của bạn theo tuần</p>
+        <h2 className="text-2xl font-bold text-slate-800">{tSchedule("personalSchedule")}</h2>
+        <p className="text-sm text-slate-500 mt-0.5">{tPersonal("subtitle")}</p>
       </div>
 
       {/* Week nav bar */}
@@ -139,7 +144,7 @@ export default function DoctorPersonalScheduleClient({
           <button
             onClick={() => setWeekStart((w) => addDays(w, -7))}
             className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors"
-            title="Tuần trước"
+            title={tPersonal("previousWeek")}
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
@@ -148,12 +153,12 @@ export default function DoctorPersonalScheduleClient({
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-sm font-semibold text-slate-700 transition-colors"
           >
             <CalendarDays className="h-3.5 w-3.5" />
-            Tuần này
+            {tPersonal("thisWeek")}
           </button>
           <button
             onClick={() => setWeekStart((w) => addDays(w, 7))}
             className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600 transition-colors"
-            title="Tuần sau"
+            title={tPersonal("nextWeek")}
           >
             <ChevronRight className="h-4 w-4" />
           </button>
@@ -166,18 +171,18 @@ export default function DoctorPersonalScheduleClient({
           className="border border-blue-600 text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2 transition-all active:scale-95 h-[38px]"
         >
           <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-          {loading ? "Đang đồng bộ..." : "Tải lại"}
+          {loading ? tPersonal("reloading") : tPersonal("reload")}
         </button>
       </div>
 
       {/* Legend */}
       <div className="flex flex-wrap gap-4 bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs font-medium text-slate-600">
-        <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-green-50 border border-green-300" /><span>Còn trống</span></div>
-        <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-amber-50 border border-amber-300" /><span>Đã đặt kín chỗ</span></div>
-        <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-rose-50 border border-rose-200" /><span>Đã khóa</span></div>
-        <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-amber-50/70 border border-amber-100" /><span>Dải Ca Sáng</span></div>
-        <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-sky-50/70 border border-sky-100" /><span>Dải Ca Chiều</span></div>
-        <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-indigo-50/70 border border-indigo-100" /><span>Dải Ca Tối</span></div>
+        <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-green-50 border border-green-300" /><span>{tPersonal("legend.available")}</span></div>
+        <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-amber-50 border border-amber-300" /><span>{tPersonal("legend.fullyBooked")}</span></div>
+        <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-rose-50 border border-rose-200" /><span>{tPersonal("legend.locked")}</span></div>
+        <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-amber-50/70 border border-amber-100" /><span>{tPersonal("legend.morningShiftBand")}</span></div>
+        <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-sky-50/70 border border-sky-100" /><span>{tPersonal("legend.afternoonShiftBand")}</span></div>
+        <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-indigo-50/70 border border-indigo-100" /><span>{tPersonal("legend.eveningShiftBand")}</span></div>
       </div>
 
       {error && (
@@ -215,7 +220,7 @@ export default function DoctorPersonalScheduleClient({
           {loading && (
             <div className="absolute inset-0 bg-white/70 z-20 flex flex-col items-center justify-center">
               <Loader2 className="h-7 w-7 text-blue-600 animate-spin mb-2" />
-              <p className="text-sm text-slate-500">Đang tải dữ liệu tuần...</p>
+              <p className="text-sm text-slate-500">{tPersonal("loadingWeek")}</p>
             </div>
           )}
 
@@ -268,7 +273,7 @@ export default function DoctorPersonalScheduleClient({
 
                   {positioned.length === 0 && (
                     <div className="absolute inset-x-2 top-2 text-center text-[11px] text-slate-300 font-medium">
-                      Không có lịch
+                      {tPersonal("noSchedule")}
                     </div>
                   )}
 
@@ -292,6 +297,7 @@ export default function DoctorPersonalScheduleClient({
                           slot={slot}
                           shift={shift}
                           effectiveStatus={effectiveStatus}
+                          tPersonal={tPersonal}
                         />
                       </div>
                     );
@@ -312,15 +318,17 @@ function SlotBlock({
   slot,
   shift,
   effectiveStatus,
+  tPersonal,
 }: {
   slot: ScheduleSlotItem;
   shift: ScheduleShiftItem;
   effectiveStatus: SlotStatus;
+  tPersonal: ReturnType<typeof useTranslations<string>>;
 }) {
   const roomBadge = (
     <span className="flex items-center gap-1 text-[9px] text-slate-400 font-medium truncate">
       <DoorOpen className="h-2.5 w-2.5 shrink-0" />
-      {shift.roomName || "Chưa xếp phòng"}
+      {shift.roomName || tPersonal("slot.unassignedRoom")}
     </span>
   );
 
@@ -328,7 +336,7 @@ function SlotBlock({
     return (
       <div className="w-full h-full rounded-lg bg-rose-50 border border-rose-200 flex flex-col items-center justify-center overflow-hidden px-1">
         <Ban className="h-3 w-3 text-rose-400" />
-        <span className="text-[9px] font-bold text-rose-500">Khóa</span>
+        <span className="text-[9px] font-bold text-rose-500">{tPersonal("slot.locked")}</span>
       </div>
     );
   }
@@ -337,7 +345,7 @@ function SlotBlock({
     return (
       <div className="w-full h-full rounded-lg bg-amber-50 border border-amber-200 flex flex-col gap-0.5 px-1.5 py-1 overflow-hidden">
         <div className="flex items-center justify-between">
-          <span className="text-[9px] font-bold text-amber-700">Kín</span>
+          <span className="text-[9px] font-bold text-amber-700">{tPersonal("slot.full")}</span>
           <span className="text-[8px] font-bold text-amber-600 bg-amber-100 border border-amber-200 px-1 rounded">
             {slot.currentPatients}/{slot.maxPatients}
           </span>
@@ -372,10 +380,10 @@ function SlotBlock({
     <div className="w-full h-full rounded-lg bg-green-50 border border-green-200 flex flex-col items-center justify-center gap-0.5 overflow-hidden px-1">
       <div className="flex items-center gap-1 font-bold text-green-700 text-[10px]">
         <CheckCircle2 className="h-2.5 w-2.5 text-green-600" />
-        <span>Trống</span>
+        <span>{tPersonal("slot.available")}</span>
       </div>
       <span className="text-[8px] font-extrabold text-green-600 bg-white border border-green-100 px-1 rounded">
-        {slot.currentPatients}/{slot.maxPatients} BN
+        {slot.currentPatients}/{slot.maxPatients} {tPersonal("slot.patients")}
       </span>
       {roomBadge}
     </div>

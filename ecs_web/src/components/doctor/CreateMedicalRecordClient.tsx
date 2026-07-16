@@ -1,417 +1,413 @@
 "use client"
 
-import { useState, useCallback, useMemo } from "react"
+/**
+ * CreateMedicalRecordClient — MongoDB-backed JSON envelope form.
+ *
+ * Renders the 6 chuẩn ophthalmic record templates (MS21-26) per
+ * `benh_an_mat_*.md`. Form data is shipped as raw JSON in `formData`,
+ * persisted by the backend to MongoDB (collection: medical_records).
+ *
+ * After successful creation, a ParaclinicalPanel is shown so the doctor
+ * can attach OCT / VisualField / Ultrasound requests and AI suggestions.
+ */
+import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
-import {
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  FileText,
-  Stethoscope,
-  Eye,
-  Pill,
-  AlertCircle,
-  Loader2,
-  Activity,
-  ClipboardList,
-} from "lucide-react"
-import { RecordType, RECORD_TYPE_LABELS, CreateMedicalRecordRequest } from "@/types"
-import { createMedicalRecordService } from "@/services/create-medical-record.service"
-import { getMessage } from "@/constants/messages"
+import { useForm, FormProvider } from "react-hook-form"
+import type { Resolver } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Loader2, AlertCircle, CheckCircle2, Printer, Eye } from "lucide-react"
 
-// Import extracted components
-import RecordTypeStep from "./medical-record-form/steps/RecordTypeStep"
-import HistoryStep from "./medical-record-form/steps/HistoryStep"
-import EyeExamStep from "./medical-record-form/steps/EyeExamStep"
-import SubspecialtyStep from "./medical-record-form/steps/SubspecialtyStep"
-import DiagnosisStep from "./medical-record-form/steps/DiagnosisStep"
-import PrescriptionStep from "./medical-record-form/steps/PrescriptionStep"
+import {
+  medicalRecordFormDataSchema,
+  validateFormDataForRecordType,
+} from "@/schemas/medical-record.schema"
+import medicalRecordService from "@/services/medical-record.service"
+import { getMessage } from "@/constants/messages"
+import {
+  MEDICAL_RECORD_TYPES,
+  MEDICAL_RECORD_TYPE_LABELS,
+  type MedicalRecordType,
+  type MedicalRecordFormDataPayload,
+} from "@/types"
+
+import UniversalEyeExamSections from "./medical-record-form/UniversalEyeExamSections"
+import SubspecialtySections from "./medical-record-form/SubspecialtySections"
+import GlaucomaFormSections from "./medical-record-form/GlaucomaFormSections"
+import HanhChinhQuanLyNBSections from "./medical-record-form/HanhChinhQuanLyNBSections"
+import ChanDoanTinhTrangRaVienSections from "./medical-record-form/ChanDoanTinhTrangRaVienSections"
+import TongKetBenhAnSections from "./medical-record-form/TongKetBenhAnSections"
+import TheoDoiDieuTriTable from "./medical-record-form/TheoDoiDieuTriTable"
+import PhieuPhauThuatForm from "./medical-record-form/PhieuPhauThuatForm"
+import PrescriptionSection from "./medical-record-form/PrescriptionSection"
+import { getAccentForRecordType, SectionHeading } from "./medical-record-form/SectionHeading"
+import ParaclinicalPanel from "./ParaclinicalPanel"
 
 interface CreateMedicalRecordClientProps {
   appointmentId: string
   patientProfileId?: string
-  patientName?: string
-  triageData?: {
-    urgencyLevel?: string
-    recommendedAction?: string
-    symptoms?: {
-      hasVisionChange?: boolean
-      hasEyeRedness?: boolean
-      hasEyeDischarge?: boolean
-      hasLightSensitivity?: boolean
-      hasEyePain?: boolean
-      hasHeadache?: boolean
-      hasForeignBody?: boolean
-    }
-    quickVisualAssessment?: string
-  } | null
+  initialRecordType?: string
 }
-
-const STEPS = [
-  { id: 1, title: "Loại bệnh án", icon: FileText },
-  { id: 2, title: "Lý do & Tiền sử", icon: Stethoscope },
-  { id: 3, title: "Khám mắt", icon: Eye },
-  { id: 4, title: "Chuyên khoa", icon: Activity },
-  { id: 5, title: "Chẩn đoán", icon: ClipboardList },
-  { id: 6, title: "Kê đơn", icon: Pill },
-]
 
 export default function CreateMedicalRecordClient({
   appointmentId,
   patientProfileId,
-  patientName,
-  triageData,
+  initialRecordType,
 }: CreateMedicalRecordClientProps) {
   const router = useRouter()
-  const [currentStep, setCurrentStep] = useState(1)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
-  const [selectedRecordType, setSelectedRecordType] = useState<RecordType | null>(null)
-  const [formData, setFormData] = useState<Partial<CreateMedicalRecordRequest>>({
-    appointmentId,
-    recordType: undefined,
+  const initialType = useMemo<MedicalRecordType | undefined>(() => {
+    if (initialRecordType && (MEDICAL_RECORD_TYPES as readonly string[]).includes(initialRecordType)) {
+      return initialRecordType as MedicalRecordType
+    }
+    return undefined
+  }, [initialRecordType])
+
+  const [recordType, setRecordType] = useState<MedicalRecordType | undefined>(initialType)
+  const [submitting, setSubmitting] = useState(false)
+  const [serverError, setServerError] = useState<string | null>(null)
+  const [successInfo, setSuccessInfo] = useState<{ recordId: string; mongoDocumentId?: string } | null>(null)
+
+  const methods = useForm<MedicalRecordFormDataPayload>({
+    resolver: zodResolver(medicalRecordFormDataSchema) as unknown as Resolver<MedicalRecordFormDataPayload>,
+    mode: "onBlur",
+    defaultValues: {
+      schemaVersion: "1.1",
+      benhAn: {
+        lyDoVaoVien: "",
+        benhSu: "",
+        tienSuBanThanMat: "",
+        tienSuBanThanToanThan: "",
+        tienSuGiaDinh: "",
+      },
+      khamBenh: {
+        khamToanThan: {},
+      },
+    },
   })
 
-  const updateFormData = useCallback(
-    (updates: Partial<CreateMedicalRecordRequest>) => {
-      setFormData((prev) => ({ ...prev, ...updates }))
-    },
-    []
-  )
+  // ─── Chọn loại bệnh án ─────────────────────────────────────────────
+  if (!recordType) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-8">
+        <header className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">Chọn loại bệnh án</h1>
+          <p className="mt-1 text-sm text-gray-600">
+            Bệnh án sẽ được lưu trữ trên <strong>MongoDB</strong> (raw JSON, encrypted in transit).
+            Chọn 1 trong 6 mẫu chuẩn:
+          </p>
+        </header>
 
-  const handleSelectRecordType = (type: RecordType) => {
-    setSelectedRecordType(type)
-    updateFormData({ recordType: type })
-  }
-
-  const handleNext = () => {
-    if (currentStep < STEPS.length) {
-      setCurrentStep(currentStep + 1)
-    }
-  }
-
-  const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1)
-    }
-  }
-
-  const handleSubmit = async () => {
-    setIsSubmitting(true)
-    setError(null)
-
-    try {
-      const response = await createMedicalRecordService.createMedicalRecord({
-        appointmentId,
-        recordType: formData.recordType!,
-        chiefComplaint: formData.chiefComplaint,
-        illnessDayNumber: formData.illnessDayNumber,
-        medicalHistory: formData.medicalHistory,
-        personalHistoryEye: formData.personalHistoryEye,
-        personalHistorySystemic: formData.personalHistorySystemic,
-        familyHistory: formData.familyHistory,
-        traumaCause: formData.traumaCause,
-        traumaTime: formData.traumaTime,
-        traumaPriorTreatment: formData.traumaPriorTreatment,
-        traumaPostTreatmentCourse: formData.traumaPostTreatmentCourse,
-        glaucomaSymptomDuration: formData.glaucomaSymptomDuration,
-        glaucomaPriorFacility: formData.glaucomaPriorFacility,
-        glaucomaPriorTreatment: formData.glaucomaPriorTreatment,
-        glaucomaHistoryEye: formData.glaucomaHistoryEye,
-        glaucomaSteroidUse: formData.glaucomaSteroidUse,
-        glaucomaFamilyHistory: formData.glaucomaFamilyHistory,
-        strabismusCongenital: formData.strabismusCongenital,
-        strabismusAcquired: formData.strabismusAcquired,
-        strabismusOnsetTime: formData.strabismusOnsetTime,
-        strabismusMainSymptom: formData.strabismusMainSymptom,
-        pediatricPregnancyHistory: formData.pediatricPregnancyHistory,
-        pediatricDevelopment: formData.pediatricDevelopment,
-        vitalPulse: formData.vitalPulse,
-        vitalTemperature: formData.vitalTemperature,
-        vitalBloodPressure: formData.vitalBloodPressure,
-        vitalRespiratoryRate: formData.vitalRespiratoryRate,
-        vitalWeightKg: formData.vitalWeightKg,
-        rightEyeBasic: formData.rightEyeBasic,
-        leftEyeBasic: formData.leftEyeBasic,
-        rightEyeEyelid: formData.rightEyeEyelid,
-        leftEyeEyelid: formData.leftEyeEyelid,
-        rightEyeConjunctiva: formData.rightEyeConjunctiva,
-        leftEyeConjunctiva: formData.leftEyeConjunctiva,
-        rightEyeCornea: formData.rightEyeCornea,
-        leftEyeCornea: formData.leftEyeCornea,
-        rightEyeSclera: formData.rightEyeSclera,
-        leftEyeSclera: formData.leftEyeSclera,
-        rightEyeAnteriorChamber: formData.rightEyeAnteriorChamber,
-        leftEyeAnteriorChamber: formData.leftEyeAnteriorChamber,
-        rightEyeIrisPupil: formData.rightEyeIrisPupil,
-        leftEyeIrisPupil: formData.leftEyeIrisPupil,
-        rightEyeLens: formData.rightEyeLens,
-        leftEyeLens: formData.leftEyeLens,
-        rightEyeVitreous: formData.rightEyeVitreous,
-        leftEyeVitreous: formData.leftEyeVitreous,
-        rightEyeFundusDiscMacula: formData.rightEyeFundusDiscMacula,
-        leftEyeFundusDiscMacula: formData.leftEyeFundusDiscMacula,
-        rightEyeFundusRetinaVessel: formData.rightEyeFundusRetinaVessel,
-        leftEyeFundusRetinaVessel: formData.leftEyeFundusRetinaVessel,
-        rightEyeOrbit: formData.rightEyeOrbit,
-        leftEyeOrbit: formData.leftEyeOrbit,
-        systemicExam: formData.systemicExam,
-        traumaRecord: formData.traumaRecord,
-        traumaSurgeries: formData.traumaSurgeries,
-        lacrimalRecord: formData.lacrimalRecord,
-        glaucomaRecord: formData.glaucomaRecord,
-        glaucomaHistories: formData.glaucomaHistories,
-        strabismusPtosisRecord: formData.strabismusPtosisRecord,
-        pediatricRecord: formData.pediatricRecord,
-        diagnoses: formData.diagnoses,
-        clinicalSummary: formData.clinicalSummary,
-        prescriptions: formData.prescriptions,
-        surgeryPlans: formData.surgeryPlans,
-        followUpDate: formData.followUpDate,
-        followUpDays: formData.followUpDays,
-        followUpNote: formData.followUpNote,
-      })
-
-      if (response.codeMessage === "APP_MESSAGE_2005") {
-        // Redirect to medical records list after successful creation
-        router.push(`/doctor/records`)
-      } else {
-        setError(getMessage(response.codeMessage) || "Có lỗi xảy ra khi tạo bệnh án")
-      }
-    } catch (err: any) {
-      const codeMessage = err?.response?.data?.codeMessage || err?.codeMessage
-      setError(getMessage(codeMessage) || "Có lỗi xảy ra khi tạo bệnh án")
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const canProceed = () => {
-    switch (currentStep) {
-      case 1:
-        return selectedRecordType !== null
-      case 2:
-        return formData.chiefComplaint && formData.chiefComplaint.trim() !== ""
-      default:
-        return true
-    }
-  }
-
-  const recordTypeColor = useMemo(() => {
-    if (!selectedRecordType) return "blue"
-    const colors: Record<string, string> = {
-      MS21_TRAUMA: "red",
-      MS22_ANTERIOR: "blue",
-      MS23_FUNDUS: "purple",
-      MS24_GLAUCOMA: "amber",
-      MS25_STRABISMUS_PTOSIS: "teal",
-      MS26_PEDIATRIC: "pink",
-    }
-    return colors[selectedRecordType] || "blue"
-  }, [selectedRecordType])
-
-  return (
-    <div className="min-h-screen bg-gray-50/50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex items-center gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+          {MEDICAL_RECORD_TYPES.map((t) => (
             <button
-              onClick={() => router.back()}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              key={t}
+              type="button"
+              onClick={() => setRecordType(t)}
+              className="group flex flex-col items-start rounded-lg border border-gray-200 bg-white p-4 text-left transition hover:border-indigo-500 hover:shadow"
             >
-              <ArrowLeft className="w-5 h-5 text-gray-600" />
+              <span className="text-sm font-semibold text-indigo-600">
+                {t.replace("MS", "MS ")}
+              </span>
+              <span className="mt-1 text-sm text-gray-700">
+                {MEDICAL_RECORD_TYPE_LABELS[t]}
+              </span>
             </button>
-            <div className="flex-1">
-              <h1 className="text-xl font-semibold text-gray-900">
-                Tạo bệnh án mới
-              </h1>
-              <div className="flex items-center gap-3 text-sm text-gray-500">
-                {patientName && <span>Bệnh nhân: {patientName}</span>}
-                {triageData?.urgencyLevel && (
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                    triageData.urgencyLevel === "Emergency" ? "bg-red-100 text-red-700" :
-                    triageData.urgencyLevel === "High" ? "bg-orange-100 text-orange-700" :
-                    triageData.urgencyLevel === "Medium" ? "bg-yellow-100 text-yellow-700" :
-                    "bg-green-100 text-green-700"
-                  }`}>
-                    {triageData.urgencyLevel === "Emergency" ? "Cấp cứu" :
-                     triageData.urgencyLevel === "High" ? "Khẩn cấp" :
-                     triageData.urgencyLevel === "Medium" ? "Trung bình" : "Thấp"}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
+
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="mt-6 inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
+        >
+          ← Quay lại
+        </button>
       </div>
+    )
+  }
 
-      {/* Stepper */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex items-center justify-between overflow-x-auto">
-            {STEPS.map((step, index) => {
-              const Icon = step.icon
-              const isActive = currentStep === step.id
-              const isCompleted = currentStep > step.id
-
-              return (
-                <div key={step.id} className="flex items-center">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all ${
-                        isCompleted
-                          ? "bg-green-500 text-white"
-                          : isActive
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-200 text-gray-500"
-                      }`}
-                    >
-                      {isCompleted ? (
-                        <Check className="w-4 h-4" />
-                      ) : (
-                        <Icon className="w-4 h-4" />
-                      )}
-                    </div>
-                    <span
-                      className={`text-sm font-medium hidden md:block whitespace-nowrap ${
-                        isActive
-                          ? "text-blue-600"
-                          : isCompleted
-                          ? "text-green-600"
-                          : "text-gray-400"
-                      }`}
-                    >
-                      {step.title}
-                    </span>
-                  </div>
-                  {index < STEPS.length - 1 && (
-                    <div
-                      className={`w-6 sm:w-12 h-0.5 mx-1 sm:mx-2 ${
-                        isCompleted ? "bg-green-500" : "bg-gray-200"
-                      }`}
-                    />
-                  )}
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 shrink-0" />
-            <div>
-              <p className="text-sm font-medium text-red-800">{error}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Step 1: Record Type Selection */}
-        {currentStep === 1 && (
-          <RecordTypeStep
-            selectedRecordType={selectedRecordType}
-            onSelect={handleSelectRecordType}
-          />
-        )}
-
-        {/* Step 2: Chief Complaint & History */}
-        {currentStep === 2 && (
-          <HistoryStep
-            formData={formData}
-            updateFormData={updateFormData}
-            recordType={selectedRecordType!}
-          />
-        )}
-
-        {/* Step 3: Eye Exam */}
-        {currentStep === 3 && (
-          <EyeExamStep
-            formData={formData}
-            updateFormData={updateFormData}
-            recordType={selectedRecordType!}
-          />
-        )}
-
-        {/* Step 4: Subspecialty */}
-        {currentStep === 4 && (
-          <SubspecialtyStep
-            formData={formData}
-            updateFormData={updateFormData}
-            recordType={selectedRecordType!}
-          />
-        )}
-
-        {/* Step 5: Diagnosis */}
-        {currentStep === 5 && (
-          <DiagnosisStep formData={formData} updateFormData={updateFormData} />
-        )}
-
-        {/* Step 6: Prescription */}
-        {currentStep === 6 && (
-          <PrescriptionStep
-            formData={formData}
-            updateFormData={updateFormData}
-          />
-        )}
-
-        {/* Navigation */}
-        <div className="mt-8 flex items-center justify-between">
-          <button
-            onClick={handleBack}
-            disabled={currentStep === 1}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all ${
-              currentStep === 1
-                ? "text-gray-300 cursor-not-allowed"
-                : "text-gray-600 hover:bg-gray-100"
-            }`}
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Quay lại
-          </button>
-
-          {currentStep < STEPS.length ? (
-            <button
-              onClick={handleNext}
-              disabled={!canProceed()}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-medium text-sm transition-all ${
-                canProceed()
-                  ? "bg-blue-500 text-white hover:bg-blue-600 shadow-sm"
-                  : "bg-gray-100 text-gray-400 cursor-not-allowed"
-              }`}
-            >
-              Tiếp tục
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          ) : (
-            <button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-medium text-sm transition-all ${
-                isSubmitting
-                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                  : "bg-green-500 text-white hover:bg-green-600 shadow-sm"
-              }`}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Đang lưu...
-                </>
-              ) : (
-                <>
-                  <Check className="w-4 h-4" />
-                  Lưu bệnh án
-                </>
-              )}
-            </button>
+  // ─── Success banner + Paraclinical Panel ──────────────────────────
+  if (successInfo) {
+    return (
+      <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
+        <div className="rounded-lg border border-green-200 bg-green-50 p-6 text-center">
+          <CheckCircle2 className="mx-auto h-12 w-12 text-green-500" />
+          <h2 className="mt-4 text-2xl font-semibold text-gray-900">
+            Đã tạo bệnh án thành công
+          </h2>
+          <p className="mt-2 text-sm text-gray-700">
+            Medical Record ID:{" "}
+            <code className="rounded bg-white px-2 py-0.5">{successInfo.recordId}</code>
+          </p>
+          {successInfo.mongoDocumentId && (
+            <p className="mt-1 text-xs text-gray-600">
+              MongoDB Document ID:{" "}
+              <code className="rounded bg-white px-2 py-0.5">{successInfo.mongoDocumentId}</code>
+            </p>
           )}
         </div>
+
+        <ParaclinicalPanel recordId={successInfo.recordId} />
+
+        <div className="flex justify-center gap-3">
+          <button
+            type="button"
+            onClick={() => router.push("/doctor/medical-records")}
+            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            Về danh sách
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push(`/doctor/medical-records/${successInfo.recordId}`)}
+            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+          >
+            Xem chi tiết
+          </button>
+        </div>
       </div>
-    </div>
+    )
+  }
+
+  // ─── Submit handler ─────────────────────────────────────────────────
+  const onSubmit = methods.handleSubmit(async (values) => {
+    setServerError(null)
+
+    const ok = validateFormDataForRecordType(recordType, values as never)
+    if (!ok.ok) {
+      setServerError(ok.reason)
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      if (!patientProfileId) {
+        setServerError(
+          "Thiếu patientProfileId — vui lòng mở form từ trang bệnh nhân hoặc truyền ?patientProfileId=..."
+        )
+        setSubmitting(false)
+        return
+      }
+
+      const response = await medicalRecordService.create({
+        appointmentId,
+        patientId: patientProfileId,
+        recordType,
+        notes: "",
+        formData: values,
+      })
+
+      if (!response?.data?.isSuccess) {
+        setServerError(getMessage(response?.codeMessage) ?? "Tạo bệnh án thất bại")
+        setSubmitting(false)
+        return
+      }
+
+      setSuccessInfo({
+        recordId: response.data.medicalRecordId,
+        mongoDocumentId: response.data.mongoDocumentId,
+      })
+    } catch (err) {
+      setServerError(
+        err instanceof Error ? err.message : "Lỗi không xác định khi gọi BE"
+      )
+    } finally {
+      setSubmitting(false)
+    }
+  })
+
+  return (
+    <FormProvider {...methods}>
+      <form
+        onSubmit={onSubmit}
+        className="mx-auto max-w-5xl space-y-8 px-4 py-8"
+        aria-label={MEDICAL_RECORD_TYPE_LABELS[recordType]}
+      >
+        {/* Header — cho in ấn */}
+        <header className="rounded-lg border border-gray-200 bg-white p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              <p className={`text-sm font-medium ${accentText(recordType)}`}>
+                {recordType.replace("MS", "MS ")}
+              </p>
+              <h1 className="mt-1 text-2xl font-bold text-gray-900">
+                {MEDICAL_RECORD_TYPE_LABELS[recordType]}
+              </h1>
+              <p className="mt-1 hidden text-xs text-gray-600 print:block">
+                <strong>BỆNH ÁN MẮT — MS {recordType.replace("MS", "")}/BV-01</strong>
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 print:hidden"
+              title="In bệnh án ra PDF/A4"
+            >
+              <Printer className="h-4 w-4" />
+              In bệnh án (A4)
+            </button>
+          </div>
+        </header>
+
+        {/* Mini TOC — cho phép cuộn nhanh đến section khi form dài */}
+        <nav
+          aria-label="Mục lục bệnh án"
+          className="sticky top-2 z-10 rounded-lg border border-gray-200 bg-white/95 p-3 backdrop-blur print:hidden"
+        >
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
+            <span className="font-medium text-gray-700">Mục lục:</span>
+            <a href="#hanh-chinh" className="hover:text-indigo-600">
+              Hành chính
+            </a>
+            <a href="#quan-ly-nb" className="hover:text-indigo-600">
+              Quản lý NB
+            </a>
+            <a href="#benh-an" className="hover:text-indigo-600">
+              Bệnh Án
+            </a>
+            <a href="#kham-benh" className="hover:text-indigo-600">
+              Khám bệnh
+            </a>
+            <a href="#chan-doan" className="hover:text-indigo-600">
+              Chẩn đoán
+            </a>
+            <a href="#dieu-tri" className="hover:text-indigo-600">
+              Điều trị
+            </a>
+            <a href="#tinh-trang-ra-vien" className="hover:text-indigo-600">
+              Tình trạng ra viện
+            </a>
+            <a href="#tong-ket" className="hover:text-indigo-600">
+              Tổng kết
+            </a>
+          </div>
+        </nav>
+
+        {/* I. HÀNH CHÍNH (mục 1-11) */}
+        <section id="hanh-chinh">
+          <HanhChinhQuanLyNBSections recordType={recordType} />
+        </section>
+
+        {/* II. QUẢN LÝ NGƯỜI BỆNH (mục 12-19) — render bên trong HanhChinhQuanLyNBSections */}
+        <section id="quan-ly-nb" />
+
+        {/* A. BỆNH ÁN — Lý do / Bệnh sử / Tiền sử (theo SubspecialtySections) */}
+        <div id="benh-an">
+          {recordType === "MS24_GLAUCOMA" ? (
+            <GlaucomaFormSections />
+          ) : (
+            <SubspecialtySections recordType={recordType} />
+          )}
+        </div>
+
+        {/* III. KHÁM BỆNH — shared universal layout for all recordTypes */}
+        <div id="kham-benh">
+          <UniversalEyeExamSections />
+        </div>
+
+        {/* IV. CHẨN ĐOÁN MÃ ICD (mục 20-25) — luôn render cho mọi mẫu */}
+        <section id="chan-doan">
+          <ChanDoanTinhTrangRaVienSections />
+        </section>
+
+        {/* MS22 Bán phần trước — bảng "Theo dõi điều trị" (trang 8-9 mẫu) */}
+        {recordType === "MS22_ANTERIOR" && (
+          <section id="theo-doi-dieu-tri">
+            <TheoDoiDieuTriTable />
+          </section>
+        )}
+
+        {/* MS22 Bán phần trước — Phiếu Phẫu thuật / Thủ thuật (trang 9-10 mẫu) */}
+        {recordType === "MS22_ANTERIOR" && (
+          <section id="phieu-phau-thuat">
+            <PhieuPhauThuatForm />
+          </section>
+        )}
+
+        {/* V. TỔNG KẾT BỆNH ÁN (trang cuối) — luôn render */}
+        <section id="tong-ket">
+          <TongKetBenhAnSections recordType={recordType} />
+        </section>
+
+        {/* VI. ĐƠN THUỐC - Prescription */}
+        <section id="don-thuoc">
+          <PrescriptionSection />
+        </section>
+
+        {serverError && (
+          <div
+            role="alert"
+            className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700"
+          >
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>{serverError}</span>
+          </div>
+        )}
+
+        <div className="flex items-center justify-end gap-3 border-t border-gray-200 pt-6 print:hidden">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            disabled={submitting}
+            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+          >
+            Huỷ
+          </button>
+          <button
+            type="submit"
+            disabled={submitting}
+            className={`inline-flex items-center gap-2 rounded-lg ${accentButton(recordType)} px-5 py-2 text-sm font-medium text-white shadow-sm hover:opacity-90 disabled:opacity-50`}
+          >
+            {submitting ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" /> Đang lưu vào MongoDB…
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="h-4 w-4" /> Hoàn tất & lưu bệnh án
+              </>
+            )}
+          </button>
+        </div>
+      </form>
+    </FormProvider>
   )
+}
+
+function accentText(recordType: string): string {
+  switch (recordType) {
+    case "MS21_TRAUMA":
+      return "text-rose-700"
+    case "MS22_ANTERIOR":
+      return "text-teal-700"
+    case "MS23_FUNDUS":
+      return "text-amber-700"
+    case "MS24_GLAUCOMA":
+      return "text-indigo-700"
+    case "MS25_STRABISMUS_PTOSIS":
+      return "text-sky-700"
+    case "MS26_PEDIATRIC":
+      return "text-violet-700"
+    default:
+      return "text-gray-700"
+  }
+}
+
+function accentButton(recordType: string): string {
+  switch (recordType) {
+    case "MS21_TRAUMA":
+      return "bg-rose-600"
+    case "MS22_ANTERIOR":
+      return "bg-teal-600"
+    case "MS23_FUNDUS":
+      return "bg-amber-600"
+    case "MS24_GLAUCOMA":
+      return "bg-indigo-600"
+    case "MS25_STRABISMUS_PTOSIS":
+      return "bg-sky-600"
+    case "MS26_PEDIATRIC":
+      return "bg-violet-600"
+    default:
+      return "bg-gray-600"
+  }
 }

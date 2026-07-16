@@ -1,0 +1,47 @@
+{
+  "medicalRecord": {
+    "title": "Hồ sơ bệnh án",
+    "createTitle": "Tạo bệnh án mới",
+    "listTitle": "Danh sách bệnh án",
+    "detailTitle": "Chi tiết bệnh án",
+    "editTitle": "Sửa bệnh án",
+    "chiefComplaint": "Lý do khám",
+    "medicalHistory": "Tiền sử bệnh",
+    "personalHistory": "Tiền sử cá nhân",
+    "familyHistory": "Tiền sử gia đình",
+    "examination": "Khám bệnh",
+    "diagnosis": "Chẩn đoán",
+    "treatment": "Điều trị",
+    "prescription": "Đơn thuốc",
+    "followUp": "Tái khám",
+    "rightEye": "Mắt phải (OD)",
+    "leftEye": "Mắt trái (OS)",
+    "visualAcuity": "Thị lực",
+    "withoutCorrection": "Không kính",
+    "withCorrection": "Có kính",
+    "intraocularPressure": "Nhãn áp",
+    "recordType": "Loại bệnh án",
+    "trauma": "Chấn thương",
+    "anterior": "Bán phần trước",
+    "fundus": "Đáy mắt",
+    "glaucoma": "Glôcôm",
+    "strabismus": "Lác & Sụp mi",
+    "pediatric": "Nhi",
+    "noRecords": "Chưa có bệnh án nào",
+    "recordCreated": "Tạo bệnh án thành công",
+    "recordUpdated": "Cập nhật bệnh án thành công",
+    "recordFinalized": "Bệnh án đã được chốt",
+    "type": {
+      "trauma": "Chấn thương",
+      "anterior": "Bán phần trước",
+      "fundus": "Đáy mắt",
+      "glaucoma": "Glôcôm",
+      "strabismus": "Lác & Sụp mi",
+      "pediatric": "Nhi"
+    },
+    "status": {
+      "draft": "Bản nháp",
+      "finalized": "Đã chốt"
+    }
+  }
+}

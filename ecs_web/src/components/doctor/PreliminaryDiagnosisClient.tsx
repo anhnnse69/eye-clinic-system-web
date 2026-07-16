@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { ArrowLeft, Loader2, Stethoscope, AlertTriangle, Activity, Clock } from "lucide-react"
 import { preliminaryDiagnosisService } from "@/services/preliminary-diagnosis.service"
 import { TriageUrgencyLevel, PreliminaryDiagnosisRequest } from "@/types"
@@ -13,29 +14,11 @@ interface PreliminaryDiagnosisClientProps {
   patientName: string
 }
 
-const URGENCY_OPTIONS = [
-  { value: TriageUrgencyLevel.Emergency, label: "Cấp cứu", color: "red", icon: AlertTriangle, description: "Cần xử lý ngay lập tức" },
-  { value: TriageUrgencyLevel.High, label: "Khẩn cấp", color: "orange", icon: Activity, description: "Cần ưu tiên cao" },
-  { value: TriageUrgencyLevel.Medium, label: "Trung bình", color: "yellow", icon: Clock, description: "Có thể chờ đợi" },
-  { value: TriageUrgencyLevel.Low, label: "Thấp", color: "green", icon: Stethoscope, description: "Không cần vội" },
-]
-
-const COMMON_ACTIONS = [
-  "Khám thị lực",
-  "Khám nhãn áp",
-  "Soi đáy mắt",
-  "Test Schirmer",
-  "Khám củng mạc",
-  "Khám tiền phòng",
-  "Khám thể thủy tinh",
-  "Chụp OCT",
-  "Đo khúc xạ",
-]
-
 export default function PreliminaryDiagnosisClient({
   appointmentId,
   patientName,
 }: PreliminaryDiagnosisClientProps) {
+  const t = useTranslations("doctor.preliminaryDiagnosis")
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -90,20 +73,38 @@ export default function PreliminaryDiagnosisClient({
       const response = await preliminaryDiagnosisService.submit(payload)
 
       if (response.data?.isSuccess) {
-        // Chuyển thẳng đến form tạo bệnh án
         router.push(
           `/doctor/records/create?appointmentId=${appointmentId}&fromPreliminaryDiagnosis=true`
         )
         return
       }
 
-      setError(response.codeMessage || "Không thể lưu chuẩn đoán sơ bộ")
+      setError(response.codeMessage || t("error.saveFailed"))
     } catch {
-      setError("Có lỗi xảy ra, vui lòng thử lại")
+      setError(t("error.unknown"))
     } finally {
       setSubmitting(false)
     }
   }
+
+  const URGENCY_OPTIONS = [
+    { value: TriageUrgencyLevel.Emergency, label: t("emergency"), color: "red", icon: AlertTriangle, description: t("urgencyDescriptions.emergency") },
+    { value: TriageUrgencyLevel.High, label: t("high"), color: "orange", icon: Activity, description: t("urgencyDescriptions.high") },
+    { value: TriageUrgencyLevel.Medium, label: t("medium"), color: "yellow", icon: Clock, description: t("urgencyDescriptions.medium") },
+    { value: TriageUrgencyLevel.Low, label: t("low"), color: "green", icon: Stethoscope, description: t("urgencyDescriptions.low") },
+  ]
+
+  const COMMON_ACTIONS = [
+    t("commonActions.visualAcuityExam"),
+    t("commonActions.iopExam"),
+    t("commonActions.fundusExam"),
+    t("commonActions.schirmerTest"),
+    t("commonActions.corneaExam"),
+    t("commonActions.anteriorChamberExam"),
+    t("commonActions.lensExam"),
+    t("commonActions.octScan"),
+    t("commonActions.refractionTest"),
+  ]
 
   return (
     <div className="min-h-screen bg-gray-50/50">
@@ -117,15 +118,15 @@ export default function PreliminaryDiagnosisClient({
               <ArrowLeft className="w-5 h-5 text-gray-600" />
             </button>
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">Phân loại &amp; Chuẩn đoán sơ bộ</h1>
+              <h1 className="text-xl font-semibold text-gray-900">{t("triageAndDiagnosis")}</h1>
               <p className="text-sm text-gray-500">
-                {patientName ? `Bệnh nhân: ${patientName}` : "Phân loại bệnh nhân"}
+                {patientName ? `${t("patient")} ${patientName}` : t("classifyingPatient")}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Stethoscope className="w-4 h-4" />
-            <span>Đang phân loại bệnh nhân</span>
+            <span>{t("classifyingPatient")}</span>
           </div>
         </div>
 
@@ -138,7 +139,7 @@ export default function PreliminaryDiagnosisClient({
         <div className="space-y-6">
           {/* Urgency Level Selection */}
           <div className="bg-white rounded-2xl border border-gray-200 p-5">
-            <h2 className="text-base font-semibold text-gray-900 mb-4">Mức độ ưu tiên</h2>
+            <h2 className="text-base font-semibold text-gray-900 mb-4">{t("priority")}</h2>
             <div className="grid grid-cols-2 gap-3">
               {URGENCY_OPTIONS.map((option) => {
                 const Icon = option.icon
@@ -168,16 +169,16 @@ export default function PreliminaryDiagnosisClient({
 
           {/* Symptom Checklist */}
           <div className="bg-white rounded-2xl border border-gray-200 p-5">
-            <h2 className="text-base font-semibold text-gray-900 mb-4">Triệu chứng ban đầu</h2>
+            <h2 className="text-base font-semibold text-gray-900 mb-4">{t("initialSymptoms")}</h2>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { key: "hasVisionChange", label: "Thay đổi thị lực" },
-                { key: "hasEyeRedness", label: "Mắt đỏ" },
-                { key: "hasEyeDischarge", label: "Tiết tố bất thường" },
-                { key: "hasLightSensitivity", label: "Nhạy cảm ánh sáng" },
-                { key: "hasEyePain", label: "Đau mắt" },
-                { key: "hasHeadache", label: "Đau đầu" },
-                { key: "hasForeignBody", label: "Dị vật trong mắt" },
+                { key: "hasVisionChange", label: t("visionChange") },
+                { key: "hasEyeRedness", label: t("redness") },
+                { key: "hasEyeDischarge", label: t("abnormalDischarge") },
+                { key: "hasLightSensitivity", label: t("lightSensitivity") },
+                { key: "hasEyePain", label: t("eyePain") },
+                { key: "hasHeadache", label: t("headache") },
+                { key: "hasForeignBody", label: t("foreignBody") },
               ].map((item) => (
                 <label
                   key={item.key}
@@ -197,10 +198,10 @@ export default function PreliminaryDiagnosisClient({
 
           {/* Pain Level & Quick Assessment */}
           <div className="bg-white rounded-2xl border border-gray-200 p-5">
-            <h2 className="text-base font-semibold text-gray-900 mb-4">Đánh giá nhanh</h2>
+            <h2 className="text-base font-semibold text-gray-900 mb-4">{t("quickAssessment")}</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Mức độ đau (1-10)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t("painLevelScale")}</label>
                 <div className="flex items-center gap-4">
                   <input
                     type="range"
@@ -217,12 +218,12 @@ export default function PreliminaryDiagnosisClient({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Ghi chú đánh giá nhanh</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t("quickAssessmentNote")}</label>
                 <textarea
                   value={form.quickVisualAssessment}
                   onChange={(e) => update({ quickVisualAssessment: e.target.value })}
                   rows={3}
-                  placeholder="Mô tả nhanh tình trạng bệnh nhân..."
+                  placeholder={t("quickAssessmentPlaceholder")}
                   className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 resize-none"
                 />
               </div>
@@ -231,10 +232,10 @@ export default function PreliminaryDiagnosisClient({
 
           {/* Recommended Action */}
           <div className="bg-white rounded-2xl border border-gray-200 p-5">
-            <h2 className="text-base font-semibold text-gray-900 mb-4">Hành động khuyến nghị</h2>
+            <h2 className="text-base font-semibold text-gray-900 mb-4">{t("suggestedActions")}</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Hành động đề xuất</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t("recommendedAction")}</label>
                 <div className="flex flex-wrap gap-2 mb-3">
                   {COMMON_ACTIONS.map((action) => (
                     <button
@@ -254,7 +255,7 @@ export default function PreliminaryDiagnosisClient({
                   type="text"
                   value={form.recommendedAction}
                   onChange={(e) => update({ recommendedAction: e.target.value })}
-                  placeholder="Hoặc nhập hành động khác..."
+                  placeholder={t("suggestedActionsPlaceholder")}
                   className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
                 />
               </div>
@@ -266,7 +267,7 @@ export default function PreliminaryDiagnosisClient({
                   onChange={(e) => update({ isReferralNeeded: e.target.checked })}
                   className="w-5 h-5 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
                 />
-                <span className="text-sm text-gray-700">Cần chuyển chuyên khoa</span>
+                <span className="text-sm text-gray-700">{t("referToSpecialist")}</span>
               </label>
 
               {form.isReferralNeeded && (
@@ -274,7 +275,7 @@ export default function PreliminaryDiagnosisClient({
                   type="text"
                   value={form.referralTo}
                   onChange={(e) => update({ referralTo: e.target.value })}
-                  placeholder="Chuyển đến..."
+                  placeholder={t("referToPlaceholder")}
                   className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
                 />
               )}
@@ -283,12 +284,12 @@ export default function PreliminaryDiagnosisClient({
 
           {/* Follow-up Instructions */}
           <div className="bg-white rounded-2xl border border-gray-200 p-5">
-            <h2 className="text-base font-semibold text-gray-900 mb-4">Hướng dẫn tái khám</h2>
+            <h2 className="text-base font-semibold text-gray-900 mb-4">{t("followUpInstructionsLabel")}</h2>
             <textarea
               value={form.followUpInstructions}
               onChange={(e) => update({ followUpInstructions: e.target.value })}
               rows={2}
-              placeholder="VD: Tái khám sau 1 tuần nếu không cải thiện..."
+              placeholder={t("followUpPlaceholder")}
               className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 resize-none"
             />
           </div>
@@ -300,7 +301,7 @@ export default function PreliminaryDiagnosisClient({
               onClick={() => router.back()}
               className="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 bg-white border border-gray-200 hover:bg-gray-50"
             >
-              Hủy
+              {t("cancel")}
             </button>
             <button
               type="button"
@@ -313,7 +314,7 @@ export default function PreliminaryDiagnosisClient({
               ) : (
                 <Stethoscope className="w-4 h-4" />
               )}
-              Xác nhận &amp; Tiếp tục khám
+              {t("confirmAndContinue")}
             </button>
           </div>
         </div>

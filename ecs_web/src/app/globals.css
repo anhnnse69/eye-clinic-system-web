@@ -129,3 +129,123 @@ body {
   background-color: #81cfff;
   color: #001e2d;
 }
+
+/* ===== PRINT-FRIENDLY STYLES CHO BỆNH ÁN ===== */
+@media print {
+  /* Khổ A4 portrait, margin 2cm */
+  @page {
+    size: A4;
+    margin: 1.5cm;
+  }
+
+  html,
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 11pt;
+  }
+
+  /* Ẩn sidebar, header, navigation, footer */
+  aside,
+  header,
+  nav,
+  footer,
+  [data-no-print],
+  .print-hidden {
+    display: none !important;
+  }
+
+  /* Ẩn border và background của button khi in */
+  button {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  /* Input hiển thị giá trị thuần, không có border */
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  input[type="datetime-local"],
+  textarea,
+  select {
+    border: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    color: black !important;
+  }
+
+  /* Bỏ chevron icon collapse khi in — luôn hiển thị tất cả */
+  details > summary {
+    list-style: none !important;
+    cursor: default !important;
+  }
+
+  details[open] > summary ~ * {
+    display: block !important;
+  }
+
+  details:not([open]) > summary ~ * {
+    display: block !important;
+  }
+
+  /* Page break giữa các section lớn */
+  .print-page-break {
+    page-break-before: always;
+    break-before: page;
+  }
+
+  /* Tránh ngắt giữa các row trong bảng */
+  table,
+  tr,
+  td,
+  th {
+    page-break-inside: avoid;
+  }
+
+  /* Form rộng full-width khi in */
+  form,
+  .max-w-5xl,
+  .max-w-3xl,
+  .max-w-7xl {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Border nhạt hơn khi in */
+  .border {
+    border-color: #d0d0d0 !important;
+  }
+
+  /* Bệnh án mắt — giữ 2 cột MP/MT song song trên A4 */
+  .grid-cols-1.md\:grid-cols-2,
+  .md\:grid-cols-2.print\:grid-cols-2,
+  [class*="print:grid-cols-2"] {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.5rem !important;
+  }
+
+  /* Bệnh án mắt — section khám mắt không bị ngắt giữa 2 cột */
+  .print\:break-inside-avoid {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Checkbox hiển thị như dấu ☐ khi in (giữ UI cho người dùng nhận diện) */
+  input[type="checkbox"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 0.9rem !important;
+    height: 0.9rem !important;
+    border: 1px solid #555 !important;
+    background: white !important;
+    margin-right: 4px !important;
+    vertical-align: middle !important;
+  }
+
+  input[type="checkbox"]:checked {
+    background: #555 !important;
+  }
+}

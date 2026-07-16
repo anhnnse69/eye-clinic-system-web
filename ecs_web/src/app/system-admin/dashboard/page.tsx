@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import {
   LayoutDashboard, Building2, Users, Calendar,
   Filter, RotateCw, UserCheck, RefreshCw,
@@ -14,11 +15,15 @@ import { handleApiError } from "@/lib/axios"
 import type { AdminSystemDashboardResponse, ClinicManagementItem } from "@/types"
 
 export default function SystemDashboardPage() {
+  const t = useTranslations("systemAdmin")
+  const tDashboard = useTranslations("systemAdmin.dashboard")
+  const tCommon = useTranslations("systemAdmin.common")
+  const tAccounts = useTranslations("systemAdmin.accounts")
   const router = useRouter()
   
   // States bộ lọc chính của Dashboard
   const [selectedClinic, setSelectedClinic] = useState<string>("")
-  const [selectedClinicName, setSelectedClinicName] = useState<string>("Tất cả phòng khám")
+  const [selectedClinicName, setSelectedClinicName] = useState<string>(tDashboard("allClinics"))
   const [startDate, setStartDate] = useState<string>("")
   const [endDate, setEndDate] = useState<string>("")
   
@@ -96,11 +101,11 @@ export default function SystemDashboardPage() {
       if (response.data) {
         setDashboardData(response.data)
       } else {
-        setError("Không thể đọc cấu trúc dữ liệu phản hồi từ máy chủ.")
+        setError(tDashboard("noData"))
       }
     } catch (err: unknown) {
       const msgCode = handleApiError(err)
-      setError(`Lỗi kết nối hệ thống (${msgCode}). Vui lòng kiểm tra quyền hạn tài khoản.`)
+      setError(`${t("errors.connectionError")} (${msgCode}). ${t("errors.permissionError")}`)
     } finally {
       setLoading(false)
     }
@@ -119,25 +124,25 @@ export default function SystemDashboardPage() {
   // Hàm trả về Label trạng thái động dựa theo hiệu suất % thực tế
   const getClinicStatusLabel = (percentage: number) => {
     if (percentage >= 80) {
-      return { text: "Mạng lưới hoạt động tốt", color: "text-emerald-500", barColor: "bg-emerald-500", badgeBg: "bg-emerald-50 text-emerald-700 border-emerald-100" }
+      return { text: tDashboard("systemWorkingWell"), color: "text-emerald-500", barColor: "bg-emerald-500", badgeBg: "bg-emerald-50 text-emerald-700 border-emerald-100" }
     } else if (percentage >= 50) {
-      return { text: "Hệ thống vận hành ổn định", color: "text-amber-500", barColor: "bg-amber-500", badgeBg: "bg-amber-50 text-amber-700 border-amber-100" }
+      return { text: tDashboard("systemStable"), color: "text-amber-500", barColor: "bg-amber-500", badgeBg: "bg-amber-50 text-amber-700 border-amber-100" }
     } else {
-      return { text: "Hiệu suất thấp - Cần kiểm tra", color: "text-rose-500", barColor: "bg-rose-500", badgeBg: "bg-rose-50 text-rose-700 border-rose-100" }
+      return { text: tDashboard("lowPerformance"), color: "text-rose-500", barColor: "bg-rose-500", badgeBg: "bg-rose-50 text-rose-700 border-rose-100" }
     }
   }
   const statusConfig = getClinicStatusLabel(clinicPercentage)
 
   // Mảng cấu trúc trạng thái lịch hẹn đồng bộ màu sắc nhẹ sang trọng kèm Icon động
   const getAppointmentStatusGrid = (data: AdminSystemDashboardResponse["appointments"]) => [
-    { label: 'Chờ xử lý (Pending)', count: data.pending, bg: 'bg-amber-500', color: 'text-amber-500', iconColor: 'text-amber-600', bgBox: 'bg-amber-50/60', badgeBg: 'bg-amber-50 text-amber-700 border-amber-100', icon: HelpCircle },
-    { label: 'Đã đặt cọc (Deposit Paid)', count: data.depositPaid, bg: 'bg-cyan-500', color: 'text-cyan-500', iconColor: 'text-cyan-600', bgBox: 'bg-cyan-50/60', badgeBg: 'bg-cyan-50 text-cyan-700 border-cyan-100', icon: AlertCircle },
-    { label: 'Đã đặt lịch (Booked)', count: data.booked, bg: 'bg-blue-500', color: 'text-blue-500', iconColor: 'text-blue-600', bgBox: 'bg-blue-50/60', badgeBg: 'bg-blue-50 text-blue-700 border-blue-100', icon: Calendar },
-    { label: 'Đã đến viện (Arrived)', count: data.arrived, bg: 'bg-indigo-500', color: 'text-indigo-500', iconColor: 'text-indigo-600', bgBox: 'bg-indigo-50/60', badgeBg: 'bg-indigo-50 text-indigo-700 border-indigo-100', icon: UserCheck },
-    { label: 'Đang tiến hành khám (In Progress)', count: data.inProgress, bg: 'bg-purple-500', color: 'text-purple-500', iconColor: 'text-purple-600', bgBox: 'bg-purple-50/60', badgeBg: 'bg-purple-50 text-purple-700 border-purple-100', icon: Activity },
-    { label: 'Đã hoàn thành khám (Completed)', count: data.completed, bg: 'bg-emerald-500', color: 'text-emerald-500', iconColor: 'text-emerald-600', bgBox: 'bg-emerald-50/60', badgeBg: 'bg-emerald-50 text-emerald-700 border-emerald-100', icon: CheckCircle2 },
-    { label: 'Lịch hẹn bị hủy (Cancel)', count: data.cancelled, bg: 'bg-rose-500', color: 'text-rose-500', iconColor: 'text-rose-600', bgBox: 'bg-rose-50/60', badgeBg: 'bg-rose-50 text-rose-700 border-rose-100', icon: XCircle },
-    { label: 'Không đến viện (No Show)', count: data.noShow, bg: 'bg-slate-400', color: 'text-slate-400', iconColor: 'text-slate-500', bgBox: 'bg-slate-100/60', badgeBg: 'bg-slate-50 text-slate-700 border-slate-200', icon: Clock },
+    { label: tDashboard("pending"), count: data.pending, bg: 'bg-amber-500', color: 'text-amber-500', iconColor: 'text-amber-600', bgBox: 'bg-amber-50/60', badgeBg: 'bg-amber-50 text-amber-700 border-amber-100', icon: HelpCircle },
+    { label: tDashboard("depositPaid"), count: data.depositPaid, bg: 'bg-cyan-500', color: 'text-cyan-500', iconColor: 'text-cyan-600', bgBox: 'bg-cyan-50/60', badgeBg: 'bg-cyan-50 text-cyan-700 border-cyan-100', icon: AlertCircle },
+    { label: tDashboard("booked"), count: data.booked, bg: 'bg-blue-500', color: 'text-blue-500', iconColor: 'text-blue-600', bgBox: 'bg-blue-50/60', badgeBg: 'bg-blue-50 text-blue-700 border-blue-100', icon: Calendar },
+    { label: tDashboard("arrived"), count: data.arrived, bg: 'bg-indigo-500', color: 'text-indigo-500', iconColor: 'text-indigo-600', bgBox: 'bg-indigo-50/60', badgeBg: 'bg-indigo-50 text-indigo-700 border-indigo-100', icon: UserCheck },
+    { label: tDashboard("inProgress"), count: data.inProgress, bg: 'bg-purple-500', color: 'text-purple-500', iconColor: 'text-purple-600', bgBox: 'bg-purple-50/60', badgeBg: 'bg-purple-50 text-purple-700 border-purple-100', icon: Activity },
+    { label: tDashboard("completed"), count: data.completed, bg: 'bg-emerald-500', color: 'text-emerald-500', iconColor: 'text-emerald-600', bgBox: 'bg-emerald-50/60', badgeBg: 'bg-emerald-50 text-emerald-700 border-emerald-100', icon: CheckCircle2 },
+    { label: tDashboard("cancelled"), count: data.cancelled, bg: 'bg-rose-500', color: 'text-rose-500', iconColor: 'text-rose-600', bgBox: 'bg-rose-50/60', badgeBg: 'bg-rose-50 text-rose-700 border-rose-100', icon: XCircle },
+    { label: tDashboard("noShow"), count: data.noShow, bg: 'bg-slate-400', color: 'text-slate-400', iconColor: 'text-slate-500', bgBox: 'bg-slate-100/60', badgeBg: 'bg-slate-50 text-slate-700 border-slate-200', icon: Clock },
   ]
 
   return (
@@ -148,7 +153,7 @@ export default function SystemDashboardPage() {
         <div>
           <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2 tracking-tight">
             <LayoutDashboard className="h-5 w-5 text-blue-600" />
-            Quản trị hệ thống
+            {tDashboard("title")}
           </h2>
         </div>
         <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
@@ -173,7 +178,7 @@ export default function SystemDashboardPage() {
       {loading ? (
         <div className="bg-white border border-slate-100 rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[260px]">
           <RefreshCw className="h-6 w-6 text-blue-500 animate-spin mb-2" />
-          <p className="text-xs text-slate-400 font-medium">Đang đồng bộ số liệu hệ thống...</p>
+          <p className="text-xs text-slate-400 font-medium">{tDashboard("loading")}</p>
         </div>
       ) : dashboardData ? (
         <div className="space-y-6">
@@ -184,11 +189,11 @@ export default function SystemDashboardPage() {
               <div className="flex items-center gap-2">
                 <Globe className="h-4 w-4 text-slate-400" />
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                  Chỉ số dữ liệu toàn hệ thống
+                  {tDashboard("systemIndicators")}
                 </span>
               </div>
               <span className="text-[10px] text-slate-400 bg-slate-100 font-medium px-2 py-0.5 rounded-md border border-slate-200/40">
-                ⚠️ Chỉ số vĩ mô quy mô mạng lưới thương hiệu
+                {tDashboard("macroIndicator")}
               </span>
             </div>
 
@@ -199,13 +204,13 @@ export default function SystemDashboardPage() {
               <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] flex flex-col justify-between min-h-[135px] relative group">
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Phòng khám vận hành</span>
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{tDashboard("operationalClinics")}</span>
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shadow-sm flex items-center gap-1 ${statusConfig.badgeBg}`}>
-                      Tỷ lệ {clinicPercentage}%
+                      {tDashboard("percentage")} {clinicPercentage}%
                     </span>
                   </div>
                   <h3 className="text-2xl font-bold text-slate-800 tracking-tight">
-                    {dashboardData.operationalClinics.active} <span className="text-xs font-normal text-slate-400">/ {dashboardData.operationalClinics.total} tổng số</span>
+                    {dashboardData.operationalClinics.active} <span className="text-xs font-normal text-slate-400">/ {dashboardData.operationalClinics.total} {tDashboard("total")}</span>
                   </h3>
                 </div>
                 <div className="mt-3 space-y-1">
@@ -222,18 +227,18 @@ export default function SystemDashboardPage() {
               <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] flex flex-col justify-between min-h-[135px]">
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Hồ sơ bệnh nhân gốc</span>
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{tDashboard("patientRecords")}</span>
                     <span className="text-[10px] font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-100/60 shrink-0">
-                      Quy mô hệ thống
+                      {tDashboard("systemScale")}
                     </span>
                   </div>
                   <h3 className="text-2xl font-bold text-slate-800 tracking-tight mt-1">
-                    {dashboardData.registeredPatients.toLocaleString()} <span className="text-xs font-normal text-slate-400">bản ghi</span>
+                    {dashboardData.registeredPatients.toLocaleString()} <span className="text-xs font-normal text-slate-400">{tDashboard("records")}</span>
                   </h3>
                 </div>
                 <div className="mt-3 border-t border-slate-50 pt-2">
                   <p className="text-[10px] text-slate-400 font-medium leading-relaxed">
-                    Chỉ số tích lũy quy mô hệ thống. Số liệu phản ánh tổng lượng khách hàng định danh duy nhất trên toàn mạng lưới.
+                    {tDashboard("systemScaleDescription")}
                   </p>
                 </div>
               </div>
@@ -243,20 +248,20 @@ export default function SystemDashboardPage() {
                 <div className="flex items-center justify-between mb-2 border-b border-slate-50 pb-1.5">
                   <div className="flex items-center gap-1.5">
                     <ClipboardList className="h-4 w-4 text-amber-500" />
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Đơn đăng ký chờ duyệt</span>
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{tDashboard("pendingApplications")}</span>
                   </div>
                   <span className="text-[10px] bg-amber-50 text-amber-700 font-bold px-2 py-0.5 rounded-md border border-amber-100/60">
-                    {dashboardData.pendingClinics.length} Đơn mới
+                    {dashboardData.pendingClinics.length} {tDashboard("newApplications")}
                   </span>
                 </div>
                 <div className="divide-y divide-slate-100/60 max-h-[80px] overflow-y-auto pr-1 scrollbar-thin">
                   {dashboardData.pendingClinics.length === 0 ? (
-                    <p className="text-xs text-slate-400 text-center py-4 font-medium">Không có đơn đăng ký nào đang chờ.</p>
+                    <p className="text-xs text-slate-400 text-center py-4 font-medium">{tDashboard("noApplications")}</p>
                   ) : (
                     dashboardData.pendingClinics.map((req) => (
                       <div key={req.id} className="flex items-center justify-between py-1.5 text-xs hover:bg-slate-50/60 px-1 rounded transition-colors">
                         <div className="font-semibold text-slate-700 truncate max-w-[200px]">{req.name}</div>
-                        <div className="text-slate-400 text-[11px]">Đại diện: <span className="text-slate-600 font-medium">{req.Owner}</span></div>
+                        <div className="text-slate-400 text-[11px]">{tDashboard("representative")}: <span className="text-slate-600 font-medium">{req.owner}</span></div>
                         <div className="text-slate-400 font-mono text-[10px]">{req.date}</div>
                       </div>
                     ))
@@ -273,11 +278,11 @@ export default function SystemDashboardPage() {
               <div className="flex items-center gap-2">
                 <Activity className="h-4 w-4 text-slate-400" />
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                  Số liệu hoạt động & Nghiệp vụ y tế chi tiết
+                  {tDashboard("networkPerformance")}
                 </span>
               </div>
               <span className="text-[10px] text-blue-500 bg-blue-50 font-medium px-2 py-0.5 rounded-md border border-blue-100/40">
-                🔍 Dữ liệu phân tách & phân tích sâu theo đơn vị cơ sở
+                {tDashboard("detailedDataAnalysis")}
               </span>
             </div>
             
@@ -287,7 +292,7 @@ export default function SystemDashboardPage() {
                 
                 {/* BỘ LỌC CHI NHÁNH */}
                 <div className="flex flex-col gap-1.5 relative" ref={dropdownRef}>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Chi nhánh phòng khám</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{tDashboard("allClinics")}</label>
                   <div 
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                     className="w-full px-3 py-1.5 bg-slate-50/60 border border-slate-200/80 rounded-xl text-xs font-medium text-slate-700 cursor-pointer flex items-center justify-between transition-all hover:bg-slate-100/50 select-none min-h-[36px]"
@@ -302,7 +307,7 @@ export default function SystemDashboardPage() {
                         <Search className="h-3.5 w-3.5 text-slate-400 shrink-0 ml-1" />
                         <input
                           type="text"
-                          placeholder="Tìm tên hoặc mã phòng khám..."
+                          placeholder={tCommon("search")}
                           value={clinicSearchTerm}
                           onChange={(e) => setClinicSearchTerm(e.target.value)}
                           className="w-full bg-transparent text-xs outline-none border-none py-1 text-slate-700 placeholder-slate-400 font-medium"
@@ -314,21 +319,21 @@ export default function SystemDashboardPage() {
                         <div
                           onClick={() => {
                             setSelectedClinic("")
-                            setSelectedClinicName("Tất cả phòng khám")
+                            setSelectedClinicName(tDashboard("allClinics"))
                             setIsDropdownOpen(false)
                             setClinicSearchTerm("")
                           }}
                           className={`px-4 py-2.5 text-xs font-semibold cursor-pointer sticky top-0 bg-white z-10 border-b border-slate-100 transition-colors ${!selectedClinic ? "bg-blue-50 text-blue-600" : "text-slate-500 hover:bg-slate-50"}`}
                         >
-                          Tất cả phòng khám
+                          {tDashboard("allClinics")}
                         </div>
 
                         {loadingClinics ? (
                           <div className="p-4 text-center text-xs text-slate-400 font-medium flex items-center justify-center gap-1.5">
-                            <RefreshCw className="h-3 w-3 animate-spin text-blue-500" /> Đang tra cứu...
+                            <RefreshCw className="h-3 w-3 animate-spin text-blue-500" /> {tCommon("loading")}
                           </div>
                         ) : clinicsList.length === 0 ? (
-                          <div className="p-4 text-center text-xs text-slate-400 font-medium">Không có kết quả thích hợp</div>
+                          <div className="p-4 text-center text-xs text-slate-400 font-medium">{tDashboard("noClinics")}</div>
                         ) : (
                           <div className="divide-y divide-slate-100">
                             {clinicsList.map((c) => {
@@ -359,7 +364,7 @@ export default function SystemDashboardPage() {
 
                 {/* BỘ LỌC THỜI GIAN */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Từ ngày</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{tDashboard("fromDate")}</label>
                   <input
                     type="date"
                     value={startDate}
@@ -368,7 +373,7 @@ export default function SystemDashboardPage() {
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Đến ngày</label>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{tDashboard("toDate")}</label>
                   <input
                     type="date"
                     value={endDate}
@@ -379,7 +384,7 @@ export default function SystemDashboardPage() {
                 <button
                   onClick={() => { 
                     setSelectedClinic("")
-                    setSelectedClinicName("Tất cả phòng khám")
+                    setSelectedClinicName(tDashboard("allClinics"))
                     setStartDate("")
                     setEndDate("")
                     setClinicSearchTerm("")
@@ -387,7 +392,7 @@ export default function SystemDashboardPage() {
                   className="text-slate-600 hover:text-blue-600 text-xs font-semibold h-[36px] flex items-center justify-center gap-1.5 bg-slate-100/80 hover:bg-blue-50 rounded-xl border border-transparent hover:border-blue-100 transition-all shadow-sm"
                 >
                   <Filter className="h-3.5 w-3.5" />
-                  Đặt lại bộ lọc
+                  {tCommon("reset")}
                 </button>
               </div>
             </div>
@@ -400,26 +405,26 @@ export default function SystemDashboardPage() {
                     <Users className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tài khoản nhân sự thuộc chi nhánh</p>
-                    <h3 className="text-2xl font-bold text-slate-800 mt-0.5 tracking-tight">{dashboardData.totalSystemAccounts.total} <span className="text-xs font-normal text-slate-400">nhân sự</span></h3>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{tDashboard("totalAccounts")}</p>
+                    <h3 className="text-2xl font-bold text-slate-800 mt-0.5 tracking-tight">{dashboardData.totalSystemAccounts.total} <span className="text-xs font-normal text-slate-400">{tDashboard("totalStaff")}</span></h3>
                   </div>
                 </div>
                 <div className="flex items-center justify-start sm:justify-end text-[11px] text-slate-500 font-medium gap-x-2.5 flex-wrap max-w-full sm:max-w-[70%]">
                   <div className="flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                    <span>Bác sĩ: <strong className="text-slate-700 font-semibold">{dashboardData.totalSystemAccounts.doctor}</strong></span>
+                    <span>{tDashboard("doctor")}: <strong className="text-slate-700 font-semibold">{dashboardData.totalSystemAccounts.doctor}</strong></span>
                   </div>
                   <div className="flex items-center gap-1 border-l border-slate-200 pl-2.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
-                    <span>Lễ tân: <strong className="text-slate-700 font-semibold">{dashboardData.totalSystemAccounts.receptionist}</strong></span>
+                    <span>{tDashboard("receptionist")}: <strong className="text-slate-700 font-semibold">{dashboardData.totalSystemAccounts.receptionist}</strong></span>
                   </div>
                   <div className="flex items-center gap-1 border-l border-slate-200 pl-2.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                    <span>Quản trị PK: <strong className="text-slate-700 font-semibold">{dashboardData.totalSystemAccounts.clinicAdmin}</strong></span>
+                    <span>{tDashboard("clinicAdmin")}: <strong className="text-slate-700 font-semibold">{dashboardData.totalSystemAccounts.clinicAdmin}</strong></span>
                   </div>
                   <div className="flex items-center gap-1 border-l border-slate-200 pl-2.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                    <span>Quản trị HT: <strong className="text-slate-700 font-semibold">{dashboardData.totalSystemAccounts.systemAdmin}</strong></span>
+                    <span>{tDashboard("systemAdmin")}: <strong className="text-slate-700 font-semibold">{dashboardData.totalSystemAccounts.systemAdmin}</strong></span>
                   </div>
                 </div>
               </div>
@@ -433,10 +438,10 @@ export default function SystemDashboardPage() {
                     <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100/70">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-violet-500" />
-                        <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Lịch hẹn theo chi nhánh</h4>
+                        <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">{tDashboard("appointments")}</h4>
                       </div>
                       <span className="text-sm font-bold text-violet-700 bg-violet-50 px-2.5 py-0.5 rounded-md border border-violet-100/70">
-                        {dashboardData.appointments.total} lịch hẹn
+                        {dashboardData.appointments.total} {tDashboard("pending")}
                       </span>
                     </div>
 
@@ -474,19 +479,19 @@ export default function SystemDashboardPage() {
                   <div>
                     <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-100/70">
                       <Star className="h-4 w-4 text-blue-500" />
-                      <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Dịch vụ y tế phổ biến nhất</h4>
+                      <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">{tDashboard("topServices")}</h4>
                     </div>
                     
                     <div className="space-y-1 max-h-[280px] overflow-y-auto pr-0.5 scrollbar-thin">
                       {dashboardData.topServices.length === 0 ? (
-                        <p className="text-xs text-slate-400 py-12 text-center font-medium">Chưa phát sinh dữ liệu chỉ định dịch vụ tại chi nhánh này.</p>
+                        <p className="text-xs text-slate-400 py-12 text-center font-medium">{tDashboard("noData") || tCommon("noData")}</p>
                       ) : (
                         dashboardData.topServices.map((service, index) => (
                           <div 
                             key={index} 
                             className="py-2.5 px-2 bg-transparent hover:bg-slate-50/80 rounded-xl flex items-center justify-between transition-all text-xs border-b border-slate-100/50 last:border-none"
                           >
-                            <div className="flex items-center gap-3 min-w-[0px] max-w-[75%]">
+                            <div className="flex items-center gap-3 min-w-0 max-w-[75%]">
                               <span className="text-xs font-bold text-slate-400 w-4 text-center shrink-0">
                                 {index + 1}
                               </span>
@@ -515,7 +520,7 @@ export default function SystemDashboardPage() {
 
         </div>
       ) : (
-        <div className="text-center text-slate-400 py-12 text-xs font-medium">Không tìm thấy cấu trúc dữ liệu phản hồi thích hợp.</div>
+        <div className="text-center text-slate-400 py-12 text-xs font-medium">{tDashboard("noData")}</div>
       )}
     </div>
   )

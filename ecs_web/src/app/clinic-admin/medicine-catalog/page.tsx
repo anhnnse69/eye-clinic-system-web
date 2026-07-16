@@ -12,10 +12,14 @@ import {
   Pencil,
   FileText
 } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { medicineService } from "@/services/medicine.service"
 import type { GetMedicineCatalogResponse } from "@/services/medicine.service"
 
 export default function MedicineCatalogManagementPage() {
+  const t = useTranslations("clinicAdmin.medicine")
+  const tCommon = useTranslations("clinicAdmin.common")
+
   const [medicineList, setMedicineList] = useState<GetMedicineCatalogResponse[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
@@ -91,17 +95,17 @@ export default function MedicineCatalogManagementPage() {
       // Bắt lỗi chuẩn cấu trúc hệ thống dựa trên tài liệu tập huấn
       const errCode = err?.response?.data?.codeMessage || err?.codeMessage || err?.data?.codeMessage;
       const errorMessages: Record<string, string> = {
-        "APP_MESSAGE_4001": "Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại!",
-        "APP_MESSAGE_4020": "Không tìm thấy thông tin phòng khám gắn liền với tài khoản quản trị của bạn!",
-        "APP_MESSAGE_4015": "Tên thuốc này đã tồn tại trong danh mục của phòng khám!"
+        "APP_MESSAGE_4001": t("sessionExpired"),
+        "APP_MESSAGE_4020": t("clinicNotFound"),
+        "APP_MESSAGE_4015": t("medicineExists")
       };
-      const fallbackMessage = "Không thể kết nối tới máy chủ hệ thống hoặc dữ liệu không hợp lệ. Vui lòng thử lại sau!";
+      const fallbackMessage = t("connectionError");
       setError(errorMessages[errCode] || fallbackMessage);
       setMedicineList([])
     } finally {
       setLoading(false)
     }
-  }, [pageNumber, pageSize, isActiveFilter, debouncedSearch])
+  }, [pageNumber, pageSize, isActiveFilter, debouncedSearch, t])
 
   useEffect(() => {
     loadMedicineData()
@@ -125,11 +129,11 @@ export default function MedicineCatalogManagementPage() {
       // Bắt lỗi khi gạt nút đổi trạng thái theo cấu trúc Dictionary chuẩn
       const errCode = err?.response?.data?.codeMessage || err?.codeMessage || err?.data?.codeMessage;
       const errorMessages: Record<string, string> = {
-        "APP_MESSAGE_4001": "Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại!",
-        "APP_MESSAGE_4020": "Không tìm thấy thông tin phòng khám gắn liền với quyền quản trị của bạn!",
-        "APP_MESSAGE_4019": "Không tìm thấy bản ghi danh mục thuốc này trên hệ thống!"
+        "APP_MESSAGE_4001": t("sessionExpired"),
+        "APP_MESSAGE_4020": t("clinicNotFound"),
+        "APP_MESSAGE_4019": t("medicineNotFound")
       };
-      const fallbackMessage = "Cập nhật trạng thái thuốc thất bại. Vui lòng thử lại sau!";
+      const fallbackMessage = t("updateFailed");
       alert(errorMessages[errCode] || fallbackMessage);
     } finally {
       setUpdatingId(null)
@@ -143,16 +147,16 @@ export default function MedicineCatalogManagementPage() {
         <div>
           <h2 className="text-headline-md font-bold text-on-surface flex items-center gap-2">
             <Layers className="h-6 w-6 text-primary shrink-0" />
-            Danh mục thuốc phòng khám
+            {t("listTitle")}
           </h2>
-          <p className="text-body-md text-on-surface-variant">Quản lý danh sách thuốc, hoạt chất, hàm lượng và đơn vị tính tại phòng khám</p>
+          <p className="text-body-md text-on-surface-variant">{t("listSubtitle")}</p>
         </div>
 
         <Link
           href="/clinic-admin/medicine-catalog/create"
           className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-on-primary rounded-xl hover:opacity-90 transition-all text-label-md font-medium shadow-sm shrink-0"
         >
-          <Plus className="h-4 w-4" /> Thêm thuốc mới
+          <Plus className="h-4 w-4" /> {t("addMedicine")}
         </Link>
       </div>
 
@@ -162,7 +166,7 @@ export default function MedicineCatalogManagementPage() {
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-on-surface-variant" />
           <input
             type="text"
-            placeholder="Tìm theo tên thuốc, hoạt chất gốc, nhà sản xuất..."
+            placeholder={t("searchPlaceholder")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-body-md placeholder:text-on-surface-variant/60 focus:outline-none focus:border-primary transition-colors"
@@ -170,7 +174,7 @@ export default function MedicineCatalogManagementPage() {
         </div>
         <div className="flex items-center gap-2 w-full md:w-auto">
           <span className="flex items-center gap-1 text-label-md font-medium text-on-surface-variant shrink-0">
-            <Filter className="h-4 w-4" /> Trạng thái:
+            <Filter className="h-4 w-4" /> {t("status")}:
           </span>
           <select
             value={isActiveFilter}
@@ -180,9 +184,9 @@ export default function MedicineCatalogManagementPage() {
             }}
             className="w-full md:w-48 px-3 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors cursor-pointer font-medium"
           >
-            <option value="all">Tất cả thuốc</option>
-            <option value="active">Đang sử dụng / Hoạt động</option>
-            <option value="inactive">Đang khóa / Tạm dừng</option>
+            <option value="all">{t("statusAll")}</option>
+            <option value="active">{t("statusActive")}</option>
+            <option value="inactive">{t("statusInactive")}</option>
           </select>
         </div>
       </div>
@@ -191,7 +195,7 @@ export default function MedicineCatalogManagementPage() {
       {loading && (
         <div className="flex justify-center items-center py-12 bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-sm">
           <p className="text-body-md text-on-surface-variant animate-pulse">
-            Đang nạp danh mục thuốc từ hệ thống...
+            {t("loadingData")}
           </p>
         </div>
       )}
@@ -212,19 +216,19 @@ export default function MedicineCatalogManagementPage() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-surface-container-low border-b border-outline-variant text-label-md text-on-surface-variant font-medium">
-                    <th className="p-4">Thông tin thuốc</th>
-                    <th className="p-4">Hàm lượng / Nồng độ</th>
-                    <th className="p-4">Đơn vị / Dạng bào chế</th>
-                    <th className="p-4">Nhà sản xuất</th>
-                    <th className="p-4 text-center">Trạng thái hoạt động</th>
-                    <th className="p-4 text-center">Thao tác</th>
+                    <th className="p-4">{t("medicineInfo")}</th>
+                    <th className="p-4">{t("concentrationLabel")}</th>
+                    <th className="p-4">{t("unitDosage")}</th>
+                    <th className="p-4">{t("manufacturerLabel")}</th>
+                    <th className="p-4 text-center">{t("statusActiveLabel")}</th>
+                    <th className="p-4 text-center">{t("actions")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant text-body-md text-on-surface">
                   {medicineList.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="p-12 text-center text-on-surface-variant">
-                        Không tìm thấy loại thuốc nào phù hợp với bộ lọc điều kiện hiện tại.
+                        {t("noResults")}
                       </td>
                     </tr>
                   ) : (
@@ -234,7 +238,7 @@ export default function MedicineCatalogManagementPage() {
                           <p className="font-semibold text-on-surface">{medicine.medicineName}</p>
                           {medicine.genericName && (
                             <p className="text-xs text-on-surface-variant flex items-center gap-1 mt-0.5">
-                              <FileText className="h-3 w-3" /> Tên gốc: {medicine.genericName}
+                              <FileText className="h-3 w-3" /> {t("genericNameLabel")} {medicine.genericName}
                             </p>
                           )}
                         </td>
@@ -246,7 +250,7 @@ export default function MedicineCatalogManagementPage() {
                           <span className="text-xs block text-on-surface-variant/80">{medicine.dosageForm}</span>
                         </td>
                         <td className="p-4 text-on-surface-variant text-sm">
-                          {medicine.manufacturer || "---"}
+                          {medicine.manufacturer || t("notAvailable")}
                         </td>
                         
                         {/* NÚT GẠT (TOGGLE SWITCH) 2 CHIỀU ĐÃ ĐƯỢC TÍCH HỢP */}
@@ -267,7 +271,7 @@ export default function MedicineCatalogManagementPage() {
                               />
                             </button>
                             <span className="text-[11px] font-medium text-on-surface-variant/80">
-                              {medicine.isActive ? "Hoạt động" : "Tạm dừng"}
+                              {medicine.isActive ? t("active") : t("paused")}
                             </span>
                           </div>
                         </td>
@@ -278,7 +282,7 @@ export default function MedicineCatalogManagementPage() {
                             onClick={() => sessionStorage.setItem("currentEditMedicine", JSON.stringify(medicine))}
                             className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 border border-outline-variant rounded-xl text-label-sm text-primary font-medium bg-surface-container-lowest hover:bg-primary/5 transition-colors shadow-sm"
                           >
-                            <Pencil className="h-3.5 w-3.5" /> Sửa
+                            <Pencil className="h-3.5 w-3.5" /> {tCommon("edit")}
                           </Link>
                         </td>
                       </tr>
@@ -293,9 +297,11 @@ export default function MedicineCatalogManagementPage() {
           {meta.total > 0 && (
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-surface-container-low px-4 py-3 border border-outline-variant rounded-2xl shadow-sm text-label-md text-on-surface-variant">
               <div>
-                Hiển thị dòng <span className="font-semibold text-on-surface">{Math.min((meta.page - 1) * meta.size + 1, meta.total)}</span> đến{" "}
-                <span className="font-semibold text-on-surface">{Math.min(meta.page * meta.size, meta.total)}</span> trên tổng số{" "}
-                <span className="font-semibold text-on-surface">{meta.total}</span> loại thuốc.
+                {t("showingRows", { 
+                  from: Math.min((meta.page - 1) * meta.size + 1, meta.total), 
+                  to: Math.min(meta.page * meta.size, meta.total), 
+                  total: meta.total 
+                })}
               </div>
               <div className="flex items-center gap-2">
                 <select
@@ -306,16 +312,16 @@ export default function MedicineCatalogManagementPage() {
                   }}
                   className="bg-surface-container-lowest border border-outline-variant text-on-surface px-2 py-1.5 rounded-lg text-label-md focus:outline-none cursor-pointer mr-2 font-medium"
                 >
-                  <option value={5}>5 dòng / trang</option>
-                  <option value={10}>10 dòng / trang</option>
-                  <option value={20}>20 dòng / trang</option>
-                  <option value={50}>50 dòng / trang</option>
+                  <option value={5}>5 {t("rowsPerPage")}</option>
+                  <option value={10}>10 {t("rowsPerPage")}</option>
+                  <option value={20}>20 {t("rowsPerPage")}</option>
+                  <option value={50}>50 {t("rowsPerPage")}</option>
                 </select>
                 <button
                   disabled={!meta.hasPrevious || loading}
                   onClick={() => setPageNumber(prev => Math.max(prev - 1, 1))}
                   className="inline-flex items-center justify-center p-2 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-surface-container-lowest transition-colors"
-                  title="Trang trước"
+                  title={t("previousPage")}
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
@@ -326,7 +332,7 @@ export default function MedicineCatalogManagementPage() {
                   disabled={!meta.hasNext || loading}
                   onClick={() => setPageNumber(prev => Math.min(prev + 1, meta.totalPages))}
                   className="inline-flex items-center justify-center p-2 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-surface-container-lowest transition-colors"
-                  title="Trang kế tiếp"
+                  title={t("nextPage")}
                 >
                   <ChevronRight className="h-4 w-4" />
                 </button>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import {
   RefreshCw, ChevronLeft, ChevronRight,
   CalendarDays, Phone, Search, X,
@@ -14,18 +15,7 @@ import {
   type ViewDoctorAppointmentsResponse,
 } from "@/services/doctor.appointment.service";
 
-// ── Constants ─────────────────────────────────────────────
-
 const PAGE_SIZE = 10;
-
-const BOOKING_SOURCE_LABEL: Record<string, string> = {
-  ONLINE: "Online",
-  WEB: "Website",
-  APP: "App",
-  WALKIN: "Trực tiếp",
-};
-
-// ── Helpers ───────────────────────────────────────────────
 
 function Avatar({ name, url }: { name: string; url?: string }) {
   return (
@@ -46,13 +36,13 @@ function calcAge(dob?: string) {
   );
 }
 
-// ── Main Component ────────────────────────────────────────
-
 export default function DoctorAppointmentsClient({
   doctorId,
 }: {
   doctorId: string;
 }) {
+  const t = useTranslations("doctor.appointment")
+
   const [data, setData] = useState<ViewDoctorAppointmentsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,13 +52,11 @@ export default function DoctorAppointmentsClient({
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
 
-  // Action state
   const [rejectTarget, setRejectTarget] = useState<AppointmentItem | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  // Debounce search 400ms
   useEffect(() => {
     const t = setTimeout(() => {
       setSearch(searchInput);
@@ -84,7 +72,6 @@ export default function DoctorAppointmentsClient({
       const result = await doctorAppointmentService.getAppointments(doctorId, {
         pageNumber: page,
         pageSize: PAGE_SIZE,
-        // Luôn cố định filter PENDING — chỉ hiện lịch hẹn chờ xử lý
         status: "PENDING",
         date: dateFilter || undefined,
         search: search || undefined,
@@ -93,14 +80,14 @@ export default function DoctorAppointmentsClient({
       if (result?.data) {
         setData(result.data);
       } else {
-        setError("Không thể tải danh sách lịch hẹn.");
+        setError(t("error.loadFailed"));
       }
     } catch {
-      setError("Lỗi kết nối. Vui lòng thử lại.");
+      setError(t("error.connectionError"));
     } finally {
       setLoading(false);
     }
-  }, [doctorId, page, dateFilter, search]);
+  }, [doctorId, page, dateFilter, search, t]);
 
   useEffect(() => {
     load();
@@ -115,7 +102,6 @@ export default function DoctorAppointmentsClient({
 
   const hasFilter = dateFilter || search;
 
-  // Xóa row khỏi list ngay sau khi confirm / reject thành công
   const removeAppointment = (appointmentId: string) => {
     setData((prev) => {
       if (!prev) return prev;
@@ -130,7 +116,6 @@ export default function DoctorAppointmentsClient({
     });
   };
 
-  // ── Confirm ──
   const handleConfirm = async (appt: AppointmentItem) => {
     setActionLoadingId(appt.appointmentId);
     setActionError(null);
@@ -144,13 +129,12 @@ export default function DoctorAppointmentsClient({
         removeAppointment(appt.appointmentId);
       }
     } catch {
-      setActionError("Không thể xác nhận lịch hẹn. Vui lòng thử lại.");
+      setActionError(t("error.confirmFailed"));
     } finally {
       setActionLoadingId(null);
     }
   };
 
-  // ── Reject ──
   const openRejectModal = (appt: AppointmentItem) => {
     setRejectTarget(appt);
     setRejectReason("");
@@ -175,23 +159,33 @@ export default function DoctorAppointmentsClient({
         setRejectTarget(null);
       }
     } catch {
-      setActionError("Không thể từ chối lịch hẹn. Vui lòng thử lại.");
+      setActionError(t("error.rejectFailed"));
     } finally {
       setActionLoadingId(null);
     }
   };
 
+  const getBookingSourceLabel = (source: string) => {
+    const labels: Record<string, string> = {
+      ONLINE: t("bookingSource.online") || "Online",
+      WEB: t("bookingSource.website") || "Website",
+      APP: t("bookingSource.app") || "App",
+      WALKIN: t("bookingSource.walkin") || "Walk-in",
+    };
+    return labels[source] || source;
+  };
+
   return (
     <div className="space-y-5 p-6 max-w-7xl mx-auto">
 
-      {/* ── Header ── */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-gray-100">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-            Lịch hẹn chờ xử lý
+            {t("pendingTitle")}
           </h1>
           <p className="text-gray-500 mt-1 text-sm">
-            Các lịch hẹn cần bạn xác nhận hoặc từ chối
+            {t("pendingSubtitle")}
           </p>
         </div>
         <button
@@ -200,11 +194,11 @@ export default function DoctorAppointmentsClient({
           className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition-all disabled:opacity-50 self-start sm:self-auto"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-          Làm mới
+          {t("refresh")}
         </button>
       </div>
 
-      {/* ── Filter bar — chỉ Search + Date, bỏ Status ── */}
+      {/* Filter bar */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
@@ -212,7 +206,7 @@ export default function DoctorAppointmentsClient({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Tên hoặc SĐT bệnh nhân..."
+              placeholder={t("searchPlaceholder")}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
@@ -229,7 +223,7 @@ export default function DoctorAppointmentsClient({
             {hasFilter && (
               <button
                 onClick={clearFilters}
-                title="Xóa bộ lọc"
+                title={t("clearFilters")}
                 className="px-3 py-2.5 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-xl text-gray-600 transition-colors"
               >
                 <X className="w-4 h-4" />
@@ -240,14 +234,10 @@ export default function DoctorAppointmentsClient({
 
         {data && (
           <p className="text-xs text-gray-500 mt-3">
-            Tìm thấy{" "}
-            <span className="font-semibold text-gray-800">
-              {data.totalRecords}
-            </span>{" "}
-            lịch hẹn chờ xử lý
+            {t("foundResults", { count: data.totalRecords })}
             {dateFilter &&
-              ` · Ngày ${new Date(dateFilter).toLocaleDateString("vi-VN")}`}
-            {search && ` · "${search}"`}
+              ` ${t("filterByDate", { date: new Date(dateFilter).toLocaleDateString() })}`}
+            {search && ` ${t("filterBySearch", { search })}`}
           </p>
         )}
       </div>
@@ -262,7 +252,7 @@ export default function DoctorAppointmentsClient({
         </div>
       )}
 
-      {/* ── Table ── */}
+      {/* Table */}
       <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
         {error ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
@@ -271,7 +261,7 @@ export default function DoctorAppointmentsClient({
               onClick={load}
               className="px-5 py-2 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition"
             >
-              Thử lại
+              {t("retry")}
             </button>
           </div>
         ) : (
@@ -279,12 +269,12 @@ export default function DoctorAppointmentsClient({
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-gray-50/70 border-b border-gray-100 text-gray-500 text-xs font-bold uppercase tracking-wider">
-                  <th className="p-4 pl-6">Bệnh nhân</th>
-                  <th className="p-4">Thời gian khám</th>
-                  <th className="p-4">Dịch vụ</th>
-                  <th className="p-4">Trạng Thái</th>
-                  <th className="p-4">Bệnh án</th>
-                  <th className="p-4">Thao tác</th>
+                  <th className="p-4 pl-6">{t("patient")}</th>
+                  <th className="p-4">{t("time")}</th>
+                  <th className="p-4">{t("service")}</th>
+                  <th className="p-4">{t("status")}</th>
+                  <th className="p-4">{t("hasMedicalRecord")}</th>
+                  <th className="p-4">{t("actions")}</th>
                 </tr>
               </thead>
 
@@ -314,14 +304,14 @@ export default function DoctorAppointmentsClient({
                       <div className="flex flex-col items-center gap-3 text-gray-400">
                         <CalendarDays className="w-10 h-10" />
                         <p className="font-medium">
-                          Không có lịch hẹn nào đang chờ xử lý
+                          {t("noPendingAppointments")}
                         </p>
                         {hasFilter && (
                           <button
                             onClick={clearFilters}
                             className="text-sm text-blue-600 hover:underline"
                           >
-                            Xóa bộ lọc
+                            {t("clearFilters")}
                           </button>
                         )}
                       </div>
@@ -335,6 +325,8 @@ export default function DoctorAppointmentsClient({
                       isActionLoading={actionLoadingId === appt.appointmentId}
                       onConfirm={() => handleConfirm(appt)}
                       onReject={() => openRejectModal(appt)}
+                      t={t}
+                      getBookingSourceLabel={getBookingSourceLabel}
                     />
                   ))
                 )}
@@ -347,13 +339,13 @@ export default function DoctorAppointmentsClient({
         {data && data.totalPages > 1 && (
           <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-t border-gray-100">
             <p className="text-xs sm:text-sm text-gray-500">
-              Trang{" "}
+              {t("page")}{" "}
               <span className="font-bold text-gray-800">{data.pageNumber}</span>
               {" / "}
               <span className="font-bold text-gray-800">{data.totalPages}</span>
-              {" · Tổng "}
+              {" · "}{t("total")}{" "}
               <span className="font-bold text-gray-800">{data.totalRecords}</span>
-              {" lịch hẹn"}
+              {" "}{t("appointments")}
             </p>
             <div className="flex items-center gap-2">
               <button
@@ -375,32 +367,32 @@ export default function DoctorAppointmentsClient({
         )}
       </div>
 
-      {/* ── Reject Modal ── */}
+      {/* Reject Modal */}
       {rejectTarget && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-xl w-[700px] max-w-[90vw] p-8 space-y-6">
             <div>
               <h3 className="font-bold text-lg text-gray-900">
-                Từ chối lịch hẹn
+                {t("rejectModalTitle")}
               </h3>
               <p className="text-sm text-gray-500 mt-1">
-                Bệnh nhân:{" "}
+                {t("patientLabel")}{" "}
                 <span className="font-medium">{rejectTarget.patientName}</span>
                 {" · "}
-                {new Date(rejectTarget.appointmentDate).toLocaleDateString("vi-VN")}
+                {new Date(rejectTarget.appointmentDate).toLocaleDateString()}
               </p>
             </div>
 
             <div>
               <label className="text-sm font-medium text-gray-700 mb-1.5 block">
-                Lý do từ chối{" "}
-                <span className="text-gray-400">(không bắt buộc)</span>
+                {t("rejectReasonLabel")}{" "}
+                <span className="text-gray-400">{t("rejectReasonOptional")}</span>
               </label>
               <textarea
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 rows={3}
-                placeholder="Ví dụ: Bác sĩ đột xuất bận, vui lòng đặt lại lịch khác..."
+                placeholder={t("rejectReasonPlaceholder")}
                 className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all resize-none"
               />
               {actionError && (
@@ -414,7 +406,7 @@ export default function DoctorAppointmentsClient({
                 disabled={actionLoadingId === rejectTarget.appointmentId}
                 className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl transition disabled:opacity-50"
               >
-                Hủy
+                {t("cancel")}
               </button>
               <button
                 onClick={handleRejectSubmit}
@@ -424,7 +416,7 @@ export default function DoctorAppointmentsClient({
                 {actionLoadingId === rejectTarget.appointmentId && (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 )}
-                Xác nhận từ chối
+                {t("confirmReject")}
               </button>
             </div>
           </div>
@@ -441,18 +433,22 @@ function AppointmentRow({
   isActionLoading,
   onConfirm,
   onReject,
+  t,
+  getBookingSourceLabel,
 }: {
   appt: AppointmentItem;
   isActionLoading: boolean;
   onConfirm: () => void;
   onReject: () => void;
+  t: ReturnType<typeof useTranslations<string>>;
+  getBookingSourceLabel: (source: string) => string;
 }) {
   const age = calcAge(appt.patientDob);
 
   return (
     <tr className="hover:bg-gray-50/50 transition-colors">
 
-      {/* Bệnh nhân */}
+      {/* Patient */}
       <td className="p-4 pl-6">
         <div className="flex items-center gap-3">
           <Avatar name={appt.patientName} url={appt.patientAvatarUrl} />
@@ -468,19 +464,19 @@ function AppointmentRow({
                 </span>
               )}
               {age !== null && (
-                <span className="text-xs text-gray-400">{age} tuổi</span>
+                <span className="text-xs text-gray-400">{age} {t("yearsOld")}</span>
               )}
             </div>
           </div>
         </div>
       </td>
 
-      {/* Thời gian */}
+      {/* Time */}
       <td className="p-4">
         <div className="space-y-0.5">
           <div className="flex items-center gap-1.5 font-medium text-gray-900">
             <CalendarDays className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-            {new Date(appt.appointmentDate).toLocaleDateString("vi-VN", {
+            {new Date(appt.appointmentDate).toLocaleDateString(undefined, {
               day: "2-digit",
               month: "2-digit",
               year: "numeric",
@@ -488,23 +484,23 @@ function AppointmentRow({
           </div>
           <div className="flex items-center gap-1.5 text-xs text-gray-500">
             <Clock className="w-3 h-3 text-gray-400 shrink-0" />
-            {new Date(appt.slotStartTime).toLocaleTimeString("vi-VN", {
+            {new Date(appt.slotStartTime).toLocaleTimeString(undefined, {
               hour: "2-digit",
               minute: "2-digit",
             })}
             {" – "}
-            {new Date(appt.slotEndTime).toLocaleTimeString("vi-VN", {
+            {new Date(appt.slotEndTime).toLocaleTimeString(undefined, {
               hour: "2-digit",
               minute: "2-digit",
             })}
           </div>
           <span className="text-xs text-gray-400">
-            {BOOKING_SOURCE_LABEL[appt.bookingSource] ?? appt.bookingSource}
+            {getBookingSourceLabel(appt.bookingSource)}
           </span>
         </div>
       </td>
 
-      {/* Dịch vụ */}
+      {/* Service */}
       <td className="p-4">
         {appt.serviceName ? (
           <div>
@@ -513,7 +509,7 @@ function AppointmentRow({
             </p>
             {appt.servicePrice != null && (
               <p className="text-xs text-gray-500 mt-0.5">
-                {appt.servicePrice.toLocaleString("vi-VN")}đ
+                {appt.servicePrice.toLocaleString()}đ
               </p>
             )}
           </div>
@@ -522,38 +518,38 @@ function AppointmentRow({
         )}
       </td>
 
-      {/* Đặt cọc */}
+      {/* Status */}
       <td className="p-4">
         <span className="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold border bg-amber-50 text-amber-700 border-amber-200">
-          Chờ Xử Lý
+          {t("pending")}
         </span>
         {appt.depositPaid && (
           <p className="text-xs text-emerald-600 font-medium mt-1">
-            ✓ Đã cọc {appt.depositAmount.toLocaleString("vi-VN")}đ
+            ✓ {t("depositPaid")} {appt.depositAmount.toLocaleString()}đ
           </p>
         )}
       </td>
 
-      {/* Bệnh án */}
+      {/* Medical Record */}
       <td className="p-4">
         {appt.hasMedicalRecord ? (
           <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-full">
             <FileText className="w-3 h-3" />
-            Có bệnh án
+            {t("hasMedicalRecord")}
           </span>
         ) : (
-          <span className="text-xs text-gray-400 italic">Chưa có</span>
+          <span className="text-xs text-gray-400 italic">{t("noMedicalRecord")}</span>
         )}
       </td>
 
-      {/* Thao tác */}
+      {/* Actions */}
       <td className="p-4">
         <div className="flex items-center gap-1.5 flex-wrap">
           {/* Confirm */}
           <button
             onClick={onConfirm}
             disabled={isActionLoading}
-            title="Xác nhận lịch hẹn"
+            title={t("confirm")}
             className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors disabled:opacity-50"
           >
             {isActionLoading ? (
@@ -561,18 +557,18 @@ function AppointmentRow({
             ) : (
               <Check className="w-3.5 h-3.5" />
             )}
-            Xác nhận
+            {t("confirm")}
           </button>
 
           {/* Reject */}
           <button
             onClick={onReject}
             disabled={isActionLoading}
-            title="Từ chối lịch hẹn"
+            title={t("reject")}
             className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors disabled:opacity-50"
           >
             <Ban className="w-3.5 h-3.5" />
-            Từ chối
+            {t("reject")}
           </button>
         </div>
       </td>

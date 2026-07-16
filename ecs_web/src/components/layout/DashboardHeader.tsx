@@ -5,6 +5,7 @@ import { useShell } from "./ShellProvider"
 import { useRouter } from "next/navigation"
 import { useState, useRef, useEffect } from "react"
 import { authService } from "@/services/auth.service"
+import { useTranslations } from "next-intl"
 
 export interface DashboardHeaderProps {
   title: string
@@ -23,6 +24,7 @@ export default function DashboardHeader({ title, user, accountInfoHref }: Dashbo
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement | null>(null)
+  const t = useTranslations("common")
 
   useEffect(() => {
     if (!dropdownOpen) return
@@ -118,8 +120,8 @@ export default function DashboardHeader({ title, user, accountInfoHref }: Dashbo
                   >
                     <UserIcon className="h-4 w-4 text-on-surface-variant" />
                     <div className="flex flex-col items-start">
-                      <span className="font-medium">Thông tin tài khoản</span>
-                      <span className="text-[11px] text-on-surface-variant">Xem và cập nhật thông tin cá nhân</span>
+                      <span className="font-medium">{t("userMenu.accountInfo")}</span>
+                      <span className="text-[11px] text-on-surface-variant">{t("userMenu.accountInfoSubtitle")}</span>
                     </div>
                   </button>
                 )}
@@ -131,7 +133,7 @@ export default function DashboardHeader({ title, user, accountInfoHref }: Dashbo
                   className={`w-full flex items-center gap-sm px-4 py-3 text-sm text-error hover:bg-error-container transition-colors ${accountInfoHref ? "border-t border-outline-variant" : ""}`}
                 >
                   <LogOut className="h-4 w-4" />
-                  <span className="font-medium">Đăng xuất</span>
+                  <span className="font-medium">{t("userMenu.logout")}</span>
                 </button>
               </div>
             )}

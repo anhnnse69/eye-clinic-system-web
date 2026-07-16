@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useTranslations } from "next-intl"
 import {
     Calendar, Clock, User, Search, RotateCcw, AlertTriangle,
     ChevronLeft, ChevronRight, Activity, Users, Landmark,
@@ -64,7 +65,6 @@ const StatCard = ({ icon, title, value, iconBgClass, iconColorClass, shadowColor
                 </div>
             </div>
 
-            {/* THANH CHẠY DƯỚI ĐÁY CARD */}
             <div className={`absolute bottom-0 left-0 right-0 overflow-hidden rounded-b-3xl bg-slate-100 transition-all duration-300 ${isHovered ? 'h-[6px]' : 'h-[4px]'}`}>
                 <div
                     className="h-full rounded-r-full transition-all duration-500"
@@ -81,6 +81,9 @@ const StatCard = ({ icon, title, value, iconBgClass, iconColorClass, shadowColor
 };
 
 export default function ReceptionistDailyAppointmentsPage() {
+    const t = useTranslations("receptionist")
+    const tAppt = useTranslations("receptionist.appointment")
+
     const [appointments, setAppointments] = useState<DailyAppointmentItemResponse[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [isActionLoading, setIsActionLoading] = useState(false)
@@ -114,7 +117,7 @@ export default function ReceptionistDailyAppointmentsPage() {
                 calculateStats(response.data)
             }
         } catch (error) {
-            console.error("Lỗi lấy danh sách lịch hẹn:", error)
+            console.error(tAppt("errors.loadFailed"), error)
         } finally {
             setIsLoading(false)
         }
@@ -142,9 +145,8 @@ export default function ReceptionistDailyAppointmentsPage() {
         setPageNumber(1)
     }
 
-    // ======================== TÁC VỤ XỬ LÝ API ========================
     const handlePayDeposit = async (appointmentId: string) => {
-        const isConfirmed = window.confirm("Xác nhận đã thu tiền cọc của bệnh nhân trực tiếp tại quầy?");
+        const isConfirmed = window.confirm(tAppt("collectDepositConfirm"));
         if (!isConfirmed) return;
 
         try {
@@ -152,19 +154,19 @@ export default function ReceptionistDailyAppointmentsPage() {
             const response = await receptionistService.payDepositAtCounter({ appointmentId })
 
             if (response.codeMessage === "APP_MESSAGE_2000") {
-                alert("Đã ghi nhận thu tiền cọc tại quầy thành công!")
+                alert(tAppt("collectDepositSuccess"))
                 setSelectedAppointment(prev => prev ? { ...prev, depositPaid: true } : null)
                 fetchDailyAppointments()
             }
         } catch (error) {
-            alert("Không thể ghi nhận đóng cọc: " + handleApiError(error))
+            alert(tAppt("depositFailed", { error: handleApiError(error) }))
         } finally {
             setIsActionLoading(false)
         }
     }
 
     const handleArrived = async (appointmentId: string) => {
-        const isConfirmed = window.confirm("Xác nhận bệnh nhân này đã đến quầy và tiến hành cấp số thứ tự khám?");
+        const isConfirmed = window.confirm(tAppt("arrivedConfirm"));
         if (!isConfirmed) return;
 
         try {
@@ -172,7 +174,7 @@ export default function ReceptionistDailyAppointmentsPage() {
             const response = await receptionistService.handleArrived({ appointmentId })
             if (response.codeMessage === "APP_MESSAGE_2000" && response.data) {
                 const checkInResult = response.data
-                alert("Tiếp đón check-in thành công! Số thứ tự hàng đợi đã được cấp.")
+                alert(tAppt("arrivedSuccess"))
                 setSelectedAppointment(prev => prev ? {
                     ...prev,
                     status: checkInResult.status as any,
@@ -181,21 +183,19 @@ export default function ReceptionistDailyAppointmentsPage() {
                 fetchDailyAppointments()
             }
         } catch (error) {
-            alert("Tiếp đón thất bại: " + handleApiError(error))
+            alert(tAppt("arrivedFailed", { error: handleApiError(error) }))
         } finally {
             setIsActionLoading(false)
         }
     }
 
     const handleCancel = async (id: string) => {
-        const isConfirmed = window.confirm(
-            "Lưu ý: Lịch hẹn sau khi hủy sẽ không được hoàn lại chi phí (nếu có).\nBạn có chắc chắn muốn tiếp tục hủy lịch hẹn này không?"
-        );
+        const isConfirmed = window.confirm(tAppt("cancelWarning"));
         if (!isConfirmed) return;
-        const reason = window.prompt("Nhập lý do hủy lịch hẹn khám này (bắt buộc):");
+        const reason = window.prompt(tAppt("cancelReasonRequired"));
         if (reason === null) return;
         if (!reason.trim()) {
-            alert("Bạn phải nhập lý do hủy lịch hẹn!");
+            alert(tAppt("cancelReasonRequiredAlert"));
             return;
         }
         try {
@@ -205,41 +205,37 @@ export default function ReceptionistDailyAppointmentsPage() {
                 noteReason: reason.trim()
             })
             if (response.codeMessage === "APP_MESSAGE_2000") {
-                alert("Đã hủy lịch hẹn thành công.")
+                alert(tAppt("cancelSuccess"))
                 setSelectedAppointment(prev => prev ? { ...prev, status: "CANCELLED" } : null)
                 fetchDailyAppointments()
             } else {
-                alert(`Không thể hủy lịch: ${response.codeMessage}`)
+                alert(tAppt("cancelFailed", { error: response.codeMessage || "" }))
             }
         } catch (error) {
-            alert("Lỗi hủy lịch hẹn: " + handleApiError(error))
+            alert(tAppt("cancelFailed", { error: handleApiError(error) }))
         } finally {
             setIsActionLoading(false)
         }
     }
 
     const getStatusBadge = (status: string) => {
-        switch (status) {
-            case "PENDING":
-                return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-100">Chờ cọc</span>
-            case "DEPOSIT_PAID":
-                return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100">Đã đóng cọc</span>
-            case "CONFIRMED":
-            case "BOOKED":
-                return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">Sẵn sàng khám</span>
-            case "ARRIVED":
-                return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">Đã đến quầy</span>
-            case "IN_PROGRESS":
-                return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-sky-50 text-sky-700 border border-sky-100">Đang khám</span>
-            case "COMPLETED":
-                return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-slate-50 text-slate-600 border border-slate-200">Hoàn thành</span>
-            case "CANCELLED":
-                return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-100">Đã hủy</span>
-            case "NOSHOW":
-                return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-red-50 text-red-700 border border-red-100">Vắng mặt</span>
-            default:
-                return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-slate-50 text-slate-600">{status}</span>
+        const badges: Record<string, { class: string; label: string }> = {
+            "PENDING": { class: "bg-amber-50 text-amber-700 border-amber-100", label: tAppt("pendingDeposit") },
+            "DEPOSIT_PAID": { class: "bg-blue-50 text-blue-700 border-blue-100", label: tAppt("depositPaid") },
+            "CONFIRMED": { class: "bg-indigo-50 text-indigo-700 border-indigo-100", label: tAppt("readyToExam") },
+            "BOOKED": { class: "bg-indigo-50 text-indigo-700 border-indigo-100", label: tAppt("readyToExam") },
+            "ARRIVED": { class: "bg-emerald-50 text-emerald-700 border-emerald-100", label: tAppt("present") },
+            "IN_PROGRESS": { class: "bg-sky-50 text-sky-700 border-sky-100", label: tAppt("examining") },
+            "COMPLETED": { class: "bg-slate-50 text-slate-600 border-slate-200", label: tAppt("completed") },
+            "CANCELLED": { class: "bg-rose-50 text-rose-700 border-rose-100", label: tAppt("cancelled") },
+            "NOSHOW": { class: "bg-red-50 text-red-700 border-red-100", label: tAppt("noShow") },
         }
+        const badge = badges[status] || { class: "bg-slate-50 text-slate-600", label: status }
+        return (
+            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${badge.class}`}>
+                {badge.label}
+            </span>
+        )
     }
 
     const appointmentDateStr = selectedAppointment?.appointmentDate
@@ -261,15 +257,15 @@ export default function ReceptionistDailyAppointmentsPage() {
     return (
         <div className="space-y-6 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
 
-            {/* Tiêu đề chính */}
+            {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-100 pb-5">
                 <div>
                     <h1 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
                         <Activity className="h-6 w-6 text-indigo-600" />
-                        Quản lý Tiếp Đón & Lịch Hẹn Hàng Ngày
+                        {tAppt("manageReception")}
                     </h1>
                     <p className="text-xs text-slate-400 mt-1 font-medium">
-                        Tra cứu lịch hẹn khám, hỗ trợ thu tiền cọc trực tiếp tại quầy tiếp đón và điều phối check-in sinh số thứ tự hàng đợi khám bệnh.
+                        {tAppt("receptionDescription")}
                     </p>
                 </div>
                 <button
@@ -278,22 +274,22 @@ export default function ReceptionistDailyAppointmentsPage() {
                     className="w-full sm:w-auto bg-white text-indigo-700 font-bold text-xs h-[40px] rounded-xl px-4 border border-indigo-100 shadow-sm shadow-indigo-100/50 hover:bg-indigo-50/50 hover:text-indigo-800 hover:border-indigo-200 transition-all active:scale-[0.98] flex items-center justify-center gap-2 whitespace-nowrap group"
                 >
                     <RotateCcw className="h-3.5 w-3.5 text-indigo-400 group-hover:text-indigo-600 group-hover:rotate-[-45deg] transition-all duration-300 shrink-0" />
-                    <span>Làm mới danh sách</span>
+                    <span>{t("common.refresh")}</span>
                 </button>
             </div>
 
-            {/* DASHBOARD STATISTICS CARDS */}
+            {/* Statistics Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard icon={<Users className="h-5 w-5" />} title="Tổng lịch hẹn trong ngày" value={stats.total} iconBgClass="bg-indigo-50" iconColorClass="text-indigo-600" shadowColor="79, 70, 229" />
-                <StatCard icon={<Activity className="h-5 w-5" />} title="Đã đến & Đang khám" value={stats.arrived} iconBgClass="bg-emerald-50" iconColorClass="text-emerald-600" shadowColor="5, 150, 105" />
-                <StatCard icon={<CheckCircle2 className="h-5 w-5" />} title="Hoàn thành ca khám" value={stats.completed} iconBgClass="bg-sky-50" iconColorClass="text-sky-600" shadowColor="2, 132, 199" />
-                <StatCard icon={<AlertTriangle className="h-5 w-5" />} title="Lịch bị hủy bỏ" value={stats.cancelled} iconBgClass="bg-rose-50" iconColorClass="text-rose-600" shadowColor="220, 38, 38" />
+                <StatCard icon={<Users className="h-5 w-5" />} title={tAppt("totalAppointments")} value={stats.total} iconBgClass="bg-indigo-50" iconColorClass="text-indigo-600" shadowColor="79, 70, 229" />
+                <StatCard icon={<Activity className="h-5 w-5" />} title={tAppt("arrivedAndExamining")} value={stats.arrived} iconBgClass="bg-emerald-50" iconColorClass="text-emerald-600" shadowColor="5, 150, 105" />
+                <StatCard icon={<CheckCircle2 className="h-5 w-5" />} title={tAppt("completedExam")} value={stats.completed} iconBgClass="bg-sky-50" iconColorClass="text-sky-600" shadowColor="2, 132, 199" />
+                <StatCard icon={<AlertTriangle className="h-5 w-5" />} title={tAppt("cancelledAppointments")} value={stats.cancelled} iconBgClass="bg-rose-50" iconColorClass="text-rose-600" shadowColor="220, 38, 38" />
             </div>
 
-            {/* THANH BỘ LỌC TÌM KIẾM */}
+            {/* Filter Bar */}
             <div className="p-5 bg-white border border-slate-100 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
                 <div className="md:col-span-2 space-y-1.5">
-                    <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider pl-1">Ngày kiểm tra</label>
+                    <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider pl-1">{tAppt("searchDate")}</label>
                     <div className="relative group">
                         <Calendar className="absolute left-3 top-3 h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                         <input type="date" value={targetDate} onChange={(e) => { setTargetDate(e.target.value); setPageNumber(1); }} className="w-full text-sm border border-slate-200/80 rounded-xl pl-9 pr-3 py-2.5 bg-slate-50 font-semibold text-slate-700 outline-none transition-all focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10" />
@@ -301,13 +297,13 @@ export default function ReceptionistDailyAppointmentsPage() {
                 </div>
 
                 <div className="md:col-span-2 space-y-1.5">
-                    <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider pl-1">Ca làm việc</label>
+                    <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider pl-1">{tAppt("shift")}</label>
                     <div className="relative">
                         <select value={shiftFilter} onChange={(e) => { setShiftFilter(e.target.value as any); setPageNumber(1); }} className="w-full text-sm border border-slate-200/80 rounded-xl px-3 py-2.5 bg-slate-50 font-bold text-slate-700 outline-none transition-all focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 appearance-none cursor-pointer">
-                            <option value="">Tất cả các ca</option>
-                            <option value="MORNING">☀️ Ca Sáng</option>
-                            <option value="AFTERNOON">⛅ Ca Chiều</option>
-                            <option value="EVENING">🌙 Ca Tối</option>
+                            <option value="">{tAppt("allShifts")}</option>
+                            <option value="MORNING">{tAppt("morningShift")}</option>
+                            <option value="AFTERNOON">{tAppt("afternoonShift")}</option>
+                            <option value="EVENING">{tAppt("eveningShift")}</option>
                         </select>
                         <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
                             <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -318,18 +314,18 @@ export default function ReceptionistDailyAppointmentsPage() {
                 </div>
 
                 <div className="md:col-span-3 space-y-1.5">
-                    <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider pl-1">Tên / Số điện thoại Bệnh nhân</label>
+                    <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider pl-1">{tAppt("patient")}</label>
                     <div className="relative group">
                         <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
-                        <input type="text" placeholder="Tìm họ tên, số điện thoại..." value={searchPatient} onChange={(e) => { setSearchPatient(e.target.value); setPageNumber(1); }} className="w-full text-sm border border-slate-200/80 rounded-xl pl-9 pr-3 py-2.5 bg-slate-50/50 font-medium placeholder-slate-400 text-slate-800 outline-none transition-all focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10" />
+                        <input type="text" placeholder={tAppt("searchPatientName")} value={searchPatient} onChange={(e) => { setSearchPatient(e.target.value); setPageNumber(1); }} className="w-full text-sm border border-slate-200/80 rounded-xl pl-9 pr-3 py-2.5 bg-slate-50/50 font-medium placeholder-slate-400 text-slate-800 outline-none transition-all focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10" />
                     </div>
                 </div>
 
                 <div className="md:col-span-2 space-y-1.5">
-                    <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider pl-1">Bác sĩ phụ trách</label>
+                    <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider pl-1">{tAppt("doctor")}</label>
                     <div className="relative group">
                         <User className="absolute left-3 top-3 h-4 w-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
-                        <input type="text" placeholder="Tên bác sĩ..." value={searchDoctor} onChange={(e) => { setSearchDoctor(e.target.value); setPageNumber(1); }} className="w-full text-sm border border-slate-200/80 rounded-xl pl-9 pr-3 py-2.5 bg-slate-50/50 font-medium placeholder-slate-400 text-slate-800 outline-none transition-all focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10" />
+                        <input type="text" placeholder={tAppt("searchDoctor")} value={searchDoctor} onChange={(e) => { setSearchDoctor(e.target.value); setPageNumber(1); }} className="w-full text-sm border border-slate-200/80 rounded-xl pl-9 pr-3 py-2.5 bg-slate-50/50 font-medium placeholder-slate-400 text-slate-800 outline-none transition-all focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10" />
                     </div>
                 </div>
 
@@ -340,25 +336,25 @@ export default function ReceptionistDailyAppointmentsPage() {
                         className="w-full bg-white text-slate-700 font-bold text-sm h-[42px] rounded-xl px-4 border border-slate-200 shadow-sm hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 transition-all active:scale-[0.98] flex items-center justify-center gap-2 whitespace-nowrap group"
                     >
                         <RotateCcw className="h-4 w-4 text-slate-400 group-hover:text-indigo-500 group-hover:rotate-[-45deg] transition-all duration-300 shrink-0" />
-                        <span>Xóa toàn bộ bộ lọc</span>
+                        <span>{t("common.clearFilters")}</span>
                     </button>
                 </div>
             </div>
 
-            {/* BẢNG DANH SÁCH CHÍNH */}
+            {/* Main Table */}
             <div className="bg-white border border-slate-100 rounded-3xl shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-slate-50/70 border-b border-slate-100 text-slate-400 font-bold text-[11px] uppercase tracking-wider">
-                                <th className="py-3 px-4">Bệnh nhân</th>
-                                <th className="py-3 px-4">Giờ hẹn / Ca</th>
-                                <th className="py-3 px-4">Bác sĩ & Phòng</th>
-                                <th className="py-3 px-4">Triệu chứng lâm sàng</th>
-                                <th className="py-3 px-4">Tiền cọc quầy</th>
-                                <th className="py-3 px-4">Trạng thái</th>
-                                <th className="py-3 px-4 text-center">STT Hàng chờ</th>
-                                <th className="py-3 px-4 text-right">Tác vụ</th>
+                                <th className="py-3 px-4">{tAppt("patient")}</th>
+                                <th className="py-3 px-4">{tAppt("time")}</th>
+                                <th className="py-3 px-4">{tAppt("doctorAndRoom")}</th>
+                                <th className="py-3 px-4">{tAppt("clinicalSymptoms")}</th>
+                                <th className="py-3 px-4">{tAppt("depositAtCounter")}</th>
+                                <th className="py-3 px-4">{tAppt("status")}</th>
+                                <th className="py-3 px-4 text-center">{tAppt("queueNumber")}</th>
+                                <th className="py-3 px-4 text-right">{t("common.actions")}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50 text-xs font-medium text-slate-700">
@@ -367,19 +363,18 @@ export default function ReceptionistDailyAppointmentsPage() {
                                     <td colSpan={8} className="text-center py-12 text-slate-400">
                                         <div className="flex flex-col items-center justify-center gap-2">
                                             <div className="h-5 w-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-                                            <span className="font-semibold text-xs">Đang nạp bảng dữ liệu tiếp đón...</span>
+                                            <span className="font-semibold text-xs">{t("common.loading")}</span>
                                         </div>
                                     </td>
                                 </tr>
                             ) : appointments.length === 0 ? (
                                 <tr>
                                     <td colSpan={8} className="text-center py-12 text-slate-400 font-semibold">
-                                        Không tìm thấy bất kỳ lịch hẹn khám bệnh nào phù hợp với bộ lọc đã chọn.
+                                        {tAppt("noAppointments")}
                                     </td>
                                 </tr>
                             ) : (
                                 appointments.map((item) => {
-                                    // Kiểm tra xem hình thức đăng ký có phải là Walk-in trực tiếp tại quầy hay không
                                     const isWalkIn = item.bookingSource === "WALKIN" || item.bookingSource === "WALK_IN";
                                     return (
                                         <tr 
@@ -392,17 +387,14 @@ export default function ReceptionistDailyAppointmentsPage() {
                                         >
                                             <td className="py-3.5 px-4">
                                                 <div className="font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">{item.patient.fullName}</div>
-                                                <div className="text-[11px] text-slate-400 font-semibold mt-0.5">{item.patient.phoneNumber || "Không có SĐT"}</div>
+                                                <div className="text-[11px] text-slate-400 font-semibold mt-0.5">{item.patient.phoneNumber || tAppt("noPhone")}</div>
                                             </td>
                                             <td className="py-3.5 px-4">
                                                 {isWalkIn ? (
-                                                    // Nếu là Walk-in: Ẩn khung giờ chi tiết, chỉ hiển thị tên Ca làm việc kèm Icon
                                                     <div className="flex items-center gap-1 font-bold text-slate-700">
-                                                        {/* <Clock className="h-3.5 w-3.5 text-slate-400" /> */}
-                                                        {/* <span className="text-slate-700 font-bold">Theo ca làm việc</span> */}
+                                                        {item.slot.shiftType}
                                                     </div>
                                                 ) : (
-                                                    // Nếu là lịch hẹn bình thường: Hiển thị đầy đủ khung giờ
                                                     <div className="flex items-center gap-1 font-bold text-slate-700">
                                                         <Clock className="h-3.5 w-3.5 text-slate-400" />
                                                         {item.slot.startTime.split('T')[1]?.substring(0, 5) || "00:00"} - {item.slot.endTime.split('T')[1]?.substring(0, 5) || "00:00"}
@@ -412,18 +404,18 @@ export default function ReceptionistDailyAppointmentsPage() {
                                             </td>
                                             <td className="py-3.5 px-4">
                                                 <div className="font-bold text-slate-800">{item.doctor.fullName}</div>
-                                                <div className="text-[11px] font-bold text-indigo-500 mt-0.5">{item.doctor.clinicRoomName || "Chưa gán phòng"}</div>
+                                                <div className="text-[11px] font-bold text-indigo-500 mt-0.5">{item.doctor.clinicRoomName || tAppt("notAssigned")}</div>
                                             </td>
                                             <td className="py-3.5 px-4 max-w-[200px] truncate text-slate-500 font-normal">
-                                                {item.symptoms || <span className="text-slate-300 italic">Không có triệu chứng ghi nhận</span>}
+                                                {item.symptoms || <span className="text-slate-300 italic">{tAppt("noSymptoms")}</span>}
                                             </td>
                                             <td className="py-3.5 px-4">
                                                 <div className="font-bold text-slate-800">{item.depositAmount.toLocaleString('vi-VN')}đ</div>
                                                 <div className="mt-0.5">
                                                     {item.depositPaid ? (
-                                                        <span className="text-[10px] font-black text-emerald-600 uppercase tracking-wide">Đã đóng cọc</span>
+                                                        <span className="text-[10px] font-black text-emerald-600 uppercase tracking-wide">{tAppt("paidDeposit")}</span>
                                                     ) : (
-                                                        <span className="text-[10px] font-black text-rose-500 uppercase tracking-wide">Chưa thu cọc</span>
+                                                        <span className="text-[10px] font-black text-rose-500 uppercase tracking-wide">{tAppt("unpaidDeposit")}</span>
                                                     )}
                                                 </div>
                                             </td>
@@ -434,7 +426,7 @@ export default function ReceptionistDailyAppointmentsPage() {
                                                         #{item.queue.queueNumber}
                                                     </div>
                                                 ) : (
-                                                    <span className="text-slate-300 font-semibold italic text-[11px]">Chưa cấp số</span>
+                                                    <span className="text-slate-300 font-semibold italic text-[11px]">{tAppt("queueNotAssigned")}</span>
                                                 )}
                                             </td>
                                             <td className="py-3.5 px-4 text-right">
@@ -443,7 +435,7 @@ export default function ReceptionistDailyAppointmentsPage() {
                                                     onClick={() => setSelectedAppointment(item)}
                                                     className="bg-white border border-slate-200 hover:border-indigo-300 hover:text-indigo-600 text-slate-600 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95"
                                                 >
-                                                    Xem & Xử lý
+                                                    {t("common.viewAndProcess")}
                                                 </button>
                                             </td>
                                         </tr>
@@ -454,11 +446,11 @@ export default function ReceptionistDailyAppointmentsPage() {
                     </table>
                 </div>
 
-                {/* THANH ĐIỀU KHIỂN PHÂN TRANG */}
+                {/* Pagination */}
                 {!isLoading && totalItems > 0 && (
                     <div className="p-4 bg-slate-50/50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
                         <span className="text-xs text-slate-400 font-semibold">
-                            Hiển thị lịch hẹn từ <strong className="text-slate-600">{(pageNumber - 1) * pageSize + 1}</strong> đến <strong className="text-slate-600">{Math.min(pageNumber * pageSize, totalItems)}</strong> trong tổng số <strong className="text-slate-600">{totalItems}</strong> lịch hẹn
+                            {tAppt("showEntries", { from: (pageNumber - 1) * pageSize + 1, to: Math.min(pageNumber * pageSize, totalItems), total: totalItems })}
                         </span>
                         <div className="flex items-center gap-2">
                             <select
@@ -466,10 +458,10 @@ export default function ReceptionistDailyAppointmentsPage() {
                                 onChange={(e) => { setPageSize(Number(e.target.value)); setPageNumber(1); }}
                                 className="bg-white border border-slate-200 text-slate-600 px-2 py-1.5 rounded-lg text-xs focus:outline-none cursor-pointer mr-2 font-medium hover:bg-slate-50 transition-colors"
                             >
-                                <option value={5}>5 lịch / trang</option>
-                                <option value={10}>10 lịch / trang</option>
-                                <option value={20}>20 lịch / trang</option>
-                                <option value={50}>50 lịch / trang</option>
+                                <option value={5}>5 {tAppt("appointmentsPerPage")}</option>
+                                <option value={10}>10 {tAppt("appointmentsPerPage")}</option>
+                                <option value={20}>20 {tAppt("appointmentsPerPage")}</option>
+                                <option value={50}>50 {tAppt("appointmentsPerPage")}</option>
                             </select>
                             <button
                                 disabled={pageNumber === 1}
@@ -493,15 +485,15 @@ export default function ReceptionistDailyAppointmentsPage() {
                 )}
             </div>
 
-            {/* MODAL OVERLAY */}
+            {/* Modal */}
             {selectedAppointment && (
                 <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
                     <div className="bg-white rounded-2xl w-full max-w-4xl border border-slate-200 shadow-2xl flex flex-col max-h-[95vh] overflow-hidden text-left space-y-0 animate-scale-in">
-                        {/* MODAL HEADER */}
+                        {/* Modal Header */}
                         <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
                             <div>
                                 <span className="text-[10px] font-black uppercase tracking-widest bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-md">
-                                    THÔNG TIN TIẾP ĐÓN CHI TIẾT
+                                    {tAppt("appointmentDetails")}
                                 </span>
                             </div>
                             <button
@@ -513,39 +505,39 @@ export default function ReceptionistDailyAppointmentsPage() {
                             </button>
                         </div>
 
-                        {/* MODAL BODY */}
+                        {/* Modal Body */}
                         <div className="p-6 overflow-y-auto flex-1 space-y-6 bg-slate-50/30">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                {/* KHỐI: HÀNH CHÍNH BỆNH NHÂN */}
+                                {/* Patient Info */}
                                 <div className="space-y-2 flex flex-col">
                                     <h4 className="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-1.5 pl-1">
-                                        <User className="h-3.5 w-3.5 text-indigo-500" /> Hành chính bệnh nhân
+                                        <User className="h-3.5 w-3.5 text-indigo-500" /> {tAppt("patientAdministrative")}
                                     </h4>
                                     <div className="p-4 bg-white border border-slate-200/80 rounded-xl space-y-2.5 text-xs shadow-sm flex-1 flex flex-col justify-between">
-                                        <div className="flex justify-between items-center"><span className="text-slate-400">Họ và tên:</span><span className="font-bold text-slate-900 text-sm">{selectedAppointment.patient.fullName}</span></div>
+                                        <div className="flex justify-between items-center"><span className="text-slate-400">{tAppt("fullNameLabel")}</span><span className="font-bold text-slate-900 text-sm">{selectedAppointment.patient.fullName}</span></div>
                                         <div className="flex justify-between items-center">
-                                            <span className="text-slate-400">Giới tính:</span>
+                                            <span className="text-slate-400">{tAppt("genderLabel")}</span>
                                             <span className={`font-bold px-2.5 py-0.5 rounded-md text-xs uppercase ${selectedAppointment.patient.gender?.toUpperCase() === "MALE" ? "bg-blue-50 text-blue-700 border border-blue-100" : selectedAppointment.patient.gender?.toUpperCase() === "FEMALE" ? "bg-pink-50 text-pink-700 border border-pink-100" : "bg-slate-100 text-slate-700 border border-slate-200"}`}>
-                                                {selectedAppointment.patient.gender?.toUpperCase() === "MALE" ? "Nam" : selectedAppointment.patient.gender?.toUpperCase() === "FEMALE" ? "Nữ" : "Khác"}
+                                                {selectedAppointment.patient.gender?.toUpperCase() === "MALE" ? tAppt("maleLabel") : selectedAppointment.patient.gender?.toUpperCase() === "FEMALE" ? tAppt("femaleLabel") : tAppt("otherLabel")}
                                             </span>
                                         </div>
-                                        <div className="flex justify-between items-center"><span className="text-slate-400">Ngày sinh:</span><span className="font-bold text-slate-700">{new Date(selectedAppointment.patient.dob).toLocaleDateString('vi-VN')}</span></div>
-                                        <div className="flex justify-between items-center"><span className="text-slate-400">Số điện thoại:</span><span className="font-bold text-slate-700">{selectedAppointment.patient.phoneNumber || "N/A"}</span></div>
-                                        <div className="flex justify-between items-center"><span className="text-slate-400">Mã BHYT:</span><span className="font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200 font-mono text-[11px]">{selectedAppointment.patient.bhytNumber || "Không đăng ký"}</span></div>
+                                        <div className="flex justify-between items-center"><span className="text-slate-400">{tAppt("dobLabel")}</span><span className="font-bold text-slate-700">{new Date(selectedAppointment.patient.dob).toLocaleDateString()}</span></div>
+                                        <div className="flex justify-between items-center"><span className="text-slate-400">{tAppt("phoneLabel")}</span><span className="font-bold text-slate-700">{selectedAppointment.patient.phoneNumber || "N/A"}</span></div>
+                                        <div className="flex justify-between items-center"><span className="text-slate-400">{tAppt("bhytLabel")}</span><span className="font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200 font-mono text-[11px]">{selectedAppointment.patient.bhytNumber || tAppt("noBHYT")}</span></div>
                                     </div>
                                 </div>
 
-                                {/* KHỐI: THÔNG TIN LỊCH KHÁM */}
+                                {/* Appointment Info */}
                                 <div className="space-y-2 flex flex-col">
                                     <h4 className="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center gap-1.5 pl-1">
-                                        <Clock className="h-3.5 w-3.5 text-indigo-500" /> Thông tin chỉ định khám
+                                        <Clock className="h-3.5 w-3.5 text-indigo-500" /> {tAppt("appointmentInfo")}
                                     </h4>
                                     <div className="p-4 bg-white border border-slate-200/80 rounded-xl space-y-2.5 text-xs shadow-sm flex-1 flex flex-col justify-between">
-                                        <div className="flex justify-between items-center"><span className="text-slate-400">Bác sĩ phụ trách:</span><span className="font-bold text-slate-900">{selectedAppointment.doctor.fullName}</span></div>
-                                        <div className="flex justify-between items-center"><span className="text-slate-400">Phòng khám gán:</span><span className="font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 rounded-md">{selectedAppointment.doctor.clinicRoomName || "Chưa điều phòng"}</span></div>
-                                        <div className="flex justify-between items-center"><span className="text-slate-400">Ngày hẹn khám:</span><span className="font-bold text-slate-700">{new Date(selectedAppointment.appointmentDate).toLocaleDateString('vi-VN')}</span></div>
+                                        <div className="flex justify-between items-center"><span className="text-slate-400">{tAppt("assignedDoctor")}</span><span className="font-bold text-slate-900">{selectedAppointment.doctor.fullName}</span></div>
+                                        <div className="flex justify-between items-center"><span className="text-slate-400">{tAppt("clinicRoom")}</span><span className="font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 rounded-md">{selectedAppointment.doctor.clinicRoomName || tAppt("notAssigned")}</span></div>
+                                        <div className="flex justify-between items-center"><span className="text-slate-400">{tAppt("appointmentDate")}</span><span className="font-bold text-slate-700">{new Date(selectedAppointment.appointmentDate).toLocaleDateString()}</span></div>
                                         <div className="flex justify-between items-center">
-                                            <span className="text-slate-400">Khung giờ biểu:</span>
+                                            <span className="text-slate-400">{tAppt("timeSlot")}</span>
                                             <span className="font-bold text-slate-700 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded">
                                                 {selectedAppointment.bookingSource === "WALKIN" || selectedAppointment.bookingSource === "WALK_IN"
                                                     ? `${selectedAppointment.slot.shiftType}`
@@ -554,36 +546,36 @@ export default function ReceptionistDailyAppointmentsPage() {
                                             </span>
                                         </div>
                                         <div className="flex justify-between items-center">
-                                            <span className="text-slate-400">Hình thức đặt:</span>
+                                            <span className="text-slate-400">{tAppt("bookingType")}</span>
                                             <span className="font-bold text-slate-500">{selectedAppointment.bookingSource}</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* TRIỆU CHỨNG LÂM SÀNG */}
+                            {/* Symptoms */}
                             <div className="space-y-2">
-                                <h4 className="text-xs font-black text-slate-800 uppercase tracking-widest pl-1">Triệu chứng ghi nhận khi đặt</h4>
+                                <h4 className="text-xs font-black text-slate-800 uppercase tracking-widest pl-1">{tAppt("symptomsRecorded")}</h4>
                                 <div className="p-4 bg-white border border-slate-200/80 rounded-xl text-xs font-normal text-slate-600 leading-relaxed shadow-sm min-h-[60px]">
-                                    {selectedAppointment.symptoms || <span className="text-slate-400 italic">Không có dữ liệu triệu chứng bệnh nhân cung cấp trước.</span>}
+                                    {selectedAppointment.symptoms || <span className="text-slate-400 italic">{tAppt("noSymptomsData")}</span>}
                                 </div>
                             </div>
 
-                            {/* HÓA ĐƠN TIỀN CỌC TẠI QUẦY */}
+                            {/* Deposit Section */}
                             <div className="p-5 bg-slate-100/80 border border-slate-200/60 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                                 <div className="flex items-center gap-3.5">
                                     <div className="p-3 bg-white rounded-xl border border-slate-200 text-slate-500 shrink-0 shadow-sm">
                                         <Landmark className="h-5 w-5 text-indigo-600" />
                                     </div>
                                     <div>
-                                        <h5 className="font-bold text-slate-800 text-sm">Phí đặt cọc giữ chỗ tại quầy tiếp tiếp đón</h5>
+                                        <h5 className="font-bold text-slate-800 text-sm">{tAppt("depositFee")}</h5>
                                         <div className="flex items-center gap-2 mt-1">
                                             <span className="text-lg font-black text-indigo-700 tracking-tight">{formatVND(selectedAppointment.depositAmount)}</span>
                                             <div className="shrink-0">
                                                 {selectedAppointment.depositPaid ? (
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold uppercase tracking-wider">Đã đóng cọc</span>
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold uppercase tracking-wider">{tAppt("paidDeposit")}</span>
                                                 ) : (
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold uppercase tracking-wider">Chưa thu tiền</span>
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold uppercase tracking-wider">{tAppt("unpaidDeposit")}</span>
                                                 )}
                                             </div>
                                         </div>
@@ -601,15 +593,15 @@ export default function ReceptionistDailyAppointmentsPage() {
                                             : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-transparent shadow-none'
                                         }`}
                                 >
-                                    {selectedAppointment.depositPaid ? "Đã ghi nhận cọc" : "Thu tiền cọc tại quầy"}
+                                    {selectedAppointment.depositPaid ? tAppt("confirmedDeposit") : tAppt("confirmDeposit")}
                                 </button>
                             </div>
                         </div>
 
-                        {/* MODAL FOOTER */}
+                        {/* Modal Footer */}
                         <div className="p-4 border-t border-slate-100 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3 px-6">
                             <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-                                <span>Trạng thái hiện tại:</span>
+                                <span>{tAppt("checkInStatus")}:</span>
                                 {getStatusBadge(selectedAppointment.status)}
                             </div>
 
@@ -624,7 +616,7 @@ export default function ReceptionistDailyAppointmentsPage() {
                                         }`}
                                 >
                                     <CalendarX className="h-4 w-4" />
-                                    Hủy lịch hẹn
+                                    {tAppt("cancel")}
                                 </button>
 
                                 <button
@@ -640,8 +632,8 @@ export default function ReceptionistDailyAppointmentsPage() {
                                 >
                                     <UserCheck className="h-4 w-4" />
                                     {selectedAppointment.status === "ARRIVED"
-                                        ? `Đã Check-in (STT: ${selectedAppointment.queue?.queueNumber ?? '...'})`
-                                        : "Xác nhận đã đến quầy & Cấp số khám"}
+                                        ? tAppt("arrivedWithQueue", { number: selectedAppointment.queue?.queueNumber ?? '...' })
+                                        : tAppt("confirmArrival")}
                                 </button>
                             </div>
                         </div>

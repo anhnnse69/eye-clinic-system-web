@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { X, Loader2, DoorOpen, CalendarIcon } from "lucide-react";
 import { ApiError } from "@/lib/axios";
 import {
@@ -14,28 +15,29 @@ function toDateStr(d: Date) {
   return new Date(d.getTime() - tzoffset).toISOString().split("T")[0];
 }
 
-function resolveEditErrorMessage(err: unknown): string {
+function resolveEditErrorMessage(err: unknown, t: (key: string) => string): string {
   const code = err instanceof ApiError ? err.codeMessage : undefined;
 
   switch (code) {
-    case "APP_MESSAGE_4058": // Phòng đã bị bác sĩ khác chiếm cùng ngày/ca
-      return "Phòng này đã được bác sĩ khác sử dụng trong cùng ngày và ca làm việc. Vui lòng chọn phòng khác.";
+    case "APP_MESSAGE_4058":
+      return t("error.roomTaken");
     case "APP_MESSAGE_4015":
-      return "Bác sĩ đã có ca trực khác trùng ngày và loại ca này. Vui lòng chọn ngày khác.";
+      return t("error.doctorHasShift");
     case "APP_MESSAGE_4013":
-      return "Không thể sửa ca này vì đã có bệnh nhân đặt lịch trong ca.";
+      return t("error.hasPatientBooked");
     case "APP_MESSAGE_4019":
-      return "Phòng khám không hợp lệ hoặc không còn hoạt động. Vui lòng chọn lại.";
+      return t("error.invalidRoom");
     case "APP_MESSAGE_4012":
-      return "Không tìm thấy ca trực này. Có thể ca đã bị xoá.";
+      return t("error.shiftNotFound");
     case "APP_MESSAGE_4011":
-      return "Không tìm thấy bác sĩ này hoặc bác sĩ không còn hoạt động.";
+      return t("error.doctorNotFound");
     case "APP_MESSAGE_4008":
-      return "Bạn không có quyền chỉnh sửa ca trực này.";
+      return t("error.noPermission");
     default:
-      return "Không thể cập nhật ca. Có thể ca này đã có bệnh nhân đặt lịch hoặc đã có ca.";
+      return t("error.default");
   }
 }
+
 export default function EditScheduleModal({
   doctorId,
   schedule,
@@ -47,6 +49,8 @@ export default function EditScheduleModal({
   onClose: () => void;
   onUpdated: () => void;
 }) {
+  const t = useTranslations("doctor.editSchedule")
+
   const currentWorkDate = schedule.slots[0]
     ? schedule.slots[0].startTime.split("T")[0]
     : toDateStr(new Date());
@@ -65,14 +69,10 @@ export default function EditScheduleModal({
     const loadRooms = async () => {
       setLoadingRooms(true);
       try {
-        // ── Lễ tân: lấy danh sách phòng active trong clinic của mình ──
         const res = await doctorScheduleService.getActiveRoomsForReceptionist();
         const list = res.data ?? [];
         setRooms(list);
 
-        // ── FIX: luôn đảm bảo roomId có giá trị hợp lệ ──
-        // Ưu tiên giữ room hiện tại của ca nếu nó còn active trong list.
-        // Nếu không có, fallback sang room đầu tiên trong list.
         const currentRoomStillActive = list.find(
           (r) => r.roomId === schedule.roomId
         );
@@ -83,22 +83,22 @@ export default function EditScheduleModal({
           setRoomId(list[0].roomId);
         }
       } catch {
-        setError("Không thể tải danh sách phòng.");
+        setError(t("error.loadRoomsFailed"));
       } finally {
         setLoadingRooms(false);
       }
     };
     loadRooms();
-  }, [schedule.roomId]);
+  }, [schedule.roomId, t]);
 
   const handleSubmit = async () => {
     if (workDate < todayStr) {
-      setError("Không thể chọn ngày trong quá khứ.");
+      setError(t("error.pastDate"));
       return;
     }
 
     if (!roomId) {
-      setError("Vui lòng chọn phòng khám.");
+      setError(t("error.selectRoom"));
       return;
     }
 
@@ -110,12 +110,12 @@ export default function EditScheduleModal({
         workDate: workDate !== currentWorkDate ? workDate : undefined,
         roomId: roomId,
       });
-      setSuccess("Cập nhật ca trực thành công.");
+      setSuccess(t("success"));
       setTimeout(() => {
         onUpdated();
       }, 1500);
     } catch (err: any) {
-      setError(resolveEditErrorMessage(err));
+      setError(resolveEditErrorMessage(err, t));
     } finally {
       setSubmitting(false);
     }
@@ -126,7 +126,7 @@ export default function EditScheduleModal({
       <div className="bg-white rounded-3xl shadow-xl w-full max-w-3xl p-6 space-y-5">
 
         <div className="flex items-center justify-between">
-          <h3 className="font-bold text-lg text-slate-800">Sửa ca trực</h3>
+          <h3 className="font-bold text-lg text-slate-800">{t("title")}</h3>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
             <X className="w-5 h-5" />
           </button>
@@ -134,7 +134,7 @@ export default function EditScheduleModal({
 
         <div>
           <label className="text-sm font-semibold text-slate-600 mb-1.5 block">
-            Ngày làm việc
+            {t("workDate")}
           </label>
           <div className="relative">
             <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -150,7 +150,7 @@ export default function EditScheduleModal({
 
         <div>
           <label className="text-sm font-semibold text-slate-600 mb-1.5 block">
-            Phòng khám
+            {t("clinicRoom")}
           </label>
           <div className="relative">
             <DoorOpen className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -161,9 +161,9 @@ export default function EditScheduleModal({
               className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-slate-700 disabled:opacity-50"
             >
               {loadingRooms ? (
-                <option value="">Đang tải...</option>
+                <option value="">{t("loading")}</option>
               ) : rooms.length === 0 ? (
-                <option value="">Không có phòng nào</option>
+                <option value="">{t("noRoomsAvailable")}</option>
               ) : (
                 rooms.map((r) => (
                   <option key={r.roomId} value={r.roomId}>
@@ -192,7 +192,7 @@ export default function EditScheduleModal({
             disabled={submitting}
             className="px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition disabled:opacity-50"
           >
-            Hủy
+            {t("cancel") || "Cancel"}
           </button>
           <button
             onClick={handleSubmit}
@@ -200,7 +200,7 @@ export default function EditScheduleModal({
             className="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition disabled:opacity-50 flex items-center gap-2"
           >
             {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-            Lưu thay đổi
+            {t("saveChanges")}
           </button>
         </div>
       </div>

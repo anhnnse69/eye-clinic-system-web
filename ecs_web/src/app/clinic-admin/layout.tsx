@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation"
+import { getTranslations } from "next-intl/server"
 import { Sidebar, type NavSection } from "@/components/layout/Sidebar"
 import DashboardHeader from "@/components/layout/DashboardHeader"
 import { authService } from "@/services/auth.service"
@@ -26,59 +27,61 @@ export default async function ClinicAdminLayout({ children }: { children: React.
     redirect("/login")
   }
 
+  const t = await getTranslations("clinicAdmin")
+  const tNav = await getTranslations("clinicAdmin.nav")
+
   const sections: NavSection[] = [
     {
-      title: "Tổng quan",
+      title: tNav("dashboard"),
       items: [
-        { label: "Dashboard", href: "/clinic-admin/dashboard", icon: "LayoutDashboard" },
-        { label: "Hồ sơ phòng khám", href: "/clinic-admin/profile", icon: "Building2" },
+        { label: tNav("dashboard"), href: "/clinic-admin/dashboard", icon: "LayoutDashboard" },
+        { label: tNav("profile"), href: "/clinic-admin/profile", icon: "Building2" },
       ],
     },
     {
-      title: "Vận hành",
+      title: tNav("appointments"),
       items: [
-        { label: "Lịch hẹn", href: "/clinic-admin/appointment", icon: "Calendar" },
-        { label: "Hàng đợi", href: "/clinic-admin/queue", icon: "Stethoscope" },
-        { label: "Phòng khám", href: "/clinic-admin/rooms", icon: "DoorOpen" },
+        { label: tNav("appointments"), href: "/clinic-admin/appointment", icon: "Calendar" },
+        { label: tNav("queue") || "Queue", href: "/clinic-admin/queue", icon: "Stethoscope" },
+        { label: tNav("rooms"), href: "/clinic-admin/rooms", icon: "DoorOpen" },
       ],
     },
     {
-      title: "Quản lý",
+      title: tNav("staff") || "Staff",
       items: [
-        { label: "Nhân viên", href: "/clinic-admin/staff", icon: "Users" },
-        { label: "Dịch vụ", href: "/clinic-admin/clinic-services", icon: "Briefcase" },
-        { label: "Danh mục thuốc", href: "/clinic-admin/medicine-catalog", icon: "Pill" },
+        { label: tNav("staff"), href: "/clinic-admin/staff", icon: "Users" },
+        { label: tNav("clinicServices"), href: "/clinic-admin/clinic-services", icon: "Briefcase" },
+        { label: tNav("medicineCatalog"), href: "/clinic-admin/medicine-catalog", icon: "Pill" },
       ],
     },
     {
-      title: "Khác",
+      title: tNav("feedback") || "Feedback",
       items: [
-        { label: "Đánh giá", href: "/clinic-admin/feedback", icon: "Star" },
-        { label: "Cài đặt", href: "/clinic-admin/settings", icon: "Settings" },
+        { label: tNav("feedback"), href: "/clinic-admin/feedback", icon: "Star" },
       ],
     },
     {
-      title: "Tài khoản",
+      title: tNav("accountInfo"),
       items: [
-        { label: "Thông tin tài khoản", href: "/clinic-admin/account-info", icon: "User" },
+        { label: tNav("accountInfo"), href: "/clinic-admin/account-info", icon: "User" },
       ],
     },
   ]
 
-  const userName = decodedToken.FullName || decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || "Quản lý"
+  const userName = decodedToken.FullName || decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || t("title")
   const userEmail = decodedToken.email || decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] || ""
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar sections={sections} logo="Eye Clinic Support System" role="Quản lý PK" />
+      <Sidebar sections={sections} logo="Eye Clinic Support System" role={t("title")} />
       <div className="flex-1 flex flex-col min-w-0">
         <DashboardHeader
-          title="Quản lý Phòng khám"
+          title={t("title")}
           accountInfoHref="/clinic-admin/account-info"
           user={{
             name: userName,
             email: userEmail,
-            role: "Quản lý Phòng khám",
+            role: t("title"),
             avatar: null,
           }}
         />

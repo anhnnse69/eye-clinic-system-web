@@ -7,7 +7,7 @@ import { Globe } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAccountInfo } from "@/hooks/useAccountInfo"
 import { authService } from "@/services/auth.service"
-import { ROLE_CONFIG } from "@/lib/role-config"
+import { ROLE_CONFIG, getRoleLabel } from "@/lib/role-config"
 
 interface PatientDashboardHeaderProps {
   className?: string
@@ -96,7 +96,7 @@ export default function PatientDashboardHeader({ className }: PatientDashboardHe
                     {displayName}
                   </p>
                   <p className="text-[11px] text-on-surface-variant leading-tight">
-                    {config.label}
+                    {getRoleLabel(roleKey as keyof typeof ROLE_CONFIG, locale)}
                   </p>
                 </div>
               </button>

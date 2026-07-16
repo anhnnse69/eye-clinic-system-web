@@ -15,6 +15,7 @@ import {
   ChevronLeft, 
   ChevronRight 
 } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { staffService } from "@/services/staff.service"
 import type { StaffAccountResponse } from "@/services/staff.service"
 
@@ -29,6 +30,9 @@ interface MetaResponse {
 }
 
 export default function StaffManagementPage() {
+  const t = useTranslations("clinicAdmin.staff")
+  const tCommon = useTranslations("clinicAdmin.common")
+
   // State quản lý danh sách dữ liệu và trạng thái ứng dụng
   const [staffList, setStaffList] = useState<StaffAccountResponse[]>([])
   const [loading, setLoading] = useState<boolean>(true)
@@ -92,16 +96,16 @@ export default function StaffManagementPage() {
       const errCode = err?.response?.data?.codeMessage
 
       if (errCode === "APP_MESSAGE_4001") {
-        setError("Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại!")
+        setError(t("sessionExpired"))
       } else if (errCode === "APP_MESSAGE_4020") {
-        setError("Không tìm thấy thông tin phòng khám gắn liền với tài khoản của bạn!")
+        setError(t("clinicNotFound"))
       } else {
-        setError("Không thể kết nối tới máy chủ. Vui lòng thử lại sau!")
+        setError(t("connectionError"))
       }
     } finally {
       setLoading(false)
     }
-  }, [pageNumber, pageSize, isActiveFilter, debouncedSearch])
+  }, [pageNumber, pageSize, isActiveFilter, debouncedSearch, t])
 
   // Kích hoạt nạp dữ liệu khi bất kỳ bộ lọc tham số nào thay đổi trạng thái
   useEffect(() => {
@@ -113,15 +117,15 @@ export default function StaffManagementPage() {
       {/* Tiêu đề & Nút Thêm nhân viên */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-headline-md font-bold text-on-surface">Quản lý nhân viên</h2>
-          <p className="text-body-md text-on-surface-variant">Danh sách tài khoản nhân viên thuộc phòng khám của bạn</p>
+          <h2 className="text-headline-md font-bold text-on-surface">{t("listTitle")}</h2>
+          <p className="text-body-md text-on-surface-variant">{t("listSubtitle")}</p>
         </div>
         
         <Link 
           href="/clinic-admin/staff/create"
           className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-on-primary rounded-xl hover:opacity-90 transition-all text-label-md font-medium shadow-sm shrink-0"
         >
-          <Plus className="h-4 w-4" /> Thêm nhân viên
+          <Plus className="h-4 w-4" /> {t("addStaff")}
         </Link>
       </div>
 
@@ -132,7 +136,7 @@ export default function StaffManagementPage() {
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-on-surface-variant" />
           <input
             type="text"
-            placeholder="Tìm kiếm theo tên, email, số điện thoại..."
+            placeholder={t("searchPlaceholder")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-body-md placeholder:text-on-surface-variant/60 focus:outline-none focus:border-primary transition-colors"
@@ -142,19 +146,19 @@ export default function StaffManagementPage() {
         {/* Dropdown Lọc trạng thái hoạt động */}
         <div className="flex items-center gap-2 w-full md:w-auto">
           <span className="flex items-center gap-1 text-label-md font-medium text-on-surface-variant shrink-0">
-            <Filter className="h-4 w-4" /> Trạng thái:
+            <Filter className="h-4 w-4" /> {t("status")}:
           </span>
           <select
             value={isActiveFilter}
             onChange={(e) => {
               setIsActiveFilter(e.target.value)
-              setPageNumber(1) // Reset trang khi thay đổi tiêu chí lọc
+              setPageNumber(1)
             }}
             className="w-full md:w-48 px-3 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors cursor-pointer font-medium"
           >
-            <option value="all">Tất cả nhân viên</option>
-            <option value="active">Đang làm việc</option>
-            <option value="inactive">Đã khóa / Ngừng làm</option>
+            <option value="all">{t("statusAll")}</option>
+            <option value="active">{t("statusActive")}</option>
+            <option value="inactive">{t("statusInactive")}</option>
           </select>
         </div>
       </div>
@@ -162,7 +166,7 @@ export default function StaffManagementPage() {
       {/* Trạng thái đang tải dữ liệu Skeleton/Pulse */}
       {loading && (
         <div className="flex justify-center items-center py-12 bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-sm">
-          <p className="text-body-md text-on-surface-variant animate-pulse">Đang nạp dữ liệu danh sách nhân viên từ hệ thống...</p>
+          <p className="text-body-md text-on-surface-variant animate-pulse">{t("loadingData")}</p>
         </div>
       )}
 
@@ -182,19 +186,19 @@ export default function StaffManagementPage() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-surface-container-low border-b border-outline-variant text-label-md text-on-surface-variant font-medium">
-                    <th className="p-4">Nhân viên</th>
-                    <th className="p-4">Thông tin liên hệ</th>
-                    <th className="p-4">Chức vụ / Vai trò</th>
-                    <th className="p-4">Trạng thái</th>
-                    <th className="p-4">Ngày tham gia</th>
-                    <th className="p-4 text-center">Thao tác</th>
+                    <th className="p-4">{t("fullName")}</th>
+                    <th className="p-4">{t("contactInfo")}</th>
+                    <th className="p-4">{t("position")}</th>
+                    <th className="p-4">{t("status")}</th>
+                    <th className="p-4">{t("joinDate")}</th>
+                    <th className="p-4 text-center">{t("actions")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant text-body-md text-on-surface">
                   {staffList.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="p-12 text-center text-on-surface-variant">
-                        Không tìm thấy nhân viên nào phù hợp với bộ lọc điều kiện hiện tại.
+                        {t("noResults")}
                       </td>
                     </tr>
                   ) : (
@@ -219,7 +223,7 @@ export default function StaffManagementPage() {
                               <Mail className="h-3.5 w-3.5 text-primary shrink-0" /> {staff.email}
                             </div>
                             <div className="flex items-center gap-1.5 text-label-md text-on-surface-variant">
-                              <Phone className="h-3.5 w-3.5 text-primary shrink-0" /> {staff.phone || "---"}
+                              <Phone className="h-3.5 w-3.5 text-primary shrink-0" /> {staff.phone || t("notAvailable")}
                             </div>
                           </div>
                         </td>
@@ -239,7 +243,7 @@ export default function StaffManagementPage() {
                               ? "bg-success-container text-on-success-container" 
                               : "bg-error-container text-on-error-container"
                           }`}>
-                            {staff.isActive ? "Đang làm việc" : "Đã khóa"}
+                            {staff.isActive ? t("statusActive") : t("statusInactive")}
                           </span>
                         </td>
 
@@ -256,7 +260,7 @@ export default function StaffManagementPage() {
                           <Link
                             href={`/clinic-admin/staff/edit/${staff.userId}`}
                             className="inline-flex items-center justify-center p-2 text-primary hover:bg-surface-container-low rounded-xl transition-colors bg-surface-container-low/40"
-                            title="Chỉnh sửa thông tin"
+                            title={tCommon("edit")}
                           >
                             <Edit2 className="h-4 w-4" />
                           </Link>
@@ -273,9 +277,11 @@ export default function StaffManagementPage() {
           {meta.total > 0 && (
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-surface-container-low px-4 py-3 border border-outline-variant rounded-2xl shadow-sm text-label-md text-on-surface-variant">
               <div>
-                Hiển thị dòng <span className="font-semibold text-on-surface">{Math.min((meta.page - 1) * meta.size + 1, meta.total)}</span> đến{" "}
-                <span className="font-semibold text-on-surface">{Math.min(meta.page * meta.size, meta.total)}</span> trên tổng số{" "}
-                <span className="font-semibold text-on-surface">{meta.total}</span> nhân viên.
+                {t("showingRows", { 
+                  from: Math.min((meta.page - 1) * meta.size + 1, meta.total), 
+                  to: Math.min(meta.page * meta.size, meta.total), 
+                  total: meta.total 
+                })}
               </div>
 
               <div className="flex items-center gap-2">
@@ -288,10 +294,10 @@ export default function StaffManagementPage() {
                   }}
                   className="bg-surface-container-lowest border border-outline-variant text-on-surface px-2 py-1.5 rounded-lg text-label-md focus:outline-none cursor-pointer mr-2 font-medium"
                 >
-                  <option value={5}>5 dòng / trang</option>
-                  <option value={10}>10 dòng / trang</option>
-                  <option value={20}>20 dòng / trang</option>
-                  <option value={50}>50 dòng / trang</option>
+                  <option value={5}>5 {t("rowsPerPage")}</option>
+                  <option value={10}>10 {t("rowsPerPage")}</option>
+                  <option value={20}>20 {t("rowsPerPage")}</option>
+                  <option value={50}>50 {t("rowsPerPage")}</option>
                 </select>
 
                 {/* Nút quay lại trang trước */}
@@ -299,7 +305,7 @@ export default function StaffManagementPage() {
                   disabled={!meta.hasPrevious || loading}
                   onClick={() => setPageNumber(prev => Math.max(prev - 1, 1))}
                   className="inline-flex items-center justify-center p-2 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-surface-container-lowest transition-colors"
-                  title="Trang trước"
+                  title={t("previousPage")}
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
@@ -314,7 +320,7 @@ export default function StaffManagementPage() {
                   disabled={!meta.hasNext || loading}
                   onClick={() => setPageNumber(prev => Math.min(prev + 1, meta.totalPages))}
                   className="inline-flex items-center justify-center p-2 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-surface-container-lowest transition-colors"
-                  title="Trang kế tiếp"
+                  title={t("nextPage")}
                 >
                   <ChevronRight className="h-4 w-4" />
                 </button>

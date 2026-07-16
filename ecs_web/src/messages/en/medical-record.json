@@ -1,0 +1,47 @@
+{
+  "medicalRecord": {
+    "title": "Medical Records",
+    "createTitle": "Create New Record",
+    "listTitle": "Record List",
+    "detailTitle": "Record Details",
+    "editTitle": "Edit Record",
+    "chiefComplaint": "Chief Complaint",
+    "medicalHistory": "Medical History",
+    "personalHistory": "Personal History",
+    "familyHistory": "Family History",
+    "examination": "Examination",
+    "diagnosis": "Diagnosis",
+    "treatment": "Treatment",
+    "prescription": "Prescription",
+    "followUp": "Follow-up",
+    "rightEye": "Right Eye (OD)",
+    "leftEye": "Left Eye (OS)",
+    "visualAcuity": "Visual Acuity",
+    "withoutCorrection": "Without Correction",
+    "withCorrection": "With Correction",
+    "intraocularPressure": "Intraocular Pressure",
+    "recordType": "Record Type",
+    "trauma": "Trauma",
+    "anterior": "Anterior",
+    "fundus": "Fundus",
+    "glaucoma": "Glaucoma",
+    "strabismus": "Strabismus & Ptosis",
+    "pediatric": "Pediatric",
+    "noRecords": "No records yet",
+    "recordCreated": "Record created successfully",
+    "recordUpdated": "Record updated successfully",
+    "recordFinalized": "Record finalized",
+    "type": {
+      "trauma": "Trauma",
+      "anterior": "Anterior",
+      "fundus": "Fundus",
+      "glaucoma": "Glaucoma",
+      "strabismus": "Strabismus & Ptosis",
+      "pediatric": "Pediatric"
+    },
+    "status": {
+      "draft": "Draft",
+      "finalized": "Finalized"
+    }
+  }
+}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useRouter, useParams } from "next/navigation"
+import { useTranslations } from "next-intl"
 import {
     Search,
     ChevronLeft,
@@ -21,6 +22,8 @@ import type { GetPatientProfileResponse } from "@/services/patient-profile.servi
 import type { MetaResponse } from "@/types"
 
 export default function PatientProfilesPage() {
+    const t = useTranslations("patient.profile")
+
     const [profiles, setProfiles] = useState<GetPatientProfileResponse[]>([])
     const [metadata, setMetadata] = useState<MetaResponse | null>(null)
 
@@ -81,12 +84,12 @@ export default function PatientProfilesPage() {
             setError(
                 err?.response?.data?.message ||
                 err?.message ||
-                "Không thể tải danh sách hồ sơ bệnh nhân"
+                t("loadFailed")
             )
         } finally {
             setLoading(false)
         }
-    }, [debouncedSearchTerm, pageNumber, pageSize])
+    }, [debouncedSearchTerm, pageNumber, pageSize, t])
 
     useEffect(() => {
         loadProfiles()
@@ -97,24 +100,24 @@ export default function PatientProfilesPage() {
 
         if (value === "nam" || value === "male") {
             return {
-                text: "Nam",
+                text: t("male"),
                 className: "bg-indigo-50 text-indigo-700 border border-indigo-100"
             };
         }
         if (value === "nữ" || value === "nu" || value === "female") {
             return {
-                text: "Nữ",
+                text: t("female"),
                 className: "bg-rose-50 text-rose-700 border border-rose-100"
             };
         }
         if (value === "other" || value === "khác" || value === "khac") {
             return {
-                text: "Khác",
+                text: t("other"),
                 className: "bg-slate-50 text-slate-700 border border-slate-100"
             };
         }
         return {
-            text: gender || "Khác",
+            text: gender || t("other"),
             className: "bg-slate-50 text-slate-700 border border-slate-100"
         };
     };
@@ -125,10 +128,10 @@ export default function PatientProfilesPage() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-slate-100">
                 <div className="space-y-1">
                     <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight sm:text-3xl">
-                        Hồ sơ bệnh nhân
+                        {t("listTitle")}
                     </h1>
                     <p className="text-sm font-medium text-slate-500">
-                        Danh sách hồ sơ của bạn và người thân đã liên kết trong hệ thống
+                        {t("listSubtitle")}
                     </p>
                 </div>
 
@@ -137,7 +140,7 @@ export default function PatientProfilesPage() {
                     className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold rounded-xl shadow-md shadow-blue-500/10 active:scale-[0.98] transition-all shrink-0"
                 >
                     <Plus className="w-4.5 h-4.5" />
-                    Tạo mới hồ sơ
+                    {t("addNew")}
                 </button>
             </div>
 
@@ -149,7 +152,7 @@ export default function PatientProfilesPage() {
                         type="text"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder="Tìm theo họ tên, số CCCD hoặc số điện thoại..."
+                        placeholder={t("searchPlaceholder")}
                         className="w-full pl-11 pr-4 py-1.5 text-sm text-slate-900 placeholder-slate-400 bg-transparent border-0 focus:outline-none focus:ring-0"
                     />
                 </div>
@@ -169,13 +172,13 @@ export default function PatientProfilesPage() {
                     <table className="w-full text-sm text-slate-600 min-w-[950px]">
                         <thead>
                             <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[11px]">
-                                <th className="px-6 py-4 text-left">Họ tên</th>
-                                <th className="px-6 py-4 text-left">Giới tính</th>
-                                <th className="px-6 py-4 text-left">Ngày sinh</th>
-                                <th className="px-6 py-4 text-left">CCCD / CMND</th>
-                                <th className="px-6 py-4 text-left">Số điện thoại</th>
-                                <th className="px-6 py-4 text-left">Quan hệ</th>
-                                <th className="px-6 py-4 text-center">Hành động</th>
+                                <th className="px-6 py-4 text-left">{t("fullNameHeader")}</th>
+                                <th className="px-6 py-4 text-left">{t("gender")}</th>
+                                <th className="px-6 py-4 text-left">{t("dateOfBirth")}</th>
+                                <th className="px-6 py-4 text-left">{t("identityLabel")}</th>
+                                <th className="px-6 py-4 text-left">{t("phone")}</th>
+                                <th className="px-6 py-4 text-left">{t("relationship")}</th>
+                                <th className="px-6 py-4 text-center">{t("actions")}</th>
                             </tr>
                         </thead>
 
@@ -254,7 +257,7 @@ export default function PatientProfilesPage() {
                                                     onClick={() => handleViewDetail(item.id_patientProfile)}
                                                     className="inline-flex items-center justify-center px-3.5 py-1.5 text-xs font-bold text-blue-600 bg-blue-50 border border-blue-100 rounded-xl hover:bg-blue-600 hover:text-white hover:border-blue-600 active:scale-95 shadow-sm hover:shadow-md hover:shadow-blue-500/10 transition-all"
                                                 >
-                                                    Xem chi tiết
+                                                    {t("viewDetails")}
                                                 </button>
                                             </td>
                                         </tr>
@@ -272,17 +275,17 @@ export default function PatientProfilesPage() {
                             <UserPlus className="w-8 h-8 text-slate-400" />
                         </div>
                         <h3 className="text-base font-bold text-slate-900 mb-1">
-                            Không tìm thấy hồ sơ bệnh nhân
+                            {t("noProfilesFound")}
                         </h3>
                         <p className="text-sm text-slate-400 max-w-xs mb-5">
-                            Hệ thống chưa ghi nhận hồ sơ nào khớp với bộ lọc của bạn.
+                            {t("noProfilesYet")}
                         </p>
                         <button
                             onClick={handleCreateProfile}
                             className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold rounded-xl border border-slate-200 shadow-sm transition-all active:scale-95"
                         >
                             <Plus className="w-4 h-4 text-slate-500" />
-                            Tạo mới hồ sơ ngay
+                            {t("addNewProfile")}
                         </button>
                     </div>
                 )}

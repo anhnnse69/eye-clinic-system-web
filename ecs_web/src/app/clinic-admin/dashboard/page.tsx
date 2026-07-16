@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useTranslations } from "next-intl"
 import {
   Calendar,
   TrendingUp,
@@ -20,6 +21,9 @@ import {
 import { formatCurrency } from "@/lib/utils"
 
 export default function ClinicAdminDashboard() {
+  const t = useTranslations("clinicAdmin")
+  const tDashboard = useTranslations("clinicAdmin.dashboard")
+  const tCommon = useTranslations("clinicAdmin.common")
   const [dashboard, setDashboard] = useState<ClinicDashboardResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -34,7 +38,7 @@ export default function ClinicAdminDashboard() {
       const response = await clinicDashboardService.get()
 
       if (!response.data) {
-        setError("Không có dữ liệu dashboard")
+        setError(t("errors.loadFailed"))
         return
       }
 
@@ -43,7 +47,7 @@ export default function ClinicAdminDashboard() {
       setError(
         err?.response?.data?.message ||
         err?.message ||
-        "Không thể tải dashboard"
+        t("errors.serverError")
       )
     } finally {
       setLoading(false)
@@ -75,7 +79,7 @@ export default function ClinicAdminDashboard() {
           onClick={loadDashboard}
           className="mt-4 px-6 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition shadow-sm active:scale-95"
         >
-          Thử lại
+          {tCommon("loading")}
         </button>
       </div>
     )
@@ -86,26 +90,26 @@ export default function ClinicAdminDashboard() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Dashboard Phòng Khám</h1>
-          <p className="text-gray-500 mt-1 text-sm sm:text-base">Tổng quan hoạt động hôm nay</p>
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{tDashboard("title")}</h1>
+          <p className="text-gray-500 mt-1 text-sm sm:text-base">{tDashboard("subtitle")}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <DashboardCard
-          title="Lịch hẹn hôm nay"
+          title={tDashboard("todayAppointments")}
           value={dashboard?.totalAppointments ?? 0}
           icon={<Calendar className="w-7 h-7 text-blue-600" />}
           color="blue"
         />
         <DashboardCard
-          title="Hoàn thành"
+          title={tDashboard("completed")}
           value={dashboard?.completedAppointments ?? 0}
           icon={<CheckCircle className="w-7 h-7 text-emerald-600" />}
           color="emerald"
         />
         <DashboardCard
-          title="Doanh thu hôm nay"
+          title={tDashboard("todayRevenue")}
           value={formatCurrency(dashboard?.totalRevenue ?? 0)}
           icon={<TrendingUp className="w-7 h-7 text-violet-600" />}
           color="violet"
@@ -115,27 +119,27 @@ export default function ClinicAdminDashboard() {
       <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8">
         <div className="flex items-center gap-3 mb-6">
           <Building2 className="w-6 h-6 text-gray-800" />
-          <h2 className="text-xl font-bold text-gray-900">Tổng quan phòng khám</h2>
+          <h2 className="text-xl font-bold text-gray-900">{tDashboard("overview")}</h2>
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <OverviewCard
-            title="Nhân viên"
+            title={tDashboard("staff")}
             value={dashboard?.totalStaffs ?? 0}
             icon={<Users className="w-8 h-8 text-blue-600" />}
           />
           <OverviewCard
-            title="Dịch vụ"
+            title={tDashboard("services")}
             value={dashboard?.totalServices ?? 0}
             icon={<Briefcase className="w-8 h-8 text-purple-600" />}
           />
           <OverviewCard
-            title="Phòng khám"
+            title={tDashboard("rooms")}
             value={dashboard?.totalRooms ?? 0}
             icon={<DoorOpen className="w-8 h-8 text-rose-600" />}
           />
           <OverviewCard
-            title="Thuốc & vật tư"
+            title={tDashboard("medicines")}
             value={dashboard?.totalMedicines ?? 0}
             icon={<Pill className="w-8 h-8 text-emerald-600" />}
           />
@@ -145,7 +149,7 @@ export default function ClinicAdminDashboard() {
       <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8">
         <div className="flex items-center gap-3 mb-6">
           <TrendingUp className="w-6 h-6 text-gray-800" />
-          <h2 className="text-xl font-bold text-gray-900">Thống kê 7 ngày gần nhất</h2>
+          <h2 className="text-xl font-bold text-gray-900">{tDashboard("weeklyStats")}</h2>
         </div>
 
         <div className="space-y-3.5">
@@ -162,7 +166,7 @@ export default function ClinicAdminDashboard() {
                   <div>
                     <p className="font-semibold text-gray-800 text-sm sm:text-base">{item.date}</p>
                     <p className="text-xs sm:text-sm text-gray-400 font-medium">
-                      {item.appointments} lịch hẹn
+                      {item.appointments} {tDashboard("appointments")}
                     </p>
                   </div>
                 </div>
@@ -171,12 +175,12 @@ export default function ClinicAdminDashboard() {
                   <p className="text-lg sm:text-xl font-bold text-emerald-600 tracking-tight">
                     {formatCurrency(item.revenue)}
                   </p>
-                  <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">doanh thu</p>
+                  <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">{tDashboard("revenue")}</p>
                 </div>
               </div>
             ))
           ) : (
-            <div className="text-center py-8 text-gray-400 text-sm">Không có dữ liệu thống kê tuần</div>
+            <div className="text-center py-8 text-gray-400 text-sm">{tDashboard("noWeeklyData")}</div>
           )}
         </div>
       </div>

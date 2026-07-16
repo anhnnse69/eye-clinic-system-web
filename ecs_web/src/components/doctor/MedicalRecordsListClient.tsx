@@ -15,6 +15,7 @@ import {
   FileText,
 } from "lucide-react"
 import Link from "next/link"
+import { useTranslations } from "next-intl"
 import { medicalRecordsService } from "@/services"
 import type {
   GetMedicalRecordsRequest,
@@ -25,17 +26,20 @@ import { RECORD_TYPE_LABELS, type RecordType } from "@/types"
 
 const PAGE_SIZE = 10
 
-const RECORD_TYPES = [
-  { value: "", label: "Tất cả loại" },
-  { value: "MS21_TRAUMA", label: "Chấn thương" },
-  { value: "MS22_ANTERIOR", label: "Trước trục" },
-  { value: "MS23_FUNDUS", label: "Đáy mắt" },
-  { value: "MS24_GLAUCOMA", label: "Glaucoma" },
-  { value: "MS25_STRABISMUS_PTOSIS", label: " Lé/T荷叶" },
-  { value: "MS26_PEDIATRIC", label: "Nhi" },
-]
-
 export default function MedicalRecordsListClient() {
+  const t = useTranslations("doctor.medicalRecord")
+  const tList = useTranslations("doctor.medicalRecord.recordList")
+
+  const RECORD_TYPES = [
+    { value: "", label: tList("allTypes") },
+    { value: "MS21_TRAUMA", label: t("trauma") },
+    { value: "MS22_ANTERIOR", label: t("anterior") },
+    { value: "MS23_FUNDUS", label: t("fundus") },
+    { value: "MS24_GLAUCOMA", label: t("glaucoma") },
+    { value: "MS25_STRABISMUS_PTOSIS", label: t("strabismus") },
+    { value: "MS26_PEDIATRIC", label: t("pediatric") },
+  ]
+
   const [items, setItems] = useState<GetMedicalRecordsItem[]>([])
   const [meta, setMeta] = useState<GetMedicalRecordsMeta | null>(null)
   const [loading, setLoading] = useState(true)
@@ -71,11 +75,11 @@ export default function MedicalRecordsListClient() {
       setMeta(response.meta ?? null)
     } catch (err) {
       console.error("Error fetching medical records:", err)
-      setError("Không thể tải danh sách hồ sơ bệnh án")
+      setError(tList("error"))
     } finally {
       setLoading(false)
     }
-  }, [pageNumber, searchTerm, selectedRecordType, startDate, endDate])
+  }, [pageNumber, searchTerm, selectedRecordType, startDate, endDate, tList])
 
   useEffect(() => {
     fetchRecords()
@@ -111,7 +115,7 @@ export default function MedicalRecordsListClient() {
 
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString)
-    return date.toLocaleDateString("vi-VN", {
+    return date.toLocaleDateString(undefined, {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -133,10 +137,10 @@ export default function MedicalRecordsListClient() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-            Hồ sơ bệnh án
+            {tList("listTitle")}
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Danh sách hồ sơ bệnh án đã tạo
+            {t("listSubtitle")}
           </p>
         </div>
       </div>
@@ -149,7 +153,7 @@ export default function MedicalRecordsListClient() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Tìm kiếm theo tên bệnh nhân..."
+              placeholder={tList("searchByPatient")}
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all"
@@ -174,7 +178,7 @@ export default function MedicalRecordsListClient() {
             }`}
           >
             <Filter className="w-4 h-4" />
-            Bộ lọc
+            {tList("filters")}
             {hasActiveFilters && (
               <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center">
                 !
@@ -189,7 +193,7 @@ export default function MedicalRecordsListClient() {
           <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1.5">
-                Loại hồ sơ
+                {tList("recordType")}
               </label>
               <select
                 value={selectedRecordType}
@@ -206,7 +210,7 @@ export default function MedicalRecordsListClient() {
 
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1.5">
-                Từ ngày
+                {tList("fromDate")}
               </label>
               <input
                 type="date"
@@ -218,7 +222,7 @@ export default function MedicalRecordsListClient() {
 
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1.5">
-                Đến ngày
+                {tList("toDate")}
               </label>
               <input
                 type="date"
@@ -235,7 +239,7 @@ export default function MedicalRecordsListClient() {
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <X className="w-4 h-4" />
-                  Xóa bộ lọc
+                  {tList("clearFilters")}
                 </button>
               </div>
             )}
@@ -250,10 +254,10 @@ export default function MedicalRecordsListClient() {
             <Loader2 className="w-8 h-8 animate-spin" />
           </div>
           <h3 className="text-base font-semibold text-gray-900 mb-1">
-            Đang tải dữ liệu...
+            {tList("loading")}
           </h3>
           <p className="text-sm text-gray-500">
-            Vui lòng chờ trong giây lát
+            {tList("pleaseWait")}
           </p>
         </div>
       ) : error ? (
@@ -263,14 +267,14 @@ export default function MedicalRecordsListClient() {
             <X className="w-8 h-8" />
           </div>
           <h3 className="text-base font-semibold text-gray-900 mb-1">
-            Đã xảy ra lỗi
+            {tList("error")}
           </h3>
           <p className="text-sm text-gray-500 mb-4">{error}</p>
           <button
             onClick={fetchRecords}
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
           >
-            Thử lại
+            {tList("retry")}
           </button>
         </div>
       ) : items.length === 0 ? (
@@ -280,19 +284,17 @@ export default function MedicalRecordsListClient() {
             <FileText className="w-8 h-8" />
           </div>
           <h3 className="text-base font-semibold text-gray-900 mb-1">
-            Không tìm thấy hồ sơ bệnh án
+            {hasActiveFilters ? tList("noRecordsFound") : tList("noRecordsYet")}
           </h3>
           <p className="text-sm text-gray-500">
-            {hasActiveFilters
-              ? "Thử điều chỉnh bộ lọc hoặc tìm kiếm khác"
-              : "Bạn chưa có hồ sơ bệnh án nào"}
+            {hasActiveFilters ? tList("adjustFilters") : tList("noRecordsYet")}
           </p>
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
               className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
             >
-              Xóa bộ lọc
+              {tList("clearFilters")}
             </button>
           )}
         </div>
@@ -304,14 +306,14 @@ export default function MedicalRecordsListClient() {
               <table className="w-full text-sm text-gray-600 min-w-[1100px]">
                 <thead>
                   <tr className="bg-gray-50/75 border-b border-gray-200 text-gray-700">
-                    <th className="px-5 py-4 text-left font-semibold">Bệnh nhân</th>
-                    <th className="px-5 py-4 text-left font-semibold">Mã lịch hẹn</th>
-                    <th className="px-5 py-4 text-left font-semibold">Loại</th>
-                    <th className="px-5 py-4 text-left font-semibold">Ngày khám</th>
-                    <th className="px-5 py-4 text-left font-semibold">Triệu chứng</th>
-                    <th className="px-5 py-4 text-left font-semibold">Chẩn đoán</th>
-                    <th className="px-5 py-4 text-left font-semibold">Trạng thái</th>
-                    <th className="px-5 py-4 text-left font-semibold">Thao tác</th>
+                    <th className="px-5 py-4 text-left font-semibold">{tList("patient")}</th>
+                    <th className="px-5 py-4 text-left font-semibold">{tList("appointmentCode")}</th>
+                    <th className="px-5 py-4 text-left font-semibold">{tList("type")}</th>
+                    <th className="px-5 py-4 text-left font-semibold">{tList("examDate")}</th>
+                    <th className="px-5 py-4 text-left font-semibold">{tList("symptoms")}</th>
+                    <th className="px-5 py-4 text-left font-semibold">{tList("diagnosis")}</th>
+                    <th className="px-5 py-4 text-left font-semibold">{tList("status")}</th>
+                    <th className="px-5 py-4 text-left font-semibold">{tList("actions")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -331,7 +333,7 @@ export default function MedicalRecordsListClient() {
                             </p>
                             <div className="text-xs text-gray-500 flex items-center gap-2">
                               {record.patientDob && (
-                                <span>Sinh: {record.patientDob}</span>
+                                <span>{tList("born")}: {record.patientDob}</span>
                               )}
                               {record.patientPhone && (
                                 <>
@@ -388,15 +390,15 @@ export default function MedicalRecordsListClient() {
                       <td className="px-5 py-4">
                         {record.isLocked ? (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-600">
-                            Đã khóa
+                            {tList("locked")}
                           </span>
                         ) : record.canEdit ? (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
-                            Có thể sửa
+                            {tList("canEdit")}
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100">
-                            Chỉ xem
+                            {tList("viewOnly")}
                           </span>
                         )}
                       </td>
@@ -409,7 +411,7 @@ export default function MedicalRecordsListClient() {
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-100 rounded-lg hover:bg-amber-100 active:bg-amber-200 transition-colors"
                             >
                               <PenSquare className="w-3.5 h-3.5" />
-                              Chỉnh sửa
+                              {tList("edit")}
                             </Link>
                           ) : (
                             <Link
@@ -417,7 +419,7 @@ export default function MedicalRecordsListClient() {
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-100 rounded-lg hover:bg-blue-100 active:bg-blue-200 transition-colors"
                             >
                               <Eye className="w-3.5 h-3.5" />
-                              Chi tiết
+                              {tList("detail")}
                             </Link>
                           )}
                         </div>
@@ -432,11 +434,11 @@ export default function MedicalRecordsListClient() {
             {totalPages > 1 && (
               <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50">
                 <div className="text-sm text-gray-500 font-medium">
-                  Trang <span className="text-gray-900 font-semibold">{pageNumber}</span> trên{" "}
+                  {tList("page")} <span className="text-gray-900 font-semibold">{pageNumber}</span> {tList("of")}{" "}
                   <span className="text-gray-900 font-semibold">{totalPages}</span>
                   <span className="ml-2 text-gray-400">|</span>
                   <span className="ml-2">
-                    Tổng: <span className="text-gray-900 font-semibold">{totalRecords}</span> hồ sơ
+                    {tList("total")} <span className="text-gray-900 font-semibold">{totalRecords}</span> {tList("records")}
                   </span>
                 </div>
 
@@ -447,7 +449,7 @@ export default function MedicalRecordsListClient() {
                     className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     <ChevronLeft className="w-4 h-4" />
-                    Trước
+                    {tList("previous")}
                   </button>
 
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -481,7 +483,7 @@ export default function MedicalRecordsListClient() {
                     disabled={pageNumber === totalPages}
                     className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    Sau
+                    {tList("next")}
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>

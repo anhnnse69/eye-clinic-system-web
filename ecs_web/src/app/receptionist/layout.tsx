@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation"
+import { getTranslations } from "next-intl/server"
 import { Sidebar, type NavSection } from "@/components/layout/Sidebar"
 import DashboardHeader from "@/components/layout/DashboardHeader"
 import { authService } from "@/services/auth.service"
@@ -26,44 +27,47 @@ export default async function ReceptionistLayout({ children }: { children: React
     redirect("/login")
   }
 
+  const t = await getTranslations("receptionist")
+  const tNav = await getTranslations("receptionist.nav")
+
   const sections: NavSection[] = [
     {
-      title: "Tổng quan",
+      title: tNav("dashboard"),
       items: [
-        { label: "Lịch hẹn hàng ngày", href: "/receptionist/appointments", icon: "CalendarDays" },
-        { label: "Khung giờ trống", href: "/receptionist/available-slots", icon: "Clock" },
+        { label: tNav("appointments"), href: "/receptionist/appointments", icon: "CalendarDays" },
+        { label: tNav("availableSlots"), href: "/receptionist/available-slots", icon: "Clock" },
       ],
     },
     {
-      title: "Quản lý",
+      title: tNav("patients"),
       items: [
-        { label: "Danh sách bệnh nhân", href: "/receptionist/patients", icon: "Users" },
-        { label: "Đăng ký vãng lai", href: "/receptionist/walk-in-registration", icon: "UserPlus" }, // <--- THÊM MỤC MỚI VÀO ĐÂY
+        { label: tNav("viewPatients"), href: "/receptionist/patients", icon: "Users" },
+        { label: tNav("walkInRegistration"), href: "/receptionist/walk-in-registration", icon: "UserPlus" },
       ],
     },
     {
-      title: "Cá nhân",
+      title: tNav("profile"),
       items: [
-        { label: "Hồ sơ cá nhân", href: "/receptionist/profile", icon: "User" },
-        { label: "Thông tin tài khoản", href: "/receptionist/account-info", icon: "User" },
+        { label: tNav("profile"), href: "/receptionist/profile", icon: "User" },
+        { label: tNav("accountInfo"), href: "/receptionist/account-info", icon: "User" },
       ],
     },
   ]
 
-  const userName = decodedToken.FullName || decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || "Lễ tân"
+  const userName = decodedToken.FullName || decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || t("title")
   const userEmail = decodedToken.email || decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"] || ""
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar sections={sections} logo="Eye Clinic Support System" role="Lễ tân" />
+      <Sidebar sections={sections} logo="Eye Clinic Support System" role={t("title")} />
       <div className="flex-1 flex flex-col min-w-0">
         <DashboardHeader
-          title="Lễ tân"
+          title={t("title")}
           accountInfoHref="/receptionist/account-info"
           user={{
             name: userName,
             email: userEmail,
-            role: "Lễ tân",
+            role: t("title"),
             avatar: null,
           }}
         />

@@ -69,6 +69,13 @@ export const ROLE_CONFIG: Record<DashboardRole, RoleConfig> = {
     avatarBgClass: "bg-primary text-on-primary",
     avatarTextClass: "text-on-primary",
     badgeClass: "bg-primary-container text-on-primary-container",
+  } as RoleConfig,
+  [Role.SYSTEM_ADMIN]: {
+    segment: "system-admin",
+    label: { vi: "Quản trị hệ thống", en: "System Admin" },
+    avatarBgClass: "bg-primary text-on-primary",
+    avatarTextClass: "text-on-primary",
+    badgeClass: "bg-primary-container text-on-primary-container",
   },
 }
 

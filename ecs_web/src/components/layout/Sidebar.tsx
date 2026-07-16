@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useTranslations } from "next-intl"
 import {
   LayoutDashboard,
   Calendar,
@@ -53,6 +54,7 @@ export function Sidebar({
   role: string
 }) {
   const pathname = usePathname()
+  const t = useTranslations("common")
 
   return (
     <aside className="w-64 bg-surface-container-lowest border-r border-outline-variant flex flex-col h-screen sticky top-0">
@@ -103,7 +105,7 @@ export function Sidebar({
 
       <div className="px-gutter py-md border-t border-outline-variant">
         <p className="text-label-sm font-label-sm text-on-surface-variant">
-          © 2024 Eye Clinic Support System
+          {t("copyright") || "© 2024 Eye Clinic Support System"}
         </p>
       </div>
     </aside>

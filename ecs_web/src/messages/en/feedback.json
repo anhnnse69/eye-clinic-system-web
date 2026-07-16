@@ -1,0 +1,14 @@
+{
+  "feedback": {
+    "title": "Feedback",
+    "submit": "Submit Feedback",
+    "rating": "Rating",
+    "comment": "Comment",
+    "submitSuccess": "Feedback submitted successfully",
+    "listTitle": "Feedback List",
+    "patient": "Patient",
+    "doctor": "Doctor",
+    "date": "Date",
+    "noFeedback": "No feedback yet"
+  }
+}

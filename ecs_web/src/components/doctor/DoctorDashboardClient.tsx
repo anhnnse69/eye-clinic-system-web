@@ -13,6 +13,7 @@ import {
   doctorDashboardService,
   type DoctorDashboardResponse,
 } from "@/services/doctor.dashboard.service";
+import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
 
 function toDateStr(d: Date) {
   const tzoffset = d.getTimezoneOffset() * 60000;
@@ -28,7 +29,7 @@ export default function DoctorDashboardClient({
   const tDashboard = useTranslations("doctor.dashboard")
   const tAppointments = useTranslations("doctor.appointment")
   const tCommon = useTranslations("doctor.common")
-  
+
   const today = toDateStr(new Date());
   const defaultStart = toDateStr(
     new Date(Date.now() - 6 * 24 * 60 * 60 * 1000)
@@ -71,69 +72,69 @@ export default function DoctorDashboardClient({
   const getAppointmentStatusGrid = (
     s: DoctorDashboardResponse["todayAppointments"]
   ) => [
-      { 
-        label: tAppointments("pending"), 
-        count: s.pending, 
-        badgeBg: "bg-amber-50 text-amber-700 border-amber-100", 
-        bgBox: "bg-amber-50/60", 
-        iconColor: "text-amber-600", 
-        icon: HelpCircle 
+      {
+        label: tAppointments("pending"),
+        count: s.pending,
+        badgeBg: "bg-amber-50 text-amber-700 border-amber-100",
+        bgBox: "bg-amber-50/60",
+        iconColor: "text-amber-600",
+        icon: HelpCircle
       },
-      { 
-        label: tDashboard("depositPaid") || tAppointments("depositPaid"), 
-        count: s.depositPaid, 
-        badgeBg: "bg-cyan-50 text-cyan-700 border-cyan-100", 
-        bgBox: "bg-cyan-50/60", 
-        iconColor: "text-cyan-600", 
-        icon: AlertCircle 
+      {
+        label: tAppointments("depositPaid"),
+        count: s.depositPaid,
+        badgeBg: "bg-cyan-50 text-cyan-700 border-cyan-100",
+        bgBox: "bg-cyan-50/60",
+        iconColor: "text-cyan-600",
+        icon: AlertCircle
       },
-      { 
-        label: tDashboard("booked") || tAppointments("booked"), 
-        count: s.booked, 
-        badgeBg: "bg-blue-50 text-blue-700 border-blue-100", 
-        bgBox: "bg-blue-50/60", 
-        iconColor: "text-blue-600", 
-        icon: Calendar 
+      {
+        label: tAppointments("booked"),
+        count: s.booked,
+        badgeBg: "bg-blue-50 text-blue-700 border-blue-100",
+        bgBox: "bg-blue-50/60",
+        iconColor: "text-blue-600",
+        icon: Calendar
       },
-      { 
-        label: tDashboard("arrived") || tAppointments("arrived"), 
-        count: s.arrived, 
-        badgeBg: "bg-indigo-50 text-indigo-700 border-indigo-100", 
-        bgBox: "bg-indigo-50/60", 
-        iconColor: "text-indigo-600", 
-        icon: UserCheck 
+      {
+        label: tAppointments("arrived"),
+        count: s.arrived,
+        badgeBg: "bg-indigo-50 text-indigo-700 border-indigo-100",
+        bgBox: "bg-indigo-50/60",
+        iconColor: "text-indigo-600",
+        icon: UserCheck
       },
-      { 
-        label: tDashboard("inProgress") || tAppointments("inProgress"), 
-        count: s.inProgress, 
-        badgeBg: "bg-purple-50 text-purple-700 border-purple-100", 
-        bgBox: "bg-purple-50/60", 
-        iconColor: "text-purple-600", 
-        icon: Activity 
+      {
+        label: tAppointments("inProgress"),
+        count: s.inProgress,
+        badgeBg: "bg-purple-50 text-purple-700 border-purple-100",
+        bgBox: "bg-purple-50/60",
+        iconColor: "text-purple-600",
+        icon: Activity
       },
-      { 
-        label: tDashboard("completed") || tAppointments("completed"), 
-        count: s.completed, 
-        badgeBg: "bg-emerald-50 text-emerald-700 border-emerald-100", 
-        bgBox: "bg-emerald-50/60", 
-        iconColor: "text-emerald-600", 
-        icon: CheckCircle2 
+      {
+        label: tAppointments("completed"),
+        count: s.completed,
+        badgeBg: "bg-emerald-50 text-emerald-700 border-emerald-100",
+        bgBox: "bg-emerald-50/60",
+        iconColor: "text-emerald-600",
+        icon: CheckCircle2
       },
-      { 
-        label: tDashboard("cancelled") || tAppointments("cancelled"), 
-        count: s.cancelled, 
-        badgeBg: "bg-rose-50 text-rose-700 border-rose-100", 
-        bgBox: "bg-rose-50/60", 
-        iconColor: "text-rose-600", 
-        icon: XCircle 
+      {
+        label: tAppointments("cancelled"),
+        count: s.cancelled,
+        badgeBg: "bg-rose-50 text-rose-700 border-rose-100",
+        bgBox: "bg-rose-50/60",
+        iconColor: "text-rose-600",
+        icon: XCircle
       },
-      { 
-        label: tDashboard("noShow") || tAppointments("noShow"), 
-        count: s.noShow, 
-        badgeBg: "bg-slate-50 text-slate-700 border-slate-200", 
-        bgBox: "bg-slate-100/60", 
-        iconColor: "text-slate-500", 
-        icon: Clock 
+      {
+        label: tAppointments("noShow"),
+        count: s.noShow,
+        badgeBg: "bg-slate-50 text-slate-700 border-slate-200",
+        bgBox: "bg-slate-100/60",
+        iconColor: "text-slate-500",
+        icon: Clock
       },
     ];
 
@@ -152,11 +153,15 @@ export default function DoctorDashboardClient({
             {tDashboard("overview")}
           </h2>
         </div>
-        <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
+        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+          {/* Language switcher (cookie-based; reload to apply SSR locale) */}
+          <LanguageSwitcher />
           <button
             onClick={fetchDashboard}
             disabled={loading}
-            className="p-2 bg-white border border-slate-200/80 hover:bg-slate-50 text-slate-500 rounded-xl transition-all shadow-sm active:scale-95 disabled:opacity-50"
+            className="p-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-500 rounded-xl transition-all shadow-sm active:scale-95 disabled:opacity-50"
+            aria-label="Refresh dashboard"
+            title="Refresh"
           >
             <RotateCw className={`h-3.5 w-3.5 ${loading ? "animate-spin text-blue-600" : ""}`} />
           </button>

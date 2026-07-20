@@ -1,6 +1,9 @@
 import { Inter, JetBrains_Mono } from "next/font/google"
 import type { Metadata } from "next"
+import { NextIntlClientProvider } from "next-intl"
+import { getMessages } from "next-intl/server"
 import { Providers } from "@/components/Providers"
+import { useActiveLocale } from "@/lib/locale"
 import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
@@ -14,13 +17,20 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  // Resolve locale from URL > NEXT_LOCALE cookie > Accept-Language > default.
+  // This must run BEFORE getMessages() so that messages are loaded for the
+  // correct locale (especially for routes under /doctor, /system-admin,
+  // /clinic-admin, /receptionist where next-intl middleware does not run).
+  const locale = await useActiveLocale()
+  const messages = await getMessages()
+
   return (
-    <html lang="vi" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -30,7 +40,9 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} ${jetbrainsMono.variable} bg-background text-on-surface font-body-md selection:bg-primary-fixed-dim selection:text-on-primary-fixed antialiased`}>
-        <Providers>{children}</Providers>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <Providers>{children}</Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   )

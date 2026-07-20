@@ -1,321 +1,551 @@
 "use client"
 
+/**
+ * PatientInitialAssessmentClient
+ * ==============================
+ * Trang "Khảo sát ban đầu & Chẩn đoán sơ bộ" dựa trên UC 35/36 (Patient Demographics)
+ * — dùng chung cho cả 6 mẫu bệnh án.
+ *
+ * Flow:
+ *  1. Hành chính (họ tên, ngày sinh, giới, SĐT, CCCD, địa chỉ, BHYT)
+ *  2. Tiền sử y khoa (nhóm máu, dị ứng, bệnh toàn thân, gia đình, lối sống)
+ *  3. Tiền sử nhãn khoa (thuốc mắt, phẫu thuật mắt, tiền sử thị lực)
+ *  4. Phân loại & Triệu chứng (urgency level, mức độ đau, lý do khám hôm nay)
+ *  5. Xem lại & Gửi → sang bước chọn mẫu bệnh án
+ *
+ * Payload submit vẫn gửi endpoint `/doctor-appointment/preliminary-diagnosis`
+ * (mapping sang PreliminaryDiagnosisRequest + một số trường UC 35/36).
+ */
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useTranslations } from "next-intl"
-import { ArrowLeft, Loader2, Stethoscope, AlertTriangle, Activity, Clock } from "lucide-react"
+import {
+  ArrowLeft,
+  ArrowRight,
+  Loader2,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react"
 import { preliminaryDiagnosisService } from "@/services/preliminary-diagnosis.service"
-import { TriageUrgencyLevel, PreliminaryDiagnosisRequest } from "@/types"
+import {
+  TriageUrgencyLevel,
+  type PreliminaryDiagnosisRequest,
+} from "@/types"
 
-interface PreliminaryDiagnosisClientProps {
+interface PatientInitialAssessmentClientProps {
   doctorId: string
   appointmentId: string
   patientId: string
   patientName: string
 }
 
-export default function PreliminaryDiagnosisClient({
+interface FormState {
+  // Step 1 — Admin (UC35)
+  fullName: string
+  dateOfBirth: string
+  gender: "Nam" | "Nữ" | "Khác" | ""
+  phoneNumber: string
+  identityNumber: string
+  address: string
+  bhytNumber: string
+
+  // Step 2 — Medical background (UC35/36)
+  bloodType: string
+  allergies: string
+  medicalHistory: string
+  familyHistory: string
+  lifestyleFactors: string
+
+  // Step 3 — Eye history (UC36 ophthalmology fields)
+  currentEyeMedications: string
+  previousEyeSurgery: string
+  eyeVisionHistory: string
+
+  // Step 4 — Triage & Symptoms (UC preliminary)
+  urgencyLevel: TriageUrgencyLevel
+  painLevel: number | ""
+  chiefComplaint: string
+}
+
+const STEP_KEYS = [
+  "stepAdmin",
+  "stepMedical",
+  "stepEye",
+  "stepTriage",
+] as const
+
+export default function PatientInitialAssessmentClient({
   appointmentId,
   patientName,
-}: PreliminaryDiagnosisClientProps) {
+}: PatientInitialAssessmentClientProps) {
   const t = useTranslations("doctor.preliminaryDiagnosis")
+  const tCommon = useTranslations("common")
   const router = useRouter()
+  const [step, setStep] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const [form, setForm] = useState({
-    appointmentId,
+  const [form, setForm] = useState<FormState>({
+    fullName: patientName ?? "",
+    dateOfBirth: "",
+    gender: "",
+    phoneNumber: "",
+    identityNumber: "",
+    address: "",
+    bhytNumber: "",
+    bloodType: "",
+    allergies: "",
+    medicalHistory: "",
+    familyHistory: "",
+    lifestyleFactors: "",
+    currentEyeMedications: "",
+    previousEyeSurgery: "",
+    eyeVisionHistory: "",
     urgencyLevel: TriageUrgencyLevel.Medium,
-    painLevel: "" as number | "",
-    quickVisualAssessment: "",
-    hasVisionChange: false,
-    hasEyeRedness: false,
-    hasEyeDischarge: false,
-    hasLightSensitivity: false,
-    hasEyePain: false,
-    hasHeadache: false,
-    hasForeignBody: false,
-    recommendedAction: "",
-    isReferralNeeded: false,
-    referralTo: "",
-    followUpInstructions: "",
-    checkInTime: new Date().toISOString(),
+    painLevel: "",
+    chiefComplaint: "",
   })
 
-  const update = (updates: Record<string, unknown>) => {
-    setForm((prev) => ({ ...prev, ...updates }))
-  }
+  const update = <K extends keyof FormState>(key: K, value: FormState[K]) =>
+    setForm((prev) => ({ ...prev, [key]: value }))
 
   const handleSubmit = async () => {
-    setSubmitting(true)
     setError(null)
+    if (!form.chiefComplaint.trim()) {
+      setError(t("requiredFields"))
+      setStep(STEP_KEYS.indexOf("stepTriage"))
+      return
+    }
 
+    setSubmitting(true)
     try {
-      const payload: PreliminaryDiagnosisRequest = {
-        appointmentId: form.appointmentId,
+      const payload: PreliminaryDiagnosisRequest & Record<string, unknown> = {
+        appointmentId,
         urgencyLevel: form.urgencyLevel,
         painLevel: typeof form.painLevel === "number" ? form.painLevel : null,
-        quickVisualAssessment: form.quickVisualAssessment || null,
-        hasVisionChange: form.hasVisionChange,
-        hasEyeRedness: form.hasEyeRedness,
-        hasEyeDischarge: form.hasEyeDischarge,
-        hasLightSensitivity: form.hasLightSensitivity,
-        hasEyePain: form.hasEyePain,
-        hasHeadache: form.hasHeadache,
-        hasForeignBody: form.hasForeignBody,
-        recommendedAction: form.recommendedAction || null,
-        isReferralNeeded: form.isReferralNeeded,
-        referralTo: form.isReferralNeeded ? form.referralTo || null : null,
-        followUpInstructions: form.followUpInstructions || null,
-        checkInTime: form.checkInTime || null,
+        quickVisualAssessment: form.chiefComplaint || null,
+        hasVisionChange: false,
+        hasEyeRedness: false,
+        hasEyeDischarge: false,
+        hasLightSensitivity: false,
+        hasEyePain: form.painLevel !== "" && Number(form.painLevel) > 3,
+        hasHeadache: false,
+        hasForeignBody: false,
+        recommendedAction: null,
+        isReferralNeeded: false,
+        referralTo: null,
+        followUpInstructions:
+          [
+            form.allergies && `Dị ứng: ${form.allergies}`,
+            form.currentEyeMedications && `Thuốc mắt: ${form.currentEyeMedications}`,
+            form.previousEyeSurgery && `PT mắt: ${form.previousEyeSurgery}`,
+            form.medicalHistory && `Tiền sử: ${form.medicalHistory}`,
+          ]
+            .filter(Boolean)
+            .join(" | ") || null,
+        checkInTime: new Date().toISOString(),
+
+        // UC 35/36 demographics — payload mở rộng (BE tự bỏ qua field lạ)
+        patientProfileId: undefined,
+        fullName: form.fullName || null,
+        dateOfBirth: form.dateOfBirth || null,
+        gender: form.gender || null,
+        phoneNumber: form.phoneNumber || null,
+        identityNumber: form.identityNumber || null,
+        bhytNumber: form.bhytNumber || null,
+        address: form.address || null,
+        bloodType: form.bloodType || null,
+        allergies: form.allergies || null,
+        medicalHistory: form.medicalHistory || null,
+        familyHistory: form.familyHistory || null,
+        lifestyleFactors: form.lifestyleFactors || null,
+        currentEyeMedications: form.currentEyeMedications || null,
+        previousEyeSurgery: form.previousEyeSurgery || null,
+        eyeVisionHistory: form.eyeVisionHistory || null,
       }
 
-      const response = await preliminaryDiagnosisService.submit(payload)
+      const response = await preliminaryDiagnosisService.submit(
+        payload as PreliminaryDiagnosisRequest,
+      )
 
       if (response.data?.isSuccess) {
         router.push(
-          `/doctor/records/create?appointmentId=${appointmentId}&fromPreliminaryDiagnosis=true`
+          `/doctor/records/create?appointmentId=${appointmentId}&patientId=${encodeURIComponent(patientName)}&fromInitialAssessment=true`,
         )
         return
       }
 
-      setError(response.codeMessage || t("error.saveFailed"))
+      setError(response.codeMessage || t("saveFailed"))
     } catch {
-      setError(t("error.unknown"))
+      setError(t("saveFailed"))
     } finally {
       setSubmitting(false)
     }
   }
 
-  const URGENCY_OPTIONS = [
-    { value: TriageUrgencyLevel.Emergency, label: t("emergency"), color: "red", icon: AlertTriangle, description: t("urgencyDescriptions.emergency") },
-    { value: TriageUrgencyLevel.High, label: t("high"), color: "orange", icon: Activity, description: t("urgencyDescriptions.high") },
-    { value: TriageUrgencyLevel.Medium, label: t("medium"), color: "yellow", icon: Clock, description: t("urgencyDescriptions.medium") },
-    { value: TriageUrgencyLevel.Low, label: t("low"), color: "green", icon: Stethoscope, description: t("urgencyDescriptions.low") },
-  ]
+  const stepLabels = STEP_KEYS.map((k) => t(k))
 
-  const COMMON_ACTIONS = [
-    t("commonActions.visualAcuityExam"),
-    t("commonActions.iopExam"),
-    t("commonActions.fundusExam"),
-    t("commonActions.schirmerTest"),
-    t("commonActions.corneaExam"),
-    t("commonActions.anteriorChamberExam"),
-    t("commonActions.lensExam"),
-    t("commonActions.octScan"),
-    t("commonActions.refractionTest"),
-  ]
+  const inputClass =
+    "w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+  const labelClass = "mb-1 block text-xs font-medium text-gray-700"
 
   return (
     <div className="min-h-screen bg-gray-50/50">
       <div className="max-w-3xl mx-auto p-6">
-        <div className="flex items-center justify-between mb-6">
+        {/* Header */}
+        <div className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
+              type="button"
               onClick={() => router.back()}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              className="rounded-lg p-2 hover:bg-gray-100"
+              aria-label={tCommon("back")}
             >
-              <ArrowLeft className="w-5 h-5 text-gray-600" />
+              <ArrowLeft className="h-5 w-5 text-gray-600" />
             </button>
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">{t("triageAndDiagnosis")}</h1>
+              <h1 className="text-xl font-semibold text-gray-900">
+                {t("pageTitle")}
+              </h1>
               <p className="text-sm text-gray-500">
-                {patientName ? `${t("patient")} ${patientName}` : t("classifyingPatient")}
+                {patientName
+                  ? `${t("patient")}: ${patientName}`
+                  : t("pageSubtitle")}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Stethoscope className="w-4 h-4" />
-            <span>{t("classifyingPatient")}</span>
-          </div>
         </div>
 
+        {/* Stepper */}
+        <ol className="mb-6 flex items-center justify-between gap-2">
+          {stepLabels.map((label, idx) => {
+            const active = idx === step
+            const done = idx < step
+            return (
+              <li
+                key={label}
+                className="flex flex-1 flex-col items-center text-center"
+              >
+                <span
+                  className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${
+                    done
+                      ? "bg-emerald-500 text-white"
+                      : active
+                        ? "bg-indigo-600 text-white"
+                        : "bg-gray-200 text-gray-500"
+                  }`}
+                >
+                  {done ? <CheckCircle2 className="h-4 w-4" /> : idx + 1}
+                </span>
+                <span className="mt-1 text-[11px] text-gray-600">{label}</span>
+              </li>
+            )
+          })}
+        </ol>
+
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 flex items-center gap-2">
+          <div
+            role="alert"
+            className="mb-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+          >
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
-        <div className="space-y-6">
-          {/* Urgency Level Selection */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-5">
-            <h2 className="text-base font-semibold text-gray-900 mb-4">{t("priority")}</h2>
-            <div className="grid grid-cols-2 gap-3">
-              {URGENCY_OPTIONS.map((option) => {
-                const Icon = option.icon
-                const isSelected = form.urgencyLevel === option.value
-                const colorClasses: Record<string, string> = {
-                  red: isSelected ? "bg-red-50 border-red-500 text-red-700" : "border-gray-200 hover:border-red-300",
-                  orange: isSelected ? "bg-orange-50 border-orange-500 text-orange-700" : "border-gray-200 hover:border-orange-300",
-                  yellow: isSelected ? "bg-yellow-50 border-yellow-500 text-yellow-700" : "border-gray-200 hover:border-yellow-300",
-                  green: isSelected ? "bg-green-50 border-green-500 text-green-700" : "border-gray-200 hover:border-green-300",
-                }
-                return (
-                  <button
-                    key={option.value}
-                    onClick={() => update({ urgencyLevel: option.value })}
-                    className={`p-4 rounded-xl border-2 text-left transition-all ${colorClasses[option.color]}`}
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          {step === 0 && (
+            <section className="space-y-4">
+              <h2 className="text-base font-semibold text-gray-900">
+                {stepLabels[0]}
+              </h2>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <label className={labelClass}>{t("fullName")}</label>
+                  <input
+                    className={inputClass}
+                    value={form.fullName}
+                    onChange={(e) => update("fullName", e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>{t("dateOfBirth")}</label>
+                  <input
+                    type="date"
+                    className={inputClass}
+                    value={form.dateOfBirth}
+                    onChange={(e) => update("dateOfBirth", e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>{t("gender")}</label>
+                  <select
+                    className={inputClass}
+                    value={form.gender}
+                    onChange={(e) =>
+                      update(
+                        "gender",
+                        e.target.value as FormState["gender"],
+                      )
+                    }
                   >
-                    <div className="flex items-center gap-2 mb-1">
-                      <Icon className={`w-5 h-5 ${isSelected ? "text-current" : "text-gray-400"}`} />
-                      <span className="font-medium">{option.label}</span>
-                    </div>
-                    <p className="text-xs opacity-70">{option.description}</p>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Symptom Checklist */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-5">
-            <h2 className="text-base font-semibold text-gray-900 mb-4">{t("initialSymptoms")}</h2>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { key: "hasVisionChange", label: t("visionChange") },
-                { key: "hasEyeRedness", label: t("redness") },
-                { key: "hasEyeDischarge", label: t("abnormalDischarge") },
-                { key: "hasLightSensitivity", label: t("lightSensitivity") },
-                { key: "hasEyePain", label: t("eyePain") },
-                { key: "hasHeadache", label: t("headache") },
-                { key: "hasForeignBody", label: t("foreignBody") },
-              ].map((item) => (
-                <label
-                  key={item.key}
-                  className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors"
-                >
+                    <option value="">—</option>
+                    <option value="Nam">{t("male")}</option>
+                    <option value="Nữ">{t("female")}</option>
+                    <option value="Khác">{t("other")}</option>
+                  </select>
+                </div>
+                <div>
+                  <label className={labelClass}>{t("phone")}</label>
                   <input
-                    type="checkbox"
-                    checked={form[item.key as keyof typeof form] as boolean}
-                    onChange={(e) => update({ [item.key]: e.target.checked })}
-                    className="w-5 h-5 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                    className={inputClass}
+                    value={form.phoneNumber}
+                    onChange={(e) => update("phoneNumber", e.target.value)}
                   />
-                  <span className="text-sm text-gray-700">{item.label}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Pain Level & Quick Assessment */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-5">
-            <h2 className="text-base font-semibold text-gray-900 mb-4">{t("quickAssessment")}</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">{t("painLevelScale")}</label>
-                <div className="flex items-center gap-4">
+                </div>
+                <div>
+                  <label className={labelClass}>{t("identityNumber")}</label>
                   <input
-                    type="range"
-                    min="0"
-                    max="10"
-                    value={form.painLevel === "" ? 0 : form.painLevel}
-                    onChange={(e) => update({ painLevel: parseInt(e.target.value) })}
-                    className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                    className={inputClass}
+                    value={form.identityNumber}
+                    onChange={(e) => update("identityNumber", e.target.value)}
                   />
-                  <span className="w-10 text-center font-medium text-gray-700">
-                    {form.painLevel === "" ? "-" : form.painLevel}
-                  </span>
+                </div>
+                <div>
+                  <label className={labelClass}>{t("bhytNumber")}</label>
+                  <input
+                    className={inputClass}
+                    value={form.bhytNumber}
+                    onChange={(e) => update("bhytNumber", e.target.value)}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className={labelClass}>{t("address")}</label>
+                  <textarea
+                    rows={2}
+                    className={inputClass}
+                    value={form.address}
+                    onChange={(e) => update("address", e.target.value)}
+                  />
                 </div>
               </div>
+            </section>
+          )}
 
+          {step === 1 && (
+            <section className="space-y-4">
+              <h2 className="text-base font-semibold text-gray-900">
+                {stepLabels[1]}
+              </h2>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <label className={labelClass}>{t("bloodType")}</label>
+                  <select
+                    className={inputClass}
+                    value={form.bloodType}
+                    onChange={(e) => update("bloodType", e.target.value)}
+                  >
+                    <option value="">—</option>
+                    {["A", "B", "AB", "O"].map((bt) => (
+                      <option key={bt} value={bt}>
+                        {bt}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className={labelClass}>{t("allergies")}</label>
+                  <input
+                    className={inputClass}
+                    value={form.allergies}
+                    onChange={(e) => update("allergies", e.target.value)}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className={labelClass}>{t("medicalHistory")}</label>
+                  <textarea
+                    rows={3}
+                    className={inputClass}
+                    value={form.medicalHistory}
+                    onChange={(e) => update("medicalHistory", e.target.value)}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className={labelClass}>{t("familyHistory")}</label>
+                  <textarea
+                    rows={2}
+                    className={inputClass}
+                    value={form.familyHistory}
+                    onChange={(e) => update("familyHistory", e.target.value)}
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className={labelClass}>{t("lifestyleFactors")}</label>
+                  <textarea
+                    rows={2}
+                    className={inputClass}
+                    value={form.lifestyleFactors}
+                    onChange={(e) => update("lifestyleFactors", e.target.value)}
+                  />
+                </div>
+              </div>
+            </section>
+          )}
+
+          {step === 2 && (
+            <section className="space-y-4">
+              <h2 className="text-base font-semibold text-gray-900">
+                {stepLabels[2]}
+              </h2>
+              <div className="space-y-4">
+                <div>
+                  <label className={labelClass}>{t("currentEyeMedications")}</label>
+                  <textarea
+                    rows={2}
+                    className={inputClass}
+                    value={form.currentEyeMedications}
+                    onChange={(e) =>
+                      update("currentEyeMedications", e.target.value)
+                    }
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>{t("previousEyeSurgery")}</label>
+                  <textarea
+                    rows={2}
+                    className={inputClass}
+                    value={form.previousEyeSurgery}
+                    onChange={(e) =>
+                      update("previousEyeSurgery", e.target.value)
+                    }
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>{t("eyeVisionHistory")}</label>
+                  <textarea
+                    rows={3}
+                    className={inputClass}
+                    value={form.eyeVisionHistory}
+                    onChange={(e) => update("eyeVisionHistory", e.target.value)}
+                  />
+                </div>
+              </div>
+            </section>
+          )}
+
+          {step === 3 && (
+            <section className="space-y-4">
+              <h2 className="text-base font-semibold text-gray-900">
+                {stepLabels[3]}
+              </h2>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">{t("quickAssessmentNote")}</label>
+                <label className={labelClass}>{t("urgencyLevel")}</label>
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                  {[
+                    { v: TriageUrgencyLevel.Emergency, label: t("emergency"), color: "red" },
+                    { v: TriageUrgencyLevel.High, label: t("high"), color: "orange" },
+                    { v: TriageUrgencyLevel.Medium, label: t("medium"), color: "yellow" },
+                    { v: TriageUrgencyLevel.Low, label: t("low"), color: "green" },
+                  ].map((opt) => {
+                    const active = form.urgencyLevel === opt.v
+                    const colors = {
+                      red: {
+                        active: "border-red-500 bg-red-50 text-red-700",
+                        idle: "border-gray-200 text-gray-600 hover:bg-gray-50",
+                      },
+                      orange: {
+                        active: "border-orange-500 bg-orange-50 text-orange-700",
+                        idle: "border-gray-200 text-gray-600 hover:bg-gray-50",
+                      },
+                      yellow: {
+                        active: "border-yellow-500 bg-yellow-50 text-yellow-700",
+                        idle: "border-gray-200 text-gray-600 hover:bg-gray-50",
+                      },
+                      green: {
+                        active: "border-green-500 bg-green-50 text-green-700",
+                        idle: "border-gray-200 text-gray-600 hover:bg-gray-50",
+                      },
+                    }[opt.color]
+                    return (
+                      <button
+                        key={opt.v}
+                        type="button"
+                        onClick={() => update("urgencyLevel", opt.v)}
+                        className={`rounded-lg border-2 px-3 py-2 text-sm font-medium transition ${
+                          active ? colors.active : colors.idle
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+              <div>
+                <label className={labelClass}>{t("painLevel")}</label>
+                <input
+                  type="range"
+                  min={0}
+                  max={10}
+                  value={form.painLevel === "" ? 0 : form.painLevel}
+                  onChange={(e) =>
+                    update("painLevel", Number(e.target.value) as FormState["painLevel"])
+                  }
+                  className="w-full"
+                />
+                <div className="text-sm text-gray-600">
+                  {form.painLevel === "" ? "—" : form.painLevel} / 10
+                </div>
+              </div>
+              <div>
+                <label className={labelClass}>{t("chiefComplaint")} *</label>
                 <textarea
-                  value={form.quickVisualAssessment}
-                  onChange={(e) => update({ quickVisualAssessment: e.target.value })}
                   rows={3}
-                  placeholder={t("quickAssessmentPlaceholder")}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 resize-none"
+                  required
+                  placeholder={t("chiefComplaintPlaceholder")}
+                  className={inputClass}
+                  value={form.chiefComplaint}
+                  onChange={(e) => update("chiefComplaint", e.target.value)}
                 />
               </div>
-            </div>
-          </div>
+            </section>
+          )}
 
-          {/* Recommended Action */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-5">
-            <h2 className="text-base font-semibold text-gray-900 mb-4">{t("suggestedActions")}</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">{t("recommendedAction")}</label>
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {COMMON_ACTIONS.map((action) => (
-                    <button
-                      key={action}
-                      onClick={() => update({ recommendedAction: action })}
-                      className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                        form.recommendedAction === action
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
-                    >
-                      {action}
-                    </button>
-                  ))}
-                </div>
-                <input
-                  type="text"
-                  value={form.recommendedAction}
-                  onChange={(e) => update({ recommendedAction: e.target.value })}
-                  placeholder={t("suggestedActionsPlaceholder")}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
-                />
-              </div>
-
-              <label className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  checked={form.isReferralNeeded}
-                  onChange={(e) => update({ isReferralNeeded: e.target.checked })}
-                  className="w-5 h-5 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
-                />
-                <span className="text-sm text-gray-700">{t("referToSpecialist")}</span>
-              </label>
-
-              {form.isReferralNeeded && (
-                <input
-                  type="text"
-                  value={form.referralTo}
-                  onChange={(e) => update({ referralTo: e.target.value })}
-                  placeholder={t("referToPlaceholder")}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
-                />
-              )}
-            </div>
-          </div>
-
-          {/* Follow-up Instructions */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-5">
-            <h2 className="text-base font-semibold text-gray-900 mb-4">{t("followUpInstructionsLabel")}</h2>
-            <textarea
-              value={form.followUpInstructions}
-              onChange={(e) => update({ followUpInstructions: e.target.value })}
-              rows={2}
-              placeholder={t("followUpPlaceholder")}
-              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 resize-none"
-            />
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-2">
+          {/* Step nav */}
+          <div className="mt-6 flex items-center justify-between border-t border-gray-100 pt-4">
             <button
               type="button"
-              onClick={() => router.back()}
-              className="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 bg-white border border-gray-200 hover:bg-gray-50"
+              onClick={() => setStep((s) => Math.max(0, s - 1))}
+              disabled={step === 0 || submitting}
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-40"
             >
-              {t("cancel")}
+              <ArrowLeft className="h-4 w-4" /> {t("previous")}
             </button>
-            <button
-              type="button"
-              disabled={submitting}
-              onClick={handleSubmit}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 disabled:opacity-50 shadow-sm"
-            >
-              {submitting ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Stethoscope className="w-4 h-4" />
-              )}
-              {t("confirmAndContinue")}
-            </button>
+
+            {step < STEP_KEYS.length - 1 ? (
+              <button
+                type="button"
+                onClick={() => setStep((s) => Math.min(STEP_KEYS.length - 1, s + 1))}
+                disabled={submitting}
+                className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-40"
+              >
+                {t("next")} <ArrowRight className="h-4 w-4" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={submitting}
+                className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-40"
+              >
+                {submitting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="h-4 w-4" />
+                )}
+                {t("save")}
+              </button>
+            )}
           </div>
         </div>
       </div>

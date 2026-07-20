@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useFormContext, useFieldArray } from "react-hook-form"
 import { Plus, Trash2, Printer, Pill } from "lucide-react"
+import { useTranslations } from "next-intl"
 import type { MedicalRecordFormDataPayload } from "@/types"
 
 const inputClass =
@@ -10,11 +11,9 @@ const inputClass =
 const labelClass = "mb-0.5 block text-xs font-medium text-gray-700"
 const sectionBoxClass =
   "rounded-lg border border-gray-200 bg-white p-4 print:break-inside-avoid print:border-gray-400 print:mb-2"
-const titleClass = "mb-3 text-sm font-semibold text-gray-800"
+const titleClass =
+  "mb-3 text-sm font-semibold text-gray-800"
 
-/**
- * Common eye medications for quick selection
- */
 const COMMON_MEDICATIONS = [
   { name: "Tobrex 0.3%", dosage: "Nhỏ mắt", instruction: "Nhỏ 1-2 giọt x 4 lần/ngày" },
   { name: "Refresh Plus", dosage: "Nhỏ mắt", instruction: "Nhỏ 1-2 giọt x 4 lần/ngày" },
@@ -44,37 +43,39 @@ const COMMON_MEDICATIONS = [
 
 interface PrescriptionItemProps {
   index: number
+  remove: (index: number) => void
   onQuickAdd?: (med: typeof COMMON_MEDICATIONS[0]) => void
 }
 
-function PrescriptionItem({ index }: PrescriptionItemProps) {
+function PrescriptionItem({ index, remove }: PrescriptionItemProps) {
   const { register } = useFormContext<MedicalRecordFormDataPayload>()
-  const { remove } = useFieldArray({
-    control: {} as any,
-    name: "benhAn.prescription.items",
-  })
+  const t = useTranslations("form.prescription")
+
+  // Visually hidden label class for a11y (parent renders the visible header row)
+  const hiddenLabelClass = "sr-only"
 
   return (
     <div className="grid grid-cols-12 gap-2 items-start border-b border-gray-100 pb-3 mb-3">
       <div className="col-span-1">
-        <label className={labelClass}>STT</label>
+        <label className={hiddenLabelClass}>{t("headers.no")}</label>
         <input
           type="number"
           value={index + 1}
           readOnly
+          aria-label={t("headers.no")}
           className={`${inputClass} bg-gray-50 text-center cursor-not-allowed`}
         />
       </div>
       <div className="col-span-3">
-        <label className={labelClass}>Tên thuốc</label>
+        <label className={hiddenLabelClass}>{t("headers.drugName")}</label>
         <input
           {...register(`benhAn.prescription.items.${index}.tenThuoc` as any)}
           className={inputClass}
-          placeholder="Tên thuốc..."
+          placeholder={t("headers.drugName")}
         />
       </div>
       <div className="col-span-2">
-        <label className={labelClass}>Hàm lượng</label>
+        <label className={hiddenLabelClass}>{t("headers.dosage")}</label>
         <input
           {...register(`benhAn.prescription.items.${index}.hamLuong` as any)}
           className={inputClass}
@@ -82,7 +83,7 @@ function PrescriptionItem({ index }: PrescriptionItemProps) {
         />
       </div>
       <div className="col-span-1">
-        <label className={labelClass}>SL</label>
+        <label className={hiddenLabelClass}>{t("headers.quantity")}</label>
         <input
           type="number"
           {...register(`benhAn.prescription.items.${index}.soLuong` as any)}
@@ -91,7 +92,7 @@ function PrescriptionItem({ index }: PrescriptionItemProps) {
         />
       </div>
       <div className="col-span-2">
-        <label className={labelClass}>Cách dùng</label>
+        <label className={hiddenLabelClass}>{t("headers.usage")}</label>
         <input
           {...register(`benhAn.prescription.items.${index}.cachDung` as any)}
           className={inputClass}
@@ -99,7 +100,7 @@ function PrescriptionItem({ index }: PrescriptionItemProps) {
         />
       </div>
       <div className="col-span-1">
-        <label className={labelClass}>SL mua</label>
+        <label className={hiddenLabelClass}>{t("headers.purchaseQty")}</label>
         <input
           type="number"
           {...register(`benhAn.prescription.items.${index}.soLuongMua` as any)}
@@ -107,7 +108,7 @@ function PrescriptionItem({ index }: PrescriptionItemProps) {
         />
       </div>
       <div className="col-span-1">
-        <label className={labelClass}>ĐVT</label>
+        <label className={hiddenLabelClass}>{t("headers.unit")}</label>
         <input
           {...register(`benhAn.prescription.items.${index}.donViTinh` as any)}
           className={inputClass}
@@ -120,6 +121,7 @@ function PrescriptionItem({ index }: PrescriptionItemProps) {
           onClick={() => remove(index)}
           className="rounded-md p-2 text-red-600 hover:bg-red-50 transition-colors"
           title="Xóa thuốc"
+          aria-label={`Xóa thuốc ${index + 1}`}
         >
           <Trash2 className="h-4 w-4" />
         </button>
@@ -128,20 +130,23 @@ function PrescriptionItem({ index }: PrescriptionItemProps) {
   )
 }
 
-interface QuickAddModalProps {
+function QuickAddModal({
+  isOpen,
+  onClose,
+  onSelect,
+}: {
   isOpen: boolean
   onClose: () => void
   onSelect: (med: typeof COMMON_MEDICATIONS[0]) => void
-}
-
-function QuickAddModal({ isOpen, onClose, onSelect }: QuickAddModalProps) {
+}) {
+  const t = useTranslations("form.prescription")
   if (!isOpen) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="max-h-[80vh] w-full max-w-2xl overflow-hidden rounded-lg bg-white shadow-xl">
+      <div className="max-h-[80vh] w-full max-w-3xl overflow-hidden rounded-lg bg-white shadow-xl">
         <div className="flex items-center justify-between border-b border-gray-200 px-4 py-3">
-          <h3 className="font-semibold text-gray-900">Thêm thuốc nhanh</h3>
+          <h3 className="font-semibold text-gray-900">{t("quickAdd")}</h3>
           <button
             onClick={onClose}
             className="rounded-md p-1 hover:bg-gray-100"
@@ -173,9 +178,10 @@ function QuickAddModal({ isOpen, onClose, onSelect }: QuickAddModalProps) {
 }
 
 export default function PrescriptionSection() {
-  const { register, setValue, watch } = useFormContext<MedicalRecordFormDataPayload>()
+  const { register, control } = useFormContext<MedicalRecordFormDataPayload>()
+  const t = useTranslations("form.prescription")
   const { fields, append, remove } = useFieldArray({
-    control: {} as any,
+    control,
     name: "benhAn.prescription.items",
   })
 
@@ -208,7 +214,7 @@ export default function PrescriptionSection() {
   return (
     <div className={sectionBoxClass}>
       <div className="flex items-center justify-between">
-        <h3 className={titleClass}>ĐƠN THUỐC</h3>
+        <h3 className={titleClass}>{t("title")}</h3>
         <div className="flex gap-2">
           <button
             type="button"
@@ -216,7 +222,7 @@ export default function PrescriptionSection() {
             className="inline-flex items-center gap-1 rounded-md bg-green-50 px-3 py-1.5 text-xs font-medium text-green-700 hover:bg-green-100 transition-colors"
           >
             <Pill className="h-3.5 w-3.5" />
-            Thêm nhanh thuốc thường dùng
+            {t("quickAdd")}
           </button>
           <button
             type="button"
@@ -224,15 +230,15 @@ export default function PrescriptionSection() {
             className="inline-flex items-center gap-1 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-200 transition-colors print:hidden"
           >
             <Printer className="h-3.5 w-3.5" />
-            In đơn thuốc
+            {t("printPrescription")}
           </button>
         </div>
       </div>
 
-      {/* Prescription Header */}
+      {/* Header */}
       <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
         <div>
-          <label className={labelClass}>Ngày kê đơn</label>
+          <label className={labelClass}>{t("date")}</label>
           <input
             type="date"
             {...register("benhAn.prescription.ngayKeDon" as any)}
@@ -240,7 +246,7 @@ export default function PrescriptionSection() {
           />
         </div>
         <div>
-          <label className={labelClass}>Bác sĩ kê đơn</label>
+          <label className={labelClass}>{t("doctor")}</label>
           <input
             {...register("benhAn.prescription.bacSiKeDon" as any)}
             className={inputClass}
@@ -248,7 +254,7 @@ export default function PrescriptionSection() {
           />
         </div>
         <div>
-          <label className={labelClass}>Mã số bác sĩ</label>
+          <label className={labelClass}>{t("doctorCode")}</label>
           <input
             {...register("benhAn.prescription.maSoBacSi" as any)}
             className={inputClass}
@@ -260,14 +266,14 @@ export default function PrescriptionSection() {
       {/* Patient Info */}
       <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
         <div>
-          <label className={labelClass}>Họ tên bệnh nhân</label>
+          <label className={labelClass}>{t("patientName")}</label>
           <input
             {...register("benhAn.prescription.benhNhanHoTen" as any)}
             className={inputClass}
           />
         </div>
         <div>
-          <label className={labelClass}>Tuổi</label>
+          <label className={labelClass}>{t("age")}</label>
           <input
             type="number"
             {...register("benhAn.prescription.benhNhanTuoi" as any)}
@@ -285,7 +291,7 @@ export default function PrescriptionSection() {
 
       {/* Diagnosis */}
       <div className="mt-3">
-        <label className={labelClass}>Chẩn đoán</label>
+        <label className={labelClass}>{t("diagnosis")}</label>
         <input
           {...register("benhAn.prescription.chanDoan" as any)}
           className={inputClass}
@@ -293,26 +299,26 @@ export default function PrescriptionSection() {
         />
       </div>
 
-      {/* Prescription Items Table */}
+      {/* Items Table */}
       <div className="mt-4">
         <div className="grid grid-cols-12 gap-2 mb-2">
-          <div className="col-span-1 text-xs font-medium text-gray-600">STT</div>
-          <div className="col-span-3 text-xs font-medium text-gray-600">Tên thuốc</div>
-          <div className="col-span-2 text-xs font-medium text-gray-600">Hàm lượng</div>
-          <div className="col-span-1 text-xs font-medium text-gray-600">SL</div>
-          <div className="col-span-2 text-xs font-medium text-gray-600">Cách dùng</div>
-          <div className="col-span-1 text-xs font-medium text-gray-600">SL mua</div>
-          <div className="col-span-1 text-xs font-medium text-gray-600">ĐVT</div>
+          <div className="col-span-1 text-xs font-medium text-gray-600">{t("headers.no")}</div>
+          <div className="col-span-3 text-xs font-medium text-gray-600">{t("headers.drugName")}</div>
+          <div className="col-span-2 text-xs font-medium text-gray-600">{t("headers.dosage")}</div>
+          <div className="col-span-1 text-xs font-medium text-gray-600">{t("headers.quantity")}</div>
+          <div className="col-span-2 text-xs font-medium text-gray-600">{t("headers.usage")}</div>
+          <div className="col-span-1 text-xs font-medium text-gray-600">{t("headers.purchaseQty")}</div>
+          <div className="col-span-1 text-xs font-medium text-gray-600">{t("headers.unit")}</div>
           <div className="col-span-1"></div>
         </div>
 
         {fields.length === 0 ? (
           <div className="rounded-md border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500">
-            Chưa có thuốc nào trong đơn. Nhấn "Thêm thuốc" để bắt đầu.
+            {t("emptyState")}
           </div>
         ) : (
           fields.map((field, index) => (
-            <PrescriptionItem key={field.id} index={index} />
+            <PrescriptionItem key={field.id} index={index} remove={remove} />
           ))
         )}
 
@@ -323,7 +329,7 @@ export default function PrescriptionSection() {
             className="inline-flex items-center gap-1 rounded-md bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
           >
             <Plus className="h-3.5 w-3.5" />
-            Thêm thuốc
+            {t("addDrug")}
           </button>
         </div>
       </div>
@@ -331,16 +337,16 @@ export default function PrescriptionSection() {
       {/* Footer */}
       <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
         <div>
-          <label className={labelClass}>Lời dặn</label>
+          <label className={labelClass}>{t("instructions")}</label>
           <textarea
             {...register("benhAn.prescription.loiDan" as any)}
             className={`${inputClass} min-h-[60px]`}
-            placeholder="Lời dặn cho bệnh nhân..."
+            placeholder={t("instructions")}
           />
         </div>
         <div className="space-y-3">
           <div>
-            <label className={labelClass}>Ngày tái khám</label>
+            <label className={labelClass}>{t("followUpDate")}</label>
             <input
               type="date"
               {...register("benhAn.prescription.ngayTaiKham" as any)}
@@ -348,7 +354,7 @@ export default function PrescriptionSection() {
             />
           </div>
           <div>
-            <label className={labelClass}>Giá trị đơn thuốc (VNĐ)</label>
+            <label className={labelClass}>{t("valueVnd")}</label>
             <input
               type="number"
               {...register("benhAn.prescription.giaTriDonThuoc" as any)}
@@ -361,11 +367,11 @@ export default function PrescriptionSection() {
 
       {/* Notes */}
       <div className="mt-3">
-        <label className={labelClass}>Ghi chú chung</label>
+        <label className={labelClass}>{t("generalNote")}</label>
         <textarea
           {...register("benhAn.prescription.ghiChuChung" as any)}
           className={`${inputClass} min-h-[40px]`}
-          placeholder="Ghi chú khác..."
+          placeholder={t("generalNote")}
         />
       </div>
 

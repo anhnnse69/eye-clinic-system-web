@@ -4,8 +4,18 @@ import { Sidebar, type NavSection } from "@/components/layout/Sidebar"
 import DashboardHeader from "@/components/layout/DashboardHeader"
 import { authService } from "@/services/auth.service"
 import { cookies } from "next/headers"
+import { useActiveLocale } from "@/lib/locale"
 
-export default async function DoctorLayout({ children }: { children: React.ReactNode }) {
+export default async function DoctorLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode
+  params?: Promise<{ locale?: string }>
+}) {
+  const { locale: urlLocale } = (await params) ?? {}
+  await useActiveLocale(urlLocale)
+
   const cookieStore = await cookies()
   const token = cookieStore.get("auth_token")?.value
 
@@ -14,7 +24,7 @@ export default async function DoctorLayout({ children }: { children: React.React
   }
 
   const decodedToken = authService.decodeToken(token)
-  
+
   if (!decodedToken) {
     redirect("/login")
   }
@@ -29,17 +39,20 @@ export default async function DoctorLayout({ children }: { children: React.React
 
   const t = await getTranslations("doctor")
   const tNav = await getTranslations("doctor.nav")
+  const tSection = await getTranslations("doctor.sections")
+  const tFooter = await getTranslations("footer")
+  const tCommon = await getTranslations("common")
 
   const sections: NavSection[] = [
     {
-      title: tNav("dashboard"),
+      title: tSection("dashboard"),
       items: [
         { label: tNav("dashboard"), href: "/doctor/dashboard", icon: "LayoutDashboard" },
         { label: tNav("schedule"), href: "/doctor/schedule", icon: "CalendarDays" },
       ],
     },
     {
-      title: tNav("appointments"),
+      title: tSection("appointments"),
       items: [
         { label: tNav("appointments"), href: "/doctor/appointments", icon: "Calendar" },
         { label: tNav("patients"), href: "/doctor/patients", icon: "Users" },
@@ -47,15 +60,15 @@ export default async function DoctorLayout({ children }: { children: React.React
       ],
     },
     {
-      title: tNav("medicalRecords"),
+      title: tSection("medicalRecords"),
       items: [
         { label: tNav("medicalRecords"), href: "/doctor/records", icon: "FileText" },
-        { label: t("paraclinical") || "Paraclinical", href: "/doctor/paraclinical", icon: "ImageIcon" },
-        { label: t("prescriptions") || "Prescriptions", href: "/doctor/prescriptions", icon: "Pill" },
+        { label: tNav("paraclinical"), href: "/doctor/paraclinical", icon: "ImageIcon" },
+        { label: tNav("prescriptions"), href: "/doctor/prescriptions", icon: "Pill" },
       ],
     },
     {
-      title: tNav("profile"),
+      title: tSection("profile"),
       items: [
         { label: tNav("profile"), href: "/doctor/profile", icon: "User" },
         { label: tNav("accountInfo"), href: "/doctor/account-info", icon: "UserCog" },
@@ -68,7 +81,7 @@ export default async function DoctorLayout({ children }: { children: React.React
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar sections={sections} logo="Eye Clinic Support System" role={t("title")} />
+      <Sidebar sections={sections} logo="Eye Clinic Support System" role={t("title")} copyrightText={tFooter("copyright")} />
       <div className="flex-1 flex flex-col min-w-0">
         <DashboardHeader
           title={t("title")}
@@ -78,6 +91,11 @@ export default async function DoctorLayout({ children }: { children: React.React
             email: userEmail,
             role: t("title"),
             avatar: null,
+          }}
+          labels={{
+            accountInfo: tCommon("userMenu.accountInfo"),
+            accountInfoSubtitle: tCommon("userMenu.accountInfoSubtitle"),
+            logout: tCommon("userMenu.logout"),
           }}
         />
         <main className="flex-1 p-gutter overflow-y-auto">{children}</main>

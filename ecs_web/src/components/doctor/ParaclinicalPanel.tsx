@@ -10,6 +10,7 @@
  */
 import { useState } from "react"
 import { useFormContext } from "react-hook-form"
+import { useTranslations } from "next-intl"
 import {
   Loader2,
   Upload,
@@ -28,19 +29,6 @@ const inputClass =
   "w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
 const labelClass = "mb-1 block text-xs font-medium text-gray-700"
 
-const LAB_TYPES: { value: LabType; label: string }[] = [
-  { value: "OCT", label: "OCT (Cắt lớp võng mạc)" },
-  { value: "VISUAL_FIELD", label: "Thị trường (Visual Field)" },
-  { value: "ULTRASOUND", label: "Siêu âm B-scan" },
-  { value: "GENERAL_LAB", label: "Xét nghiệm khác" }
-]
-
-const SIDES: { value: LabSide; label: string }[] = [
-  { value: "OD", label: "Mắt phải (OD)" },
-  { value: "OS", label: "Mắt trái (OS)" },
-  { value: "BOTH", label: "Hai mắt" }
-]
-
 interface ParaclinicalPanelProps {
   recordId: string
   /** Optional list seeded by the parent component. */
@@ -48,11 +36,26 @@ interface ParaclinicalPanelProps {
 }
 
 export default function ParaclinicalPanel({ recordId, initialResults = [] }: ParaclinicalPanelProps) {
+  const t = useTranslations("doctor.paraclinical")
+  const tCommon = useTranslations("common")
   const [results, setResults] = useState<LabResultSummary[]>(initialResults)
   const [filter, setFilter] = useState<LabType | "">("")
   const [loading, setLoading] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
   const [showAi, setShowAi] = useState(false)
+
+  const LAB_TYPES: { value: LabType; label: string }[] = [
+    { value: "OCT", label: t("labTypes.OCT") },
+    { value: "VISUAL_FIELD", label: t("labTypes.VISUAL_FIELD") },
+    { value: "ULTRASOUND", label: t("labTypes.ULTRASOUND") },
+    { value: "GENERAL_LAB", label: t("labTypes.GENERAL_LAB") }
+  ]
+
+  const SIDES: { value: LabSide; label: string }[] = [
+    { value: "OD", label: t("sides.OD") },
+    { value: "OS", label: t("sides.OS") },
+    { value: "BOTH", label: t("sides.BOTH") }
+  ]
 
   async function refresh() {
     setLoading(true)
@@ -71,7 +74,7 @@ export default function ParaclinicalPanel({ recordId, initialResults = [] }: Par
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Microscope className="h-4 w-4 text-indigo-600" />
-          <h3 className="text-sm font-semibold text-indigo-900">Cận lâm sàng (UC42-44)</h3>
+          <h3 className="text-sm font-semibold text-indigo-900">{t("title")}</h3>
         </div>
         <div className="flex items-center gap-2">
           <select
@@ -79,9 +82,9 @@ export default function ParaclinicalPanel({ recordId, initialResults = [] }: Par
             onChange={(e) => setFilter(e.target.value as LabType | "")}
             className="rounded-md border border-gray-300 px-2 py-1 text-xs"
           >
-            <option value="">Tất cả</option>
-            {LAB_TYPES.map((t) => (
-              <option key={t.value} value={t.value}>{t.label}</option>
+            <option value="">{t("filterAll")}</option>
+            {LAB_TYPES.map((lt) => (
+              <option key={lt.value} value={lt.value}>{lt.label}</option>
             ))}
           </select>
           <button
@@ -90,13 +93,13 @@ export default function ParaclinicalPanel({ recordId, initialResults = [] }: Par
             disabled={loading}
             className="rounded-md border border-gray-300 bg-white px-2 py-1 text-xs hover:bg-gray-50 disabled:opacity-50"
           >
-            {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : "Tải lại"}
+            {loading ? <Loader2 className="h-3 w-3 animate-spin" /> : tCommon("refresh")}
           </button>
         </div>
       </div>
 
       {results.length === 0 ? (
-        <p className="text-xs text-gray-500">Chưa có yêu cầu cận lâm sàng nào cho hồ sơ này.</p>
+        <p className="text-xs text-gray-500">{t("noResults")}</p>
       ) : (
         <ul className="divide-y divide-gray-100 rounded-md border border-gray-100 bg-white">
           {results.map((r) => (
@@ -121,7 +124,7 @@ export default function ParaclinicalPanel({ recordId, initialResults = [] }: Par
           onClick={() => setShowCreate((v) => !v)}
           className="inline-flex items-center gap-1 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700"
         >
-          <Activity className="h-3 w-3" /> Tạo yêu cầu mới
+          <Activity className="h-3 w-3" /> {t("newRequest")}
           {showCreate ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
         </button>
         <button
@@ -129,7 +132,7 @@ export default function ParaclinicalPanel({ recordId, initialResults = [] }: Par
           onClick={() => setShowAi((v) => !v)}
           className="inline-flex items-center gap-1 rounded-md border border-indigo-300 bg-white px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-50"
         >
-          <Brain className="h-3 w-3" /> Gợi ý AI (OCT)
+          <Brain className="h-3 w-3" /> {t("aiSuggestion")}
           {showAi ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
         </button>
       </div>
@@ -165,6 +168,8 @@ function CreateLabRequestForm({
   recordId: string
   onCreated: () => void | Promise<void>
 }) {
+  const t = useTranslations("doctor.paraclinical")
+  const tCommon = useTranslations("common")
   const [labType, setLabType] = useState<LabType>("OCT")
   const [side, setSide] = useState<LabSide>("OD")
   const [indication, setIndication] = useState("")
@@ -176,6 +181,19 @@ function CreateLabRequestForm({
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const LAB_TYPES: { value: LabType; label: string }[] = [
+    { value: "OCT", label: t("labTypes.OCT") },
+    { value: "VISUAL_FIELD", label: t("labTypes.VISUAL_FIELD") },
+    { value: "ULTRASOUND", label: t("labTypes.ULTRASOUND") },
+    { value: "GENERAL_LAB", label: t("labTypes.GENERAL_LAB") }
+  ]
+
+  const SIDES: { value: LabSide; label: string }[] = [
+    { value: "OD", label: t("sides.OD") },
+    { value: "OS", label: t("sides.OS") },
+    { value: "BOTH", label: t("sides.BOTH") }
+  ]
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     setSubmitting(true)
@@ -184,7 +202,7 @@ function CreateLabRequestForm({
     try {
       parsedMeasurements = measurements.trim() ? JSON.parse(measurements) : {}
     } catch {
-      setError("Measurements phải là JSON hợp lệ")
+      setError("Measurements must be valid JSON")
       setSubmitting(false)
       return
     }
@@ -202,13 +220,13 @@ function CreateLabRequestForm({
         measurements: parsedMeasurements
       })
       if (!resp?.data?.isSuccess) {
-        setError(resp?.codeMessage ?? "Tạo yêu cầu thất bại")
+        setError(resp?.codeMessage ?? tCommon("error"))
         setSubmitting(false)
         return
       }
       await onCreated()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Lỗi không xác định")
+      setError(err instanceof Error ? err.message : tCommon("error"))
     } finally {
       setSubmitting(false)
     }
@@ -218,15 +236,15 @@ function CreateLabRequestForm({
     <form onSubmit={onSubmit} className="space-y-3 rounded-md border border-gray-200 bg-white p-3">
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         <div>
-          <label className={labelClass}>Loại</label>
+          <label className={labelClass}>Type</label>
           <select value={labType} onChange={(e) => setLabType(e.target.value as LabType)} className={inputClass}>
-            {LAB_TYPES.map((t) => (
-              <option key={t.value} value={t.value}>{t.label}</option>
+            {LAB_TYPES.map((lt) => (
+              <option key={lt.value} value={lt.value}>{lt.label}</option>
             ))}
           </select>
         </div>
         <div>
-          <label className={labelClass}>Bên mắt</label>
+          <label className={labelClass}>Eye side</label>
           <select value={side} onChange={(e) => setSide(e.target.value as LabSide)} className={inputClass}>
             {SIDES.map((s) => (
               <option key={s.value} value={s.value}>{s.label}</option>
@@ -234,23 +252,23 @@ function CreateLabRequestForm({
           </select>
         </div>
         <div>
-          <label className={labelClass}>Chỉ định (ICD-10 / mô tả)</label>
+          <label className={labelClass}>Indication (ICD-10 / description)</label>
           <input value={indication} onChange={(e) => setIndication(e.target.value)} className={inputClass} />
         </div>
         <div>
-          <label className={labelClass}>Tên máy</label>
+          <label className={labelClass}>Machine name</label>
           <input value={machineName} onChange={(e) => setMachineName(e.target.value)} className={inputClass} />
         </div>
         <div>
-          <label className={labelClass}>Mẫu chụp (Scan pattern)</label>
+          <label className={labelClass}>Scan pattern</label>
           <input value={scanPattern} onChange={(e) => setScanPattern(e.target.value)} className={inputClass} />
         </div>
         <div>
-          <label className={labelClass}>URL ảnh (nếu có)</label>
+          <label className={labelClass}>Image URL (optional)</label>
           <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} className={inputClass} />
         </div>
         <div className="md:col-span-3">
-          <label className={labelClass}>Measurements (JSON — vd: rnflAverageOd, cmtOd, axialLengthMm…)</label>
+          <label className={labelClass}>Measurements (JSON — e.g. rnflAverageOd, cmtOd, axialLengthMm…)</label>
           <textarea
             value={measurements}
             onChange={(e) => setMeasurements(e.target.value)}
@@ -259,7 +277,7 @@ function CreateLabRequestForm({
           />
         </div>
         <div className="md:col-span-3">
-          <label className={labelClass}>Kết luận lâm sàng</label>
+          <label className={labelClass}>Clinical conclusion</label>
           <textarea
             value={clinicalConclusion}
             onChange={(e) => setClinicalConclusion(e.target.value)}
@@ -278,7 +296,7 @@ function CreateLabRequestForm({
           className="inline-flex items-center gap-1 rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
         >
           {submitting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Activity className="h-3 w-3" />}
-          Tạo yêu cầu
+          {submitting ? "..." : t("newRequest")}
         </button>
       </div>
     </form>
@@ -295,6 +313,8 @@ function AiSuggestionForm({
   recordId: string
   onCompleted: () => void
 }) {
+  const t = useTranslations("doctor.paraclinical")
+  const tCommon = useTranslations("common")
   const [file, setFile] = useState<File | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState<AiSuggestResponse | null>(null)
@@ -309,13 +329,13 @@ function AiSuggestionForm({
     try {
       const resp = await aiSuggestionService.suggest({ file, recordId })
       if (!resp?.data?.isSuccess) {
-        setError(resp?.codeMessage ?? "AI service không trả về kết quả hợp lệ")
+        setError(resp?.codeMessage ?? t("aiFailed"))
         return
       }
       setResult(resp.data)
       onCompleted()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Lỗi khi gọi AI")
+      setError(err instanceof Error ? err.message : tCommon("error"))
     } finally {
       setSubmitting(false)
     }
@@ -326,7 +346,7 @@ function AiSuggestionForm({
       <div className="flex items-center gap-2">
         <Brain className="h-4 w-4 text-indigo-600" />
         <p className="text-xs text-gray-700">
-          Upload ảnh OCT (JPEG / PNG / BMP, ≤10MB). AI service sẽ phân loại:{" "}
+          Upload OCT image (JPEG / PNG / BMP, ≤10MB). AI service will classify:{" "}
           <strong>CNV / DME / DRUSEN / NORMAL</strong>.
         </p>
       </div>
@@ -343,9 +363,13 @@ function AiSuggestionForm({
         <div className="rounded-md border border-indigo-100 bg-indigo-50/50 p-3 text-xs">
           <div className="flex items-center gap-2">
             <Eye className="h-3 w-3 text-indigo-600" />
-            <strong className="text-indigo-800">{result.predictedClass ?? "N/A"}</strong>
+            <strong className="text-indigo-800">
+              {result.predictedClass
+                ? t(`classes.${result.predictedClass}` as any) || result.predictedClass
+                : "N/A"}
+            </strong>
             <span className="text-gray-500">
-              ({(result.confidence ?? 0) * 100 | 0}% confidence)
+              ({(result.confidence ?? 0) * 100 | 0}% {t("aiConfidence")})
             </span>
             <span className="ml-auto text-gray-400">{result.modelVersion}</span>
           </div>
@@ -353,7 +377,7 @@ function AiSuggestionForm({
             <ul className="mt-2 space-y-0.5">
               {Object.entries(result.allProbabilities).map(([cls, p]) => (
                 <li key={cls} className="flex items-center justify-between">
-                  <span>{cls}</span>
+                  <span>{t(`classes.${cls}` as any) || cls}</span>
                   <span className="font-mono">{(p * 100).toFixed(1)}%</span>
                 </li>
               ))}

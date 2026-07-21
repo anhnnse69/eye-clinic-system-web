@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import {
   Search,
   ArrowLeft,
@@ -30,19 +31,12 @@ interface PatientDemographicsListClientProps {
 
 const PAGE_SIZE = 10;
 
-const RECORD_TYPE_OPTIONS: { value: RecordTypeFilter; label: string }[] = [
-  { value: "", label: "Tất cả" },
-  { value: "MS21_TRAUMA", label: "Bệnh án mắt (Chấn thương)" },
-  { value: "MS22_ANTERIOR", label: "Bệnh án mắt (Bán phần trước)" },
-  { value: "MS23_FUNDUS", label: "Bệnh án mắt (Đáy mắt)" },
-  { value: "MS24_GLAUCOMA", label: "Bệnh án mắt (Glôcôm)" },
-  { value: "MS25_STRABISMUS_PTOSIS", label: "Bệnh án mắt (Lác, sụp mi)" },
-  { value: "MS26_PEDIATRIC", label: "Bệnh án mắt (Mắt trẻ em)" },
-];
-
 export default function PatientDemographicsListClient({
   patientProfileId,
 }: PatientDemographicsListClientProps) {
+  const t = useTranslations("doctor.demographics")
+  const tRec = useTranslations("doctor.medicalRecord")
+  const tCommon = useTranslations("doctor.common")
   const [data, setData] = useState<ViewPatientDemographicsListResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +49,16 @@ export default function PatientDemographicsListClient({
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [detailPatientId, setDetailPatientId] = useState<string | null>(null);
   const [detailPatientName, setDetailPatientName] = useState<string>("");
+
+  const RECORD_TYPE_OPTIONS: { value: RecordTypeFilter; label: string }[] = [
+    { value: "", label: t("allRecordTypes") },
+    { value: "MS21_TRAUMA", label: tRec("trauma") },
+    { value: "MS22_ANTERIOR", label: tRec("anterior") },
+    { value: "MS23_FUNDUS", label: tRec("fundus") },
+    { value: "MS24_GLAUCOMA", label: tRec("glaucoma") },
+    { value: "MS25_STRABISMUS_PTOSIS", label: tRec("strabismus") },
+    { value: "MS26_PEDIATRIC", label: tRec("pediatric") },
+  ];
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -200,16 +204,16 @@ export default function PatientDemographicsListClient({
                 <table className="w-full text-sm text-gray-600 min-w-[1200px]">
                   <thead>
                     <tr className="bg-gray-50/75 border-b border-gray-200 text-gray-700 font-semibold">
-                      <th className="px-6 py-4 text-left font-semibold">Bệnh nhân</th>
-                      <th className="px-6 py-4 text-left font-semibold">Mã bệnh án</th>
-                      <th className="px-6 py-4 text-left font-semibold">Loại</th>
-                      <th className="px-6 py-4 text-left font-semibold">Bác sĩ</th>
-                      <th className="px-6 py-4 text-left font-semibold">Ngày khám</th>
-                      <th className="px-6 py-4 text-left font-semibold">Triệu chứng</th>
-                      <th className="px-6 py-4 text-left font-semibold">Chẩn đoán</th>
-                      <th className="px-6 py-4 text-left font-semibold">Trạng thái</th>
-                      <th className="px-6 py-4 text-left font-semibold">Ngày tạo</th>
-                      <th className="px-6 py-4 text-left font-semibold">Thao tác</th>
+                      <th className="px-6 py-4 text-left font-semibold">{tCommon("patient")}</th>
+                      <th className="px-6 py-4 text-left font-semibold">{t("table.recordCode")}</th>
+                      <th className="px-6 py-4 text-left font-semibold">{t("table.recordType")}</th>
+                      <th className="px-6 py-4 text-left font-semibold">{t("table.doctor")}</th>
+                      <th className="px-6 py-4 text-left font-semibold">{t("table.examDate")}</th>
+                      <th className="px-6 py-4 text-left font-semibold">{t("table.symptoms")}</th>
+                      <th className="px-6 py-4 text-left font-semibold">{t("table.diagnosis")}</th>
+                      <th className="px-6 py-4 text-left font-semibold">{t("table.status")}</th>
+                      <th className="px-6 py-4 text-left font-semibold">{t("table.createdAt")}</th>
+                      <th className="px-6 py-4 text-left font-semibold">{tCommon("actions")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">

@@ -1,14 +1,22 @@
 "use client"
 
 /**
- * TongKetBenhAnSections — Form cho phần "B. TỔNG KẾT BỆNH ÁN" (trang cuối)
- * của biểu mẫu giấy Bộ Y tế.
+ * TongKetBenhAnSections — Phần "Tổng kết bệnh án" rút gọn cho khám NGOẠI TRÚ.
  *
- * Áp dụng cho cả 6 mẫu MS21-26. Format cho MS24 Glôcôm có một số item riêng
- * (chẩn đoán khi ra viện MP/MT + Phương pháp điều trị + Hướng ĐT tiếp theo).
+ * Đã lược bỏ phần nội trú nặng (yêu cầu 2026-07-20):
+ *  - Bảng ngày PT/TT (chỉ giữ đơn thuốc ở PrescriptionSection)
+ *  - Bảng hồ sơ phim ảnh lưu trữ
+ *  - Ký tên "Người giao / Người nhận hồ sơ"
+ *  - Bảng thị lực ra viện riêng (chuyển sang phần Tổng kết dạng text)
+ *
+ * Giữ lại cho khám ngoại trú:
+ *  - Chẩn đoán cuối (lâm sàng + nguyên nhân)
+ *  - Hướng điều trị tiếp theo (text)
+ *  - MS24 — phần riêng của Glôcôm (chẩn đoán MP/MT + phương pháp điều trị)
  */
-import { useFormContext, useFieldArray } from "react-hook-form"
+import { useFormContext } from "react-hook-form"
 import type { MedicalRecordFormDataPayload, MedicalRecordType } from "@/types"
+import { useTranslations } from "next-intl"
 
 const inputClass =
   "w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 print:border-gray-400 print:py-1 print:text-[11px]"
@@ -23,26 +31,21 @@ interface Props {
 }
 
 export default function TongKetBenhAnSections({ recordType }: Props) {
-  const { control, register } = useFormContext<MedicalRecordFormDataPayload>()
-  const { fields: ngayPTFields, append: appendNgayPT } = useFieldArray({
-    control,
-    name: "benhAn.tongKetBenhAn.ngayPTs" as any,
-  })
-  const { fields: hoSoFields, append: appendHoSo } = useFieldArray({
-    control,
-    name: "benhAn.tongKetBenhAn.hoSoPhimAnh" as any,
-  })
+  const { register } = useFormContext<MedicalRecordFormDataPayload>()
+  const tForm = useTranslations("form")
 
   const isMS24 = recordType === "MS24_GLAUCOMA"
 
   return (
-    <div className={sectionBoxClass}>
-      <h3 className={titleClass}>B. TỔNG KẾT BỆNH ÁN</h3>
+    <div className={sectionBoxClass} id="tong-ket">
+      <h3 className={titleClass}>{tForm("summary.title")}</h3>
 
-      {/* MS24 Glôcôm — Chẩn đoán khi ra viện MP/MT riêng (đặc trưng của MS24) */}
+      {/* MS24 Glôcôm — Chẩn đoán khi ra viện MP/MT riêng */}
       {isMS24 && (
         <div className="mb-4 rounded-md bg-amber-50 border border-amber-200 p-3">
-          <h4 className="mb-2 text-xs font-semibold text-amber-800">Chẩn đoán khi ra viện (MS24 — Glôcôm)</h4>
+          <h4 className="mb-2 text-xs font-semibold text-amber-800">
+            Chẩn đoán khi ra viện (MS24 — Glôcôm)
+          </h4>
           <div className="grid grid-cols-1 gap-2 md:grid-cols-2 print:grid-cols-2">
             <div>
               <label className={labelClass}>Mắt phải (Chẩn đoán)</label>
@@ -78,12 +81,12 @@ export default function TongKetBenhAnSections({ recordType }: Props) {
         </div>
       )}
 
-      {/* 1. Chẩn đoán bệnh chính */}
+      {/* Chẩn đoán cuối */}
       <div className="space-y-2">
-        <h4 className={titleClass}>1. Chẩn đoán bệnh chính</h4>
+        <h4 className={titleClass}>{tForm("summary.mainDiagnosis")}</h4>
         <div className="grid grid-cols-1 gap-2 md:grid-cols-2 print:grid-cols-2">
           <div>
-            <label className={labelClass}>Lâm sàng</label>
+            <label className={labelClass}>{tForm("summary.clinical")}</label>
             <textarea
               {...register("benhAn.tongKetBenhAn.chanDoanBenhChinhLamSang" as any)}
               className={inputClass}
@@ -91,7 +94,7 @@ export default function TongKetBenhAnSections({ recordType }: Props) {
             />
           </div>
           <div>
-            <label className={labelClass}>Nguyên nhân</label>
+            <label className={labelClass}>{tForm("summary.cause")}</label>
             <textarea
               {...register("benhAn.tongKetBenhAn.chanDoanBenhChinhNguyenNhan" as any)}
               className={inputClass}
@@ -101,163 +104,14 @@ export default function TongKetBenhAnSections({ recordType }: Props) {
         </div>
       </div>
 
-      {/* 2. Quá trình điều trị */}
+      {/* Hướng điều trị tiếp */}
       <div className="mt-4 space-y-2">
-        <h4 className={titleClass}>2. Quá trình điều trị</h4>
-        <div>
-          <label className={labelClass}>Nội khoa</label>
-          <textarea
-            {...register("benhAn.tongKetBenhAn.quaTrinhDTNoiKhoa" as any)}
-            className={inputClass}
-            rows={3}
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <input
-            id="phauThuat"
-            type="radio"
-            value="Phẫu thuật"
-            {...register("benhAn.tongKetBenhAn.phauThuatHayThuThuat" as any)}
-          />
-          <label htmlFor="phauThuat" className="text-xs">Phẫu thuật</label>
-          <input
-            id="thuThuat"
-            type="radio"
-            value="Thủ thuật"
-            {...register("benhAn.tongKetBenhAn.phauThuatHayThuThuat" as any)}
-          />
-          <label htmlFor="thuThuat" className="text-xs">Thủ thuật</label>
-        </div>
-
-        <div className="overflow-x-auto">
-          <label className={labelClass}>Bảng ngày phẫu thuật / thủ thuật</label>
-          <table className="w-full border-collapse text-[11px] print:text-[10px]">
-            <thead>
-              <tr className="bg-gray-100 print:bg-gray-50">
-                <th className="border border-gray-300 px-1 py-1 text-left">Ngày PT/TT</th>
-                <th className="border border-gray-300 px-1 py-1 text-left">
-                  Loại phẫu thuật / thủ thuật
-                </th>
-                <th className="border border-gray-300 px-1 py-1 text-left">Phẫu thuật viên</th>
-                <th className="border border-gray-300 px-1 py-1 print:hidden"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {ngayPTFields.map((field, idx) => (
-                <tr key={field.id}>
-                  <td className="border border-gray-300 px-1 py-1">
-                    <input
-                      {...register(`benhAn.tongKetBenhAn.ngayPTs.${idx}.ngayPT` as any)}
-                      className={inputClass}
-                    />
-                  </td>
-                  <td className="border border-gray-300 px-1 py-1">
-                    <input
-                      {...register(`benhAn.tongKetBenhAn.ngayPTs.${idx}.loaiPhauThuat` as any)}
-                      className={inputClass}
-                    />
-                  </td>
-                  <td className="border border-gray-300 px-1 py-1">
-                    <input
-                      {...register(`benhAn.tongKetBenhAn.ngayPTs.${idx}.phauThuatVien` as any)}
-                      className={inputClass}
-                    />
-                  </td>
-                  <td className="border border-gray-300 px-1 py-1 print:hidden">
-                    <button
-                      type="button"
-                      onClick={() => ngayPTFields.length > 1 && {}}
-                      className="text-xs text-red-600 hover:underline print:hidden"
-                    >
-                      {ngayPTFields.length - 1 === idx ? "+" : "X"}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <button
-          type="button"
-          onClick={() => appendNgayPT({} as any)}
-          disabled={ngayPTFields.length >= 10}
-          className="rounded-md bg-indigo-50 px-2 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-50 print:hidden"
-        >
-          + Thêm ngày PT/TT
-        </button>
-
-        <div>
-          <label className={labelClass}>Tình trạng người bệnh ra viện</label>
-          <textarea
-            {...register("benhAn.tongKetBenhAn.tinhTrangNBRaVien" as any)}
-            className={inputClass}
-            rows={3}
-          />
-        </div>
-
-        {/* Thị lực ra viện */}
-        <div className="rounded-md bg-gray-50 p-3 print:bg-white">
-          <label className={labelClass}>Thị lực ra viện</label>
-          <table className="w-full border-collapse text-[11px] print:text-[10px]">
-            <thead>
-              <tr className="bg-gray-100 print:bg-gray-50">
-                <th className="border border-gray-300 px-1 py-1"></th>
-                <th className="border border-gray-300 px-1 py-1">Mắt phải</th>
-                <th className="border border-gray-300 px-1 py-1">Mắt trái</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td className="border border-gray-300 px-1 py-1 font-medium">Không kính</td>
-                <td className="border border-gray-300 px-1 py-1">
-                  <input
-                    {...register("benhAn.tongKetBenhAn.thiLucRVKhongKinhMP" as any)}
-                    className={inputClass}
-                  />
-                </td>
-                <td className="border border-gray-300 px-1 py-1">
-                  <input
-                    {...register("benhAn.tongKetBenhAn.thiLucRVKhongKinhMT" as any)}
-                    className={inputClass}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td className="border border-gray-300 px-1 py-1 font-medium">Có kính</td>
-                <td className="border border-gray-300 px-1 py-1">
-                  <input
-                    {...register("benhAn.tongKetBenhAn.thiLucRVCoKinhMP" as any)}
-                    className={inputClass}
-                  />
-                </td>
-                <td className="border border-gray-300 px-1 py-1">
-                  <input
-                    {...register("benhAn.tongKetBenhAn.thiLucRVCoKinhMT" as any)}
-                    className={inputClass}
-                  />
-                </td>
-              </tr>
-              <tr>
-                <td className="border border-gray-300 px-1 py-1 font-medium">Nhãn áp ra viện (mmHg)</td>
-                <td className="border border-gray-300 px-1 py-1">
-                  <input
-                    {...register("benhAn.tongKetBenhAn.nhanApRVMp" as any)}
-                    className={inputClass}
-                  />
-                </td>
-                <td className="border border-gray-300 px-1 py-1">
-                  <input
-                    {...register("benhAn.tongKetBenhAn.nhanApRVMt" as any)}
-                    className={inputClass}
-                  />
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        {/* MS24: Phương pháp điều trị */}
+        <h4 className={titleClass}>{tForm("summary.followUp")}</h4>
+        <textarea
+          {...register("benhAn.tongKetBenhAn.huongDTTiep" as any)}
+          className={inputClass}
+          rows={3}
+        />
         {isMS24 && (
           <div className="rounded-md bg-amber-50 p-3 print:bg-white">
             <label className={labelClass}>Phương pháp điều trị (MS24)</label>
@@ -278,119 +132,10 @@ export default function TongKetBenhAnSections({ recordType }: Props) {
             />
           </div>
         )}
-
-        {/* Hướng điều trị tiếp */}
-        <div className="space-y-1">
-          <label className={labelClass}>Hướng điều trị tiếp</label>
-          <textarea
-            {...register("benhAn.tongKetBenhAn.huongDTTiep" as any)}
-            className={inputClass}
-            rows={2}
-          />
-          {isMS24 && (
-            <div className="flex flex-wrap gap-3 text-xs">
-              <label className="inline-flex items-center gap-1">
-                <input
-                  type="checkbox"
-                  {...register("benhAn.tongKetBenhAn.huongDTTheoDoi" as any)}
-                />
-                Theo dõi
-              </label>
-              <label className="inline-flex items-center gap-1">
-                <input
-                  type="checkbox"
-                  {...register("benhAn.tongKetBenhAn.huongDTPhauThuat" as any)}
-                />
-                Phẫu thuật
-              </label>
-              <label className="inline-flex items-center gap-1">
-                <input
-                  type="checkbox"
-                  {...register("benhAn.tongKetBenhAn.huongDTLaser" as any)}
-                />
-                Laser
-              </label>
-              <label className="inline-flex items-center gap-1">
-                <input
-                  type="checkbox"
-                  {...register("benhAn.tongKetBenhAn.huongDTThuoc" as any)}
-                />
-                Thuốc
-              </label>
-            </div>
-          )}
-        </div>
-
-        {/* Bảng hồ sơ phim ảnh */}
-        <div className="mt-4">
-          <label className={labelClass}>Hồ sơ, phim, ảnh lưu trữ</label>
-          <table className="w-full border-collapse text-[11px] print:text-[10px]">
-            <thead>
-              <tr className="bg-gray-100 print:bg-gray-50">
-                <th className="border border-gray-300 px-1 py-1 text-left">Loại</th>
-                <th className="border border-gray-300 px-1 py-1">Số tờ</th>
-                <th className="border border-gray-300 px-1 py-1 print:hidden"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {hoSoFields.map((field, idx) => (
-                <tr key={field.id}>
-                  <td className="border border-gray-300 px-1 py-1">
-                    <select
-                      {...register(
-                        `benhAn.tongKetBenhAn.hoSoPhimAnh.${idx}.loai` as any,
-                      )}
-                      className={inputClass}
-                    >
-                      <option value="">—</option>
-                      <option value="X-quang">X-quang</option>
-                      <option value="CT Scanner">CT Scanner</option>
-                      <option value="Siêu âm">Siêu âm</option>
-                      <option value="Xét nghiệm">Xét nghiệm</option>
-                      <option value="Khác">Khác</option>
-                      <option value="Toàn bộ hồ sơ">Toàn bộ hồ sơ</option>
-                    </select>
-                  </td>
-                  <td className="border border-gray-300 px-1 py-1">
-                    <input
-                      {...register(
-                        `benhAn.tongKetBenhAn.hoSoPhimAnh.${idx}.soTo` as any,
-                      )}
-                      className={inputClass}
-                    />
-                  </td>
-                  <td className="border border-gray-300 px-1 py-1 print:hidden">
-                    <button
-                      type="button"
-                      onClick={() => appendHoSo({} as any)}
-                      className="rounded bg-indigo-100 px-2 py-0.5 text-[10px] hover:bg-indigo-200 print:hidden"
-                    >
-                      +
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
       </div>
 
-      {/* Ký tên cuối */}
+      {/* Bác sỹ điều trị (ký tên cuối) */}
       <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 print:grid-cols-2">
-        <div>
-          <label className={labelClass}>Người giao hồ sơ (Họ tên)</label>
-          <input
-            {...register("benhAn.tongKetBenhAn.nguoiGiaoHoSo" as any)}
-            className={inputClass}
-          />
-        </div>
-        <div>
-          <label className={labelClass}>Người nhận hồ sơ (Họ tên)</label>
-          <input
-            {...register("benhAn.tongKetBenhAn.nguoiNhanHoSo" as any)}
-            className={inputClass}
-          />
-        </div>
         <div>
           <label className={labelClass}>Bác sỹ điều trị (Họ tên)</label>
           <input

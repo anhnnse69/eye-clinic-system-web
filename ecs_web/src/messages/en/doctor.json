@@ -1,13 +1,107 @@
 {
   "doctor": {
     "title": "Doctor",
+    "sections": {
+      "dashboard": "Overview",
+      "appointments": "Appointments & Queue",
+      "medicalRecords": "Medical records",
+      "profile": "Personal"
+    },
+    "paraclinical": {
+      "title": "Paraclinical (UC42-44)",
+      "filterAll": "All",
+      "newRequest": "New request",
+      "aiSuggestion": "AI suggestion (OCT)",
+      "imageUpload": "Upload OCT image",
+      "predictNow": "Predict now",
+      "aiResult": "AI result",
+      "aiPending": "AI is processing...",
+      "aiConfidence": "Confidence",
+      "aiFailed": "AI service did not return a valid result",
+      "noResults": "No paraclinical results for this record.",
+      "labTypes": {
+        "OCT": "OCT",
+        "VISUAL_FIELD": "Visual Field",
+        "ULTRASOUND": "B-scan Ultrasound",
+        "GENERAL_LAB": "General lab"
+      },
+      "sides": {
+        "OD": "Right eye (OD)",
+        "OS": "Left eye (OS)",
+        "BOTH": "Both eyes"
+      },
+      "classes": {
+        "CNV": "CNV",
+        "DME": "DME",
+        "DRUSEN": "Drusen",
+        "NORMAL": "Normal"
+      }
+    },
+    "prescriptions": {
+      "title": "Prescriptions",
+      "noPrescriptions": "No prescriptions yet"
+    },
+    "accountInfo": {
+      "title": "Account information",
+      "subtitle": "Manage your account and security"
+    },
+    "demographics": {
+      "pageTitle": "Patient demographics",
+      "pageSubtitle": "UC 35/36 — Administrative info & medical history",
+      "loading": "Loading...",
+      "noRecords": "No records for this patient yet",
+      "table": {
+        "recordCode": "Record code",
+        "recordType": "Record type",
+        "doctor": "Doctor",
+        "examDate": "Exam date",
+        "symptoms": "Symptoms",
+        "diagnosis": "Diagnosis",
+        "status": "Status",
+        "createdAt": "Created at"
+      },
+      "allRecordTypes": "All record types",
+      "filterByType": "Filter by type",
+      "loadFailed": "Unable to load patient demographics",
+      "specialtyInfo": "Ophthalmology info"
+    },
     "dashboard": {
       "title": "Doctor Dashboard",
       "subtitle": "Today's work overview",
       "todayAppointments": "Today's Appointments",
       "completed": "Completed",
       "pending": "Pending",
-      "myPatients": "My Patients"
+      "myPatients": "My Patients",
+      "overview": "Overview",
+      "today": "Today",
+      "shiftWork": "Today's Shifts",
+      "totalShifts": "shifts",
+      "available": "available",
+      "booked": "booked",
+      "blocked": "blocked",
+      "totalPatients": "Total Patients",
+      "uniquePatients": "Unique patients",
+      "uniquePatientsDescription": "Total unique patients who completed exams with you.",
+      "trendTitle": "Activity Trend by Time Period",
+      "dateRange": "Date Range",
+      "fromDate": "From Date",
+      "toDate": "To Date",
+      "resetFilter": "Reset (Last 7 days)",
+      "appointmentsInRange": "Appointments in Range",
+      "appointmentCount": "appointments",
+      "chartByDate": "Number of appointments by date",
+      "noDataInRange": "No data in selected range.",
+      "totalAppointments": "Total appointments",
+      "completed": "Completed",
+      "syncingData": "Syncing data...",
+      "noDataFound": "No suitable data found.",
+      "depositPaid": "Deposit Paid",
+      "arrived": "Arrived",
+      "inProgress": "In Progress",
+      "noShow": "No Show",
+      "excludedCancelled": "Excluding {cancelled} cancelled",
+      "andNoShow": ", {noShow} no-show",
+      "hoànThanh": "completed"
     },
     "nav": {
       "dashboard": "Dashboard",
@@ -202,6 +296,10 @@
       "hasMedicalRecord": "Has Medical Record",
       "noMedicalRecord": "No record",
       "yearsOld": "years old",
+      "booked": "Booked",
+      "arrived": "Arrived",
+      "inProgress": "In Progress",
+      "noShow": "No Show",
       "bookingSource": {
         "online": "Online",
         "website": "Website",
@@ -215,6 +313,8 @@
       "currentQueue": "Current Queue",
       "waiting": "Waiting",
       "called": "Called",
+      "inProgress": "In Progress",
+      "cancelled": "Cancelled",
       "completed": "Completed",
       "callNext": "Call Next",
       "callPatient": "Call Patient",
@@ -348,6 +448,7 @@
       "createRecordFailed": "Failed to create medical record",
       "unknownError": "Unknown error when calling BE",
       "recordList": {
+        "listTitle": "Medical Record List",
         "allTypes": "All types",
         "searchByPatient": "Search by patient name...",
         "filters": "Filters",
@@ -470,44 +571,48 @@
       "updated": "Updated successfully",
       "appointmentConfirmed": "Appointment confirmed successfully",
       "appointmentRejected": "Appointment rejected successfully"
+    }
+  },
+  "form": {
+    "department": "Department",
+    "msTemplate": "Record template (MS)",
+    "archiveNumber": "Archive number",
+    "patientInfoFromProfile": "Patient info (from profile)",
+    "chiefComplaint": "Chief complaint",
+    "chiefComplaintPlaceholder": "Describe why the patient came in...",
+    "medicalHistory": "Medical history",
+    "medicalHistoryPlaceholder": "Disease progression, related history...",
+    "diagnosis": {
+      "title": "Diagnosis",
+      "main": "Primary diagnosis",
+      "secondary": "Secondary / comorbidity diagnosis",
+      "icdCode": "ICD code"
     },
-    "dashboard": {
-      "title": "Doctor Dashboard",
-      "subtitle": "Today's work overview",
-      "todayAppointments": "Today's Appointments",
-      "completed": "Completed",
-      "pending": "Pending",
-      "myPatients": "My Patients",
-      "overview": "Overview",
-      "today": "Today",
-      "shiftWork": "Today's Shifts",
-      "totalShifts": "shifts",
-      "available": "available",
-      "booked": "booked",
-      "blocked": "blocked",
-      "totalPatients": "Total Patients",
-      "uniquePatients": "Unique patients",
-      "uniquePatientsDescription": "Total unique patients who completed exams with you.",
-      "trendTitle": "Activity Trend by Time Period",
-      "dateRange": "Date Range",
-      "fromDate": "From Date",
-      "toDate": "To Date",
-      "resetFilter": "Reset (Last 7 days)",
-      "appointmentsInRange": "Appointments in Range",
-      "appointmentCount": "appointments",
-      "chartByDate": "Number of appointments by date",
-      "noDataInRange": "No data in selected range.",
-      "totalAppointments": "Total appointments",
-      "completed": "Completed",
-      "syncingData": "Syncing data...",
-      "noDataFound": "No suitable data found.",
-      "depositPaid": "Deposit Paid",
-      "arrived": "Arrived",
-      "inProgress": "In Progress",
-      "noShow": "No Show",
-      "excludedCancelled": "Excluding {cancelled} cancelled",
-      "andNoShow": ", {noShow} no-show",
-      "hoànThanh": "completed"
+    "prescription": {
+      "title": "Prescription",
+      "quickAdd": "Quick add",
+      "printPrescription": "Print prescription",
+      "date": "Prescription date",
+      "doctor": "Prescribing doctor",
+      "doctorCode": "Doctor code",
+      "patientName": "Patient name",
+      "age": "Age",
+      "diagnosis": "Diagnosis",
+      "emptyState": "No medications yet. Click \"Add drug\" to start.",
+      "addDrug": "Add drug",
+      "instructions": "Instructions",
+      "followUpDate": "Follow-up date",
+      "valueVnd": "Prescription value (VND)",
+      "generalNote": "General notes",
+      "headers": {
+        "no": "No.",
+        "drugName": "Drug name",
+        "dosage": "Dosage",
+        "quantity": "Quantity",
+        "usage": "Usage",
+        "purchaseQty": "Purchase qty",
+        "unit": "Unit"
+      }
     }
   }
 }

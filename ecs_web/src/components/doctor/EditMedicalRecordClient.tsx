@@ -30,11 +30,11 @@ import {
 import UniversalEyeExamSections from "./medical-record-form/UniversalEyeExamSections"
 import SubspecialtySections from "./medical-record-form/SubspecialtySections"
 import GlaucomaFormSections from "./medical-record-form/GlaucomaFormSections"
-import HanhChinhQuanLyNBSections from "./medical-record-form/HanhChinhQuanLyNBSections"
-import ChanDoanTinhTrangRaVienSections from "./medical-record-form/ChanDoanTinhTrangRaVienSections"
+import PatientManagementSections from "./medical-record-form/PatientManagementSections"
+import DiagnosisDischargeSections from "./medical-record-form/DiagnosisDischargeSections"
 import TongKetBenhAnSections from "./medical-record-form/TongKetBenhAnSections"
-import TheoDoiDieuTriTable from "./medical-record-form/TheoDoiDieuTriTable"
-import PhieuPhauThuatForm from "./medical-record-form/PhieuPhauThuatForm"
+import TreatmentProgressTable from "./medical-record-form/TreatmentProgressTable"
+import SurgeryForm from "./medical-record-form/SurgeryForm"
 import { getAccentForRecordType } from "./medical-record-form/SectionHeading"
 import ParaclinicalPanel from "./ParaclinicalPanel"
 
@@ -315,7 +315,7 @@ export default function EditMedicalRecordClient({
 
         {/* I. HÀNH CHÍNH */}
         <section id="hanh-chinh">
-          <HanhChinhQuanLyNBSections recordType={recordType} />
+          <PatientManagementSections recordType={recordType} />
         </section>
 
         {/* A. BỆNH ÁN */}
@@ -334,20 +334,20 @@ export default function EditMedicalRecordClient({
 
         {/* IV. CHẨN ĐOÁN MÃ ICD */}
         <section id="chan-doan">
-          <ChanDoanTinhTrangRaVienSections />
+          <DiagnosisDischargeSections />
         </section>
 
         {/* MS22: Theo dõi điều trị */}
         {recordType === "MS22_ANTERIOR" && (
           <section id="theo-doi-dieu-tri">
-            <TheoDoiDieuTriTable />
+            <TreatmentProgressTable />
           </section>
         )}
 
         {/* MS22: Phiếu Phẫu thuật */}
         {recordType === "MS22_ANTERIOR" && (
           <section id="phieu-phau-thuat">
-            <PhieuPhauThuatForm />
+            <SurgeryForm />
           </section>
         )}
 

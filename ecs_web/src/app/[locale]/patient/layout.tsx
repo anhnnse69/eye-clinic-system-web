@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server"
 import { Sidebar, type NavSection } from "@/components/layout/Sidebar"
 import { authService } from "@/services/auth.service"
 import { cookies } from "next/headers"
+import { useActiveLocale } from "@/lib/locale"
 
 export default async function PatientLayout({
   children,
@@ -12,6 +13,7 @@ export default async function PatientLayout({
   params: Promise<{ locale: string }>
 }) {
   const { locale } = await params
+  await useActiveLocale(locale)
   const cookieStore = await cookies()
   const token = cookieStore.get("auth_token")?.value
 
@@ -42,6 +44,7 @@ export default async function PatientLayout({
 
   const t = await getTranslations("patient")
   const tNav = await getTranslations("patient.nav")
+  const tFooter = await getTranslations("footer")
 
   const sections: NavSection[] = [
     {
@@ -64,7 +67,7 @@ export default async function PatientLayout({
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar sections={sections} logo="Eye Clinic Support System" role={t("title")} />
+      <Sidebar sections={sections} logo="Eye Clinic Support System" role={t("title")} copyrightText={tFooter("copyright")} />
       <main className="flex-1 p-gutter overflow-y-auto">{children}</main>
     </div>
   )

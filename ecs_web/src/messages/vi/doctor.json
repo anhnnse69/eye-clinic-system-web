@@ -1,13 +1,107 @@
 {
   "doctor": {
     "title": "Bác sĩ",
+    "sections": {
+      "dashboard": "Tổng quan",
+      "appointments": "Lịch hẹn & Khám",
+      "medicalRecords": "Hồ sơ bệnh án",
+      "profile": "Cá nhân"
+    },
+    "paraclinical": {
+      "title": "Cận lâm sàng (UC42-44)",
+      "filterAll": "Tất cả",
+      "newRequest": "Tạo yêu cầu mới",
+      "aiSuggestion": "Gợi ý AI (OCT)",
+      "imageUpload": "Tải ảnh OCT",
+      "predictNow": "Dự đoán ngay",
+      "aiResult": "Kết quả AI",
+      "aiPending": "AI đang xử lý...",
+      "aiConfidence": "Độ tin cậy",
+      "aiFailed": "AI service không trả về kết quả hợp lệ",
+      "noResults": "Chưa có yêu cầu cận lâm sàng nào cho hồ sơ này.",
+      "labTypes": {
+        "OCT": "OCT (Cắt lớp võng mạc)",
+        "VISUAL_FIELD": "Thị trường (Visual Field)",
+        "ULTRASOUND": "Siêu âm B-scan",
+        "GENERAL_LAB": "Xét nghiệm khác"
+      },
+      "sides": {
+        "OD": "Mắt phải (OD)",
+        "OS": "Mắt trái (OS)",
+        "BOTH": "Hai mắt"
+      },
+      "classes": {
+        "CNV": "CNV",
+        "DME": "DME",
+        "DRUSEN": "Drusen",
+        "NORMAL": "Bình thường"
+      }
+    },
+    "prescriptions": {
+      "title": "Đơn thuốc",
+      "noPrescriptions": "Chưa có đơn thuốc nào"
+    },
+    "accountInfo": {
+      "title": "Thông tin tài khoản",
+      "subtitle": "Quản lý tài khoản và bảo mật"
+    },
+    "demographics": {
+      "pageTitle": "Hồ sơ dân số học bệnh nhân",
+      "pageSubtitle": "UC 35/36 — Quản lý thông tin hành chính & tiền sử y khoa",
+      "loading": "Đang tải...",
+      "noRecords": "Chưa có bệnh án nào cho bệnh nhân này",
+      "table": {
+        "recordCode": "Mã bệnh án",
+        "recordType": "Loại bệnh án",
+        "doctor": "Bác sĩ",
+        "examDate": "Ngày khám",
+        "symptoms": "Triệu chứng",
+        "diagnosis": "Chẩn đoán",
+        "status": "Trạng thái",
+        "createdAt": "Ngày tạo"
+      },
+      "allRecordTypes": "Tất cả loại bệnh án",
+      "filterByType": "Lọc theo loại",
+      "loadFailed": "Không thể tải hồ sơ bệnh nhân",
+      "specialtyInfo": "Thông tin chuyên khoa mắt"
+    },
     "dashboard": {
       "title": "Dashboard Bác sĩ",
       "subtitle": "Tổng quan ngày làm việc",
       "todayAppointments": "Lịch hẹn hôm nay",
       "completed": "Đã khám xong",
       "pending": "Đang chờ",
-      "myPatients": "Bệnh nhân của tôi"
+      "myPatients": "Bệnh nhân của tôi",
+      "overview": "Tổng quan",
+      "today": "Hôm nay",
+      "shiftWork": "Ca làm việc hôm nay",
+      "totalShifts": "ca trực",
+      "available": "trống",
+      "booked": "đã đặt",
+      "blocked": "khóa",
+      "totalPatients": "Tổng bệnh nhân",
+      "uniquePatients": "Bệnh nhân duy nhất",
+      "uniquePatientsDescription": "Tổng số bệnh nhân duy nhất đã hoàn thành khám với bạn.",
+      "trendTitle": "Xu hướng hoạt động theo khoảng thời gian",
+      "dateRange": "Khoảng ngày",
+      "fromDate": "Từ ngày",
+      "toDate": "Đến ngày",
+      "resetFilter": "Đặt lại (7 ngày gần nhất)",
+      "appointmentsInRange": "Lịch hẹn trong khoảng",
+      "appointmentCount": "lịch hẹn",
+      "chartByDate": "Số lượng lịch hẹn theo ngày",
+      "noDataInRange": "Chưa có dữ liệu trong khoảng đã chọn.",
+      "totalAppointments": "Tổng lịch hẹn",
+      "completed": "Hoàn thành",
+      "syncingData": "Đang đồng bộ số liệu...",
+      "noDataFound": "Không tìm thấy dữ liệu phù hợp.",
+      "depositPaid": "Đã đặt cọc",
+      "arrived": "Đã đến",
+      "inProgress": "Đang khám",
+      "noShow": "Không đến",
+      "excludedCancelled": "Không tính {cancelled} đã hủy",
+      "andNoShow": ", {noShow} không đến",
+      "hoànThanh": "hoàn thành"
     },
     "nav": {
       "dashboard": "Dashboard",
@@ -202,6 +296,10 @@
       "hasMedicalRecord": "Có bệnh án",
       "noMedicalRecord": "Chưa có",
       "yearsOld": "tuổi",
+      "booked": "Đã đặt lịch",
+      "arrived": "Đã đến",
+      "inProgress": "Đang khám",
+      "noShow": "Không đến",
       "bookingSource": {
         "online": "Online",
         "website": "Website",
@@ -215,6 +313,8 @@
       "currentQueue": "Hàng chờ hiện tại",
       "waiting": "Đang chờ",
       "called": "Đã gọi",
+      "inProgress": "Đang khám",
+      "cancelled": "Đã hủy",
       "completed": "Đã hoàn thành",
       "callNext": "Gọi tiếp",
       "callPatient": "Gọi bệnh nhân",
@@ -345,6 +445,7 @@
       "createRecordFailed": "Tạo bệnh án thất bại",
       "unknownError": "Lỗi không xác định khi gọi BE",
       "recordList": {
+        "listTitle": "Danh sách bệnh án",
         "allTypes": "Tất cả loại",
         "searchByPatient": "Tìm theo tên bệnh nhân...",
         "filters": "Bộ lọc",
@@ -467,44 +568,48 @@
       "updated": "Cập nhật thành công",
       "appointmentConfirmed": "Xác nhận lịch hẹn thành công",
       "appointmentRejected": "Từ chối lịch hẹn thành công"
+    }
+  },
+  "form": {
+    "department": "Khoa",
+    "msTemplate": "Mẫu bệnh án (MS)",
+    "archiveNumber": "Số lưu trữ",
+    "patientInfoFromProfile": "Thông tin bệnh nhân (từ hồ sơ)",
+    "chiefComplaint": "Lý do vào viện",
+    "chiefComplaintPlaceholder": "Mô tả lý do bệnh nhân đến khám...",
+    "medicalHistory": "Bệnh sử",
+    "medicalHistoryPlaceholder": "Diễn biến bệnh, tiền sử liên quan...",
+    "diagnosis": {
+      "title": "Chẩn đoán",
+      "main": "Chẩn đoán chính",
+      "secondary": "Chẩn đoán phụ / kèm theo",
+      "icdCode": "Mã ICD"
     },
-    "dashboard": {
-      "title": "Dashboard Bác sĩ",
-      "subtitle": "Tổng quan ngày làm việc",
-      "todayAppointments": "Lịch hẹn hôm nay",
-      "completed": "Hoàn thành",
-      "pending": "Chờ",
-      "myPatients": "Bệnh nhân của tôi",
-      "overview": "Tổng quan",
-      "today": "Hôm nay",
-      "shiftWork": "Ca làm việc hôm nay",
-      "totalShifts": "ca trực",
-      "available": "trống",
-      "booked": "đã đặt",
-      "blocked": "khóa",
-      "totalPatients": "Tổng bệnh nhân",
-      "uniquePatients": "Bệnh nhân duy nhất",
-      "uniquePatientsDescription": "Tổng số bệnh nhân duy nhất đã hoàn thành khám với bạn.",
-      "trendTitle": "Xu hướng hoạt động theo khoảng thời gian",
-      "dateRange": "Khoảng ngày",
-      "fromDate": "Từ ngày",
-      "toDate": "Đến ngày",
-      "resetFilter": "Đặt lại (7 ngày gần nhất)",
-      "appointmentsInRange": "Lịch hẹn trong khoảng",
-      "appointmentCount": "lịch hẹn",
-      "chartByDate": "Số lượng lịch hẹn theo ngày",
-      "noDataInRange": "Chưa có dữ liệu trong khoảng đã chọn.",
-      "totalAppointments": "Tổng lịch hẹn",
-      "completed": "Hoàn thành",
-      "syncingData": "Đang đồng bộ số liệu...",
-      "noDataFound": "Không tìm thấy dữ liệu phù hợp.",
-      "depositPaid": "Đã đặt cọc",
-      "arrived": "Đã đến",
-      "inProgress": "Đang khám",
-      "noShow": "Không đến",
-      "excludedCancelled": "Không tính {cancelled} đã hủy",
-      "andNoShow": ", {noShow} không đến",
-      "hoànThanh": "hoàn thành"
+    "prescription": {
+      "title": "Đơn thuốc",
+      "quickAdd": "Thêm nhanh",
+      "printPrescription": "In đơn thuốc",
+      "date": "Ngày kê đơn",
+      "doctor": "Bác sĩ kê đơn",
+      "doctorCode": "Mã số bác sĩ",
+      "patientName": "Họ tên bệnh nhân",
+      "age": "Tuổi",
+      "diagnosis": "Chẩn đoán",
+      "emptyState": "Chưa có thuốc nào trong đơn. Nhấn \"Thêm thuốc\" để bắt đầu.",
+      "addDrug": "Thêm thuốc",
+      "instructions": "Lời dặn",
+      "followUpDate": "Ngày tái khám",
+      "valueVnd": "Giá trị đơn thuốc (VND)",
+      "generalNote": "Ghi chú chung",
+      "headers": {
+        "no": "STT",
+        "drugName": "Tên thuốc",
+        "dosage": "Hàm lượng",
+        "quantity": "Số lượng",
+        "usage": "Cách dùng",
+        "purchaseQty": "SL mua",
+        "unit": "Đơn vị"
+      }
     }
   }
 }

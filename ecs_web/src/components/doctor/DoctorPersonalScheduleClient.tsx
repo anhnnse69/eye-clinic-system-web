@@ -69,7 +69,7 @@ export default function DoctorPersonalScheduleClient({
 }) {
   const t = useTranslations("doctor")
   const tSchedule = useTranslations("doctor.schedule")
-  const tPersonal = useTranslations("doctor.schedule.personalSchedule")
+  const tPersonal = useTranslations("doctor.personalSchedule")
 
   const todayStr = toLocalDateString(new Date());
 

@@ -1,12 +1,12 @@
 "use client"
 
 /**
- * TheoDoiDieuTriTable — Bảng "PHẦN THEO DÕI ĐIỀU TRỊ" trang 8-9 của biểu mẫu MS22 Bộ Y tế.
+ * TreatmentProgressTable — Table "TREATMENT PROGRESS" (Section 8-9 of MS22 Ministry of Health form).
  *
- * Cấu trúc 3 cột x ~30 dòng:
- *   Ngày giờ | Diễn biến bệnh | Y lệnh
+ * 3-column structure with ~30 rows:
+ *   Date/Time | Clinical Progress | Medical Orders
  *
- * Dùng `useFieldArray` để quản lý mảng dòng.
+ * Uses `useFieldArray` to manage dynamic rows.
  */
 import { useFieldArray, useFormContext } from "react-hook-form"
 import type { MedicalRecordFormDataPayload } from "@/types"
@@ -19,7 +19,7 @@ const sectionBoxClass =
   "rounded-lg border border-gray-200 bg-white p-4 print:break-inside-avoid print:border-gray-400 print:mb-2"
 const titleClass = "mb-3 text-sm font-semibold text-gray-800 print:text-black"
 
-export default function TheoDoiDieuTriTable() {
+export default function TreatmentProgressTable() {
   const { control, register } = useFormContext<MedicalRecordFormDataPayload>()
   const { fields, append, remove } = useFieldArray({
     control,
@@ -29,9 +29,9 @@ export default function TheoDoiDieuTriTable() {
   return (
     <div className={sectionBoxClass}>
       <h3 className={titleClass}>
-        PHẦN THEO DÕI ĐIỀU TRỊ
+        TREATMENT PROGRESS
         <span className="ml-2 text-xs font-normal text-gray-600">
-          (Bảng 3 cột — Ngày giờ / Diễn biến bệnh / Y lệnh)
+          (3 columns — Date/Time / Clinical Progress / Medical Orders)
         </span>
       </h3>
 
@@ -40,13 +40,13 @@ export default function TheoDoiDieuTriTable() {
           <thead>
             <tr className="bg-gray-100 print:bg-gray-50">
               <th className="w-32 border border-gray-300 px-1 py-1 text-left">
-                Ngày giờ
+                Date/Time
               </th>
               <th className="border border-gray-300 px-1 py-1 text-left">
-                Diễn biến bệnh
+                Clinical Progress
               </th>
               <th className="border border-gray-300 px-1 py-1 text-left">
-                Y lệnh
+                Medical Orders
               </th>
               <th className="w-12 border border-gray-300 px-1 py-1 print:hidden" />
             </tr>
@@ -59,7 +59,7 @@ export default function TheoDoiDieuTriTable() {
                     rows={2}
                     {...register(`benhAn.theoDoiDieuTri.${idx}.ngayGio` as any)}
                     className={inputClass}
-                    placeholder="vd: 8h 1/7"
+                    placeholder="e.g.: 8:00 AM 1/7"
                   />
                 </td>
                 <td className="border border-gray-300 px-1 py-1 align-top">
@@ -82,7 +82,7 @@ export default function TheoDoiDieuTriTable() {
                     onClick={() => remove(idx)}
                     className="text-[10px] text-red-600 hover:underline"
                   >
-                    Xóa
+                    Delete
                   </button>
                 </td>
               </tr>
@@ -90,7 +90,7 @@ export default function TheoDoiDieuTriTable() {
             {fields.length === 0 && (
               <tr>
                 <td colSpan={4} className="border border-gray-300 px-2 py-3 text-center text-xs text-gray-500">
-                  Chưa có dòng theo dõi. Bấm <strong>+ Thêm dòng theo dõi</strong> để bắt đầu.
+                  No progress entries yet. Click <strong>+ Add row</strong> to start.
                 </td>
               </tr>
             )}
@@ -105,10 +105,10 @@ export default function TheoDoiDieuTriTable() {
           disabled={fields.length >= 60}
           className="rounded-md bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
         >
-          + Thêm dòng theo dõi
+          + Add row
         </button>
         <span className="text-xs text-gray-600">
-          Đã có {fields.length} dòng (tối đa 60)
+          {fields.length} row(s) (max 60)
         </span>
         <button
           type="button"
@@ -117,7 +117,7 @@ export default function TheoDoiDieuTriTable() {
           }}
           className="rounded-md bg-gray-100 px-3 py-1 text-xs text-gray-700 hover:bg-gray-200"
         >
-          Mặc định 30 dòng
+          Default 30 rows
         </button>
       </div>
     </div>

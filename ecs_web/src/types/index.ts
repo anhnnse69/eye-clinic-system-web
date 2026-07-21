@@ -1850,6 +1850,32 @@ export interface MedicalRecordBenhAnPayload {
   treEmTrieuChungChinh?: Maybe<string>
 
 
+  /** Don thuoc (V. Ke don) */
+  prescription?: {
+    ngayKeDon?: Maybe<string>
+    bacSiKeDon?: Maybe<string>
+    maSoBacSi?: Maybe<string>
+    benhNhanHoTen?: Maybe<string>
+    benhNhanTuoi?: Maybe<string>
+    benhNhanDiaChi?: Maybe<string>
+    chanDoan?: Maybe<string>
+    items?: Array<{
+      stt?: number
+      tenThuoc?: Maybe<string>
+      hamLuong?: Maybe<string>
+      soLuong?: Maybe<string>
+      cachDung?: Maybe<string>
+      donViTinh?: Maybe<string>
+      soLuongMua?: Maybe<string>
+      ghiChu?: Maybe<string>
+    }>
+    loiDan?: Maybe<string>
+    ngayTaiKham?: Maybe<string>
+    giaTriDonThuoc?: Maybe<string>
+    ghiChuChung?: Maybe<string>
+  }
+
+
 }
 
 

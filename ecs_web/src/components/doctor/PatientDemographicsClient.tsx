@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Search,
   ChevronLeft,
@@ -66,6 +67,10 @@ export default function PatientDemographicsClient({
   appointmentId,
 }: PatientDemographicsClientProps) {
   const router = useRouter();
+  const t = useTranslations("doctor.demographics");
+  const tCommon = useTranslations("doctor.common");
+  const tGender = useTranslations("doctor.preliminaryDiagnosis");
+  const tErrors = useTranslations("doctor.errors");
 
   // ── Demographics state ──────────────────────────────────────────────
   const [demographics, setDemographics] =
@@ -514,9 +519,9 @@ export default function PatientDemographicsClient({
                     }
                     className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all cursor-pointer"
                   >
-                    <option value="">Chưa xác định</option>
-                    <option value="MALE">Nam</option>
-                    <option value="FEMALE">Nữ</option>
+                    <option value="">{tGender("other")}</option>
+                    <option value="MALE">{tGender("male")}</option>
+                    <option value="FEMALE">{tGender("female")}</option>
                   </select>
                 </div>
 
@@ -640,7 +645,7 @@ export default function PatientDemographicsClient({
                     }
                     className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all cursor-pointer"
                   >
-                    <option value="">Chưa xác định</option>
+                    <option value="">{tGender("other")}</option>
                     <option value="A">A</option>
                     <option value="B">B</option>
                     <option value="AB">AB</option>
@@ -934,7 +939,7 @@ export default function PatientDemographicsClient({
                 <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
                   <div className="flex items-center gap-2 text-sm text-blue-700">
                     <Eye className="w-4 h-4" />
-                    <span className="font-medium">Thông tin chuyên khoa mắt</span>
+                    <span className="font-medium">{t("specialtyInfo")}</span>
                   </div>
                   <p className="text-xs text-blue-600 mt-1 ml-6">
                     Các thông tin y tế chuyên khoa mắt sẽ được cập nhật khi bác sĩ khám và tạo bệnh án.
@@ -988,7 +993,7 @@ export default function PatientDemographicsClient({
               }}
               className="px-3.5 py-2.5 bg-gray-50 border border-gray-200/80 rounded-xl text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all appearance-none cursor-pointer"
             >
-              <option value="">Tất cả loại bệnh án</option>
+              <option value="">{t("allRecordTypes")}</option>
               {RECORD_TYPE_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
@@ -1043,14 +1048,14 @@ export default function PatientDemographicsClient({
               <table className="w-full text-sm text-gray-600 min-w-[1200px]">
                 <thead>
                   <tr className="bg-gray-50/75 border-b border-gray-200 text-gray-700 font-semibold">
-                    <th className="px-6 py-4 text-left">Mã bệnh án</th>
-                    <th className="px-6 py-4 text-left">Loại bệnh án</th>
-                    <th className="px-6 py-4 text-left">Bác sĩ</th>
-                    <th className="px-6 py-4 text-left">Ngày khám</th>
-                    <th className="px-6 py-4 text-left">Triệu chứng</th>
-                    <th className="px-6 py-4 text-left">Chẩn đoán</th>
-                    <th className="px-6 py-4 text-left">Trạng thái</th>
-                    <th className="px-6 py-4 text-left">Ngày tạo</th>
+                    <th className="px-6 py-4 text-left">{t("table.recordCode")}</th>
+                    <th className="px-6 py-4 text-left">{t("table.recordType")}</th>
+                    <th className="px-6 py-4 text-left">{t("table.doctor")}</th>
+                    <th className="px-6 py-4 text-left">{t("table.examDate")}</th>
+                    <th className="px-6 py-4 text-left">{t("table.symptoms")}</th>
+                    <th className="px-6 py-4 text-left">{t("table.diagnosis")}</th>
+                    <th className="px-6 py-4 text-left">{t("table.status")}</th>
+                    <th className="px-6 py-4 text-left">{t("table.createdAt")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">

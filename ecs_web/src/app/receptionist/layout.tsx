@@ -4,8 +4,11 @@ import { Sidebar, type NavSection } from "@/components/layout/Sidebar"
 import DashboardHeader from "@/components/layout/DashboardHeader"
 import { authService } from "@/services/auth.service"
 import { cookies } from "next/headers"
+import { useActiveLocale } from "@/lib/locale"
 
 export default async function ReceptionistLayout({ children }: { children: React.ReactNode }) {
+  await useActiveLocale()
+
   const cookieStore = await cookies()
   const token = cookieStore.get("auth_token")?.value
 
@@ -29,6 +32,8 @@ export default async function ReceptionistLayout({ children }: { children: React
 
   const t = await getTranslations("receptionist")
   const tNav = await getTranslations("receptionist.nav")
+  const tFooter = await getTranslations("footer")
+  const tCommon = await getTranslations("common")
 
   const sections: NavSection[] = [
     {
@@ -59,7 +64,7 @@ export default async function ReceptionistLayout({ children }: { children: React
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar sections={sections} logo="Eye Clinic Support System" role={t("title")} />
+      <Sidebar sections={sections} logo="Eye Clinic Support System" role={t("title")} copyrightText={tFooter("copyright")} />
       <div className="flex-1 flex flex-col min-w-0">
         <DashboardHeader
           title={t("title")}
@@ -69,6 +74,11 @@ export default async function ReceptionistLayout({ children }: { children: React
             email: userEmail,
             role: t("title"),
             avatar: null,
+          }}
+          labels={{
+            accountInfo: tCommon("userMenu.accountInfo"),
+            accountInfoSubtitle: tCommon("userMenu.accountInfoSubtitle"),
+            logout: tCommon("userMenu.logout"),
           }}
         />
         <main className="flex-1 p-gutter overflow-y-auto">{children}</main>

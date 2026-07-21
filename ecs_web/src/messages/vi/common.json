@@ -1,5 +1,19 @@
 {
   "common": {
+    "back": "Quay lại",
+    "cancel": "Huỷ",
+    "save": "Lưu",
+    "submit": "Gửi",
+    "edit": "Sửa",
+    "delete": "Xoá",
+    "confirm": "Xác nhận",
+    "loading": "Đang tải...",
+    "search": "Tìm kiếm",
+    "language": {
+      "switchTo": "Ngôn ngữ",
+      "vietnamese": "Tiếng Việt",
+      "english": "English"
+    },
     "brand": "Eye Clinic Support",
     "login": "Đăng nhập",
     "requestDemo": "Yêu cầu Demo",
@@ -42,6 +56,6 @@
     "terms": "Điều khoản dịch vụ",
     "hipaaCompliance": "Tuân thủ HIPAA",
     "accessibility": "Hỗ trợ tiếp cận",
-    "copyright": "© 2024 Eye Clinic Support. Độ chính xác trong Tầm nhìn."
+    "copyright": "© 2026 Eye Clinic Support System"
   }
 }

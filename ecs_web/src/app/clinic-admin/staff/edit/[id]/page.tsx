@@ -8,9 +8,9 @@ import { staffService } from "@/services/staff.service"
 import type { EditStaffRequest } from "@/services/staff.service"
 
 enum StaffRoleEnum {
-    DOCTOR = 0,
-    RECEPTIONIST = 1,
-    CLINIC_ADMIN = 2
+    DOCTOR = "DOCTOR",
+    RECEPTIONIST = "RECEPTIONIST",
+    CLINIC_ADMIN = "CLINIC_ADMIN"
 }
 
 export default function UpdateStaffPage() {
@@ -76,10 +76,10 @@ export default function UpdateStaffPage() {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target
-        
+
         setFormData((prev) => ({
             ...prev,
-            [name]: name === "staffRole" ? parseInt(value, 10) : value,
+            [name]: value,
         }))
     }
 

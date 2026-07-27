@@ -50,7 +50,7 @@ export interface EditStaffRequest {
     phone: string
     email: string
     fullName: string
-    staffRole: number 
+    staffRole: string
     isActive: boolean
 }
 

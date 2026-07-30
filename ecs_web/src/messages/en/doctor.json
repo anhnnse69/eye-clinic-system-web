@@ -151,6 +151,12 @@
       "afternoon": "Afternoon",
       "evening": "Evening",
       "noSchedule": "No schedule yet",
+      "back": "Back",
+      "month": "Month",
+      "year": "Year",
+      "step": "Step",
+      "next": "Next",
+      "save": "Save",
       "scheduleCreated": "Schedule created successfully",
       "scheduleUpdated": "Schedule updated successfully",
       "scheduleDeleted": "Schedule deleted successfully",
@@ -215,6 +221,7 @@
       "slot": {
         "available": "Available",
         "full": "Full",
+        "available": "Available",
         "patients": "patients",
         "unassignedRoom": "Unassigned room",
         "locked": "Locked"
@@ -229,6 +236,7 @@
     "editSchedule": {
       "title": "Edit Schedule",
       "workDate": "Work Date",
+      "cancel": "Cancel",
       "clinicRoom": "Clinic Room",
       "loading": "Loading...",
       "noRoomsAvailable": "No rooms available",
@@ -370,6 +378,7 @@
       "medications": "Current Medications",
       "previousSurgery": "Previous Surgery",
       "noPatients": "No patients yet",
+      "refresh": "Refresh",
       "listSubtitle": "View and search for patients who have booked appointments with you",
       "refresh": "Refresh",
       "allStatuses": "All statuses",

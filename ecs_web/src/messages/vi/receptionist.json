@@ -21,7 +21,8 @@
       "queue": "Hàng chờ",
       "availableSlots": "Khung giờ trống",
       "walkInRegistration": "Đăng ký khám tại chỗ",
-      "accountInfo": "Thông tin tài khoản"
+      "accountInfo": "Thông tin tài khoản",
+      "confirmAppointments": "Xác nhận lịch hẹn"
     },
     "common": {
       "add": "Thêm mới",
@@ -78,6 +79,11 @@
     },
     "appointment": {
       "title": "Lịch hẹn",
+      "subtitle": "Quản lý lịch hẹn phòng khám",
+      "refresh": "Làm mới",
+      "searchPlaceholder": "Tìm kiếm lịch hẹn...",
+      "foundResults": "Tìm thấy {count} kết quả",
+      "hasMedicalRecord": "Hồ sơ bệnh án",
       "listTitle": "Danh sách lịch hẹn",
       "todayAppointments": "Lịch hẹn hôm nay",
       "manageReception": "Quản lý Tiếp Đón & Lịch Hẹn Hàng Ngày",
@@ -89,6 +95,15 @@
       "service": "Dịch vụ",
       "symptoms": "Triệu chứng",
       "status": "Trạng thái",
+      "statusAll": "Tất cả trạng thái",
+      "statusPending": "Chờ xử lý",
+      "statusDepositPaid": "Đã cọc",
+      "statusBooked": "Đã đặt lịch",
+      "statusArrived": "Đã đến",
+      "statusInProgress": "Đang khám",
+      "statusCompleted": "Đã hoàn thành",
+      "statusCancelled": "Đã hủy",
+      "statusNoshow": "Vắng mặt",
       "checkIn": "Check-in",
       "cancel": "Hủy lịch",
       "pending": "Chờ",
@@ -170,7 +185,9 @@
       "processing": "Xử lý",
       "readyToExam": "Sẵn sàng khám",
       "present": "Có mặt",
-      "examining": "Đang khám"
+      "examining": "Đang khám",
+      "male": "Nam",
+      "female": "Nữ"
     },
     "queue": {
       "title": "Hàng chờ",
@@ -231,6 +248,18 @@
       "checkInSuccess": "Check-in thành công",
       "cancelled": "Hủy lịch thành công",
       "updated": "Cập nhật thành công"
-    }
+    },
+    "editSchedule": {
+    "title": "Chỉnh sửa lịch làm việc",
+    "cancel": "Hủy",
+    "save": "Lưu thay đổi",
+    "saving": "Đang lưu...",
+    "selectShift": "Chọn ca làm việc",
+    "selectRoom": "Chọn phòng khám",
+    "maxPatients": "Số bệnh nhân tối đa",
+    "note": "Ghi chú",
+    "success": "Cập nhật lịch làm việc thành công",
+    "error": "Không thể cập nhật lịch làm việc"
+  }
   }
 }

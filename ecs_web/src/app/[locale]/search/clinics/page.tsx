@@ -113,6 +113,9 @@ export default function SearchClinicsPage() {
     { titleVi: "3. Khám an toàn", titleEn: "3. Safe Consultation", descVi: "Được ưu tiên tại cơ sở y tế", descEn: "Get priority at clinic" }
   ];
 
+  const isSearchEmpty = clinics.length === 0 && !!searchQuery;
+  const isClinicEmpty = clinics.length === 0 && !searchQuery;
+
   return (
     <>
       <style>{`
@@ -131,7 +134,7 @@ export default function SearchClinicsPage() {
         />
 
         <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-6">
-          
+
           {/* Hàng số lượng kết quả tìm thấy */}
           {hasSearched && !isLoading && (searchQuery || clinics.length > 0) && (
             <p className="text-xs font-medium text-slate-500 mb-5 flex items-center gap-1.5">
@@ -146,10 +149,10 @@ export default function SearchClinicsPage() {
 
           {/* BỐ CỤC 2 CỘT CHÍNH */}
           <div className="flex flex-col lg:flex-row gap-6 items-start">
-            
+
             {/* CỘT TRÁI: SIDEBAR TRANG TRÍ & NÂNG CAO THƯƠNG HIỆU */}
             <aside className="w-full lg:w-[300px] shrink-0 flex flex-col gap-4 lg:sticky lg:top-24">
-              
+
               {/* Khối 1: Danh sách dịch vụ mũi nhọn (Tĩnh - Decor) */}
               <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm">
                 <h4 className="font-bold text-slate-800 text-sm flex items-center gap-2 mb-3">
@@ -218,8 +221,8 @@ export default function SearchClinicsPage() {
                     {isVI ? "Đặt lịch an tâm 100%" : "100% Verified Clinics"}
                   </h5>
                   <p className="text-[11px] text-white/80 leading-relaxed">
-                    {isVI 
-                      ? "Mọi phòng khám đều được cấp phép bởi Bộ Y Tế và có đội ngũ bác sĩ xác thực." 
+                    {isVI
+                      ? "Mọi phòng khám đều được cấp phép bởi Bộ Y Tế và có đội ngũ bác sĩ xác thực."
                       : "All medical facilities are fully licensed and certified by local authorities."}
                   </p>
                 </div>
@@ -236,16 +239,30 @@ export default function SearchClinicsPage() {
                 </div>
               )}
 
-              {!isLoading && hasSearched && clinics.length === 0 && searchQuery && (
+              {!isLoading && hasSearched && clinics.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-20 gap-3 text-center bg-white rounded-2xl border border-slate-200/80 shadow-sm">
                   <div className="w-16 h-16 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center shadow-sm">
-                    <Search className="w-7 h-7 text-slate-300" />
+                    {isSearchEmpty ? (
+                      <Search className="w-7 h-7 text-slate-300" />
+                    ) : (
+                      <ShieldAlert className="w-7 h-7 text-slate-300" />
+                    )}
                   </div>
+
                   <p className="font-semibold text-slate-600">
-                    {isVI ? "Không tìm thấy phòng khám" : "No clinics found"}
+                    {isSearchEmpty
+                      ? (isVI ? "Không tìm thấy phòng khám" : "No clinics found")
+                      : (isVI ? "Chưa có phòng khám nào" : "No clinics available")}
                   </p>
-                  <p className="text-xs text-slate-400 w-64 text-center leading-relaxed">
-                    {isVI ? "Thử lại bằng một từ khóa hoặc tên khu vực khác" : "Try searching with a different keyword or district name"}
+
+                  <p className="text-xs text-slate-400 w-72 leading-relaxed">
+                    {isSearchEmpty
+                      ? (isVI
+                        ? "Thử lại bằng một từ khóa hoặc tên khu vực khác."
+                        : "Try searching with a different keyword or district name.")
+                      : (isVI
+                        ? "Hiện tại chưa có phòng khám nào được công khai trên hệ thống."
+                        : "There are currently no published clinics available.")}
                   </p>
                 </div>
               )}

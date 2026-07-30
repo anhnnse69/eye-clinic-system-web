@@ -90,11 +90,6 @@ export default function HomeUserMenu({ accountInfoHref }: HomeUserMenuProps) {
     router.push(`/${locale}/book-appointment`)
   }
 
-  const handleNotifications = () => {
-    setOpen(false)
-    router.push(`/${locale}/patient/notifications`)
-  }
-
   const handleLogout = async () => {
     setOpen(false)
     try {

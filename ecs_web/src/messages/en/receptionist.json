@@ -21,7 +21,8 @@
       "queue": "Queue",
       "availableSlots": "Available Slots",
       "walkInRegistration": "Walk-in Registration",
-      "accountInfo": "Account Info"
+      "accountInfo": "Account Info",
+      "confirmAppointments": "Confirm Appointments"
     },
     "common": {
       "add": "Add New",
@@ -78,6 +79,11 @@
     },
     "appointment": {
       "title": "Appointments",
+      "subtitle": "Clinic Appointment Management",
+      "refresh": "Refresh",
+      "searchPlaceholder": "Search appointments...",
+      "foundResults": "Found {count} results",
+      "hasMedicalRecord": "Medical Record",
       "listTitle": "Appointment List",
       "todayAppointments": "Today's Appointments",
       "manageReception": "Daily Reception & Appointment Management",
@@ -89,6 +95,15 @@
       "service": "Service",
       "symptoms": "Symptoms",
       "status": "Status",
+      "statusAll": "All Statuses",
+      "statusPending": "Pending",
+      "statusDepositPaid": "Deposit Paid",
+      "statusBooked": "Booked",
+      "statusArrived": "Arrived",
+      "statusInProgress": "In Progress",
+      "statusCompleted": "Completed",
+      "statusCancelled": "Cancelled",
+      "statusNoshow": "No Show",
       "checkIn": "Check-in",
       "cancel": "Cancel",
       "pending": "Pending",
@@ -126,7 +141,7 @@
       "showEntries": "Showing {from} to {to} of {total} appointments",
       "appointmentsPerPage": "appointments per page",
       "page": "Page",
-      "appointmentDetails": "Appointment Details",
+      "appointmentDetails": "DETAILED RECEPTION INFO",
       "receptionInfo": "RECEPTION INFO",
       "patientAdministrative": "Patient Administrative",
       "appointmentInfo": "Appointment Info",
@@ -164,7 +179,7 @@
       "confirmedDeposit": "Deposit Confirmed",
       "confirmArrival": "Confirm Arrival & Issue Queue",
       "arrivedWithQueue": "Checked In (Queue: {number})",
-      "checkInStatus": "Check-in Status",
+      "checkInStatus": "Current Status:",
       "depositNotRequired": "Deposit not required",
       "allStatuses": "All Statuses",
       "processing": "Processing",
@@ -233,6 +248,18 @@
       "checkInSuccess": "Checked in successfully",
       "cancelled": "Cancelled successfully",
       "updated": "Updated successfully"
-    }
+    },
+    "editSchedule": {
+    "title": "Edit Schedule",
+    "cancel": "Cancel",
+    "save": "Save Changes",
+    "saving": "Saving...",
+    "selectShift": "Select Shift",
+    "selectRoom": "Select Room",
+    "maxPatients": "Max Patients",
+    "note": "Note",
+    "success": "Schedule updated successfully",
+    "error": "Failed to update schedule"
+  }
   }
 }

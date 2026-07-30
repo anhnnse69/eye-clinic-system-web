@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Search, Stethoscope, Star, Loader2, Building2, ChevronRight, ChevronDown, Award, Sparkles, HeartPulse, CalendarCheck, ShieldCheck } from "lucide-react";
+import { Search, Stethoscope, Star, Loader2, Building2, ChevronRight, ChevronDown, Award, Sparkles, HeartPulse, CalendarCheck, ShieldCheck, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -115,6 +115,7 @@ export default function SearchDoctorsPage() {
     { titleVi: "3. Khám an toàn", titleEn: "3. Safe Consultation", descVi: "Được ưu tiên tại cơ sở y tế", descEn: "Get priority at clinic" }
   ];
 
+  const isSearchEmpty = doctors.length === 0 && !!searchQuery;
   return (
     <>
       <style>{`
@@ -219,8 +220,8 @@ export default function SearchDoctorsPage() {
                     {isVI ? "Đặt lịch an tâm 100%" : "100% Verified Doctors"}
                   </h5>
                   <p className="text-[11px] text-white/80 leading-relaxed">
-                    {isVI 
-                      ? "Mọi phòng khám đều được cấp phép bởi Bộ Y Tế và có đội ngũ bác sĩ xác thực." 
+                    {isVI
+                      ? "Mọi phòng khám đều được cấp phép bởi Bộ Y Tế và có đội ngũ bác sĩ xác thực."
                       : "All medical facilities are fully licensed and certified by local authorities."}
                   </p>
                 </div>
@@ -237,16 +238,20 @@ export default function SearchDoctorsPage() {
                 </div>
               )}
 
-              {!isLoading && hasSearched && doctors.length === 0 && searchQuery && (
+              {!isLoading && hasSearched && doctors.length === 0 && !searchQuery && (
                 <div className="flex flex-col items-center justify-center py-20 gap-3 text-center bg-white rounded-2xl border border-slate-200/80 shadow-sm">
                   <div className="w-16 h-16 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center shadow-sm">
-                    <Search className="w-7 h-7 text-slate-300" />
+                    <ShieldAlert className="w-7 h-7 text-slate-300" />
                   </div>
+
                   <p className="font-semibold text-slate-600">
-                    {isVI ? "Không tìm thấy bác sĩ" : "No doctors found"}
+                    {isVI ? "Chưa có bác sĩ nào" : "No doctors available"}
                   </p>
-                  <p className="text-xs text-slate-400 w-64 text-center leading-relaxed">
-                    {isVI ? "Thử lại bằng một từ khóa hoặc tên chuyên khoa khác" : "Try searching with a different keyword or specialty"}
+
+                  <p className="text-xs text-slate-400 w-72 text-center leading-relaxed">
+                    {isVI
+                      ? "Hiện tại chưa có bác sĩ nào thuộc các phòng khám đã được công khai."
+                      : "There are currently no doctors available from published clinics."}
                   </p>
                 </div>
               )}
@@ -270,7 +275,7 @@ export default function SearchDoctorsPage() {
 
                         {/* Bên Phải: Toàn bộ thông tin kéo dài */}
                         <div className="flex-1 min-w-0 flex flex-col">
-                          
+
                           {/* Hàng Tiêu đề & Tên + Rating */}
                           <div className="flex items-start justify-between gap-3">
                             <h3 className="text-base font-bold text-slate-800 leading-snug line-clamp-1 group-hover:text-primary transition-colors">
@@ -315,7 +320,7 @@ export default function SearchDoctorsPage() {
                                 {doctor.reviewCount} {isVI ? "đánh giá" : "reviews"}
                               </span>
                             ) : <span />}
-                            
+
                             <div className="flex items-center gap-0.5 text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
                               {isVI ? "Đặt lịch" : "Book"}
                               <ChevronRight className="w-3 h-3" />

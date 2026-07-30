@@ -124,11 +124,12 @@ export default function Header({
               <a className="text-on-surface-variant font-medium text-sm hover:text-primary transition-colors whitespace-nowrap" href="#">
                 {t("common.nav.features")}
               </a>
-              <a className="text-on-surface-variant font-medium text-sm hover:text-primary transition-colors whitespace-nowrap" href="#">
-                {t("common.nav.forDoctors")}
-              </a>
-              <a className="text-on-surface-variant font-medium text-sm hover:text-primary transition-colors whitespace-nowrap" href="#">
-                {t("common.nav.forPatients")}
+              {/* Thêm mục Đối tác */}
+              <a 
+                className="text-on-surface-variant font-medium text-sm hover:text-primary transition-colors whitespace-nowrap" 
+                href={`/${locale}/register-clinic-application`}
+              >
+                {locale === "vi" ? "Đối tác" : "Partners"}
               </a>
             </div>
 

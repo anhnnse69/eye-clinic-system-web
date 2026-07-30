@@ -40,6 +40,7 @@ export default async function ReceptionistLayout({ children }: { children: React
       title: tNav("dashboard"),
       items: [
         { label: tNav("appointments"), href: "/receptionist/appointments", icon: "CalendarDays" },
+        { label: tNav("confirmAppointments"), href: "/receptionist/appointment", icon: "CalendarDays" },
         { label: tNav("availableSlots"), href: "/receptionist/available-slots", icon: "Clock" },
       ],
     },

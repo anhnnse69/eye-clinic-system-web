@@ -54,7 +54,6 @@ export default async function DoctorLayout({
     {
       title: tSection("appointments"),
       items: [
-        { label: tNav("appointments"), href: "/doctor/appointments", icon: "Calendar" },
         { label: tNav("patients"), href: "/doctor/patients", icon: "Users" },
         { label: tNav("queue"), href: "/doctor/queue", icon: "Stethoscope" },
       ],

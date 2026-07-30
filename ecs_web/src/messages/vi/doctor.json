@@ -151,6 +151,12 @@
       "afternoon": "Ca chiều",
       "evening": "Ca tối",
       "noSchedule": "Chưa có lịch làm việc",
+      "back": "Quay lại",
+      "month": "Tháng",
+      "year": "Năm",
+      "step": "Bước",
+      "next": "Tiếp theo",
+      "save": "Lưu",
       "scheduleCreated": "Tạo lịch thành công",
       "scheduleUpdated": "Cập nhật lịch thành công",
       "scheduleDeleted": "Xóa lịch thành công",
@@ -212,6 +218,7 @@
       },
       "slot": {
         "full": "Kín",
+        "available": "Còn trống",
         "patients": "bệnh nhân",
         "unassignedRoom": "Chưa xếp phòng",
         "locked": "Khóa"
@@ -226,6 +233,7 @@
     "editSchedule": {
       "title": "Sửa ca trực",
       "workDate": "Ngày làm việc",
+      "cancel": "Hủy",
       "clinicRoom": "Phòng khám",
       "loading": "Đang tải...",
       "noRoomsAvailable": "Không có phòng nào",
@@ -366,6 +374,9 @@
       "medications": "Thuốc đang dùng",
       "previousSurgery": "Phẫu thuật trước đây",
       "noPatients": "Chưa có bệnh nhân nào",
+      "refresh": "Làm mới",
+      "status": "Trạng thái",
+      "actions": "Thao tác",
       "listSubtitle": "Xem và tìm kiếm danh sách bệnh nhân đã đặt lịch với bạn",
       "allStatuses": "Tất cả trạng thái",
       "patient": "Bệnh nhân",

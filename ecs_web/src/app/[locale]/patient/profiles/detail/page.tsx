@@ -17,13 +17,15 @@ import {
     Activity,
     Sparkles,
     Users,
-    Fingerprint
+    Fingerprint,
+    Pill
 } from "lucide-react"
 
 import {
     patientProfileService,
     type GetPatientProfileDetailResponse,
 } from "@/services/patient-profile.service"
+import { appointmentHistoryService, type GetAppointmentDetailResponse } from "@/services/appointment-history.service"
 
 export default function PatientProfileDetailPage() {
     const router = useRouter()
@@ -33,6 +35,7 @@ export default function PatientProfileDetailPage() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [profile, setProfile] = useState<GetPatientProfileDetailResponse | null>(null)
+    const [prescriptions, setPrescriptions] = useState<GetAppointmentDetailResponse[]>([])
 
     const profileId = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("id") : null
 
@@ -54,6 +57,24 @@ export default function PatientProfileDetailPage() {
 
             if (response && response.data) {
                 setProfile(response.data)
+
+                // Fetch prescriptions for this patient profile
+                try {
+                    const historyRes = await appointmentHistoryService.getAll({ status: "COMPLETED", pageSize: 20 })
+                    if (historyRes.data && historyRes.data.length > 0) {
+                        const details = await Promise.all(
+                            historyRes.data.map((ap) =>
+                                appointmentHistoryService.getDetail({ appointmentId: ap.id_appointment })
+                                    .then((res) => res.data)
+                                    .catch(() => null)
+                            )
+                        )
+                        const withRx = details.filter((d): d is GetAppointmentDetailResponse => !!(d && d.prescription))
+                        setPrescriptions(withRx)
+                    }
+                } catch {
+                    // Silently ignore if prescription fetch encounters errors
+                }
             } else {
                 setError("Không tìm thấy dữ liệu hồ sơ bệnh nhân.")
             }
@@ -254,6 +275,81 @@ export default function PatientProfileDetailPage() {
                                 <p className="text-sm font-medium text-slate-400 bg-slate-50/60 p-4 rounded-xl border border-dashed border-slate-200 italic">
                                     Không có ghi nhận bệnh lý nền mạn tính.
                                 </p>
+                            )}
+                        </div>
+
+                        {/* Prescriptions Section */}
+                        <div className="space-y-4 pt-4 border-t border-slate-100">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-xs font-bold text-blue-700 uppercase tracking-wider flex items-center gap-2">
+                                    <Pill className="w-4 h-4 text-blue-600" /> Đơn thuốc đã kê bởi bác sĩ
+                                </h3>
+                                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
+                                    {prescriptions.length} đơn thuốc
+                                </span>
+                            </div>
+
+                            {prescriptions.length === 0 ? (
+                                <div className="p-6 text-center bg-slate-50/60 rounded-xl border border-dashed border-slate-200">
+                                    <p className="text-xs font-medium text-slate-400 italic">
+                                        Bệnh nhân này chưa phát sinh đơn thuốc nào từ lịch hẹn khám completed.
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {prescriptions.map((ap) => {
+                                        const rx = ap.prescription
+                                        if (!rx) return null
+                                        return (
+                                            <div key={ap.id_appointment} className="bg-slate-50/70 rounded-2xl border border-slate-200 p-4 space-y-3">
+                                                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/60 pb-2.5">
+                                                    <div>
+                                                        <span className="text-xs font-bold text-slate-900 block">{ap.doctorName}</span>
+                                                        <span className="text-[11px] font-medium text-slate-500">{ap.clinicName} — Ngày {ap.appointmentDate}</span>
+                                                    </div>
+                                                    {rx.diagnosisMain && (
+                                                        <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-100">
+                                                            Chẩn đoán: {rx.diagnosisMain}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                {rx.items && rx.items.length > 0 ? (
+                                                    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                                                        <table className="w-full text-left border-collapse text-xs">
+                                                            <thead>
+                                                                <tr className="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] border-b border-slate-200">
+                                                                    <th className="p-2.5">#</th>
+                                                                    <th className="p-2.5">Tên thuốc</th>
+                                                                    <th className="p-2.5">Liều dùng</th>
+                                                                    <th className="p-2.5">Tần suất</th>
+                                                                    <th className="p-2.5">Số ngày</th>
+                                                                    <th className="p-2.5">Số lượng</th>
+                                                                    <th className="p-2.5">Hướng dẫn</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody className="divide-y divide-slate-100">
+                                                                {rx.items.map((item, idx) => (
+                                                                    <tr key={idx} className="hover:bg-slate-50/50 font-medium">
+                                                                        <td className="p-2.5 text-slate-400 font-bold">{idx + 1}</td>
+                                                                        <td className="p-2.5 font-bold text-slate-900">{item.medicineName}</td>
+                                                                        <td className="p-2.5 text-slate-700">{item.dosage || "—"}</td>
+                                                                        <td className="p-2.5 text-slate-700">{item.frequency || "—"}</td>
+                                                                        <td className="p-2.5 text-slate-700">{item.durationDays ? `${item.durationDays} ngày` : "—"}</td>
+                                                                        <td className="p-2.5 font-bold text-blue-700">{item.quantity || "—"}</td>
+                                                                        <td className="p-2.5 text-slate-500 italic">{item.instruction || "—"}</td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-xs text-slate-400 italic">Không ghi nhận chi tiết danh mục thuốc.</p>
+                                                )}
+                                            </div>
+                                        )
+                                    })}
+                                </div>
                             )}
                         </div>
                     </div>

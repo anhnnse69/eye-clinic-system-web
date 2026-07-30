@@ -20,6 +20,7 @@ import type {
   CreateMedicalRecordResponse,
   MedicalRecordDetailResponse,
   MedicalRecordFormDataPayload,
+  UpdateMedicalRecordResponse,
 } from "@/types"
 
 class MedicalRecordService {
@@ -43,11 +44,11 @@ class MedicalRecordService {
     return response.data
   }
 
-  /** GET /api/v1/doctor-appointment/medical-record/{id} - Get record by ID */
-  async getById(id: string): Promise<ApiResponse<{ medicalRecord: MedicalRecordDetailResponse & { formData: MedicalRecordFormDataPayload } }>> {
+  /** GET /api/v1/medical-records/{id} - Get record by ID */
+  async getById(id: string): Promise<ApiResponse<MedicalRecordDetailResponse>> {
     const response = await apiClient.get<
-      ApiResponse<{ medicalRecord: MedicalRecordDetailResponse & { formData: MedicalRecordFormDataPayload } }>
-    >(`/doctor-appointment/medical-record/${id}`)
+      ApiResponse<MedicalRecordDetailResponse>
+    >(`/medical-records/${id}`)
     return response.data
   }
 
@@ -55,9 +56,9 @@ class MedicalRecordService {
   async update(
     id: string,
     payload: { formData: MedicalRecordFormDataPayload }
-  ): Promise<ApiResponse<{ medicalRecordId: string }>> {
+  ): Promise<ApiResponse<UpdateMedicalRecordResponse>> {
     const response = await apiClient.put<
-      ApiResponse<{ medicalRecordId: string }>
+      ApiResponse<UpdateMedicalRecordResponse>
     >(`/doctor-appointment/medical-record/${id}`, payload)
     return response.data
   }

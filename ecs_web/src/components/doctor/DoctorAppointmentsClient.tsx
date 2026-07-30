@@ -65,9 +65,12 @@ export default function DoctorAppointmentsClient({
     return () => clearTimeout(t);
   }, [searchInput]);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const load = useCallback(async (isSilentArg?: boolean | unknown) => {
+    const isSilent = isSilentArg === true
+    if (!isSilent) {
+      setLoading(true);
+      setError(null);
+    }
     try {
       const result = await doctorAppointmentService.getAppointments(doctorId, {
         pageNumber: page,
@@ -79,18 +82,24 @@ export default function DoctorAppointmentsClient({
 
       if (result?.data) {
         setData(result.data);
-      } else {
+      } else if (!isSilent) {
         setError(t("error.loadFailed"));
       }
     } catch {
-      setError(t("error.connectionError"));
+      if (!isSilent) setError(t("error.connectionError"));
     } finally {
-      setLoading(false);
+      if (!isSilent) setLoading(false);
     }
   }, [doctorId, page, dateFilter, search, t]);
 
   useEffect(() => {
-    load();
+    load(false);
+
+    const intervalId = setInterval(() => {
+      load(true);
+    }, 5000);
+
+    return () => clearInterval(intervalId);
   }, [load]);
 
   const clearFilters = () => {

@@ -36,12 +36,12 @@ import type { MedicalRecordFormDataPayload } from "@/types"
 import { SectionHeading, getAccentForRecordType } from "./SectionHeading"
 
 const inputClass =
-  "w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 print:border-gray-400 print:py-1 print:text-[11px]"
-const labelClass = "mb-0.5 block text-[11px] font-medium text-gray-700 print:text-[10px] print:text-black"
+  "w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 print:border-slate-800 print:bg-white print:py-1 print:px-2 print:text-[11px] print:font-bold print:shadow-none"
+const labelClass = "mb-0.5 block text-[11px] font-medium text-gray-700 print:text-[10px] print:font-bold print:text-black"
 const checkboxRow =
-  "flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-700 print:text-[10px] print:text-black"
+  "flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-700 print:text-[10px] print:font-semibold print:text-black"
 const subGroupClass =
-  "rounded border border-gray-100 bg-gray-50/60 p-2 print:border-gray-300 print:bg-white"
+  "rounded border border-gray-100 bg-gray-50/60 p-2 print:border-slate-400 print:bg-white print:p-1.5"
 
 interface EyeSideProps {
   side: "matPhai" | "matTrai"
@@ -114,7 +114,8 @@ function EyeTextField({
       <label className={labelClass}>{label}</label>
       <input
         type={type}
-        {...register(f(base, side, leaf) as any)}
+        step={type === "number" ? "any" : undefined}
+        {...register(f(base, side, leaf) as any, type === "number" ? { valueAsNumber: true } : {})}
         className={inputClass}
         placeholder={placeholder}
       />
@@ -1254,7 +1255,7 @@ function CollapsibleSection({
                   : "text-slate-700"
 
   return (
-    <section className="rounded-lg border border-gray-200 bg-white print:break-inside-avoid print:border-gray-400 print:mb-2">
+    <section className="rounded-lg border border-gray-200 bg-white print:border-gray-400 print:mb-3 print:p-0 print:break-inside-avoid">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

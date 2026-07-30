@@ -16,7 +16,7 @@
  * Payload submit vẫn gửi endpoint `/doctor-appointment/preliminary-diagnosis`
  * (mapping sang PreliminaryDiagnosisRequest + một số trường UC 35/36).
  */
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useTranslations } from "next-intl"
 import {
@@ -27,6 +27,7 @@ import {
   AlertCircle,
 } from "lucide-react"
 import { preliminaryDiagnosisService } from "@/services/preliminary-diagnosis.service"
+import { medicalRecordPatientDemographicsService } from "@/services"
 import {
   TriageUrgencyLevel,
   type PreliminaryDiagnosisRequest,
@@ -74,8 +75,17 @@ const STEP_KEYS = [
   "stepTriage",
 ] as const
 
+const normalizeGender = (g?: string | null): "Nam" | "Nữ" | "Khác" | "" => {
+  if (!g) return ""
+  if (g === "Male" || g === "Nam" || g === "MALE") return "Nam"
+  if (g === "Female" || g === "Nữ" || g === "FEMALE") return "Nữ"
+  if (g === "Other" || g === "Khác" || g === "OTHER") return "Khác"
+  return ""
+}
+
 export default function PatientInitialAssessmentClient({
   appointmentId,
+  patientId,
   patientName,
 }: PatientInitialAssessmentClientProps) {
   const t = useTranslations("doctor.preliminaryDiagnosis")
@@ -83,6 +93,7 @@ export default function PatientInitialAssessmentClient({
   const router = useRouter()
   const [step, setStep] = useState(0)
   const [submitting, setSubmitting] = useState(false)
+  const [loadingPatient, setLoadingPatient] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const [form, setForm] = useState<FormState>({
@@ -105,6 +116,44 @@ export default function PatientInitialAssessmentClient({
     painLevel: "",
     chiefComplaint: "",
   })
+
+  // Auto-fill existing patient demographic info if patientId is present
+  useEffect(() => {
+    if (!patientId) return
+    const fetchPatientInfo = async () => {
+      setLoadingPatient(true)
+      try {
+        const response =
+          await medicalRecordPatientDemographicsService.getPatientDemographicsDetail(patientId)
+        if (response.data) {
+          const d = response.data
+          setForm((prev) => ({
+            ...prev,
+            fullName: d.fullName || prev.fullName || "",
+            dateOfBirth: d.dob ? d.dob.split("T")[0] : prev.dateOfBirth,
+            gender: d.gender ? normalizeGender(d.gender) : prev.gender,
+            phoneNumber: d.phoneNumber || prev.phoneNumber,
+            identityNumber: d.identityNumber || prev.identityNumber,
+            address: d.address || prev.address,
+            bhytNumber: d.bhytNumber || prev.bhytNumber,
+            bloodType: d.bloodType || prev.bloodType,
+            allergies: d.allergies || prev.allergies,
+            medicalHistory: d.medicalHistory || prev.medicalHistory,
+            familyHistory: d.familyHistory || prev.familyHistory,
+            lifestyleFactors: d.lifestyleFactors || prev.lifestyleFactors,
+            currentEyeMedications: d.currentEyeMedications || prev.currentEyeMedications,
+            previousEyeSurgery: d.previousEyeSurgery || prev.previousEyeSurgery,
+            eyeVisionHistory: d.eyeVisionHistory || prev.eyeVisionHistory,
+          }))
+        }
+      } catch (err) {
+        console.error("Failed to load patient demographics:", err)
+      } finally {
+        setLoadingPatient(false)
+      }
+    }
+    fetchPatientInfo()
+  }, [patientId])
 
   const update = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -472,7 +521,7 @@ export default function PatientInitialAssessmentClient({
                         type="button"
                         onClick={() => update("urgencyLevel", opt.v)}
                         className={`rounded-lg border-2 px-3 py-2 text-sm font-medium transition ${
-                          active ? colors.active : colors.idle
+                          colors ? (active ? colors.active : colors.idle) : ""
                         }`}
                       >
                         {opt.label}

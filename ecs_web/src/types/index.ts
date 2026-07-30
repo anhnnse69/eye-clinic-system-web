@@ -5376,6 +5376,10 @@ export interface GetMedicalRecordDetailResponse {
   editRestrictionReason?: string | null
 
 
+  formData?: any
+
+
+  mongoDocumentId?: string | null
 }
 
 
@@ -9292,6 +9296,9 @@ export interface QueueItem {
 
 
   hasMedicalRecord: boolean
+
+
+  medicalRecordId?: string
 
 
   hasPreliminaryDiagnosis?: boolean

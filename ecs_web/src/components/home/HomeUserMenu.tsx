@@ -223,30 +223,6 @@ export default function HomeUserMenu({ accountInfoHref }: HomeUserMenuProps) {
           </div>
           <button
             role="menuitem"
-            onClick={handleNotifications}
-            className="w-full flex items-center gap-sm px-4 py-3 text-sm text-on-surface hover:bg-surface-container transition-colors"
-          >
-            <Bell className="h-4 w-4 text-on-surface-variant" />
-
-            <div className="flex-1 flex flex-col items-start">
-              <span className="font-medium">
-                {locale === "vi" ? "Thông báo" : "Notifications"}
-              </span>
-              <span className="text-[11px] text-on-surface-variant">
-                {locale === "vi"
-                  ? "Xem các thông báo mới nhất"
-                  : "View your latest notifications"}
-              </span>
-            </div>
-
-            {unreadCount > 0 && (
-              <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-xs font-semibold">
-                {unreadCount > 99 ? "99+" : unreadCount}
-              </span>
-            )}
-          </button>
-          <button
-            role="menuitem"
             onClick={handleAccountInfo}
             className="w-full flex items-center gap-sm px-4 py-3 text-sm text-on-surface hover:bg-surface-container transition-colors"
           >
@@ -256,18 +232,6 @@ export default function HomeUserMenu({ accountInfoHref }: HomeUserMenuProps) {
               <span className="text-[11px] text-on-surface-variant">
                 {t("userMenu.accountInfoSubtitle")}
               </span>
-            </div>
-          </button>
-
-          <button
-            role="menuitem"
-            onClick={handleBookAppointment}
-            className="w-full flex items-center gap-sm px-4 py-3 text-sm text-on-surface hover:bg-surface-container transition-colors"
-          >
-            <Calendar className="h-4 w-4 text-on-surface-variant" />
-            <div className="flex flex-col items-start">
-              <span className="font-medium">Đặt lịch</span>
-              <span className="text-[11px] text-on-surface-variant">Đặt lịch khám</span>
             </div>
           </button>
 

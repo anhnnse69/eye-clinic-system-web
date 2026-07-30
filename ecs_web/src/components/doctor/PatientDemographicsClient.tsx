@@ -972,7 +972,7 @@ export default function PatientDemographicsClient({
             )}
             {appointmentId && (
               <button
-                onClick={() => router.push(`/doctor/medical-records/create?appointmentId=${appointmentId}&patientProfileId=${patientProfileId}`)}
+                onClick={() => router.push(`/doctor/records/create?appointmentId=${appointmentId}&patientProfileId=${patientProfileId}`)}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors shadow-sm mt-6"
               >
                 <Plus className="w-4 h-4" />

@@ -378,7 +378,7 @@ export default function DoctorSlotsPage() {
 
                   <button
                     disabled={!selectedSlot}
-                    onClick={() => router.push(`/${locale}/appointments/book?doctorId=${data.doctorId}&slotId=${selectedSlot}`)}
+                    onClick={() => router.push(`/${locale}/book-appointment?doctorId=${data.doctorId}&slotId=${selectedSlot}`)}
                     className={cn(
                       "w-full md:w-auto px-10 py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg",
                       selectedSlot 

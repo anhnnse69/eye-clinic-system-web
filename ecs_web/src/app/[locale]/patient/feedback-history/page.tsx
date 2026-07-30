@@ -128,7 +128,7 @@ export default function FeedbackHistoryPage() {
                 <div className="flex items-center gap-2 shrink-0">
                     <button
                         type="submit"
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 h-[38px]"
+                        className="bg-primary hover:opacity-90 text-white px-5 py-2 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 h-[38px] cursor-pointer"
                     >
                         Tìm kiếm
                     </button>

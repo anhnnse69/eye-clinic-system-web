@@ -86,6 +86,7 @@ export default function BookAppointmentPage() {
 
     const clinicId = searchParams.get("clinicId") ?? ""
     const preselectedDoctorId = searchParams.get("doctorId") ?? ""
+    const preselectedSlotId = searchParams.get("slotId") ?? ""
 
     // Header State
     const [searchTab, setSearchTab] = useState<"clinics" | "doctors">("doctors")
@@ -131,27 +132,75 @@ export default function BookAppointmentPage() {
     }
 
     useEffect(() => {
-        if (!clinicId) {
+        if (!clinicId && !preselectedDoctorId) {
             setLoadingClinic(false)
             setLoadingDoctors(false)
             setLoadingServices(false)
+            setLoadingProfiles(false)
             return
         }
 
         const loadInitialData = async () => {
             try {
-                const [clinicRes, doctorRes, serviceRes, profileRes] = await Promise.all([
-                    patientAppointmentService.getClinicBasicInfo(clinicId),
-                    patientAppointmentService.getDoctorsByClinic(clinicId),
-                    patientAppointmentService.getServicesByClinic(clinicId),
-                    patientAppointmentService.getMyProfiles(),
-                ])
-                setClinic(clinicRes.data || null)
-                setDoctors(doctorRes.data || [])
-                setServices(serviceRes.data || [])
-                setPatientProfiles(profileRes.data || [])
+                const profileResPromise = patientAppointmentService.getMyProfiles()
 
-                if (preselectedDoctorId) setDoctorId(preselectedDoctorId)
+                if (clinicId) {
+                    const [clinicRes, doctorRes, serviceRes, profileRes] = await Promise.all([
+                        patientAppointmentService.getClinicBasicInfo(clinicId),
+                        patientAppointmentService.getDoctorsByClinic(clinicId),
+                        patientAppointmentService.getServicesByClinic(clinicId),
+                        profileResPromise,
+                    ])
+                    setClinic(clinicRes.data || null)
+                    setDoctors(doctorRes.data || [])
+                    setServices(serviceRes.data || [])
+                    const profiles = profileRes.data || []
+                    setPatientProfiles(profiles)
+                    if (profiles.length > 0 && !patientId) {
+                        setPatientId(profiles[0].id)
+                    }
+
+                    if (preselectedDoctorId) setDoctorId(preselectedDoctorId)
+                } else if (preselectedDoctorId) {
+                    const [doctorSlotsRes, profileRes] = await Promise.all([
+                        patientAppointmentService.getDoctorSlotsDetail(preselectedDoctorId),
+                        profileResPromise,
+                    ])
+
+                    const profiles = profileRes.data || []
+                    setPatientProfiles(profiles)
+                    if (profiles.length > 0 && !patientId) {
+                        setPatientId(profiles[0].id)
+                    }
+
+                    const doctorData = doctorSlotsRes.data
+                    if (doctorData) {
+                        setClinic({
+                            id: "",
+                            name: doctorData.clinicName,
+                            address: doctorData.clinicAddress,
+                        })
+                        setDoctors([{
+                            id_doctor: doctorData.doctorId,
+                            fullName: doctorData.fullName,
+                            title: doctorData.title,
+                            specialtyName: doctorData.specialty,
+                            experienceYears: doctorData.experienceYears,
+                        }])
+                        setDoctorId(doctorData.doctorId)
+
+                        if (preselectedSlotId) {
+                            for (const day of doctorData.scheduleDays || []) {
+                                const foundSlot = day.slots?.find((s) => s.slotId === preselectedSlotId)
+                                if (foundSlot) {
+                                    setSelectedDate(new Date(day.workDate))
+                                    setSlotId(preselectedSlotId)
+                                    break
+                                }
+                            }
+                        }
+                    }
+                }
             } catch (err: unknown) {
                 setError(extractErrorMessage(err))
             } finally {
@@ -162,7 +211,7 @@ export default function BookAppointmentPage() {
             }
         }
         loadInitialData()
-    }, [clinicId, preselectedDoctorId])
+    }, [clinicId, preselectedDoctorId, preselectedSlotId])
 
     const loadSlots = useCallback(async () => {
         if (!doctorId || !selectedDate) {
@@ -170,11 +219,12 @@ export default function BookAppointmentPage() {
             return
         }
         setLoadingSlots(true)
-        setSlotId("")
         try {
             const dateStr = formatDateToString(selectedDate)
             const res = await patientAppointmentService.getDoctorSlots(doctorId, dateStr)
-            setSlots(res.data || [])
+            const fetchedSlots = res.data || []
+            setSlots(fetchedSlots)
+            setSlotId(prev => fetchedSlots.some(s => s.id_slot === prev) ? prev : "")
         } catch (err: unknown) {
             setError(extractErrorMessage(err))
         } finally {
@@ -343,11 +393,11 @@ export default function BookAppointmentPage() {
             />
 
             <main className="flex-1 max-w-7xl w-full mx-auto px-4 md:px-6 py-8 flex flex-col items-center justify-center">
-                {!clinicId ? (
+                {!clinicId && !doctorId ? (
                     <div className="max-w-3xl w-full mx-auto py-16 bg-white border border-slate-200/80 rounded-2xl shadow-sm text-center space-y-4 px-6">
                         <Building2 className="w-12 h-12 text-slate-300 mx-auto" />
                         <p className="text-sm font-medium text-slate-600">
-                            {isVI ? "Vui lòng chọn một phòng khám trước khi đặt lịch." : "Please choose a medical clinic before booking."}
+                            {isVI ? "Vui lòng chọn một phòng khám hoặc bác sĩ trước khi đặt lịch." : "Please choose a medical clinic or doctor before booking."}
                         </p>
                         <Link href={`/${locale}/search/clinics`} className="inline-block px-5 py-2.5 bg-primary text-white rounded-xl text-xs font-bold shadow-sm hover:bg-blue-600 transition">
                             {isVI ? "Tìm phòng khám" : "Find Clinics"}

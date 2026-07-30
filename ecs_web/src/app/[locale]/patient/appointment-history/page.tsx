@@ -537,7 +537,7 @@ export default function AppointmentHistoryPage() {
                                                         onClick={() => {
                                                             router.push(`/${locale}/patient/appointment-detail?id=${item.id_appointment}`)
                                                         }}
-                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-blue-600 bg-blue-50/70 rounded-lg hover:bg-blue-100 hover:text-blue-700 transition-colors whitespace-nowrap"
+                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-primary bg-primary/10 border border-primary/20 rounded-lg hover:bg-primary hover:text-white transition-all cursor-pointer whitespace-nowrap"
                                                     >
                                                         <Eye className="w-3.5 h-3.5" />
                                                         Xem chi tiết

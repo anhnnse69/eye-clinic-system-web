@@ -20,7 +20,8 @@ import {
     FileText,
     Circle,
     Smartphone,
-    Smile
+    Smile,
+    Pill
 } from "lucide-react"
 
 import { appointmentHistoryService } from "@/services"
@@ -341,6 +342,64 @@ export default function AppointmentDetailPage() {
                                     {appointment.symptoms}
                                 </p>
                             </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Prescription Section */}
+                {appointment.prescription && (
+                    <div className="bg-white rounded-3xl border border-blue-100 shadow-sm p-6 space-y-4">
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <h4 className="text-xs font-bold text-blue-700 uppercase tracking-widest flex items-center gap-2">
+                                <Pill className="w-4 h-4 text-blue-600" />
+                                Đơn thuốc bác sĩ kê
+                            </h4>
+                            <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">
+                                {appointment.prescription.items?.length || 0} loại thuốc
+                            </span>
+                        </div>
+
+                        {appointment.prescription.diagnosisMain && (
+                            <div className="bg-blue-50/50 p-3.5 rounded-xl border border-blue-100/60">
+                                <span className="text-[10px] uppercase font-bold text-blue-500 tracking-wider block">Chẩn đoán</span>
+                                <p className="text-sm font-bold text-blue-900 mt-0.5">{appointment.prescription.diagnosisMain}</p>
+                                {appointment.prescription.diagnosisComorbid && (
+                                    <p className="text-xs text-slate-500 mt-0.5">Bệnh kèm: {appointment.prescription.diagnosisComorbid}</p>
+                                )}
+                            </div>
+                        )}
+
+                        {appointment.prescription.items && appointment.prescription.items.length > 0 ? (
+                            <div className="overflow-x-auto rounded-xl border border-slate-200">
+                                <table className="w-full text-left border-collapse text-xs">
+                                    <thead>
+                                        <tr className="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] border-b border-slate-200">
+                                            <th className="p-3">#</th>
+                                            <th className="p-3">Tên thuốc</th>
+                                            <th className="p-3">Liều dùng</th>
+                                            <th className="p-3">Tần suất</th>
+                                            <th className="p-3">Số ngày</th>
+                                            <th className="p-3">Số lượng</th>
+                                            <th className="p-3">Hướng dẫn</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100">
+                                        {appointment.prescription.items.map((item, idx) => (
+                                            <tr key={idx} className="hover:bg-slate-50/50 font-medium">
+                                                <td className="p-3 text-slate-400 font-bold">{idx + 1}</td>
+                                                <td className="p-3 font-bold text-slate-900">{item.medicineName}</td>
+                                                <td className="p-3 text-slate-700">{item.dosage || "—"}</td>
+                                                <td className="p-3 text-slate-700">{item.frequency || "—"}</td>
+                                                <td className="p-3 text-slate-700">{item.durationDays ? `${item.durationDays} ngày` : "—"}</td>
+                                                <td className="p-3 font-bold text-blue-700">{item.quantity || "—"}</td>
+                                                <td className="p-3 text-slate-500 italic">{item.instruction || "—"}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <p className="text-xs text-slate-400 italic text-center py-3">Không có thông tin chi tiết thuốc trong đơn.</p>
                         )}
                     </div>
                 )}

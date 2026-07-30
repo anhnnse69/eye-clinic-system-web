@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ChevronLeft,
@@ -194,174 +195,46 @@ const formatSourceBadge = (source?: string) => {
 const RECORDS_PER_PAGE = 5;
 
 function AppointmentTableRow({ ap }: { ap: AppointmentHistory }) {
-  const [expanded, setExpanded] = useState(false);
   const mr = ap.medicalRecord;
 
   return (
-    <>
-      <tr
-        className={cn(
-          "hover:bg-slate-50/50 transition-colors group",
-          expanded && "bg-blue-50/30"
+    <tr className="hover:bg-slate-50/50 transition-colors group">
+      <td className="px-6 py-4 font-bold text-slate-900 whitespace-nowrap text-xs">
+        {formatDateTime(ap.appointmentDate)}
+      </td>
+      <td className="px-6 py-4">
+        <div className="font-bold text-slate-800 flex items-center gap-1.5 group-hover:text-blue-600 transition-colors text-xs">
+          <UserCheck className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+          <span>{ap.doctorName || "—"}</span>
+        </div>
+        <div className="text-[11px] text-slate-400 font-medium pl-5 mt-0.5">
+          {ap.specialtyName || "—"}
+        </div>
+      </td>
+      <td className="px-6 py-4 text-slate-600 leading-relaxed max-w-xs break-words font-medium text-xs">
+        {ap.symptoms || <span className="text-slate-400 italic font-normal">—</span>}
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap">
+        {formatSourceBadge(ap.bookingSource)}
+      </td>
+      <td className="px-6 py-4 text-center whitespace-nowrap">
+        {formatStatusBadge(ap.status)}
+      </td>
+      {/* Medical record redirect */}
+      <td className="px-4 py-4 text-center">
+        {mr ? (
+          <Link
+            href={`/doctor/records/${mr.id}?appointmentId=${ap.appointmentId}`}
+            className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg border bg-blue-600 hover:bg-blue-700 text-white border-blue-600 transition-all shadow-xs active:scale-95"
+          >
+            <FileText className="h-3.5 w-3.5" />
+            Xem bệnh án
+          </Link>
+        ) : (
+          <span className="text-[11px] text-slate-400 italic">Chưa có</span>
         )}
-      >
-        <td className="px-6 py-4 font-bold text-slate-900 whitespace-nowrap text-xs">
-          {formatDateTime(ap.appointmentDate)}
-        </td>
-        <td className="px-6 py-4">
-          <div className="font-bold text-slate-800 flex items-center gap-1.5 group-hover:text-blue-600 transition-colors text-xs">
-            <UserCheck className="h-3.5 w-3.5 text-slate-400 shrink-0" />
-            <span>{ap.doctorName || "—"}</span>
-          </div>
-          <div className="text-[11px] text-slate-400 font-medium pl-5 mt-0.5">
-            {ap.specialtyName || "—"}
-          </div>
-        </td>
-        <td className="px-6 py-4 text-slate-600 leading-relaxed max-w-xs break-words font-medium text-xs">
-          {ap.symptoms || <span className="text-slate-400 italic font-normal">—</span>}
-        </td>
-        <td className="px-6 py-4 whitespace-nowrap">
-          {formatSourceBadge(ap.bookingSource)}
-        </td>
-        <td className="px-6 py-4 text-center whitespace-nowrap">
-          {formatStatusBadge(ap.status)}
-        </td>
-        {/* Medical record toggle */}
-        <td className="px-4 py-4 text-center">
-          {mr ? (
-            <button
-              onClick={() => setExpanded(!expanded)}
-              className={cn(
-                "inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-lg border transition-all",
-                expanded
-                  ? "bg-blue-600 text-white border-blue-600 shadow-sm"
-                  : "bg-white text-blue-600 border-blue-200 hover:bg-blue-50"
-              )}
-            >
-              <FileText className="h-3 w-3" />
-              Bệnh án
-              {expanded ? (
-                <ChevronUp className="h-3 w-3" />
-              ) : (
-                <ChevronDown className="h-3 w-3" />
-              )}
-            </button>
-          ) : (
-            <span className="text-[11px] text-slate-400 italic">Chưa có</span>
-          )}
-        </td>
-      </tr>
-
-      {/* Expandable Medical Record Row */}
-      {expanded && mr && (
-        <tr className="bg-blue-50/20">
-          <td colSpan={6} className="px-6 pb-5 pt-0">
-            <div className="rounded-xl border border-blue-100 bg-white overflow-hidden shadow-sm">
-              {/* Header */}
-              <div className="px-5 py-3 bg-blue-50/60 border-b border-blue-100 flex items-center gap-2">
-                <Stethoscope className="h-3.5 w-3.5 text-blue-600" />
-                <span className="text-xs font-bold text-blue-800 uppercase tracking-wider">
-                  Chi tiết bệnh án — {formatDate(mr.createdAt.split("T")[0])}
-                </span>
-                {mr.isLocked && (
-                  <span className="ml-auto inline-flex items-center gap-1 text-[10px] font-bold text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md">
-                    <Shield className="h-2.5 w-2.5" /> Đã khoá
-                  </span>
-                )}
-              </div>
-
-              <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
-                {/* Chẩn đoán & điều trị */}
-                <div className="space-y-3">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    Chẩn đoán & Điều trị
-                  </p>
-                  {[
-                    { label: "Lý do khám", val: mr.chiefComplaint },
-                    { label: "Chẩn đoán chính", val: mr.diagnosisMain, highlight: true },
-                    { label: "Chẩn đoán kèm", val: mr.diagnosisComorbid },
-                    { label: "Kế hoạch điều trị", val: mr.treatmentPlan },
-                    { label: "Ghi chú BS", val: mr.notes },
-                  ]
-                    .filter((r) => r.val)
-                    .map((r) => (
-                      <div
-                        key={r.label}
-                        className={cn(
-                          "flex flex-col gap-0.5 py-2 border-b border-slate-100 last:border-0",
-                        )}
-                      >
-                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                          {r.label}
-                        </span>
-                        <span
-                          className={cn(
-                            "text-xs font-medium text-slate-700",
-                            r.highlight && "text-blue-700 font-bold text-sm"
-                          )}
-                        >
-                          {r.val}
-                        </span>
-                      </div>
-                    ))}
-                </div>
-
-                {/* Đơn thuốc */}
-                <div className="space-y-3">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <Pill className="h-3 w-3" /> Đơn thuốc ({mr.prescriptions.length})
-                  </p>
-
-                  {mr.prescriptions.length === 0 ? (
-                    <p className="text-xs text-slate-400 italic py-4 text-center">
-                      Không có đơn thuốc
-                    </p>
-                  ) : (
-                    mr.prescriptions.map((rx) => (
-                      <div
-                        key={rx.id}
-                        className="bg-slate-50 rounded-xl border border-slate-200 p-3 space-y-2"
-                      >
-                        <p className="text-[10px] text-slate-400 font-medium">
-                          Kê ngày{" "}
-                          {new Date(rx.createdAt).toLocaleDateString("vi-VN")}
-                          {rx.notes && ` — ${rx.notes}`}
-                        </p>
-                        <div className="space-y-2">
-                          {rx.items.map((item, idx) => (
-                            <div key={item.id} className="flex gap-2.5">
-                              <span className="text-[10px] font-bold text-slate-400 w-4 shrink-0 pt-0.5">
-                                {idx + 1}.
-                              </span>
-                              <div>
-                                <span className="text-xs font-bold text-slate-800">
-                                  {item.medicineName}
-                                </span>
-                                <span className="text-xs text-slate-500">
-                                  {" "}— {item.dosage}
-                                  {item.frequency && `, ${item.frequency}`}
-                                  {item.durationDays && `, ${item.durationDays} ngày`}
-                                  {` (SL: ${item.quantity})`}
-                                </span>
-                                {item.instruction && (
-                                  <p className="text-[11px] text-slate-400 mt-0.5">
-                                    ↳ {item.instruction}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            </div>
-          </td>
-        </tr>
-      )}
-    </>
+      </td>
+    </tr>
   );
 }
 

@@ -8,7 +8,7 @@
       "profile": "Cá nhân"
     },
     "paraclinical": {
-      "title": "Cận lâm sàng (UC42-44)",
+      "title": "Cận lâm sàng",
       "filterAll": "Tất cả",
       "newRequest": "Tạo yêu cầu mới",
       "aiSuggestion": "Gợi ý AI (OCT)",
@@ -194,7 +194,9 @@
       "loadingData": "Đang tải dữ liệu...",
       "noDoctorsFound": "Không tìm thấy bác sĩ nào.",
       "room": "Phòng",
-      "removeDoctor": "Bỏ bác sĩ này"
+      "removeDoctor": "Bỏ bác sĩ này",
+      "back": "Quay lại",
+      "month": "Tháng"
     },
     "personalSchedule": {
       "title": "Lịch cá nhân",
@@ -217,6 +219,7 @@
         "eveningShiftBand": "Dải Ca Tối"
       },
       "slot": {
+        "available": "Trống",
         "full": "Kín",
         "available": "Còn trống",
         "patients": "bệnh nhân",
@@ -304,6 +307,7 @@
       "hasMedicalRecord": "Có bệnh án",
       "noMedicalRecord": "Chưa có",
       "yearsOld": "tuổi",
+      "actions": "Thao tác",
       "booked": "Đã đặt lịch",
       "arrived": "Đã đến",
       "inProgress": "Đang khám",
@@ -378,10 +382,13 @@
       "status": "Trạng thái",
       "actions": "Thao tác",
       "listSubtitle": "Xem và tìm kiếm danh sách bệnh nhân đã đặt lịch với bạn",
+      "refresh": "Tải lại",
       "allStatuses": "Tất cả trạng thái",
       "patient": "Bệnh nhân",
       "phoneNumber": "Số điện thoại",
       "appointmentDate": "Ngày hẹn",
+      "status": "Trạng thái",
+      "actions": "Thao tác",
       "viewDetails": "Xem chi tiết",
       "retry": "Thử lại",
       "page": "Trang",
@@ -403,6 +410,7 @@
       "title": "Hồ sơ bệnh án",
       "createTitle": "Tạo bệnh án mới",
       "listTitle": "Danh sách bệnh án",
+      "listSubtitle": "Danh sách các hồ sơ bệnh án đã được tạo",
       "detailTitle": "Chi tiết bệnh án",
       "editTitle": "Sửa bệnh án",
       "chiefComplaint": "Lý do khám",
@@ -552,7 +560,38 @@
       "error": {
         "saveFailed": "Không thể lưu chuẩn đoán sơ bộ",
         "unknown": "Có lỗi xảy ra, vui lòng thử lại"
-      }
+      },
+      "stepAdmin": "1. Hành chính",
+      "stepMedical": "2. Tiền sử y khoa",
+      "stepEye": "3. Tiền sử nhãn khoa",
+      "stepTriage": "4. Phân loại & Triệu chứng",
+      "pageTitle": "Khảo sát ban đầu & Chẩn đoán sơ bộ",
+      "pageSubtitle": "Điền thông tin hành chính, tiền sử y khoa và phân loại triệu chứng",
+      "fullName": "Họ và tên",
+      "dateOfBirth": "Ngày sinh",
+      "gender": "Giới tính",
+      "male": "Nam",
+      "female": "Nữ",
+      "other": "Khác",
+      "phone": "Số điện thoại",
+      "identityNumber": "Số CCCD / CMND",
+      "bhytNumber": "Mã số BHYT",
+      "address": "Địa chỉ",
+      "bloodType": "Nhóm máu",
+      "allergies": "Dị ứng",
+      "medicalHistory": "Tiền sử bệnh toàn thân",
+      "familyHistory": "Tiền sử gia đình",
+      "lifestyleFactors": "Lối sống / Thuốc lá / Rượu bia",
+      "currentEyeMedications": "Thuốc mắt đang dùng",
+      "previousEyeSurgery": "Tiền sử phẫu thuật mắt",
+      "eyeVisionHistory": "Tiền sử thị lực / Tật khúc xạ",
+      "chiefComplaint": "Lý do khám hôm nay",
+      "chiefComplaintPlaceholder": "Nhập lý do khám hoặc triệu chứng chính...",
+      "previous": "Quay lại",
+      "next": "Tiếp theo",
+      "save": "Lưu & Tiếp tục chọn bệnh án",
+      "requiredFields": "Vui lòng nhập các trường bắt buộc",
+      "saveFailed": "Không thể lưu chẩn đoán sơ bộ"
     },
     "profile": {
       "title": "Hồ sơ bác sĩ",
@@ -590,6 +629,13 @@
     "chiefComplaintPlaceholder": "Mô tả lý do bệnh nhân đến khám...",
     "medicalHistory": "Bệnh sử",
     "medicalHistoryPlaceholder": "Diễn biến bệnh, tiền sử liên quan...",
+    "summary": {
+      "title": "Tổng kết bệnh án",
+      "mainDiagnosis": "Chẩn đoán cuối",
+      "clinical": "Lâm sàng",
+      "cause": "Nguyên nhân",
+      "followUp": "Hướng điều trị tiếp theo"
+    },
     "diagnosis": {
       "title": "Chẩn đoán",
       "main": "Chẩn đoán chính",

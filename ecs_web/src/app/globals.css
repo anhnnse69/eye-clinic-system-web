@@ -131,38 +131,57 @@ body {
 }
 
 /* ===== PRINT-FRIENDLY STYLES CHO BỆNH ÁN ===== */
+/* ===== PRINT-FRIENDLY STYLES CHO BỆNH ÁN NHÃN KHOA (MẪU MS WORD A4) ===== */
 @media print {
-  /* Khổ A4 portrait, margin 2cm */
   @page {
     size: A4;
-    margin: 1.5cm;
+    margin: 0;
   }
 
   html,
   body {
     background: white !important;
     color: black !important;
-    font-size: 11pt;
+    font-size: 9.5pt !important;
+    line-height: 1.35 !important;
+    padding: 10mm 12mm !important;
+    font-family: "Times New Roman", Times, serif, "Inter", sans-serif !important;
   }
 
-  /* Ẩn sidebar, header, navigation, footer */
+  /* Loai bo hoan toan thanh cuon (scrollbars) khi in PDF */
+  *,
+  *::before,
+  *::after {
+    overflow: visible !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  ::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  /* An sidebar, header, navigation, nut bam ko can thiet */
   aside,
-  header,
+  header:not(.print\:block),
   nav,
-  footer,
+  footer:not(.print\:block),
   [data-no-print],
-  .print-hidden {
+  .print-hidden,
+  .print\:hidden {
     display: none !important;
   }
 
-  /* Ẩn border và background của button khi in */
+  /* An border va background cua nut bam */
   button {
     border: none !important;
     background: transparent !important;
     box-shadow: none !important;
   }
 
-  /* Input hiển thị giá trị thuần, không có border */
+  /* Input hien thi kieu MS Word: chieu gach chan nhe dot giong bieu mau giay */
   input[type="text"],
   input[type="number"],
   input[type="date"],
@@ -170,41 +189,41 @@ body {
   textarea,
   select {
     border: none !important;
+    border-bottom: 1px dotted #777 !important;
     background: transparent !important;
-    padding: 0 !important;
+    padding: 1px 3px !important;
     box-shadow: none !important;
     color: black !important;
+    font-size: 9.5pt !important;
+    border-radius: 0 !important;
   }
 
-  /* Bỏ chevron icon collapse khi in — luôn hiển thị tất cả */
+  textarea {
+    resize: none !important;
+    min-height: auto !important;
+  }
+
+  /* Details / Summary trong bieu mau */
   details > summary {
     list-style: none !important;
     cursor: default !important;
   }
 
-  details[open] > summary ~ * {
-    display: block !important;
-  }
-
+  details[open] > summary ~ *,
   details:not([open]) > summary ~ * {
     display: block !important;
   }
 
-  /* Page break giữa các section lớn */
-  .print-page-break {
-    page-break-before: always;
-    break-before: page;
-  }
-
-  /* Tránh ngắt giữa các row trong bảng */
+  /* Tranh cat ngang dong trong bang */
   table,
   tr,
   td,
   th {
-    page-break-inside: avoid;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
-  /* Form rộng full-width khi in */
+  /* Form rong full-width, khoang cach nhan gon de tiet kiem giay */
   form,
   .max-w-5xl,
   .max-w-3xl,
@@ -214,38 +233,41 @@ body {
     padding: 0 !important;
   }
 
-  /* Border nhạt hơn khi in */
-  .border {
-    border-color: #d0d0d0 !important;
+  /* Nhom các khoi section tranh bi cat ngang giua trang mot va trang hai */
+  section,
+  .section-card {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    margin-bottom: 6px !important;
   }
 
-  /* Bệnh án mắt — giữ 2 cột MP/MT song song trên A4 */
+  .border {
+    border-color: #b0b0b0 !important;
+  }
+
+  /* Benh an mat — giu 2 cot MP/MT song song tren A4 */
   .grid-cols-1.md\:grid-cols-2,
   .md\:grid-cols-2.print\:grid-cols-2,
   [class*="print:grid-cols-2"] {
+    display: grid !important;
     grid-template-columns: 1fr 1fr !important;
     gap: 0.5rem !important;
   }
 
-  /* Bệnh án mắt — section khám mắt không bị ngắt giữa 2 cột */
-  .print\:break-inside-avoid {
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-
-  /* Checkbox hiển thị như dấu ☐ khi in (giữ UI cho người dùng nhận diện) */
+  /* Checkbox hien thi o kiem tra Word (☐ va ☑) */
   input[type="checkbox"] {
     -webkit-appearance: none;
     appearance: none;
-    width: 0.9rem !important;
-    height: 0.9rem !important;
-    border: 1px solid #555 !important;
+    width: 0.85rem !important;
+    height: 0.85rem !important;
+    border: 1px solid #333 !important;
     background: white !important;
-    margin-right: 4px !important;
+    margin-right: 3px !important;
     vertical-align: middle !important;
+    display: inline-block !important;
   }
 
   input[type="checkbox"]:checked {
-    background: #555 !important;
+    background: #333 !important;
   }
 }

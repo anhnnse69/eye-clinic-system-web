@@ -162,6 +162,13 @@ class PatientAppointmentService {
         return res.data
     }
 
+    async getDoctorSlotsDetail(doctorId: string): Promise<ApiResponse<ViewDoctorSlotsResponse>> {
+        const res = await apiClient.get<ApiResponse<ViewDoctorSlotsResponse>>(
+            `/doctors/${doctorId}/slots`
+        )
+        return res.data
+    }
+
     async getDoctorSlots(doctorId: string, date: string): Promise<ApiResponse<SlotOption[]>> {
         const res = await apiClient.get<ApiResponse<ViewDoctorSlotsResponse>>(
             `/doctors/${doctorId}/slots`

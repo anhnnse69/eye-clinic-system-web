@@ -2,6 +2,7 @@
 
 import { useLocale } from "next-intl"
 import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
 import {
   Mail,
   Phone,
@@ -13,10 +14,14 @@ import {
   Loader2,
   ArrowLeft,
   AlertCircle,
+  Camera,
+  Upload,
+  Check
 } from "lucide-react"
 import AccountHeader from "@/components/layout/AccountHeader"
 import { useAccountInfo } from "@/hooks/useAccountInfo"
 import { authService } from "@/services/auth.service"
+import { apiClient } from "@/lib/axios"
 import {
   ROLE_CONFIG,
   getRoleLabel,
@@ -56,7 +61,68 @@ export default function AccountInfoView({
     enabled: true,
   })
 
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [avatarSuccessMsg, setAvatarSuccessMsg] = useState<string | null>(null)
+  const [avatarErrorMsg, setAvatarErrorMsg] = useState<string | null>(null)
+  const [tempAvatarUrl, setTempAvatarUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    const handleAvatarUpdated = (e: Event) => {
+      const customEvt = e as CustomEvent
+      if (customEvt.detail?.avatarUrl) {
+        setTempAvatarUrl(customEvt.detail.avatarUrl)
+        refetch()
+      }
+    }
+    window.addEventListener("ecs-user-avatar-updated", handleAvatarUpdated)
+    return () => window.removeEventListener("ecs-user-avatar-updated", handleAvatarUpdated)
+  }, [refetch])
+
   const t = (vi: string, en: string) => (locale === "vi" ? vi : en)
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    try {
+      setUploadingAvatar(true)
+      setAvatarSuccessMsg(null)
+      setAvatarErrorMsg(null)
+
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("folder", "avatars")
+
+      const res = await apiClient.post("/upload/image", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      })
+
+      const uploadedUrl = res.data?.data?.url || res.data?.url
+      if (uploadedUrl) {
+        setTempAvatarUrl(uploadedUrl)
+        if (account?.id) {
+          try {
+            await apiClient.put(`/auth/profile/${account.id}`, {
+              fullName: account.fullName,
+              phone: account.phone || "0900000000",
+              email: account.email,
+              avatarUrl: uploadedUrl,
+            })
+            window.dispatchEvent(new CustomEvent("ecs-user-avatar-updated", { detail: { avatarUrl: uploadedUrl } }))
+          } catch (updateErr) {
+            console.error("Failed to save avatar to profile:", updateErr)
+          }
+        }
+        await refetch()
+        setAvatarSuccessMsg(t("Cập nhật ảnh đại diện thành công!", "Avatar updated successfully!"))
+        setTimeout(() => setAvatarSuccessMsg(null), 5000)
+      }
+    } catch (err: any) {
+      setAvatarErrorMsg(err?.response?.data?.message || t("Tải ảnh thất bại, vui lòng thử lại.", "Upload failed, please try again."))
+    } finally {
+      setUploadingAvatar(false)
+    }
+  }
 
   const formatDate = (iso: string) => {
     if (!iso) return "—"
@@ -103,6 +169,20 @@ export default function AccountInfoView({
           </p>
         </div>
 
+        {avatarSuccessMsg && (
+          <div className="mb-lg p-md bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold flex items-center gap-2 animate-in fade-in">
+            <Check className="w-4 h-4 text-emerald-600" />
+            <span>{avatarSuccessMsg}</span>
+          </div>
+        )}
+
+        {avatarErrorMsg && (
+          <div className="mb-lg p-md bg-red-50 border border-red-200 text-red-800 rounded-xl text-xs font-bold flex items-center gap-2 animate-in fade-in">
+            <AlertCircle className="w-4 h-4 text-red-600" />
+            <span>{avatarErrorMsg}</span>
+          </div>
+        )}
+
         {isLoading && (
           <div className="flex items-center justify-center py-2xl">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -130,19 +210,41 @@ export default function AccountInfoView({
         {!isLoading && !error && account && (
           <div className="space-y-lg">
             <section className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-xl flex flex-col sm:flex-row items-center gap-xl">
-              {account.avatarUrl ? (
-                <img
-                  src={account.avatarUrl}
-                  alt={account.fullName}
-                  className="h-24 w-24 rounded-full object-cover border-4 border-primary/20"
-                />
-              ) : (
-                <div
-                  className={`h-24 w-24 rounded-full flex items-center justify-center text-3xl font-bold ${config.avatarBgClass}`}
+              <div className="relative group shrink-0">
+                {tempAvatarUrl || account.avatarUrl ? (
+                  <img
+                    src={tempAvatarUrl || account.avatarUrl}
+                    alt={account.fullName}
+                    className="h-24 w-24 rounded-full object-cover border-4 border-primary/20 shadow-md"
+                  />
+                ) : (
+                  <div
+                    className={`h-24 w-24 rounded-full flex items-center justify-center text-3xl font-bold ${config.avatarBgClass} shadow-md`}
+                  >
+                    {account.fullName.charAt(0).toUpperCase()}
+                  </div>
+                )}
+
+                <label
+                  htmlFor="avatar-file-input"
+                  className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-primary/90 transition-all cursor-pointer hover:scale-110 active:scale-95 border-2 border-white"
+                  title={t("Cập nhật ảnh đại diện", "Update avatar")}
                 >
-                  {account.fullName.charAt(0).toUpperCase()}
-                </div>
-              )}
+                  {uploadingAvatar ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-white" />
+                  ) : (
+                    <Camera className="h-4 w-4 text-white" />
+                  )}
+                  <input
+                    id="avatar-file-input"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleAvatarUpload}
+                    disabled={uploadingAvatar}
+                  />
+                </label>
+              </div>
 
               <div className="flex-1 text-center sm:text-left">
                 <h2 className="text-headline-md font-headline-md text-on-surface">

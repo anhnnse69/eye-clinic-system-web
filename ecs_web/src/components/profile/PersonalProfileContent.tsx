@@ -17,7 +17,7 @@ import {
     ArrowLeft
 } from "lucide-react"
 import { authService } from "@/services"
-import { handleApiError } from "@/lib/axios"
+import { apiClient, handleApiError } from "@/lib/axios"
 import type { GetPersonalProfileResponse } from "@/types"
 
 const t = (vi: string, en: string) => vi;
@@ -92,12 +92,60 @@ export default function PersonalProfileContent({ roleSegment, showAccountHeader 
         fetchProfileData()
     }
 
+    const [uploadingAvatar, setUploadingAvatar] = useState(false)
+    const [avatarSuccessMsg, setAvatarSuccessMsg] = useState<string | null>(null)
+    const [avatarErrorMsg, setAvatarErrorMsg] = useState<string | null>(null)
+
+    useEffect(() => {
+        const handleAvatarUpdated = (e: Event) => {
+            const customEvt = e as CustomEvent
+            if (customEvt.detail?.avatarUrl) {
+                setProfile((prev) => prev ? { ...prev, avatarUrl: customEvt.detail.avatarUrl } : prev)
+            }
+        }
+        window.addEventListener("ecs-user-avatar-updated", handleAvatarUpdated)
+        return () => window.removeEventListener("ecs-user-avatar-updated", handleAvatarUpdated)
+    }, [])
+
+    const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file || !profile) return
+
+        try {
+            setUploadingAvatar(true)
+            setAvatarSuccessMsg(null)
+            setAvatarErrorMsg(null)
+
+            const formData = new FormData()
+            formData.append("file", file)
+            formData.append("folder", "avatars")
+
+            const res = await apiClient.post("/upload/image", formData, {
+                headers: { "Content-Type": "multipart/form-data" },
+            })
+
+            const uploadedUrl = res.data?.data?.url || res.data?.url
+            if (uploadedUrl) {
+                await apiClient.put(`/auth/profile/${profile.id}`, {
+                    fullName: profile.fullName,
+                    phone: profile.phone || "0900000000",
+                    email: profile.email,
+                    avatarUrl: uploadedUrl,
+                })
+                setProfile((prev) => prev ? { ...prev, avatarUrl: uploadedUrl } : prev)
+                window.dispatchEvent(new CustomEvent("ecs-user-avatar-updated", { detail: { avatarUrl: uploadedUrl } }))
+                setAvatarSuccessMsg(t("Cập nhật ảnh đại diện thành công!", "Avatar updated successfully!"))
+                setTimeout(() => setAvatarSuccessMsg(null), 5000)
+            }
+        } catch (err: any) {
+            setAvatarErrorMsg(err?.response?.data?.message || t("Tải ảnh thất bại, vui lòng thử lại.", "Upload failed, please try again."))
+        } finally {
+            setUploadingAvatar(false)
+        }
+    }
+
     const displayRoleLabel = profile?.role === "DOCTOR" ? "Bác sĩ" : "Lễ tân"
     const isIncomplete = profile ? (!profile.email || (profile.role === "DOCTOR" && (!profile.doctorProfile?.bio || !profile.doctorProfile?.title))) : false
-
-    const defaultAvatar = profile?.role === "DOCTOR"
-        ? "https://images.unsplash.com/photo-1622253692010-333f2da6031d?q=80&w=200&auto=format&fit=crop"
-        : "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=200&auto=format&fit=crop"
 
     return (
         <div className="min-h-screen bg-background w-full">
@@ -117,16 +165,30 @@ export default function PersonalProfileContent({ roleSegment, showAccountHeader 
                             )}
                         </p>
                     </div>
-                    
-                    {/* Nút Quay lại tự động đẩy sang góc phải và căn chỉnh đẹp mắt */}
+
                     <button
-                        onClick={() => router.back()}
-                        className="inline-flex items-center gap-2 text-sm text-on-surface-variant hover:text-primary transition-colors font-medium shrink-0 pt-1"
+                        onClick={() => router.push(`/${roleSegment}/dashboard`)}
+                        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-xs shrink-0 self-start cursor-pointer"
                     >
                         <ArrowLeft className="h-4 w-4" />
-                        {t("Quay lại", "Back")}
+                        {t("Quay lại tổng quan", "Back to Dashboard")}
                     </button>
                 </div>
+
+                {avatarSuccessMsg && (
+                    <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold flex items-center gap-2 animate-in fade-in">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        <span>{avatarSuccessMsg}</span>
+                    </div>
+                )}
+
+                {avatarErrorMsg && (
+                    <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl text-xs font-bold flex items-center gap-2 animate-in fade-in">
+                        <AlertCircle className="w-4 h-4 text-red-600" />
+                        <span>{avatarErrorMsg}</span>
+                    </div>
+                )}
+
 
                 {/* Trạng thái Loading */}
                 {loading && (
@@ -174,14 +236,37 @@ export default function PersonalProfileContent({ roleSegment, showAccountHeader 
 
                             {/* Khung ảnh đại diện */}
                             <div className="relative shrink-0">
-                                <img
-                                    alt="Avatar"
-                                    className="w-24 h-24 rounded-full border border-slate-200 object-cover aspect-square shadow-inner bg-slate-50"
-                                    src={profile.avatarUrl || defaultAvatar}
-                                />
-                                <button className="absolute bottom-1 right-1 bg-blue-600 text-white p-2 rounded-full border border-white hover:scale-110 transition-all flex items-center justify-center shadow-md active:scale-95">
-                                    <Camera className="h-3.5 w-3.5" />
-                                </button>
+                                {profile.avatarUrl ? (
+                                    <img
+                                        alt={profile.fullName}
+                                        className="w-24 h-24 rounded-full border-4 border-blue-500/20 object-cover aspect-square shadow-md bg-slate-50"
+                                        src={profile.avatarUrl}
+                                    />
+                                ) : (
+                                    <div className="w-24 h-24 rounded-full bg-blue-600 text-white flex items-center justify-center text-3xl font-bold border-4 border-blue-500/20 shadow-md">
+                                        {profile.fullName?.charAt(0)?.toUpperCase() || "U"}
+                                    </div>
+                                )}
+
+                                <label
+                                    htmlFor="profile-avatar-file-input"
+                                    className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-lg hover:bg-blue-700 transition-all cursor-pointer hover:scale-110 active:scale-95 border-2 border-white"
+                                    title={t("Cập nhật ảnh đại diện", "Update avatar")}
+                                >
+                                    {uploadingAvatar ? (
+                                        <Loader2 className="h-4 w-4 animate-spin text-white" />
+                                    ) : (
+                                        <Camera className="h-4 w-4 text-white" />
+                                    )}
+                                    <input
+                                        id="profile-avatar-file-input"
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={handleAvatarUpload}
+                                        disabled={uploadingAvatar}
+                                    />
+                                </label>
                             </div>
 
                             {/* Thông tin định danh cơ bản */}

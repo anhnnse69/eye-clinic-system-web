@@ -8,7 +8,7 @@
       "profile": "Personal"
     },
     "paraclinical": {
-      "title": "Paraclinical (UC42-44)",
+      "title": "Paraclinical",
       "filterAll": "All",
       "newRequest": "New request",
       "aiSuggestion": "AI suggestion (OCT)",
@@ -194,7 +194,9 @@
       "loadingData": "Loading data...",
       "noDoctorsFound": "No doctors found.",
       "room": "Room",
-      "removeDoctor": "Remove this doctor"
+      "removeDoctor": "Remove this doctor",
+      "back": "Back",
+      "month": "Month"
     },
     "personalSchedule": {
       "title": "Personal Schedule",
@@ -217,6 +219,7 @@
         "eveningShiftBand": "Evening Shift Band"
       },
       "slot": {
+        "available": "Available",
         "full": "Full",
         "available": "Available",
         "patients": "patients",
@@ -304,6 +307,7 @@
       "hasMedicalRecord": "Has Medical Record",
       "noMedicalRecord": "No record",
       "yearsOld": "years old",
+      "actions": "Actions",
       "booked": "Booked",
       "arrived": "Arrived",
       "inProgress": "In Progress",
@@ -376,6 +380,7 @@
       "noPatients": "No patients yet",
       "refresh": "Refresh",
       "listSubtitle": "View and search for patients who have booked appointments with you",
+      "refresh": "Refresh",
       "allStatuses": "All statuses",
       "patient": "Patient",
       "phoneNumber": "Phone number",
@@ -553,7 +558,38 @@
       "error": {
         "saveFailed": "Cannot save preliminary diagnosis",
         "unknown": "An error occurred, please try again"
-      }
+      },
+      "stepAdmin": "1. Administrative",
+      "stepMedical": "2. Medical History",
+      "stepEye": "3. Eye History",
+      "stepTriage": "4. Triage & Symptoms",
+      "pageTitle": "Initial Assessment & Preliminary Diagnosis",
+      "pageSubtitle": "Fill administrative info, medical history and triage symptoms",
+      "fullName": "Full Name",
+      "dateOfBirth": "Date of Birth",
+      "gender": "Gender",
+      "male": "Male",
+      "female": "Female",
+      "other": "Other",
+      "phone": "Phone Number",
+      "identityNumber": "National ID / Identity Number",
+      "bhytNumber": "Health Insurance ID (BHYT)",
+      "address": "Address",
+      "bloodType": "Blood Type",
+      "allergies": "Allergies",
+      "medicalHistory": "Systemic Medical History",
+      "familyHistory": "Family History",
+      "lifestyleFactors": "Lifestyle Factors",
+      "currentEyeMedications": "Current Eye Medications",
+      "previousEyeSurgery": "Previous Eye Surgery",
+      "eyeVisionHistory": "Eye Vision History",
+      "chiefComplaint": "Chief Complaint",
+      "chiefComplaintPlaceholder": "Enter chief complaint or main symptoms...",
+      "previous": "Previous",
+      "next": "Next",
+      "save": "Save & Continue",
+      "requiredFields": "Please fill in all required fields",
+      "saveFailed": "Failed to save preliminary diagnosis"
     },
     "profile": {
       "title": "Doctor Profile",
@@ -591,6 +627,13 @@
     "chiefComplaintPlaceholder": "Describe why the patient came in...",
     "medicalHistory": "Medical history",
     "medicalHistoryPlaceholder": "Disease progression, related history...",
+    "summary": {
+      "title": "Medical Record Summary",
+      "mainDiagnosis": "Final Diagnosis",
+      "clinical": "Clinical",
+      "cause": "Cause / Etiology",
+      "followUp": "Follow-up & Further Treatment"
+    },
     "diagnosis": {
       "title": "Diagnosis",
       "main": "Primary diagnosis",

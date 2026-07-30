@@ -232,18 +232,6 @@ export default function HomeUserMenu({ accountInfoHref }: HomeUserMenuProps) {
 
           <button
             role="menuitem"
-            onClick={handleBookAppointment}
-            className="w-full flex items-center gap-sm px-4 py-3 text-sm text-on-surface hover:bg-surface-container transition-colors"
-          >
-            <Calendar className="h-4 w-4 text-on-surface-variant" />
-            <div className="flex flex-col items-start">
-              <span className="font-medium">Đặt lịch</span>
-              <span className="text-[11px] text-on-surface-variant">Đặt lịch khám</span>
-            </div>
-          </button>
-
-          <button
-            role="menuitem"
             onClick={handleLogout}
             className="w-full flex items-center gap-sm px-4 py-3 text-sm text-error hover:bg-error-container transition-colors border-t border-outline-variant"
           >

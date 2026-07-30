@@ -28,6 +28,7 @@ import {
 } from "@/types"
 
 import UniversalEyeExamSections from "./medical-record-form/UniversalEyeExamSections"
+import OfficialMedicalRecordA4Print from "./medical-record-form/OfficialMedicalRecordA4Print"
 import SubspecialtySections from "./medical-record-form/SubspecialtySections"
 import GlaucomaFormSections from "./medical-record-form/GlaucomaFormSections"
 import PatientManagementSections from "./medical-record-form/PatientManagementSections"
@@ -69,12 +70,18 @@ export default function EditMedicalRecordClient({
       setLoadError(null)
       try {
         const response = await medicalRecordService.getById(recordId)
-        if (!response?.data?.isSuccess || !response.data.medicalRecord) {
+        if (!response?.data) {
           setLoadError("Không tìm thấy hồ sơ bệnh án")
           return
         }
 
-        const record = response.data.medicalRecord
+        const record = response.data
+
+        if (record.canEdit === false || record.isLocked) {
+          setLoadError(record.editRestrictionReason || "Hồ sơ bệnh án đã qua ngày tạo hoặc bị khóa, không được phép chỉnh sửa nữa.")
+          return
+        }
+
         const formData = record.formData as MedicalRecordFormDataPayload | null
 
         if (formData) {
@@ -133,6 +140,19 @@ export default function EditMedicalRecordClient({
       return
     }
 
+    const formatSystemErrorMessage = (rawError?: string | null, fallback = "Cập nhật bệnh án thất bại"): string => {
+      if (!rawError) return fallback
+      if (
+        rawError.includes("500") ||
+        rawError.includes("status code 500") ||
+        rawError.toLowerCase().includes("request failed") ||
+        rawError.includes("Internal Server Error")
+      ) {
+        return "Đã có lỗi hệ thống xảy ra khi lưu bệnh án. Vui lòng kiểm tra lại kết nối hoặc thử lại sau."
+      }
+      return getMessage(rawError) ?? rawError
+    }
+
     setSubmitting(true)
     try {
       const response = await medicalRecordService.update(recordId, {
@@ -140,7 +160,7 @@ export default function EditMedicalRecordClient({
       })
 
       if (!response?.data?.isSuccess) {
-        setServerError(getMessage(response?.codeMessage) ?? "Cập nhật bệnh án thất bại")
+        setServerError(formatSystemErrorMessage(response?.codeMessage))
         setSubmitting(false)
         return
       }
@@ -148,7 +168,7 @@ export default function EditMedicalRecordClient({
       setSuccessInfo({ recordId })
     } catch (err) {
       setServerError(
-        err instanceof Error ? err.message : "Lỗi không xác định khi gọi BE"
+        formatSystemErrorMessage(err instanceof Error ? err.message : null)
       )
     } finally {
       setSubmitting(false)
@@ -218,14 +238,14 @@ export default function EditMedicalRecordClient({
         <div className="flex justify-center gap-3">
           <button
             type="button"
-            onClick={() => router.push("/doctor/medical-records")}
+            onClick={() => router.push("/doctor/records")}
             className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             Về danh sách
           </button>
           <button
             type="button"
-            onClick={() => router.push(`/doctor/medical-records/${successInfo.recordId}`)}
+            onClick={() => router.push(`/doctor/records/${successInfo.recordId}`)}
             className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
           >
             Xem chi tiết
@@ -255,15 +275,27 @@ export default function EditMedicalRecordClient({
   }
 
   // ─── Main Edit Form ─────────────────────────────────────────────────
+  const handlePrint = () => {
+    const originalTitle = document.title
+    document.title = "Eye Clinic Support System"
+    window.print()
+    setTimeout(() => {
+      document.title = originalTitle
+    }, 1000)
+  }
+
   return (
     <FormProvider {...methods}>
       <form
         onSubmit={onSubmit}
-        className="mx-auto max-w-5xl space-y-8 px-4 py-8"
+        className="mx-auto max-w-5xl space-y-8 px-4 py-8 print:max-w-none print:p-0 print:space-y-4"
         aria-label={`Chỉnh sửa ${MEDICAL_RECORD_TYPE_LABELS[recordType]}`}
       >
-        {/* Header */}
-        <header className="rounded-lg border border-gray-200 bg-white p-5">
+        {/* Official A4 Print Header & Styles */}
+        <OfficialMedicalRecordA4Print recordType={recordType || "MS21_TRAUMA"} />
+
+        {/* Header — Screen mode */}
+        <header className="rounded-lg border border-gray-200 bg-white p-5 print:hidden">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
               <p className={`text-sm font-medium ${accentText(recordType)}`}>
@@ -274,11 +306,11 @@ export default function EditMedicalRecordClient({
               </h1>
               <p className="mt-1 text-xs text-gray-600">Chỉnh sửa bệnh án</p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 print:hidden">
               <button
                 type="button"
-                onClick={() => window.print()}
-                className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 print:hidden"
+                onClick={handlePrint}
+                className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
                 title="In bệnh án ra PDF/A4"
               >
                 <Printer className="h-4 w-4" />
@@ -366,6 +398,27 @@ export default function EditMedicalRecordClient({
             <span>{serverError}</span>
           </div>
         )}
+
+        {/* Printable A4 PDF Footer & Signature Section */}
+        <footer className="mt-8 hidden border-t border-gray-300 pt-6 print:block print:break-inside-avoid">
+          <div className="grid grid-cols-2 gap-8 text-center text-xs text-black">
+            <div>
+              <p className="font-semibold uppercase tracking-wider">Người bệnh / Thân nhân</p>
+              <p className="mt-1 text-[10px] text-gray-500 italic">(Ký và ghi rõ họ tên)</p>
+              <div className="h-16" />
+            </div>
+            <div>
+              <p className="italic text-[11px] text-gray-700">Ngày ..... tháng ..... năm 20...</p>
+              <p className="mt-1 font-semibold uppercase tracking-wider">Bác sĩ khám bệnh</p>
+              <p className="mt-1 text-[10px] text-gray-500 italic">(Ký và ghi rõ họ tên)</p>
+              <div className="h-16" />
+            </div>
+          </div>
+          <div className="mt-4 border-t border-gray-300 pt-3 flex items-center justify-between text-[10px] text-gray-700 font-semibold">
+            <span className="uppercase tracking-wide">Eye Clinic Support System</span>
+            <span>Bệnh án nhãn khoa — In từ phần mềm y tế</span>
+          </div>
+        </footer>
 
         {/* Action Buttons */}
         <div className="flex items-center justify-end gap-3 border-t border-gray-200 pt-6 print:hidden">

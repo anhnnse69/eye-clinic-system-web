@@ -68,6 +68,20 @@ export interface GetAppointmentDetailResponse {
         isPublic: boolean
         createdAt: string
     }
+
+    prescription?: {
+        diagnosisMain: string
+        diagnosisComorbid?: string
+        doctorNotes?: string
+        items: {
+            medicineName: string
+            dosage: string
+            frequency: string
+            durationDays: string
+            quantity: string
+            instruction: string
+        }[]
+    }
 }
 
 export interface SubmitFeedbackRequest {

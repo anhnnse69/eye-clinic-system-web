@@ -137,7 +137,7 @@ export default function PatientProfilesPage() {
 
                 <button
                     onClick={handleCreateProfile}
-                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold rounded-xl shadow-md shadow-blue-500/10 active:scale-[0.98] transition-all shrink-0"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 active:scale-[0.98] text-white text-sm font-semibold rounded-xl shadow-sm transition-all shrink-0 cursor-pointer"
                 >
                     <Plus className="w-4.5 h-4.5" />
                     {t("addNew")}
@@ -145,7 +145,7 @@ export default function PatientProfilesPage() {
             </div>
 
             {/* Search Box */}
-            <div className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm transition-all duration-200 focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-50">
+            <div className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm transition-all duration-200 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
                 <div className="relative flex items-center">
                     <Search className="absolute left-4 w-4.5 h-4.5 text-slate-400 pointer-events-none" />
                     <input
@@ -207,10 +207,10 @@ export default function PatientProfilesPage() {
                                         >
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3 font-semibold text-slate-900">
-                                                    <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shrink-0 border border-blue-100 group-hover:scale-105 transition-transform">
+                                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0 border border-primary/20 group-hover:scale-105 transition-transform">
                                                         <User className="w-4 h-4" />
                                                     </div>
-                                                    <span className="group-hover:text-blue-600 transition-colors">{item.fullName}</span>
+                                                    <span className="group-hover:text-primary transition-colors">{item.fullName}</span>
                                                 </div>
                                             </td>
 
@@ -255,9 +255,9 @@ export default function PatientProfilesPage() {
                                             <td className="px-6 py-4 text-center">
                                                 <button
                                                     onClick={() => handleViewDetail(item.id_patientProfile)}
-                                                    className="inline-flex items-center justify-center px-3.5 py-1.5 text-xs font-bold text-blue-600 bg-blue-50 border border-blue-100 rounded-xl hover:bg-blue-600 hover:text-white hover:border-blue-600 active:scale-95 shadow-sm hover:shadow-md hover:shadow-blue-500/10 transition-all"
+                                                    className="inline-flex items-center justify-center px-3.5 py-1.5 text-xs font-bold text-primary bg-primary/10 border border-primary/20 rounded-xl hover:bg-primary hover:text-white active:scale-95 shadow-sm transition-all cursor-pointer"
                                                 >
-                                                    {t("viewDetails")}
+                                                    Xem đơn thuốc & Chi tiết
                                                 </button>
                                             </td>
                                         </tr>

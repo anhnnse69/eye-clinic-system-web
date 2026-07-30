@@ -28,15 +28,33 @@ const optionalString = z
   .union([z.string(), z.null(), z.undefined()])
   .transform((v) => (v == null || v === "" ? undefined : v))
 
-/** Helper: cho phép number hoặc null. */
+/** Helper: cho phép number, string number, hoặc null/undefined. */
 const optionalNumber = z
-  .union([z.number(), z.null(), z.undefined()])
-  .transform((v) => (v == null ? undefined : v))
+  .union([z.number(), z.string(), z.null(), z.undefined()])
+  .transform((v) => {
+    if (v == null || v === "") return undefined
+    if (typeof v === "number") return isNaN(v) ? undefined : v
+    const parsed = Number(v)
+    return isNaN(parsed) ? undefined : parsed
+  })
 
 /** Helper: cho phép boolean nullable. */
 const optionalBool = z
-  .union([z.boolean(), z.null(), z.undefined()])
-  .transform((v) => (v == null ? undefined : v))
+  .union([z.boolean(), z.string(), z.null(), z.undefined()])
+  .transform((v) => {
+    if (v == null || v === "") return undefined
+    if (typeof v === "string") return v === "true" || v === "1"
+    return v
+  })
+
+/** Helper: cho phép string hoặc boolean (như chắp/lẹo checkbox). */
+const optionalStringOrBool = z
+  .union([z.string(), z.boolean(), z.null(), z.undefined()])
+  .transform((v) => {
+    if (v == null || v === "") return undefined
+    if (typeof v === "boolean") return v ? "Có" : undefined
+    return v
+  })
 
 // =========================================================
 // Shared eye exam schemas (per-side objects)
@@ -89,7 +107,7 @@ const eyelidSchema = z.object({
   hoMi: optionalBool,
   treMi: optionalBool,
   khuyetMi: optionalString,
-  chapLeo: optionalString,
+  chapLeo: optionalStringOrBool,
   chuaKhac: optionalString,
 })
 

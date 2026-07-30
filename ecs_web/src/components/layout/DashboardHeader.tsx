@@ -1,10 +1,11 @@
-﻿"use client"
+"use client"
 
 import { Menu, Bell, LogOut, User as UserIcon, ChevronDown } from "lucide-react"
 import { useShell } from "./ShellProvider"
 import { useRouter } from "next/navigation"
 import { useState, useRef, useEffect } from "react"
 import { authService } from "@/services/auth.service"
+import { apiClient } from "@/lib/axios"
 import LanguageSwitcher from "./LanguageSwitcher"
 
 export interface DashboardHeaderProps {
@@ -29,6 +30,35 @@ export default function DashboardHeader({ title, user, accountInfoHref, labels }
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement | null>(null)
+
+  const [currentAvatarUrl, setCurrentAvatarUrl] = useState<string | null>(user.avatar || null)
+
+  useEffect(() => {
+    if (user.avatar) {
+      setCurrentAvatarUrl(user.avatar)
+      return
+    }
+    // Auto fetch user profile to load avatarUrl for staff roles
+    apiClient.get("/auth/me")
+      .then((res: any) => {
+        const avatar = res.data?.data?.avatarUrl || res.data?.avatarUrl
+        if (avatar) {
+          setCurrentAvatarUrl(avatar)
+        }
+      })
+      .catch(() => {})
+  }, [user.avatar])
+
+  useEffect(() => {
+    const handleAvatarUpdated = (e: Event) => {
+      const customEvt = e as CustomEvent
+      if (customEvt.detail?.avatarUrl) {
+        setCurrentAvatarUrl(customEvt.detail.avatarUrl)
+      }
+    }
+    window.addEventListener("ecs-user-avatar-updated", handleAvatarUpdated)
+    return () => window.removeEventListener("ecs-user-avatar-updated", handleAvatarUpdated)
+  }, [])
 
   useEffect(() => {
     if (!dropdownOpen) return
@@ -96,9 +126,17 @@ export default function DashboardHeader({ title, user, accountInfoHref, labels }
               aria-haspopup="menu"
               aria-expanded={dropdownOpen}
             >
-              <div className="h-9 w-9 rounded-full bg-primary text-primary-contrast flex items-center justify-center font-medium text-sm">
-                {user.name.charAt(0).toUpperCase()}
-              </div>
+              {currentAvatarUrl ? (
+                <img
+                  src={currentAvatarUrl}
+                  alt={user.name}
+                  className="h-9 w-9 rounded-full object-cover border border-primary/20 shadow-xs"
+                />
+              ) : (
+                <div className="h-9 w-9 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-xs">
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+              )}
               <div className="hidden sm:block text-left">
                 <p className="text-sm font-medium text-on-surface leading-tight">{user.name}</p>
                 <p className="text-xs text-on-surface-variant leading-tight">{user.role}</p>

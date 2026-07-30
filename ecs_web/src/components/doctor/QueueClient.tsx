@@ -111,28 +111,42 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
     return () => document.removeEventListener("click", handleClickOutside)
   }, [showCalendar])
 
-  const fetchQueueData = useCallback(async () => {
-    setLoading(true)
-    setError(null)
+  const fetchQueueData = useCallback(async (isSilentArg?: boolean | unknown) => {
+    const isSilent = isSilentArg === true
+    if (!isSilent) {
+      setLoading(true)
+      setError(null)
+    }
     try {
       const response = await queueService.getQueueList({
         date: formatDate(selectedDate),
       })
       if (response.data) {
         setQueueData(response.data)
-      } else {
+      } else if (!isSilent) {
         setError(getMessage(response.codeMessage) || tErrors("loadFailed"))
       }
     } catch (err: any) {
-      const errorCode = err?.response?.data?.codeMessage
-      setError(getMessage(errorCode) || tErrors("loadFailed"))
+      if (!isSilent) {
+        const errorCode = err?.response?.data?.codeMessage
+        setError(getMessage(errorCode) || tErrors("loadFailed"))
+      }
     } finally {
-      setLoading(false)
+      if (!isSilent) {
+        setLoading(false)
+      }
     }
   }, [selectedDate, tErrors])
 
   useEffect(() => {
-    fetchQueueData()
+    fetchQueueData(false)
+
+    // Polling every 5 seconds for real-time queue updates when receptionist confirms/checks-in
+    const intervalId = setInterval(() => {
+      fetchQueueData(true)
+    }, 5000)
+
+    return () => clearInterval(intervalId)
   }, [fetchQueueData])
 
   const handlePreviousDay = () => {
@@ -165,18 +179,16 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
 
   const handleViewRecord = (item: QueueItem) => {
     if (item.hasMedicalRecord) {
-      router.push(`/doctor/records/${item.appointmentId}`)
+      router.push(`/doctor/records/${item.medicalRecordId || item.appointmentId}`)
     }
   }
 
   const handleStartExamination = (item: QueueItem) => {
-    if (item.hasPreliminaryDiagnosis || item.hasMedicalRecord) {
-      router.push(
-        `/doctor/records/create?appointmentId=${item.appointmentId}&patientId=${item.patientId}&continue=true`
-      )
+    if (item.hasMedicalRecord) {
+      router.push(`/doctor/records/${item.medicalRecordId || item.appointmentId}`)
     } else {
       router.push(
-        `/doctor/records/preliminary-diagnosis?appointmentId=${item.appointmentId}&patientId=${item.patientId}&patientName=${encodeURIComponent(item.patientName)}`
+        `/doctor/records/create?appointmentId=${item.appointmentId}&patientId=${item.patientId}`
       )
     }
   }

@@ -49,6 +49,7 @@ export default async function ReceptionistLayout({ children }: { children: React
       items: [
         { label: tNav("viewPatients"), href: "/receptionist/patients", icon: "Users" },
         { label: tNav("walkInRegistration"), href: "/receptionist/walk-in-registration", icon: "UserPlus" },
+        { label: "Luân chuyển hồ sơ", href: "/receptionist/record-transfers", icon: "FileText" },
       ],
     },
     {

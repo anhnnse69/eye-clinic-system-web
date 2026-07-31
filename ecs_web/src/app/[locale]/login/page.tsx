@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2, Globe, CheckCircle, ArrowLeft, Mail, Clock } from "lucide-react";
@@ -45,7 +45,8 @@ export default function LoginPage() {
   const tAuth = useTranslations("auth");
   const router = useRouter();
   const params = useParams();
-  const locale = params.locale as string;
+  const activeLocale = useLocale();
+  const locale = activeLocale || (params?.locale as string) || "vi";
 
   const [forgotPasswordState, setForgotPasswordState] = useState<ForgotPasswordState>("none");
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -76,7 +77,15 @@ export default function LoginPage() {
 
   const toggleLocale = () => {
     const newLocale = locale === "vi" ? "en" : "vi";
-    router.push(`/${newLocale}/login`);
+    localStorage.setItem("locale", newLocale);
+    document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000`;
+    const currentPath = window.location.pathname;
+    if (/^\/(vi|en)(\/|$)/.test(currentPath)) {
+      const newPath = currentPath.replace(/^\/(vi|en)/, `/${newLocale}`) + window.location.search;
+      router.replace(newPath);
+    } else {
+      router.replace(`/${newLocale}/login${window.location.search}`);
+    }
   };
 
   // OTP countdown timer
@@ -403,11 +412,11 @@ export default function LoginPage() {
         <div className="absolute top-4 right-4 md:top-6 md:right-6 z-20">
           <button
             onClick={toggleLocale}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors font-label-sm shadow-sm"
+            className="px-3 py-1.5 text-xs font-bold text-on-surface-variant border border-outline-variant rounded-xl hover:bg-surface-container transition-colors shrink-0 shadow-sm flex items-center gap-1.5"
             aria-label="Switch language"
           >
-            <Globe className="w-4 h-4" />
-            <span className="uppercase font-medium">{locale}</span>
+            <Globe className="w-3.5 h-3.5 text-slate-500" />
+            <span>{locale === "vi" ? "EN" : "VI"}</span>
           </button>
         </div>
 
@@ -764,14 +773,24 @@ export default function LoginPage() {
 
           {/* Footer - only show when not in forgot password flow */}
           {forgotPasswordState === "none" && (
-            <div className="mt-12 pt-8 border-t border-outline-variant flex flex-col items-center gap-4">
-              <p className="font-body-sm text-body-sm text-on-surface-variant">
-                {t("noAccount")}{" "}
-                <a className="text-primary font-bold hover:underline" href="#">
-                  {t("contactAdmin")}
-                </a>
-              </p>
-              <div className="flex gap-6 text-outline text-label-sm font-label-sm">
+            <div className="mt-8 pt-6 border-t border-outline-variant flex flex-col items-center gap-4">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full text-center">
+                <p className="font-body-sm text-body-sm text-on-surface-variant">
+                  {t("noAccount")}{" "}
+                  <Link href={`/${locale}/register`} className="text-primary font-bold hover:underline transition-colors ml-1">
+                    {t("registerNow")}
+                  </Link>
+                </p>
+                <span className="hidden sm:inline text-slate-300">•</span>
+                <Link
+                  href={`/${locale}/register-clinic-application`}
+                  className="text-xs font-semibold text-slate-600 hover:text-primary transition-colors bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg border border-slate-200"
+                >
+                  {t("registerClinic")}
+                </Link>
+              </div>
+
+              <div className="flex gap-6 text-outline text-label-sm font-label-sm mt-2">
                 <a className="hover:text-on-surface transition-colors" href="#">
                   {t("privacyPolicy")}
                 </a>

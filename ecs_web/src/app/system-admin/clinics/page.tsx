@@ -48,7 +48,6 @@ export default function ClinicsListPage() {
     fetchPendingPublicationCount()
   }, [])
 
-
   const fetchClinics = async () => {
     try {
       setLoading(true)
@@ -212,7 +211,7 @@ export default function ClinicsListPage() {
 
         <button
           onClick={() => router.push("/system-admin/clinics/pending-publications")}
-          className="relative inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm rounded-xl transition-all shadow-sm active:scale-95 self-start sm:self-center"
+          className="relative inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm rounded-xl transition-all shadow-sm active:scale-95 self-start sm:self-center cursor-pointer"
         >
           <Building2 className="h-4 w-4" />
           <span>Yêu cầu duyệt công khai</span>
@@ -257,7 +256,7 @@ export default function ClinicsListPage() {
           <button
             onClick={fetchClinics}
             disabled={loading}
-            className="border border-blue-600 text-blue-600 hover:bg-blue-50 px-4 py-2.5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 h-[45px] w-full"
+            className="border border-blue-600 text-blue-600 hover:bg-blue-50 px-4 py-2.5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 h-[45px] w-full cursor-pointer"
           >
             <Filter className="h-4 w-4" />
             {loading ? "Đang tải..." : "Làm mới dữ liệu"}
@@ -295,7 +294,7 @@ export default function ClinicsListPage() {
             <table className="w-full text-left border-collapse min-w-[1000px]">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50">
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider w-[120px]">Mã cơ sở</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider text-center w-[70px]">STT</th>
                   <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Tên phòng khám / Địa chỉ</th>
                   <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Thông tin liên hệ</th>
                   <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider w-[160px]">Trạng thái</th>
@@ -303,8 +302,9 @@ export default function ClinicsListPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
-                {clinics.map((clinic) => {
+                {clinics.map((clinic, index) => {
                   const id = clinic.id_clinic || (clinic as any).Id_clinic;
+                  const stt = (currentPage - 1) * pageSize + index + 1;
                   const name = clinic.clinicName || (clinic as any).ClinicName;
                   const address = clinic.address || (clinic as any).Address;
                   const email = clinic.contactEmail || (clinic as any).ContactEmail;
@@ -316,7 +316,7 @@ export default function ClinicsListPage() {
 
                   return (
                     <tr key={id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="px-6 py-4 font-mono font-semibold text-blue-600 text-sm">{id}</td>
+                      <td className="px-6 py-4 font-bold text-slate-600 text-sm text-center">{stt}</td>
                       <td className="px-6 py-4">
                         <div className="flex items-start gap-3">
                           <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shrink-0 mt-0.5">
@@ -360,7 +360,7 @@ export default function ClinicsListPage() {
                                   router.push(`/system-admin/clinics/edit/${id}?mode=view`)
                                 }
                               }}
-                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-blue-600 px-2.5 py-1.5 hover:bg-blue-50 rounded-lg transition-all whitespace-nowrap"
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-blue-600 px-2.5 py-1.5 hover:bg-blue-50 rounded-lg transition-all whitespace-nowrap cursor-pointer"
                             >
                               <Edit2 className="h-4 w-4 shrink-0" />
                               <span>Chỉnh sửa</span>
@@ -370,7 +370,7 @@ export default function ClinicsListPage() {
                           {displayState.key === "ACTIVE" && (
                             <button
                               onClick={() => handleOpenDeleteModal(id, name)}
-                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 px-2.5 py-1.5 hover:bg-red-50 rounded-lg transition-all whitespace-nowrap"
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 px-2.5 py-1.5 hover:bg-red-50 rounded-lg transition-all whitespace-nowrap cursor-pointer"
                             >
                               <Ban className="h-4 w-4 shrink-0" />
                               <span>Vô hiệu hóa</span>
@@ -398,7 +398,7 @@ export default function ClinicsListPage() {
                 <button
                   onClick={handlePreviousPage}
                   disabled={!pagination.hasPrevious || loading}
-                  className="p-1.5 rounded-lg hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-600"
+                  className="p-1.5 rounded-lg hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-600 cursor-pointer"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
@@ -408,7 +408,7 @@ export default function ClinicsListPage() {
                 <button
                   onClick={handleNextPage}
                   disabled={!pagination.hasNext || loading}
-                  className="p-1.5 rounded-lg hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-600"
+                  className="p-1.5 rounded-lg hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-600 cursor-pointer"
                 >
                   <ChevronRight className="h-5 w-5" />
                 </button>
@@ -419,7 +419,7 @@ export default function ClinicsListPage() {
       )}
 
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
           <div className="bg-white rounded-2xl max-w-3xl w-full shadow-2xl animate-scaleIn overflow-hidden">
             {/* Header */}
             <div className="p-6 border-b border-gray-100">
@@ -433,7 +433,7 @@ export default function ClinicsListPage() {
                 <button
                   onClick={handleCloseDeleteModal}
                   disabled={deleting}
-                  className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
                 >
                   <X className="h-5 w-5 text-gray-500" />
                 </button>
@@ -472,14 +472,14 @@ export default function ClinicsListPage() {
               <button
                 onClick={handleCloseDeleteModal}
                 disabled={deleting}
-                className="px-4 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-xl font-semibold hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-xl font-semibold hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 Hủy bỏ
               </button>
               <button
                 onClick={handleConfirmDelete}
                 disabled={deleting}
-                className="px-6 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 min-w-[140px]"
+                className="px-6 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 min-w-[140px] cursor-pointer"
               >
                 {deleting ? (
                   <>

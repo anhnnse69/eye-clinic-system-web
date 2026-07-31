@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2, ArrowLeft, CheckCircle2, AlertCircle, Lock, XCircle } from "lucide-react";
+import { useLocale } from "next-intl";
 import { authService } from "@/services/auth.service";
 
 const CODE_MESSAGES: Record<string, { vi: string; en: string }> = {
@@ -22,6 +23,34 @@ const getErrorMessage = (codeMessage: string, locale: string): string => {
 
 export default function ChangePasswordPage() {
   const router = useRouter();
+  const activeLocale = useLocale();
+
+  const [currentLocale, setCurrentLocale] = useState<"vi" | "en">(() => {
+    if (typeof window !== "undefined") {
+      const match = window.location.pathname.match(/^\/(vi|en)(\/|$)/)
+      if (match) return match[1] as "vi" | "en"
+      const cookieMatch = document.cookie.match(/(?:^|;\s*)NEXT_LOCALE=([^;]+)/)
+      if (cookieMatch && (cookieMatch[1] === "vi" || cookieMatch[1] === "en")) {
+        return cookieMatch[1] as "vi" | "en"
+      }
+      const stored = localStorage.getItem("locale")
+      if (stored === "vi" || stored === "en") return stored
+    }
+    return activeLocale === "en" ? "en" : "vi"
+  })
+
+  useEffect(() => {
+    const handleLocaleChanged = (e: any) => {
+      if (e?.detail?.locale === "vi" || e?.detail?.locale === "en") {
+        setCurrentLocale(e.detail.locale)
+      }
+    }
+    window.addEventListener("ecs-locale-changed", handleLocaleChanged)
+    return () => window.removeEventListener("ecs-locale-changed", handleLocaleChanged)
+  }, [])
+
+  const locale = currentLocale
+
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -31,16 +60,6 @@ export default function ChangePasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-
-  const [locale, setLocale] = useState("vi");
-
-  // Detect locale from URL on mount
-  if (typeof window !== "undefined" && !locale) {
-    const pathLocale = window.location.pathname.split("/")[1];
-    if (pathLocale === "en" || pathLocale === "vi") {
-      setLocale(pathLocale);
-    }
-  }
 
   useEffect(() => {
     if (success) {
@@ -339,7 +358,8 @@ export default function ChangePasswordPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="px-6 py-2.5 text-sm font-medium text-white bg-primary-container rounded-xl shadow-md shadow-primary-container/20 hover:bg-primary transition-all hover:scale-[1.01] active:scale-[0.98] flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ backgroundColor: "#00658D" }}
+            className="px-6 py-2.5 text-sm font-semibold text-white rounded-xl shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {isLoading ? (
               <>

@@ -19,6 +19,11 @@ import {
   MessageSquare,
   ArrowLeft,
   ChevronLeft,
+  Building2,
+  DoorOpen,
+  Briefcase,
+  Star,
+  UserPlus,
 } from "lucide-react"
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -38,6 +43,11 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   MessageSquare,
   ArrowLeft,
   ChevronLeft,
+  Building2,
+  DoorOpen,
+  Briefcase,
+  Star,
+  UserPlus,
 }
 
 export interface NavItem {

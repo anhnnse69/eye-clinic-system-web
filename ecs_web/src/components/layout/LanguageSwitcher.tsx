@@ -35,11 +35,8 @@ export default function LanguageSwitcher({ className }: LanguageSwitcherProps) {
   const switchTo = useCallback(
     (next: Locale) => {
       if (next === current) return
-      // Path "/" so middleware sees the cookie on every route
       document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=31536000; samesite=lax`
       setCurrent(next)
-      // Hard reload so all client components also re-evaluate locale
-      // via next-intl's NextIntlClientProvider state.
       window.location.reload()
     },
     [current]
@@ -48,7 +45,7 @@ export default function LanguageSwitcher({ className }: LanguageSwitcherProps) {
   return (
     <div
       className={
-        "inline-flex items-center bg-white border border-slate-200 rounded-full overflow-hidden shadow-sm text-xs font-bold select-none " +
+        "inline-flex items-center bg-surface-container-lowest border border-outline-variant rounded-full overflow-hidden shadow-xs text-xs font-bold select-none " +
         (className ?? "")
       }
       role="group"
@@ -60,8 +57,8 @@ export default function LanguageSwitcher({ className }: LanguageSwitcherProps) {
         className={
           "px-3 h-9 transition-colors " +
           (current === "vi"
-            ? "bg-blue-600 text-white"
-            : "text-slate-600 hover:bg-slate-100")
+            ? "bg-primary text-on-primary"
+            : "text-on-surface-variant hover:bg-surface-container")
         }
         aria-label="Switch to Vietnamese"
         aria-pressed={current === "vi"}
@@ -69,15 +66,15 @@ export default function LanguageSwitcher({ className }: LanguageSwitcherProps) {
       >
         VI
       </button>
-      <span className="h-5 w-px bg-slate-200" aria-hidden />
+      <span className="h-5 w-px bg-outline-variant" aria-hidden />
       <button
         type="button"
         onClick={() => switchTo("en")}
         className={
           "px-3 h-9 transition-colors " +
           (current === "en"
-            ? "bg-blue-600 text-white"
-            : "text-slate-600 hover:bg-slate-100")
+            ? "bg-primary text-on-primary"
+            : "text-on-surface-variant hover:bg-surface-container")
         }
         aria-label="Switch to English"
         aria-pressed={current === "en"}

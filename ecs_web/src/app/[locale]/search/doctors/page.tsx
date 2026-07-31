@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Search, Stethoscope, Star, Loader2, Building2, ChevronRight, ChevronDown, Award, Sparkles, HeartPulse, CalendarCheck, ShieldCheck, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Header from "@/components/layout/Header";
@@ -53,6 +54,7 @@ function DoctorAvatar({ url, name }: { url?: string; name: string }) {
 }
 
 export default function SearchDoctorsPage() {
+  const t = useTranslations("search");
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -64,8 +66,6 @@ export default function SearchDoctorsPage() {
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-
-  const isVI = locale === "vi";
 
   const fetchResults = useCallback(async (kw: string) => {
     setIsLoading(true);
@@ -101,21 +101,18 @@ export default function SearchDoctorsPage() {
   const hasMore = visibleCount < doctors.length;
   const remaining = doctors.length - visibleCount;
 
-  // Khối Chuyên khoa - Tĩnh (Decor)
   const staticSpecialties = [
-    { nameVi: "Khám mắt tổng quát", nameEn: "Comprehensive Eye Examination", icon: Sparkles, color: "text-teal-600 bg-teal-50" },
-    { nameVi: "Nhãn khoa nhi", nameEn: "Pediatric Ophthalmology", icon: HeartPulse, color: "text-rose-600 bg-rose-50" },
-    { nameVi: "Điều trị đục thủy tinh thể", nameEn: "Cataract Treatment", icon: Stethoscope, color: "text-violet-600 bg-violet-50" },
+    { nameKey: "specialties.comprehensive", icon: Sparkles, color: "text-teal-600 bg-teal-50" },
+    { nameKey: "specialties.pediatric", icon: HeartPulse, color: "text-rose-600 bg-rose-50" },
+    { nameKey: "specialties.cataract", icon: Stethoscope, color: "text-violet-600 bg-violet-50" },
   ];
 
-  // Khối Quy trình các bước an tâm
   const steps = [
-    { titleVi: "1. Chọn bác sĩ", titleEn: "1. Select Doctor", descVi: "Xem thông tin & kinh nghiệm", descEn: "View profile & experience" },
-    { titleVi: "2. Đặt lịch nhanh", titleEn: "2. Book Appointment", descVi: "Chọn giờ khám chỉ trong 1 phút", descEn: "Choose time in 1 minute" },
-    { titleVi: "3. Khám an toàn", titleEn: "3. Safe Consultation", descVi: "Được ưu tiên tại cơ sở y tế", descEn: "Get priority at clinic" }
+    { titleKey: "steps.step1Title", descKey: "steps.step1Desc" },
+    { titleKey: "steps.step2Title", descKey: "steps.step2Desc" },
+    { titleKey: "steps.step3Title", descKey: "steps.step3Desc" }
   ];
 
-  const isSearchEmpty = doctors.length === 0 && !!searchQuery;
   return (
     <>
       <style>{`
@@ -135,29 +132,25 @@ export default function SearchDoctorsPage() {
 
         <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-6">
 
-          {/* Hàng số lượng kết quả tìm thấy */}
           {hasSearched && !isLoading && (searchQuery || doctors.length > 0) && (
             <p className="text-xs font-medium text-slate-500 mb-5 flex items-center gap-1.5">
               <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-white text-[10px] font-bold">
                 {doctors.length}
               </span>
               {searchQuery
-                ? isVI ? `kết quả cho "${searchQuery}"` : `result(s) for "${searchQuery}"`
-                : isVI ? "bác sĩ" : "doctor(s) available"}
+                ? t("doctorResults", { count: doctors.length, query: searchQuery })
+                : t("doctorCount", { count: doctors.length })}
             </p>
           )}
 
-          {/* BỐ CỤC 2 CỘT CHÍNH */}
           <div className="flex flex-col lg:flex-row gap-6 items-start">
 
-            {/* CỘT TRÁI: SIDEBAR TRANG TRÍ (Giữ y chang phòng khám) */}
             <aside className="w-full lg:w-[300px] shrink-0 flex flex-col gap-4 lg:sticky lg:top-24">
 
-              {/* Khối 1: Danh sách dịch vụ mũi nhọn (Tĩnh - Decor) */}
               <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm">
                 <h4 className="font-bold text-slate-800 text-sm flex items-center gap-2 mb-3">
                   <Award className="w-4 h-4 text-primary" />
-                  {isVI ? "Dịch vụ chăm sóc mắt" : "Eye Care Services"}
+                  {t("eyeServices")}
                 </h4>
                 <div className="flex flex-col gap-2.5">
                   {staticSpecialties.map((item, idx) => {
@@ -172,10 +165,10 @@ export default function SearchDoctorsPage() {
                         </div>
                         <div className="min-w-0">
                           <p className="text-xs font-bold text-slate-700 truncate">
-                            {isVI ? item.nameVi : item.nameEn}
+                            {t(item.nameKey)}
                           </p>
                           <p className="text-[10px] text-slate-400 font-medium">
-                            {isVI ? "Chuyên khoa đạt chuẩn" : "Certified Specialty"}
+                            {t("certifiedSpecialty")}
                           </p>
                         </div>
                       </div>
@@ -184,11 +177,10 @@ export default function SearchDoctorsPage() {
                 </div>
               </div>
 
-              {/* Khối 2: Quy trình đặt lịch tinh tế */}
               <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm">
                 <h4 className="font-bold text-slate-800 text-sm flex items-center gap-2 mb-3.5">
                   <CalendarCheck className="w-4 h-4 text-emerald-500" />
-                  {isVI ? "Quy trình đặt hẹn" : "Booking Journey"}
+                  {t("bookingJourney")}
                 </h4>
                 <div className="relative border-l-2 border-slate-100 pl-4 ml-2 space-y-4">
                   {steps.map((step, idx) => (
@@ -196,10 +188,10 @@ export default function SearchDoctorsPage() {
                       <span className="absolute -left-[21px] top-0.5 flex h-2.5 w-2.5 items-center justify-center rounded-full bg-emerald-500 ring-4 ring-emerald-50" />
                       <div>
                         <h5 className="text-xs font-bold text-slate-700">
-                          {isVI ? step.titleVi : step.titleEn}
+                          {t(step.titleKey)}
                         </h5>
                         <p className="text-[11px] text-slate-400 mt-0.5">
-                          {isVI ? step.descVi : step.descEn}
+                          {t(step.descKey)}
                         </p>
                       </div>
                     </div>
@@ -207,7 +199,6 @@ export default function SearchDoctorsPage() {
                 </div>
               </div>
 
-              {/* Khối 3: Banner Cam kết Đáng tin cậy */}
               <div className="bg-gradient-to-br from-primary via-blue-600 to-indigo-700 rounded-2xl p-5 text-white shadow-lg shadow-indigo-200/50 relative overflow-hidden">
                 <div className="absolute -right-6 -bottom-6 opacity-10">
                   <ShieldCheck className="w-32 h-32" />
@@ -217,24 +208,21 @@ export default function SearchDoctorsPage() {
                     <ShieldCheck className="w-4 h-4 text-white" />
                   </div>
                   <h5 className="font-bold text-sm leading-snug mb-1">
-                    {isVI ? "Đặt lịch an tâm 100%" : "100% Verified Doctors"}
+                    {t("trustTitle")}
                   </h5>
                   <p className="text-[11px] text-white/80 leading-relaxed">
-                    {isVI
-                      ? "Mọi phòng khám đều được cấp phép bởi Bộ Y Tế và có đội ngũ bác sĩ xác thực."
-                      : "All medical facilities are fully licensed and certified by local authorities."}
+                    {t("trustDesc")}
                   </p>
                 </div>
               </div>
 
             </aside>
 
-            {/* CỘT PHẢI: KẾT QUẢ TÌM KIẾM BÁC SĨ (ĐỔI SANG THIẾT KẾ CARD DÀI) */}
             <div className="flex-1 w-full">
               {isLoading && (
                 <div className="flex flex-col items-center justify-center py-24 gap-3 bg-white rounded-2xl border border-slate-200/80 shadow-sm">
                   <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                  <p className="text-sm text-slate-400">{isVI ? "Đang tìm kiếm..." : "Searching..."}</p>
+                  <p className="text-sm text-slate-400">{t("searching")}</p>
                 </div>
               )}
 
@@ -245,20 +233,17 @@ export default function SearchDoctorsPage() {
                   </div>
 
                   <p className="font-semibold text-slate-600">
-                    {isVI ? "Chưa có bác sĩ nào" : "No doctors available"}
+                    {t("noDoctors")}
                   </p>
 
                   <p className="text-xs text-slate-400 w-72 text-center leading-relaxed">
-                    {isVI
-                      ? "Hiện tại chưa có bác sĩ nào thuộc các phòng khám đã được công khai."
-                      : "There are currently no doctors available from published clinics."}
+                    {t("noDoctorsDesc")}
                   </p>
                 </div>
               )}
 
               {!isLoading && doctors.length > 0 && (
                 <>
-                  {/* Sử dụng grid 1 cột trên màn hình nhỏ và tối đa 2 cột trên màn hình siêu rộng xl tương tự như bên danh sách phòng khám */}
                   <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                     {visibleDoctors.map((doctor) => (
                       <Link
@@ -270,13 +255,10 @@ export default function SearchDoctorsPage() {
                           "transition-all duration-200 flex gap-4"
                         )}
                       >
-                        {/* Bên Trái: Avatar bác sĩ */}
                         <DoctorAvatar url={doctor.avatarUrl} name={doctor.fullName} />
 
-                        {/* Bên Phải: Toàn bộ thông tin kéo dài */}
                         <div className="flex-1 min-w-0 flex flex-col">
 
-                          {/* Hàng Tiêu đề & Tên + Rating */}
                           <div className="flex items-start justify-between gap-3">
                             <h3 className="text-base font-bold text-slate-800 leading-snug line-clamp-1 group-hover:text-primary transition-colors">
                               {doctor.title ? `${doctor.title} ${doctor.fullName}` : doctor.fullName}
@@ -284,7 +266,6 @@ export default function SearchDoctorsPage() {
                             <StarRating value={doctor.ratingAvg} />
                           </div>
 
-                          {/* Chuyên khoa */}
                           {doctor.specialty && (
                             <div className="flex items-center gap-1 mt-0.5">
                               <Stethoscope className="w-3.5 h-3.5 text-primary shrink-0" />
@@ -292,14 +273,12 @@ export default function SearchDoctorsPage() {
                             </div>
                           )}
 
-                          {/* Bio/Mô tả ngắn gọn */}
                           {doctor.bio && (
                             <p className="text-sm text-slate-400 line-clamp-1 leading-relaxed mt-1.5">
                               {doctor.bio}
                             </p>
                           )}
 
-                          {/* Chi tiết Phòng khám & Kinh nghiệm */}
                           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2.5">
                             {doctor.clinicName && (
                               <div className="flex items-center gap-1.5 min-w-0">
@@ -309,20 +288,19 @@ export default function SearchDoctorsPage() {
                             )}
                             <div className="text-xs text-slate-500">
                               <span className="font-semibold text-slate-700">{doctor.experienceYears}</span>
-                              {" "}{isVI ? "năm kinh nghiệm" : "yrs experience"}
+                              {" "}{t("yrsExp")}
                             </div>
                           </div>
 
-                          {/* Footer Card: Số lượng đánh giá + Nút đặt lịch hành động */}
                           <div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-100">
                             {doctor.reviewCount != null && doctor.reviewCount > 0 ? (
                               <span className="text-xs text-slate-400">
-                                {doctor.reviewCount} {isVI ? "đánh giá" : "reviews"}
+                                {doctor.reviewCount} {t("reviews")}
                               </span>
                             ) : <span />}
 
                             <div className="flex items-center gap-0.5 text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                              {isVI ? "Đặt lịch" : "Book"}
+                              {t("book")}
                               <ChevronRight className="w-3 h-3" />
                             </div>
                           </div>
@@ -332,7 +310,6 @@ export default function SearchDoctorsPage() {
                     ))}
                   </div>
 
-                  {/* Load more */}
                   {hasMore && (
                     <div className="mt-5 flex justify-center">
                       <button
@@ -345,9 +322,7 @@ export default function SearchDoctorsPage() {
                         )}
                       >
                         <ChevronDown className="w-4 h-4" />
-                        {isVI
-                          ? `Xem thêm ${Math.min(remaining, PAGE_SIZE)} bác sĩ`
-                          : `Show ${Math.min(remaining, PAGE_SIZE)} more doctor${Math.min(remaining, PAGE_SIZE) > 1 ? "s" : ""}`}
+                        {t("showMore", { count: Math.min(remaining, PAGE_SIZE) })}
                       </button>
                     </div>
                   )}

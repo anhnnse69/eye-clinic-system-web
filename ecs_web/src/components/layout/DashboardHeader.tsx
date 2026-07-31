@@ -1,6 +1,6 @@
 "use client"
 
-import { Menu, Bell, LogOut, User as UserIcon, ChevronDown } from "lucide-react"
+import { Menu, LogOut, User as UserIcon, ChevronDown } from "lucide-react"
 import { useShell } from "./ShellProvider"
 import { useRouter } from "next/navigation"
 import { useState, useRef, useEffect } from "react"
@@ -114,10 +114,6 @@ export default function DashboardHeader({ title, user, accountInfoHref, labels }
         <div className="flex items-center gap-md">
           {/* Language switcher — VI / EN (cookie + reload) */}
           <LanguageSwitcher />
-          <button className="relative h-10 w-10 rounded-lg hover:bg-surface-container flex items-center justify-center">
-            <Bell className="h-5 w-5 text-on-surface-variant" />
-            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-error"></span>
-          </button>
           <div className="relative" ref={dropdownRef}>
             <button
               type="button"

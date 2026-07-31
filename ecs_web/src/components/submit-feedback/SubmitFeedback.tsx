@@ -3,6 +3,7 @@
 
 import { useState } from "react"
 import { Star, X, Loader2, AlertCircle, CheckCircle2 } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { appointmentHistoryService } from "@/services"
 import { ApiError } from "@/lib/axios"
 
@@ -25,6 +26,7 @@ export default function SubmitFeedback({
     onSuccess,
     onCancel
 }: SubmitFeedbackProps) {
+    const t = useTranslations("feedback")
     const [ratingDoctor, setRatingDoctor] = useState(0)
     const [ratingClinic, setRatingClinic] = useState(0)
     const [comment, setComment] = useState("")
@@ -35,7 +37,7 @@ export default function SubmitFeedback({
 
     const handleSubmit = async () => {
         if (ratingDoctor === 0 || ratingClinic === 0) {
-            setError("Vui lòng đánh giá cả bác sĩ và phòng khám")
+            setError(t("errors.selectBoth"))
             return
         }
 
@@ -57,33 +59,33 @@ export default function SubmitFeedback({
                     setTimeout(onSuccess, 1500)
                 }
             } else {
-                setError("Không thể gửi đánh giá. Vui lòng thử lại.")
+                setError(t("errors.submitFailed"))
             }
         } catch (err: any) {
-            let errorMessage = "Không thể gửi đánh giá. Vui lòng thử lại."
+            let errorMessage = t("errors.submitFailed")
 
             if (err instanceof ApiError) {
                 switch (err.codeMessage) {
                     case "APP_MESSAGE_4046":
-                        errorMessage = "Không tìm thấy cuộc hẹn"
+                        errorMessage = t("errors.notFound")
                         break
                     case "APP_MESSAGE_4053":
-                        errorMessage = "Bạn không có quyền đánh giá cuộc hẹn này"
+                        errorMessage = t("errors.noPermission")
                         break
                     case "APP_MESSAGE_4055":
-                        errorMessage = "Chỉ cuộc hẹn đã hoàn thành mới có thể đánh giá"
+                        errorMessage = t("errors.completedOnly")
                         break
                     case "APP_MESSAGE_4056":
-                        errorMessage = "Cuộc hẹn này đã được đánh giá trước đó"
+                        errorMessage = t("errors.alreadyRated")
                         break
                     case "APP_MESSAGE_4057":
-                        errorMessage = "Đánh giá phải từ 1 đến 5 sao"
+                        errorMessage = t("errors.starRange")
                         break
                     default:
-                        errorMessage = err.codeMessage || "Không thể gửi đánh giá. Vui lòng thử lại."
+                        errorMessage = err.codeMessage || t("errors.submitFailed")
                 }
             } else {
-                errorMessage = err?.response?.data?.message || err?.message || "Không thể gửi đánh giá. Vui lòng thử lại."
+                errorMessage = err?.response?.data?.message || err?.message || t("errors.submitFailed")
             }
 
             setError(errorMessage)
@@ -117,7 +119,7 @@ export default function SubmitFeedback({
                         </button>
                     ))}
                     <span className="ml-2 text-sm font-medium text-gray-500">
-                        {rating > 0 ? `${rating}/5` : 'Chọn sao'}
+                        {rating > 0 ? `${rating}/5` : t("selectStars")}
                     </span>
                 </div>
             </div>
@@ -131,8 +133,8 @@ export default function SubmitFeedback({
                     <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center">
                         <CheckCircle2 className="w-7 h-7 text-emerald-600" />
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900">Cảm ơn bạn đã đánh giá!</h3>
-                    <p className="text-sm text-gray-500">Đánh giá của bạn sẽ giúp chúng tôi cải thiện chất lượng dịch vụ.</p>
+                    <h3 className="text-lg font-semibold text-gray-900">{t("thanksTitle")}</h3>
+                    <p className="text-sm text-gray-500">{t("thanksSubtitle")}</p>
                 </div>
             </div>
         )
@@ -142,8 +144,8 @@ export default function SubmitFeedback({
         <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-6">
             <div className="flex items-center justify-between mb-4">
                 <div>
-                    <h3 className="text-lg font-semibold text-gray-900">Đánh giá cuộc hẹn</h3>
-                    <p className="text-sm text-gray-500">Chia sẻ trải nghiệm của bạn về cuộc hẹn này</p>
+                    <h3 className="text-lg font-semibold text-gray-900">{t("appointmentRating")}</h3>
+                    <p className="text-sm text-gray-500">{t("subtitle")}</p>
                 </div>
                 {onCancel && (
                     <button
@@ -158,19 +160,19 @@ export default function SubmitFeedback({
             <div className="bg-gray-50 rounded-xl p-4 mb-4 border border-gray-100">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                     <div>
-                        <p className="text-xs text-gray-400 font-medium">Phòng khám</p>
+                        <p className="text-xs text-gray-400 font-medium">{t("clinic")}</p>
                         <p className="font-medium text-gray-900">{clinicName}</p>
                     </div>
                     <div>
-                        <p className="text-xs text-gray-400 font-medium">Bác sĩ</p>
+                        <p className="text-xs text-gray-400 font-medium">{t("doctor")}</p>
                         <p className="font-medium text-gray-900">{doctorName}</p>
                     </div>
                     <div>
-                        <p className="text-xs text-gray-400 font-medium">Dịch vụ</p>
+                        <p className="text-xs text-gray-400 font-medium">{t("service")}</p>
                         <p className="font-medium text-gray-900">{serviceName}</p>
                     </div>
                     <div>
-                        <p className="text-xs text-gray-400 font-medium">Ngày khám</p>
+                        <p className="text-xs text-gray-400 font-medium">{t("appointmentDate")}</p>
                         <p className="font-medium text-gray-900">{appointmentDate}</p>
                     </div>
                 </div>
@@ -185,31 +187,31 @@ export default function SubmitFeedback({
 
             <div className="space-y-4">
                 <StarRating
-                    label="Đánh giá bác sĩ *"
+                    label={t("rateDoctor")}
                     rating={ratingDoctor}
                     onChange={setRatingDoctor}
                 />
 
                 <StarRating
-                    label="Đánh giá phòng khám *"
+                    label={t("rateClinic")}
                     rating={ratingClinic}
                     onChange={setRatingClinic}
                 />
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Nhận xét của bạn (tùy chọn)
+                        {t("commentLabel")}
                     </label>
                     <textarea
                         value={comment}
                         onChange={(e) => setComment(e.target.value)}
-                        placeholder="Chia sẻ trải nghiệm của bạn về cuộc hẹn..."
+                        placeholder={t("commentPlaceholder")}
                         className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-all"
                         rows={3}
                         maxLength={500}
                     />
                     <p className="text-xs text-gray-400 mt-1 text-right">
-                        {comment.length}/500 ký tự
+                        {t("charLimit", { count: comment.length })}
                     </p>
                 </div>
 
@@ -219,7 +221,7 @@ export default function SubmitFeedback({
                             onClick={onCancel}
                             className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
                         >
-                            Hủy
+                            {t("cancel")}
                         </button>
                     )}
                     <button
@@ -230,10 +232,10 @@ export default function SubmitFeedback({
                         {loading ? (
                             <>
                                 <Loader2 className="w-4 h-4 animate-spin" />
-                                Đang gửi...
+                                {t("submitting")}
                             </>
                         ) : (
-                            'Gửi đánh giá'
+                            t("submit")
                         )}
                     </button>
                 </div>

@@ -47,9 +47,8 @@ export default async function ClinicAdminLayout({ children }: { children: React.
       title: tNav("appointments"),
       items: [
         { label: tNav("appointments"), href: "/clinic-admin/appointment", icon: "Calendar" },
-        { label: tNav("queue") || "Queue", href: "/clinic-admin/queue", icon: "Stethoscope" },
         { label: tNav("rooms"), href: "/clinic-admin/rooms", icon: "DoorOpen" },
-        { label: "Luân chuyển hồ sơ", href: "/clinic-admin/record-transfers", icon: "FileText" },
+        { label: tNav("recordTransfers"), href: "/clinic-admin/record-transfers", icon: "FileText" },
       ],
     },
     {
@@ -57,7 +56,6 @@ export default async function ClinicAdminLayout({ children }: { children: React.
       items: [
         { label: tNav("staff"), href: "/clinic-admin/staff", icon: "Users" },
         { label: tNav("clinicServices"), href: "/clinic-admin/clinic-services", icon: "Briefcase" },
-        { label: tNav("medicineCatalog"), href: "/clinic-admin/medicine-catalog", icon: "Pill" },
       ],
     },
     {

@@ -56,7 +56,6 @@ export default async function ReceptionistLayout({ children }: { children: React
       title: tNav("profile"),
       items: [
         { label: tNav("profile"), href: "/receptionist/profile", icon: "User" },
-        { label: tNav("accountInfo"), href: "/receptionist/account-info", icon: "User" },
       ],
     },
   ]
@@ -70,7 +69,7 @@ export default async function ReceptionistLayout({ children }: { children: React
       <div className="flex-1 flex flex-col min-w-0">
         <DashboardHeader
           title={t("title")}
-          accountInfoHref="/receptionist/account-info"
+          accountInfoHref="/receptionist/profile"
           user={{
             name: userName,
             email: userEmail,

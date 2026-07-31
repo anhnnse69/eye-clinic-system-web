@@ -21,10 +21,16 @@ interface ParaclinicalPageClientProps {
   initialRecordId?: string
 }
 
+const formatShortId = (id?: string) => {
+  if (!id) return ""
+  if (id.length <= 12) return id
+  return `${id.slice(0, 8)}...${id.slice(-4)}`
+}
+
 export default function ParaclinicalPageClient({
   initialRecordId,
 }: ParaclinicalPageClientProps) {
-  const t = useTranslations("common")
+  const t = useTranslations("doctor.paraclinical")
 
   const [records, setRecords] = useState<GetMedicalRecordsItem[]>([])
   const [selectedRecordId, setSelectedRecordId] = useState<string>(initialRecordId || "")
@@ -69,13 +75,13 @@ export default function ParaclinicalPageClient({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-indigo-200 backdrop-blur-xs">
-              <Microscope className="h-4 w-4 text-indigo-300" /> Quản lý cận lâm sàng chuyên khoa Mắt
+              <Microscope className="h-4 w-4 text-indigo-300" /> {t("eyecareBadge")}
             </div>
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              Danh sách & Chi tiết Cận lâm sàng
+              {t("pageTitle")}
             </h1>
             <p className="text-xs sm:text-sm text-indigo-200/90 max-w-3xl leading-relaxed">
-              Tra cứu hồ sơ chỉ định cận lâm sàng (Cắt lớp võng mạc OCT, Đo thị trường Visual Field, Siêu âm mắt, Xét nghiệm), xem chi tiết các chỉ số đo đạc và phân tích chẩn đoán AI.
+              {t("pageDescription")}
             </p>
           </div>
         </div>
@@ -86,10 +92,10 @@ export default function ParaclinicalPageClient({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
           <div>
             <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-              <User className="h-4 w-4 text-indigo-600" /> Chọn Hồ sơ Bệnh nhân để xem Cận lâm sàng
+              <User className="h-4 w-4 text-indigo-600" /> {t("selectPatientTitle")}
             </h2>
             <p className="text-xs text-gray-500 mt-0.5">
-              Chọn bệnh nhân từ danh sách hoặc tìm kiếm theo tên / số điện thoại.
+              {t("selectPatientSubtitle")}
             </p>
           </div>
 
@@ -101,7 +107,7 @@ export default function ParaclinicalPageClient({
               value={searchPatient}
               onChange={(e) => setSearchPatient(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && loadMedicalRecords()}
-              placeholder="Tìm theo tên bệnh nhân / SĐT..."
+              placeholder={t("searchPlaceholder")}
               className="w-full rounded-xl border border-gray-200 bg-gray-50 pl-9 pr-4 py-2 text-xs text-gray-800 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-indigo-500 shadow-2xs"
             />
           </div>
@@ -110,18 +116,18 @@ export default function ParaclinicalPageClient({
         {/* Records Selection Dropdown & Chips */}
         {loadingRecords ? (
           <div className="flex items-center justify-center py-6 text-xs text-gray-500 gap-2">
-            <Loader2 className="h-4 w-4 animate-spin text-indigo-600" /> Đang tải danh sách hồ sơ bệnh án...
+            <Loader2 className="h-4 w-4 animate-spin text-indigo-600" /> {t("loadingRecords")}
           </div>
         ) : records.length === 0 ? (
           <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-6 text-center text-xs text-gray-500">
-            Không tìm thấy hồ sơ bệnh án nào.
+            {t("noRecordsFound")}
           </div>
         ) : (
           <div className="space-y-3">
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1">
                 <label className="mb-1 block text-xs font-semibold text-gray-700">
-                  Danh sách Hồ sơ Bệnh án ({records.length})
+                  {t("recordsListLabel", { count: records.length })}
                 </label>
                 <select
                   value={selectedRecordId}
@@ -130,7 +136,7 @@ export default function ParaclinicalPageClient({
                 >
                   {records.map((r) => (
                     <option key={r.id} value={r.id}>
-                      {r.patientFullName} — {r.recordType?.replace("MS", "Mẫu ") || "Bệnh án"} ({new Date(r.createdAt).toLocaleDateString("vi-VN")}) {r.patientPhone ? `· SĐT: ${r.patientPhone}` : ""}
+                      {r.patientFullName} — {r.recordType?.replace("MS", t("samplePrefix")) || t("medicalRecordDefault")} ({new Date(r.createdAt).toLocaleDateString()}) {r.patientPhone ? `· ${t("phoneShort")} ${r.patientPhone}` : ""}
                     </option>
                   ))}
                 </select>
@@ -139,7 +145,7 @@ export default function ParaclinicalPageClient({
 
             {/* Quick Record Chips */}
             <div className="flex flex-wrap items-center gap-2 pt-1">
-              <span className="text-[11px] font-semibold text-gray-500 mr-1">Hồ sơ gần đây:</span>
+              <span className="text-[11px] font-semibold text-gray-500 mr-1">{t("recentRecords")}</span>
               {records.slice(0, 5).map((r) => {
                 const isSelected = r.id === selectedRecordId
                 return (
@@ -173,14 +179,14 @@ export default function ParaclinicalPageClient({
             <div>
               <p className="font-bold text-sm text-indigo-950">{selectedRecord.patientFullName}</p>
               <p className="text-gray-600 text-[11px] mt-0.5">
-                Mã bệnh án: <code className="font-mono text-indigo-900 bg-white px-1.5 py-0.5 rounded border border-indigo-100">{selectedRecord.id}</code> · Ngày tạo: {new Date(selectedRecord.createdAt).toLocaleDateString("vi-VN")}
+                {t("recordCode")} <code className="font-mono text-indigo-900 bg-white px-1.5 py-0.5 rounded border border-indigo-100" title={selectedRecord.id}>{formatShortId(selectedRecord.id)}</code> · {t("createdDate")} {new Date(selectedRecord.createdAt).toLocaleDateString()}
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             <span className="rounded-md bg-white px-3 py-1 font-semibold text-indigo-800 border border-indigo-200 shadow-2xs">
-              Loại: {selectedRecord.recordType}
+              {t("recordTypeLabel")} {selectedRecord.recordType}
             </span>
           </div>
         </div>
@@ -192,7 +198,7 @@ export default function ParaclinicalPageClient({
       ) : (
         <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center text-gray-500">
           <Microscope className="mx-auto h-12 w-12 text-gray-300 mb-3" />
-          <p className="font-semibold text-sm text-gray-700">Vui lòng chọn một hồ sơ bệnh án để xem danh sách và chi tiết cận lâm sàng.</p>
+          <p className="font-semibold text-sm text-gray-700">{t("pleaseSelectRecord")}</p>
         </div>
       )}
     </div>

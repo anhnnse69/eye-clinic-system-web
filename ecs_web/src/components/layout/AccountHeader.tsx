@@ -19,6 +19,8 @@ import { ROLE_CONFIG, getRoleLabel, getRoleSegment } from "@/lib/role-config"
 const BRAND_LOGO =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuCwR5I14Ti14lR3BYE4S0RtQO-d8r8udA0haqFhxTaWQ9yQ-jmxbSRgYSkcBkNwuYRPxAbe8JXfK0F1YyrjzCFly6Lq3OZKEvx1ur-E7AyiXkpaXAzTA7fU0BJWAs3bleQjIy9M4iQHcccCFbjJuDPzFrUn_bu0p0mQxPoyXF7BOJMQYc0C1GCWXA0JfldNcZ4O0CzfxkpvbMhmEFf6B_IaHns3GgbAB4_djZJGV8mIcaRS8VLHh7-bKrri-dHqeG15ux8Eq6zGs31k"
 
+const PRIMARY_COLOR = "#00658D"
+
 interface AccountHeaderProps {
   className?: string
 }
@@ -28,8 +30,8 @@ interface AccountHeaderProps {
  * clinic-admin, system-admin, receptionist).
  *
  *  - Not authenticated: render marketing header (Login / Sign up).
- *  - Authenticated: render avatar + dropdown with Account Info + Logout,
- *    routing the user to that role's account-info page.
+ *  - Authenticated: render avatar + dropdown with Log out,
+ *    routing the user to that role's profile page.
  */
 export default function AccountHeader({ className }: AccountHeaderProps) {
   const router = useRouter()
@@ -44,6 +46,7 @@ export default function AccountHeader({ className }: AccountHeaderProps) {
 
   const [open, setOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement | null>(null)
+  const [liveAvatarUrl, setLiveAvatarUrl] = useState<string | null>(null)
 
   useEffect(() => {
     if (!open) return
@@ -56,20 +59,41 @@ export default function AccountHeader({ className }: AccountHeaderProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [open])
 
+  useEffect(() => {
+    const handleAvatarUpdated = (e: Event) => {
+      const customEvt = e as CustomEvent
+      if (customEvt.detail?.avatarUrl) {
+        setLiveAvatarUrl(customEvt.detail.avatarUrl)
+      }
+    }
+    window.addEventListener("ecs-user-avatar-updated", handleAvatarUpdated)
+    return () => window.removeEventListener("ecs-user-avatar-updated", handleAvatarUpdated)
+  }, [])
+
   const handleLogin = () => router.push(`/${locale}/login`)
   const handleSignUp = () => router.push(`/${locale}/register`)
 
   const handleToggleLang = () => {
     const next = locale === "vi" ? "en" : "vi"
     localStorage.setItem("locale", next)
-    const pathname = window.location.pathname.replace(/^\/(vi|en)/, `/${next}`)
-    router.replace(pathname || `/${next}/home`)
+    document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=31536000`
+    const currentPath = window.location.pathname
+    if (/^\/(vi|en)(\/|$)/.test(currentPath)) {
+      const newPath = currentPath.replace(/^\/(vi|en)/, `/${next}`) + window.location.search
+      // Full reload is required so the root layout re-renders NextIntlClientProvider
+      // with the new locale; soft router.replace would leave Header / Footer and
+      // other client components using the old locale and stale translation messages.
+      window.location.href = newPath
+    } else {
+      document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=31536000`
+      window.location.reload()
+    }
   }
 
   const handleAccountInfo = () => {
     setOpen(false)
     const segment = getRoleSegment(roleFromStorage)
-    router.push(`/${locale}/${segment}/account-info`)
+    router.push(`/${locale}/${segment}/profile`)
   }
 
   const handleLogout = async () => {
@@ -136,7 +160,7 @@ export default function AccountHeader({ className }: AccountHeaderProps) {
 
   const displayName = account?.fullName || userFromStorage?.name || "User"
   const displayInitial = displayName.charAt(0).toUpperCase()
-  const avatarUrl = account?.avatarUrl
+  const avatarUrl = liveAvatarUrl || account?.avatarUrl
   const roleLabel = getRoleLabel(effectiveRole, locale)
 
   return (

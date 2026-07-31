@@ -69,6 +69,7 @@
       "relationship": "Quan hệ",
       "actions": "Hành động",
       "viewDetails": "Xem chi tiết",
+      "viewPrescriptionDetail": "Xem đơn thuốc & Chi tiết",
       "noProfilesFound": "Không tìm thấy hồ sơ bệnh nhân",
       "noProfilesYet": "Hệ thống chưa ghi nhận hồ sơ nào khớp với bộ lọc của bạn.",
       "loadingData": "Đang nạp dữ liệu...",

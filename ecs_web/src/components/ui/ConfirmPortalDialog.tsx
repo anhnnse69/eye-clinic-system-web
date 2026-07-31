@@ -7,6 +7,8 @@ import {
   User, CheckCircle, X, ShieldCheck, UserPlus,
 } from "lucide-react";
 
+import { useTranslations } from "next-intl";
+
 export default function ConfirmPortalDialog({
     isOpen,
     onClose,
@@ -20,6 +22,7 @@ export default function ConfirmPortalDialog({
     submitting: boolean;
     patientName: string;
   }) {
+    const t = useTranslations("common.confirmPortal");
     const [mounted, setMounted] = useState(false);
   
     useEffect(() => {
@@ -105,10 +108,10 @@ export default function ConfirmPortalDialog({
                     </div>
                     <div>
                       <h2 className="text-lg font-bold text-gray-900 leading-tight">
-                        Xác nhận tạo hồ sơ
+                        {t("title")}
                       </h2>
                       <p className="text-xs text-gray-400 mt-0.5">
-                        Vui lòng kiểm tra trước khi xác nhận
+                        {t("subtitle")}
                       </p>
                     </div>
                   </div>
@@ -126,7 +129,7 @@ export default function ConfirmPortalDialog({
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-blue-500 uppercase tracking-wider mb-0.5">
-                        Bệnh nhân
+                        {t("patientLabel")}
                       </p>
                       <p className="text-sm font-semibold text-gray-900 truncate">
                         {patientName || "—"}
@@ -135,8 +138,7 @@ export default function ConfirmPortalDialog({
                   </div>
   
                   <p className="text-sm text-gray-500 leading-relaxed">
-                    Hồ sơ sẽ được lưu vào hệ thống và không thể xóa sau khi tạo.
-                    Hãy đảm bảo thông tin đã chính xác.
+                    {t("warning")}
                   </p>
                 </div>
   
@@ -147,7 +149,7 @@ export default function ConfirmPortalDialog({
                     disabled={submitting}
                     className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50"
                   >
-                    Hủy bỏ
+                    {t("cancel")}
                   </button>
                   <motion.button
                     onClick={onConfirm}
@@ -169,12 +171,12 @@ export default function ConfirmPortalDialog({
                           <path className="opacity-75" fill="currentColor"
                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                         </svg>
-                        Đang xử lý...
+                        {t("processing")}
                       </>
                     ) : (
                       <>
                         <CheckCircle className="w-4 h-4" />
-                        Xác nhận tạo hồ sơ
+                        {t("confirm")}
                       </>
                     )}
                   </motion.button>

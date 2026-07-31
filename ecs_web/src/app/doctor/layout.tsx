@@ -69,7 +69,7 @@ export default async function DoctorLayout({
     {
       title: tSection("profile"),
       items: [
-        { label: tNav("profile"), href: "/doctor/profile", icon: "User" },
+        { label: tNav("profile"), href: "/doctor/profile", icon: "Briefcase" },
         { label: tNav("accountInfo"), href: "/doctor/account-info", icon: "UserCog" },
       ],
     },

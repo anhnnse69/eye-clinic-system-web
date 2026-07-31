@@ -1210,7 +1210,7 @@ export interface UpdatePersonalProfileRequest {
   title?: string | null
 
 
-  experienceYears: number
+  experienceYears?: number
 
 
   bio?: string | null

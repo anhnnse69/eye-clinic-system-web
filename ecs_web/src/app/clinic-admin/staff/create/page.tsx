@@ -49,6 +49,12 @@ export default function CreateStaffPage() {
             return
         }
 
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!emailRegex.test(formData.email.trim())) {
+            setError("Địa chỉ email không hợp lệ. Vui lòng nhập đúng định dạng email (name@example.com).")
+            return
+        }
+
         if (formData.password.length < 8) {
             setError("Mật khẩu bảo mật quá ngắn. Chiều dài bắt buộc tối thiểu từ 8 ký tự.")
             return

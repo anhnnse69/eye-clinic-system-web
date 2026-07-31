@@ -163,6 +163,7 @@ export default function PersonalProfileContent({ roleSegment, showAccountHeader 
                             {t("subtitle")}
                         </p>
                     </div>
+<<<<<<< HEAD
 
                     <button
                         onClick={() => router.push(`/${roleSegment}/dashboard`)}
@@ -171,6 +172,8 @@ export default function PersonalProfileContent({ roleSegment, showAccountHeader 
                         <ArrowLeft className="h-4 w-4" />
                         {t("backToDashboard")}
                     </button>
+=======
+>>>>>>> develop
                 </div>
 
                 {avatarSuccessMsg && (

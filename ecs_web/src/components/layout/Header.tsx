@@ -27,6 +27,7 @@ export default function Header({
   const router = useRouter()
 
   const toggleLang = () => {
+<<<<<<< HEAD
     const next = locale === "vi" ? "en" : "vi"
     localStorage.setItem("locale", next)
     document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=31536000`
@@ -44,6 +45,14 @@ export default function Header({
       document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=31536000`
       window.location.reload()
     }
+=======
+    const nextLocale = locale === "en" ? "vi" : "en"
+    localStorage.setItem("locale", nextLocale)
+    const currentPath = window.location.pathname.replace(/^\/((vi|en))(\/|$)/, "/")
+    const nextPath = `/${nextLocale}${currentPath === "/" ? "/home" : currentPath}`
+    router.replace(nextPath)
+    router.refresh()
+>>>>>>> develop
   }
 
   return (
@@ -59,12 +68,16 @@ export default function Header({
         <nav className="flex items-center w-full px-4 md:px-8 max-w-7xl mx-auto h-20 gap-4">
           
           {/* ── 1. KHỐI TRÁI: Logo & Brand ── */}
-          <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => router.push(`/${locale}/home`)}
+            className="flex items-center gap-2 shrink-0 hover:opacity-90 transition-opacity"
+          >
             <img alt="Eye Clinic Support System Logo" className="h-10 w-10 object-contain" src={LOGO_IMG} />
             <span className="text-lg font-bold text-primary hidden xl:inline-block whitespace-nowrap">
               {t("common.brand")}
             </span>
-          </div>
+          </button>
 
           {/* ── 2. KHỐI GIỮA: Thanh Search thoải mái co giãn rộng rãi ── */}
           <div className="hidden md:flex flex-1 min-w-[280px] max-w-[520px] mx-4">
@@ -128,12 +141,7 @@ export default function Header({
             
             {/* Menu chữ điều hướng */}
             <div className="hidden lg:flex items-center gap-4 border-r border-outline-variant pr-4">
-              <a className="text-primary border-b-2 border-primary font-bold pb-1 text-sm whitespace-nowrap transition-all" href="#">
-                {t("common.nav.solutions")}
-              </a>
-              <a className="text-on-surface-variant font-medium text-sm hover:text-primary transition-colors whitespace-nowrap" href="#">
-                {t("common.nav.features")}
-              </a>
+          
               {/* Thêm mục Đối tác */}
               <a 
                 className="text-on-surface-variant font-medium text-sm hover:text-primary transition-colors whitespace-nowrap" 

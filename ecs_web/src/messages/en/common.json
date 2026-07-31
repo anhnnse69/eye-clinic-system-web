@@ -17,7 +17,7 @@
     },
     "brand": "Eye Clinic Support",
     "login": "Login",
-    "requestDemo": "Request a Demo",
+    "requestDemo": "Register",
     "getStarted": "Get Started",
     "learnMore": "Learn More",
     "viewMore": "View More",
@@ -36,6 +36,7 @@
       "forPatients": "For Patients",
       "partners": "Partners",
       "login": "Login",
+<<<<<<< HEAD
       "requestDemo": "Request a Demo"
     },
     "confirmPortal": {
@@ -131,6 +132,9 @@
         "emailExists": "This email address is invalid or already in use.",
         "globalFail": "Update failed. Please check configuration."
       }
+=======
+      "requestDemo": "Register"
+>>>>>>> develop
     }
   },
   "footer": {

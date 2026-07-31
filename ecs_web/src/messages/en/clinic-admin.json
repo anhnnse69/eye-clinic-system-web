@@ -84,7 +84,7 @@
       "searchPlaceholder": "Search by name, email, phone number...",
       "statusAll": "All staff",
       "statusActive": "Active",
-      "statusInactive": "Locked / Inactive",
+      "statusInactive": "Locked",
       "status": "Status",
       "contactInfo": "Contact Information",
       "position": "Position / Role",

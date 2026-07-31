@@ -8,6 +8,7 @@ import { Loader2, Globe, Upload, X, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useParams } from "next/navigation";
 import { isValidEmail, isValidPhone } from "@/lib/utils";
+import { apiClient } from "@/lib/axios";
 
 const BRAND_LOGO =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuCeUucgwDtb70ZPDmE3v2bDk0sQt523IIANyQgHLHTtPq42KR9R5ZvqYYRKIJL1M2hFj1sVYmsB6LEU2qCnTXlUfVK2OCa6aYP1lve83OKBKhZFoBoBi6g0l2uJ2nb8pChVnYqRA4yXEJV67ldP5Am_k6Gm-yoyKTc2qeT2K_4sp43WkBj8nbDuGZez8_429pg9hzpbcxT3CQyTZobmllIi61Zv7075i-mgT7xsReCIK4_GnauC_zxk_DS7l1f6W1iBuqaNyE7cAXLS";
@@ -77,6 +78,8 @@ export default function RegisterClinicApplicationPage() {
   const [businessLicenseUrl, setBusinessLicenseUrl] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadSuccessMsg, setUploadSuccessMsg] = useState("");
+  const [uploadErrorMsg, setUploadErrorMsg] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
   const [generalError, setGeneralError] = useState("");
@@ -115,7 +118,7 @@ export default function RegisterClinicApplicationPage() {
     return Object.keys(errors).length > 0 ? errors : null;
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -141,15 +144,61 @@ export default function RegisterClinicApplicationPage() {
       return;
     }
 
-    clearFieldError("businessLicenseUrl");
-    setSelectedFile(file);
-    // In a real app you'd upload and get back a URL; here we simulate with a placeholder
-    setBusinessLicenseUrl(`uploaded://${file.name}`);
+    try {
+      setIsUploading(true);
+      setUploadSuccessMsg("");
+      setUploadErrorMsg("");
+      setGeneralError("");
+      setSuccessMsg("");
+      clearFieldError("businessLicenseUrl");
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "business-licenses");
+
+      const res = await apiClient.post("/upload/image", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      const uploadedUrl = res.data?.data?.url || res.data?.url;
+      if (!uploadedUrl) {
+        throw new Error("No upload URL returned");
+      }
+
+      setSelectedFile(file);
+      setBusinessLicenseUrl(uploadedUrl);
+      setUploadSuccessMsg(
+        locale === "vi"
+          ? "Tải lên giấy phép kinh doanh thành công!"
+          : "Business license uploaded successfully!"
+      );
+      setTimeout(() => setUploadSuccessMsg(""), 5000);
+    } catch {
+      setSelectedFile(null);
+      setBusinessLicenseUrl("");
+      setUploadErrorMsg(
+        locale === "vi"
+          ? "Tải ảnh thất bại, vui lòng thử lại."
+          : "Upload failed, please try again."
+      );
+      setFieldErrors((prev) => ({
+        ...prev,
+        businessLicenseUrl:
+          locale === "vi"
+            ? "Tải ảnh thất bại, vui lòng thử lại."
+            : "Upload failed, please try again.",
+      }));
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleRemoveFile = () => {
     setSelectedFile(null);
     setBusinessLicenseUrl("");
+    setUploadSuccessMsg("");
+    setUploadErrorMsg("");
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -347,6 +396,18 @@ export default function RegisterClinicApplicationPage() {
                 role="alert"
               >
                 {generalError}
+              </div>
+            )}
+
+            {uploadSuccessMsg && (
+              <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm">
+                {uploadSuccessMsg}
+              </div>
+            )}
+
+            {uploadErrorMsg && (
+              <div className="p-3 rounded-lg bg-error-container text-error text-sm">
+                {uploadErrorMsg}
               </div>
             )}
 
@@ -598,7 +659,7 @@ export default function RegisterClinicApplicationPage() {
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={isLoading}
+                  disabled={isLoading || isUploading}
                   className={cn(
                     "w-full py-6 border-2 border-dashed rounded-lg flex flex-col items-center gap-2 transition-all",
                     fieldErrors.businessLicenseUrl
@@ -606,18 +667,26 @@ export default function RegisterClinicApplicationPage() {
                       : "border-outline-variant hover:border-primary hover:bg-primary-container/10"
                   )}
                 >
-                  <Upload
-                    className={cn(
-                      "w-6 h-6",
-                      fieldErrors.businessLicenseUrl
-                        ? "text-error"
-                        : "text-outline"
-                    )}
-                  />
+                  {isUploading ? (
+                    <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  ) : (
+                    <Upload
+                      className={cn(
+                        "w-6 h-6",
+                        fieldErrors.businessLicenseUrl
+                          ? "text-error"
+                          : "text-outline"
+                      )}
+                    />
+                  )}
                   <span className="text-sm text-on-surface-variant">
-                    {locale === "vi"
-                      ? "Nhấn để tải lên giấy phép kinh doanh"
-                      : "Click to upload business license"}
+                    {isUploading
+                      ? locale === "vi"
+                        ? "Đang tải lên..."
+                        : "Uploading..."
+                      : locale === "vi"
+                        ? "Nhấn để tải lên giấy phép kinh doanh"
+                        : "Click to upload business license"}
                   </span>
                   <span className="text-xs text-outline">
                     JPG, PNG, PDF &bull; {locale === "vi" ? "Tối đa" : "Max"}{" "}
@@ -632,14 +701,14 @@ export default function RegisterClinicApplicationPage() {
                 accept=".jpg,.jpeg,.png,.pdf"
                 onChange={handleFileChange}
                 className="hidden"
-                disabled={isLoading}
+                disabled={isLoading || isUploading}
               />
               <FieldMsg field="businessLicenseUrl" />
             </div>
 
             <button
               type="submit"
-              disabled={isLoading || !!successMsg}
+              disabled={isLoading || isUploading || !!successMsg}
               className={cn(
                 "w-full h-12 bg-primary-container text-white font-label-lg text-label-lg rounded-lg",
                 "shadow-md shadow-primary-container/20 hover:bg-primary transition-all hover:scale-[1.01] active:scale-[0.98]",

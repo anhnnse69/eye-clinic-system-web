@@ -451,7 +451,7 @@ export default function ClinicProfilePage() {
                           {clinic.doctors.slice(0, 3).map((doc) => (
                             <Link
                               key={doc.id}
-                              href={`/${locale}/doctors/${doc.id}/slots`}
+                              href={`/${locale}/detail-doctor/${doc.id}/slots`}
                               className="group p-3 rounded-2xl border border-slate-100 hover:border-primary/20 hover:shadow-sm transition-all flex flex-col items-center text-center bg-slate-50/50"
                             >
                               <div className="w-12 h-12 rounded-full bg-primary/10 overflow-hidden mb-2 ring-2 ring-white">
@@ -489,7 +489,7 @@ export default function ClinicProfilePage() {
                       clinic.doctors.map((doc) => (
                         <Link
                           key={doc.id}
-                          href={`/${locale}/doctors/${doc.id}/slots`}
+                          href={`/${locale}/detail-doctor/${doc.id}/slots`}
                           className="group bg-white rounded-2xl border border-slate-200/80 p-4 hover:border-primary/40 hover:shadow-md transition-all flex gap-3 items-start"
                         >
                           <div className="w-12 h-12 rounded-full bg-primary/10 overflow-hidden ring-2 ring-white shrink-0">

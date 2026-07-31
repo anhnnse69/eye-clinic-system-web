@@ -233,7 +233,7 @@ export default function PersonalProfileContent({ roleSegment, showAccountHeader 
                                         alt={profile.fullName}
                                         className="w-24 h-24 rounded-full border-4 object-cover aspect-square shadow-md bg-slate-50"
                                         style={{ borderColor: `${PRIMARY_COLOR}33` }}
-                                        src={liveAvatarUrl || profile.avatarUrl}
+                                        src={(liveAvatarUrl || profile.avatarUrl) ?? ""}
                                     />
                                 ) : (
                                     <div

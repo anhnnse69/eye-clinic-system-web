@@ -22,7 +22,36 @@ import type { GetPatientProfileResponse } from "@/services/patient-profile.servi
 import type { MetaResponse } from "@/types"
 
 export default function PatientProfilesPage() {
-    const t = useTranslations("patient.profile")
+    const params = useParams()
+    const router = useRouter()
+
+    const [currentLocale, setCurrentLocale] = useState<"vi" | "en">(() => {
+        if (typeof window !== "undefined") {
+            const match = window.location.pathname.match(/^\/(vi|en)(\/|$)/)
+            if (match) return match[1] as "vi" | "en"
+            const cookieMatch = document.cookie.match(/(?:^|;\s*)NEXT_LOCALE=([^;]+)/)
+            if (cookieMatch && (cookieMatch[1] === "vi" || cookieMatch[1] === "en")) {
+                return cookieMatch[1] as "vi" | "en"
+            }
+            const stored = localStorage.getItem("locale")
+            if (stored === "vi" || stored === "en") return stored
+        }
+        const pLoc = params?.locale as string
+        if (pLoc === "en" || pLoc === "vi") return pLoc
+        return "vi"
+    })
+
+    useEffect(() => {
+        const handleLocaleChanged = (e: any) => {
+            if (e?.detail?.locale === "vi" || e?.detail?.locale === "en") {
+                setCurrentLocale(e.detail.locale)
+            }
+        }
+        window.addEventListener("ecs-locale-changed", handleLocaleChanged)
+        return () => window.removeEventListener("ecs-locale-changed", handleLocaleChanged)
+    }, [])
+
+    const t = (vi: string, en: string) => (currentLocale === "en" ? en : vi)
 
     const [profiles, setProfiles] = useState<GetPatientProfileResponse[]>([])
     const [metadata, setMetadata] = useState<MetaResponse | null>(null)
@@ -35,24 +64,14 @@ export default function PatientProfilesPage() {
 
     const [pageNumber, setPageNumber] = useState(1)
     const [pageSize] = useState(10)
-    const router = useRouter()
-    const params = useParams()
-    const locale = (params?.locale as string) || ""
+    const locale = currentLocale
 
     const handleViewDetail = (profileId: string) => {
-        if (locale) {
-            router.push(`/${locale}/patient/profiles/detail?id=${profileId}`)
-        } else {
-            router.push(`/patient/profiles/detail?id=${profileId}`)
-        }
+        router.push(`/${locale}/patient/profiles/detail?id=${profileId}`)
     }
 
     const handleCreateProfile = () => {
-        if (locale) {
-            router.push(`/${locale}/patient/profiles/create`)
-        } else {
-            router.push('/patient/profiles/create')
-        }
+        router.push(`/${locale}/patient/profiles/create`)
     }
 
     useEffect(() => {
@@ -64,7 +83,7 @@ export default function PatientProfilesPage() {
         return () => clearTimeout(timer)
     }, [searchTerm])
 
-    const loadProfiles = useCallback(async () => {
+    const fetchProfiles = useCallback(async () => {
         try {
             setLoading(true)
             setError(null)
@@ -81,46 +100,46 @@ export default function PatientProfilesPage() {
                 setMetadata(response.meta)
             }
         } catch (err: any) {
-            setError(
-                err?.response?.data?.message ||
-                err?.message ||
-                t("loadFailed")
-            )
+            setError(err?.message || t("Không thể tải danh sách hồ sơ", "Failed to load patient profiles"))
         } finally {
             setLoading(false)
         }
-    }, [debouncedSearchTerm, pageNumber, pageSize, t])
+    }, [debouncedSearchTerm, pageNumber, pageSize, currentLocale])
 
     useEffect(() => {
-        loadProfiles()
-    }, [loadProfiles])
+        fetchProfiles()
+    }, [fetchProfiles])
 
-    const getGenderBadge = (gender: string | undefined | null) => {
-        const value = (gender || "").trim().toLowerCase();
-
-        if (value === "nam" || value === "male") {
+    const getGenderBadge = (gender: string) => {
+        const normalized = gender?.toLowerCase() || "";
+        if (normalized === "nam" || normalized === "male") {
             return {
-                text: t("male"),
-                className: "bg-indigo-50 text-indigo-700 border border-indigo-100"
+                text: t("Nam", "Male"),
+                className: "bg-blue-50 text-blue-700 border border-blue-100"
             };
         }
-        if (value === "nữ" || value === "nu" || value === "female") {
+        if (normalized === "nữ" || normalized === "nu" || normalized === "female") {
             return {
-                text: t("female"),
+                text: t("Nữ", "Female"),
                 className: "bg-rose-50 text-rose-700 border border-rose-100"
             };
         }
-        if (value === "other" || value === "khác" || value === "khac") {
-            return {
-                text: t("other"),
-                className: "bg-slate-50 text-slate-700 border border-slate-100"
-            };
-        }
         return {
-            text: gender || t("other"),
+            text: gender || t("Khác", "Other"),
             className: "bg-slate-50 text-slate-700 border border-slate-100"
         };
     };
+
+    const getRelationshipLabel = (rel?: string) => {
+        const lower = rel?.toLowerCase() || ""
+        if (lower === "self" || lower === "bản thân") return t("Bản thân", "Self")
+        if (lower === "father" || lower === "bố" || lower === "cha") return t("Bố / Cha", "Father")
+        if (lower === "mother" || lower === "mẹ") return t("Mẹ", "Mother")
+        if (lower === "child" || lower === "con") return t("Con", "Child")
+        if (lower === "spouse" || lower === "vợ/chồng") return t("Vợ / Chồng", "Spouse")
+        if (lower === "relative" || lower === "người thân") return t("Người thân", "Relative")
+        return rel || ""
+    }
 
     return (
         <div className="space-y-6 p-4 md:p-8 max-w-7xl mx-auto antialiased animate-in fade-in duration-200">
@@ -128,10 +147,10 @@ export default function PatientProfilesPage() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-slate-100">
                 <div className="space-y-1">
                     <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight sm:text-3xl">
-                        {t("listTitle")}
+                        {t("Danh sách hồ sơ", "Patient Profiles")}
                     </h1>
                     <p className="text-sm font-medium text-slate-500">
-                        {t("listSubtitle")}
+                        {t("Danh sách hồ sơ của bạn và người thân đã liên kết trong hệ thống", "List of patient profiles for you and linked family members")}
                     </p>
                 </div>
 
@@ -140,7 +159,7 @@ export default function PatientProfilesPage() {
                     className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-primary hover:opacity-90 active:scale-[0.98] text-white text-sm font-semibold rounded-xl shadow-sm transition-all shrink-0 cursor-pointer"
                 >
                     <Plus className="w-4.5 h-4.5" />
-                    {t("addNew")}
+                    {t("Tạo mới hồ sơ", "Add New Profile")}
                 </button>
             </div>
 
@@ -152,7 +171,7 @@ export default function PatientProfilesPage() {
                         type="text"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder={t("searchPlaceholder")}
+                        placeholder={t("Tìm theo họ tên, số CCCD hoặc số điện thoại...", "Search by name, ID number or phone number...")}
                         className="w-full pl-11 pr-4 py-1.5 text-sm text-slate-900 placeholder-slate-400 bg-transparent border-0 focus:outline-none focus:ring-0"
                     />
                 </div>
@@ -172,13 +191,13 @@ export default function PatientProfilesPage() {
                     <table className="w-full text-sm text-slate-600 min-w-[950px]">
                         <thead>
                             <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider text-[11px]">
-                                <th className="px-6 py-4 text-left">{t("fullNameHeader")}</th>
-                                <th className="px-6 py-4 text-left">{t("gender")}</th>
-                                <th className="px-6 py-4 text-left">{t("dateOfBirth")}</th>
-                                <th className="px-6 py-4 text-left">{t("identityLabel")}</th>
-                                <th className="px-6 py-4 text-left">{t("phone")}</th>
-                                <th className="px-6 py-4 text-left">{t("relationship")}</th>
-                                <th className="px-6 py-4 text-center">{t("actions")}</th>
+                                <th className="px-6 py-4 text-left">{t("HỌ TÊN", "FULL NAME")}</th>
+                                <th className="px-6 py-4 text-left">{t("GIỚI TÍNH", "GENDER")}</th>
+                                <th className="px-6 py-4 text-left">{t("NGÀY SINH", "DATE OF BIRTH")}</th>
+                                <th className="px-6 py-4 text-left">{t("CCCD / CMND", "ID CARD")}</th>
+                                <th className="px-6 py-4 text-left">{t("SỐ ĐIỆN THOẠI", "PHONE NUMBER")}</th>
+                                <th className="px-6 py-4 text-left">{t("QUAN HỆ", "RELATIONSHIP")}</th>
+                                <th className="px-6 py-4 text-center">{t("HÀNH ĐỘNG", "ACTIONS")}</th>
                             </tr>
                         </thead>
 
@@ -248,7 +267,7 @@ export default function PatientProfilesPage() {
                                             <td className="px-6 py-4">
                                                 <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200/60">
                                                     <Users className="w-3 h-3 text-slate-500" />
-                                                    {item.relationship}
+                                                    {getRelationshipLabel(item.relationship)}
                                                 </span>
                                             </td>
 
@@ -257,7 +276,7 @@ export default function PatientProfilesPage() {
                                                     onClick={() => handleViewDetail(item.id_patientProfile)}
                                                     className="inline-flex items-center justify-center px-3.5 py-1.5 text-xs font-bold text-primary bg-primary/10 border border-primary/20 rounded-xl hover:bg-primary hover:text-white active:scale-95 shadow-sm transition-all cursor-pointer"
                                                 >
-                                                    Xem đơn thuốc & Chi tiết
+                                                    {t("Xem đơn thuốc & Chi tiết", "View Prescriptions & Details")}
                                                 </button>
                                             </td>
                                         </tr>
@@ -275,17 +294,17 @@ export default function PatientProfilesPage() {
                             <UserPlus className="w-8 h-8 text-slate-400" />
                         </div>
                         <h3 className="text-base font-bold text-slate-900 mb-1">
-                            {t("noProfilesFound")}
+                            {t("Không tìm thấy hồ sơ bệnh nhân", "No patient profiles found")}
                         </h3>
                         <p className="text-sm text-slate-400 max-w-xs mb-5">
-                            {t("noProfilesYet")}
+                            {t("Hệ thống chưa ghi nhận hồ sơ nào khớp với bộ lọc của bạn.", "No profiles match your search criteria.")}
                         </p>
                         <button
                             onClick={handleCreateProfile}
                             className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold rounded-xl border border-slate-200 shadow-sm transition-all active:scale-95"
                         >
                             <Plus className="w-4 h-4 text-slate-500" />
-                            {t("addNewProfile")}
+                            {t("Tạo mới hồ sơ", "Add New Profile")}
                         </button>
                     </div>
                 )}
@@ -294,7 +313,7 @@ export default function PatientProfilesPage() {
                 {metadata && metadata.totalPages > 1 && (
                     <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50/50">
                         <div className="text-xs sm:text-sm text-slate-500 font-medium">
-                            Trang <span className="text-slate-900 font-bold">{metadata.page}</span> trên <span className="text-slate-900 font-bold">{metadata.totalPages}</span>
+                            {t("Trang", "Page")} <span className="text-slate-900 font-bold">{metadata.page}</span> {t("trên", "of")} <span className="text-slate-900 font-bold">{metadata.totalPages}</span>
                         </div>
 
                         <div className="flex gap-2">

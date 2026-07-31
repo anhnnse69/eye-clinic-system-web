@@ -14,7 +14,9 @@ import {
   ChevronRight,
   Pencil,
   ShieldCheck,
-  ToggleLeft
+  Info,
+  Eye,
+  Loader2
 } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { accountService } from "@/services/account.service"
@@ -31,7 +33,6 @@ const roleMapping: Record<string, string> = {
 
 export default function SystemAccountsManagementPage() {
   const t = useTranslations("systemAdmin.accounts")
-  const tCommon = useTranslations("systemAdmin.common")
 
   const router = useRouter()
   const [accountsList, setAccountsList] = useState<GetAccountResponse[]>([])
@@ -61,7 +62,7 @@ export default function SystemAccountsManagementPage() {
   const [pageNumber, setPageNumber] = useState<number>(1)
   const [pageSize, setPageSize] = useState<number>(10)
   const [roleFilter, setRoleFilter] = useState<string>("all")
-  const [statusFilter, setStatusFilter] = useState<string>("all") // BỔ SUNG: State lọc trạng thái
+  const [statusFilter, setStatusFilter] = useState<string>("all")
   const [searchTerm, setSearchTerm] = useState<string>("")
   const [debouncedSearch, setDebouncedSearch] = useState<string>("")
 
@@ -69,8 +70,8 @@ export default function SystemAccountsManagementPage() {
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchTerm)
-      setPageNumber(1) // Reset về trang 1 khi tìm kiếm mới
-    }, 500)
+      setPageNumber(1)
+    }, 400)
     return () => clearTimeout(handler)
   }, [searchTerm])
 
@@ -82,7 +83,6 @@ export default function SystemAccountsManagementPage() {
 
       const roleParam = roleFilter === "all" ? undefined : roleFilter
 
-      // BỔ SUNG: Chuẩn hóa dữ liệu trạng thái từ select string sang boolean | undefined
       const statusParam =
         statusFilter === "active" ? true :
           statusFilter === "locked" ? false : undefined
@@ -91,12 +91,12 @@ export default function SystemAccountsManagementPage() {
         pageNumber,
         pageSize,
         role: roleParam,
-        isActive: statusParam, // BỔ SUNG: Truyền param trạng thái hoạt động lên API
+        isActive: statusParam,
         searchTerm: debouncedSearch.trim() || undefined
       })
 
       if (response.data) {
-        setAccountsList(response.data)
+        setAccountsList(response.data.filter(acc => acc.role !== "SYSTEM_ADMIN"))
       }
 
       if (response.meta) {
@@ -124,7 +124,7 @@ export default function SystemAccountsManagementPage() {
     } finally {
       setLoading(false)
     }
-  }, [pageNumber, pageSize, roleFilter, statusFilter, debouncedSearch, t]) // BỔ SUNG: Thêm statusFilter vào dependency array
+  }, [pageNumber, pageSize, roleFilter, statusFilter, debouncedSearch, t])
 
   // Tự động tải lại dữ liệu khi các tham số thay đổi
   useEffect(() => {
@@ -141,7 +141,6 @@ export default function SystemAccountsManagementPage() {
         isActive: !currentStatus
       })
 
-      // Cập nhật nóng trạng thái trực tiếp trên mảng UI Client không cần reload
       setAccountsList(prev =>
         prev.map(item =>
           item.id === accountId ? { ...item, isActive: !currentStatus } : item
@@ -167,242 +166,237 @@ export default function SystemAccountsManagementPage() {
   }
 
   return (
-    <div className="space-y-6 text-left p-4 md:p-6 w-full">
-      {/* Tiêu đề & Nút Thêm Mới */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6 w-full min-w-0 px-4 py-4 text-left">
+      {/* Header đồng bộ chuẩn với Clinics và Applications */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-headline-md font-bold text-on-surface flex items-center gap-2">
-            <Users className="h-6 w-6 text-primary shrink-0" />
-            {t("listTitle")}
-          </h2>
-          <p className="text-body-md text-on-surface-variant">
-            {t("listSubtitle")}
-          </p>
+          <h2 className="text-2xl font-bold text-slate-800">{t("listTitle")}</h2>
+          <nav className="flex text-sm text-slate-500 gap-1 mt-1">
+            <span className="cursor-pointer hover:text-blue-600" onClick={() => router.push("/system-admin/dashboard")}>Dashboard</span>
+            <span>/</span>
+            <span className="text-slate-800">Danh sách tài khoản</span>
+          </nav>
         </div>
 
-        {/* Nhóm các nút hành động lại gần nhau */}
-        <div className="flex items-center gap-2 self-start sm:self-center shrink-0 w-full sm:w-auto overflow-x-auto no-scrollbar">
-          <Link
-            href="/system-admin/accounts/clinic-admin"
-            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-primary/10 text-primary border border-primary/20 rounded-xl hover:bg-primary/20 transition-all text-label-md font-semibold whitespace-nowrap"
-          >
-            <Plus className="h-4 w-4" /> {t("addClinicAdmin")}
-          </Link>
-          <Link
-            href="/system-admin/accounts/create"
-            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-primary text-on-primary rounded-xl hover:opacity-90 transition-all text-label-md font-semibold shadow-sm whitespace-nowrap"
-          >
-            <Plus className="h-4 w-4" /> {t("addAccount")}
-          </Link>
+        <Link
+          href="/system-admin/accounts/clinic-admin"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl transition-all shadow-sm active:scale-95 self-start sm:self-center cursor-pointer whitespace-nowrap"
+        >
+          <Plus className="h-4 w-4" />
+          <span>{t("addClinicAdmin")}</span>
+        </Link>
+      </div>
+
+      {/* Banner hướng dẫn phạm vi quản lý tài khoản của System Admin (chuẩn Slate Blue) */}
+      <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-start gap-3">
+        <Info className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+        <div className="text-sm">
+          <p className="font-semibold text-blue-900 mb-0.5">Phạm vi phân quyền Quản trị Hệ thống (System Admin):</p>
+          <p className="text-blue-700 leading-relaxed">
+            System Admin quản lý danh sách toàn bộ tài khoản và trực tiếp <strong>Cấp tài khoản Quản trị phòng khám (Clinic Admin)</strong>.
+            Đối với tài khoản Bác sĩ (Doctor) và Lễ tân (Receptionist) sẽ do <strong>Quản trị phòng khám (Clinic Admin)</strong> trực tiếp tạo và quản lý tại cơ sở của họ.
+          </p>
         </div>
       </div>
 
-      {/* Bộ Lọc Điều Kiện & Thanh Tìm Kiếm */}
-      <div className="flex flex-col lg:flex-row items-center gap-4 bg-surface-container-low p-4 rounded-2xl border border-outline-variant">
-        <div className="relative w-full lg:flex-1">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-on-surface-variant" />
-          <input
-            type="text"
-            placeholder={t("searchPlaceholder")}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-body-md placeholder:text-on-surface-variant/60 focus:outline-none focus:border-primary transition-colors"
-          />
-        </div>
+      {/* Bộ Lọc Điều Kiện & Thanh Tìm Kiếm (Khung Grid 3 cột như Clinics & Applications) */}
+      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+          {/* Ô Tìm kiếm */}
+          <div className="flex flex-col gap-1.5 w-full">
+            <label className="text-sm font-semibold text-slate-600">Tìm kiếm tài khoản</label>
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+              <input
+                type="text"
+                placeholder={t("searchPlaceholder")}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all outline-none"
+              />
+            </div>
+          </div>
 
-        {/* Khu vực chứa các bộ lọc Select Option */}
-        <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto shrink-0">
           {/* Lọc theo Vai Trò */}
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <span className="flex items-center gap-1 text-label-md font-medium text-on-surface-variant shrink-0">
-              <Filter className="h-4 w-4" /> {t("role")}:
-            </span>
+          <div className="flex flex-col gap-1.5 w-full">
+            <label className="text-sm font-semibold text-slate-600">Vai trò hệ thống</label>
             <select
               value={roleFilter}
               onChange={(e) => {
                 setRoleFilter(e.target.value)
                 setPageNumber(1)
               }}
-              className="w-full sm:w-40 px-3 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors cursor-pointer font-medium"
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all outline-none text-slate-700 font-medium cursor-pointer"
             >
               <option value="all">{t("allRoles")}</option>
-              <option value="SYSTEM_ADMIN">{tCommon("systemAdmin")}</option>
-              <option value="CLINIC_ADMIN">{tCommon("clinicAdmin")}</option>
-              <option value="DOCTOR">{tCommon("doctor")}</option>
-              <option value="RECEPTIONIST">{tCommon("receptionist")}</option>
+              <option value="CLINIC_ADMIN">{roleMapping.CLINIC_ADMIN}</option>
+              <option value="DOCTOR">{roleMapping.DOCTOR}</option>
+              <option value="RECEPTIONIST">{roleMapping.RECEPTIONIST}</option>
             </select>
           </div>
 
-          {/* BỔ SUNG: Bộ Lọc theo Trạng Thái Hoạt Động */}
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <span className="flex items-center gap-1 text-label-md font-medium text-on-surface-variant shrink-0">
-              <ToggleLeft className="h-4 w-4" /> {t("isActive")}:
-            </span>
+          {/* Lọc theo Trạng Thái */}
+          <div className="flex flex-col gap-1.5 w-full">
+            <label className="text-sm font-semibold text-slate-600">Trạng thái hoạt động</label>
             <select
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value)
                 setPageNumber(1)
               }}
-              className="w-full sm:w-40 px-3 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors cursor-pointer font-medium"
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all outline-none text-slate-700 font-medium cursor-pointer"
             >
-              <option value="all">{t("allStatuses")}</option>
-              <option value="active">{t("statusActive")}</option>
-              <option value="locked">{t("statusLocked")}</option>
+              <option value="all">Tất cả trạng thái</option>
+              <option value="active">Đang hoạt động</option>
+              <option value="locked">Bị khóa</option>
             </select>
           </div>
         </div>
       </div>
 
-      {/* Trạng thái Loading dữ liệu */}
-      {loading && (
-        <div className="flex justify-center items-center py-12 bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-sm">
-          <p className="text-body-md text-on-surface-variant animate-pulse">
-            {t("loadingData")}
-          </p>
+      {/* Thông báo lỗi */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
+          <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+          <div>
+            <h3 className="font-semibold text-red-800 mb-0.5">Lỗi hệ thống</h3>
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
         </div>
       )}
 
-      {/* Trạng thái Error */}
-      {error && !loading && (
-        <div className="p-4 bg-error-container text-on-error-container rounded-xl flex items-center gap-2 text-body-md font-medium border border-error/20">
-          <AlertCircle className="h-5 w-5 text-error shrink-0" />
-          <span>{error}</span>
+      {/* Hiệu ứng Loading */}
+      {loading && (
+        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
+          <Loader2 className="h-8 w-8 text-blue-600 animate-spin mb-3" />
+          <p className="text-sm text-slate-500">Đang tải danh sách tài khoản...</p>
         </div>
       )}
 
       {/* Hiển thị bảng dữ liệu */}
-      {!loading && !error && (
-        <div className="space-y-4">
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-surface-container-low border-b border-outline-variant text-label-md text-on-surface-variant font-medium">
-                    <th className="p-4">{t("fullName")}</th>
-                    <th className="p-4">{t("phoneEmail")}</th>
-                    <th className="p-4">{t("roleAdmin")}</th>
-                    <th className="p-4">{t("createdAt")}</th>
-                    <th className="p-4 text-center">{t("isActive")}</th>
-                    <th className="p-4 text-center">{t("actions")}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-outline-variant text-body-md text-on-surface">
-                  {accountsList.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="p-12 text-center text-on-surface-variant">
-                        {t("noResults")}
-                      </td>
-                    </tr>
-                  ) : (
-                    accountsList.map((account) => (
-                      <tr key={account.id} className="hover:bg-surface-container-low/40 transition-colors">
-                        <td className="p-4">
-                          <div className="flex items-center gap-3">
-                            {account.avatarUrl ? (
-                              <img src={account.avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full object-cover" />
-                            ) : (
-                              <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-label-md">
-                                {account.fullName.charAt(0).toUpperCase()}
-                              </div>
-                            )}
-                            <p className="font-semibold text-on-surface">{account.fullName}</p>
-                          </div>
-                        </td>
-                        <td className="p-4 text-on-surface-variant">
-                          <p className="font-medium text-on-surface">{account.phone}</p>
-                          <p className="text-body-sm opacity-80">{account.email}</p>
-                        </td>
-                        <td className="p-4">
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-label-sm font-semibold bg-secondary/10 text-secondary">
-                            <ShieldCheck className="h-3 w-3" /> {roleMapping[account.role] || account.role}
-                          </span>
-                        </td>
-                        <td className="p-4 text-on-surface-variant">
-                          <div className="flex items-center gap-1.5 text-label-md">
-                            <Clock className="h-4 w-4 text-on-surface-variant shrink-0" />
-                            {account.createdAt}
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <div className="flex flex-col items-center justify-center gap-1.5">
-                            <button
-                              type="button"
-                              disabled={updatingId !== null}
-                              onClick={() => handleToggleActive(account.id, account.isActive)}
-                              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${account.isActive ? "bg-emerald-500" : "bg-neutral-300"
-                                } ${updatingId === account.id ? "opacity-40 cursor-wait" : ""}`}
-                            >
-                              <span
-                                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${account.isActive ? "translate-x-5" : "translate-x-0"
-                                  }`}
-                              />
-                            </button>
-                            <span className={`text-[11px] font-bold tracking-wide uppercase ${account.isActive ? "text-emerald-600" : "text-neutral-500"
-                              }`}>
-                              {account.isActive ? t("statusActive") : t("statusLocked")}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="p-4 text-center">
+      {!loading && accountsList.length === 0 ? (
+        <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[300px] w-full">
+          <Users className="h-12 w-12 text-slate-300 mb-3" />
+          <h3 className="text-lg font-bold text-slate-800 mb-1">Không tìm thấy tài khoản</h3>
+          <p className="text-sm text-slate-500">Hiện tại không có dữ liệu tài khoản nào khớp với bộ lọc.</p>
+        </div>
+      ) : !loading && (
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full">
+          <div className="overflow-x-auto w-full">
+            <table className="w-full text-left border-collapse min-w-[1000px]">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50">
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Thông tin cá nhân</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Số điện thoại / Email</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Vai trò</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Ngày tạo</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Trạng thái</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200">
+                {accountsList.map((account) => (
+                  <tr key={account.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 font-bold text-sm shrink-0">
+                          {account.fullName ? account.fullName.charAt(0).toUpperCase() : "U"}
+                        </div>
+                        <div>
+                          <p className="font-bold text-sm text-slate-800">{account.fullName}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="font-medium text-sm text-slate-700">{account.phone}</p>
+                      <p className="text-xs text-slate-500">{account.email || "—"}</p>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                        <ShieldCheck className="h-3.5 w-3.5" /> {roleMapping[account.role] || account.role}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-slate-500 font-medium">
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="h-4 w-4 text-slate-400 shrink-0" />
+                        {account.createdAt}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <div className="flex flex-col items-center justify-center gap-1.5">
+                        {account.role === "CLINIC_ADMIN" ? (
                           <button
                             type="button"
-                            onClick={() => handleEditRedirect(account)}
-                            className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 border border-outline-variant rounded-xl text-label-sm text-primary font-medium bg-surface-container-lowest hover:bg-primary/5 transition-colors shadow-sm cursor-pointer"
+                            disabled={updatingId !== null}
+                            onClick={() => handleToggleActive(account.id, account.isActive)}
+                            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${account.isActive ? "bg-emerald-500" : "bg-slate-300"
+                              } ${updatingId === account.id ? "opacity-40 cursor-wait" : ""}`}
                           >
-                            <Pencil className="h-3.5 w-3.5" /> {tCommon("edit")}
+                            <span
+                              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${account.isActive ? "translate-x-5" : "translate-x-0"
+                                }`}
+                            />
                           </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                        ) : null}
+                        <span className={`text-[11px] font-bold tracking-wide uppercase px-2 py-0.5 rounded ${account.isActive ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-slate-100 text-slate-600 border border-slate-200"
+                          }`}>
+                          {account.isActive ? t("statusActive") : t("statusLocked")}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      {account.role === "CLINIC_ADMIN" ? (
+                        <button
+                          type="button"
+                          onClick={() => handleEditRedirect(account)}
+                          className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-blue-600 px-2.5 py-1.5 hover:bg-blue-50 rounded-lg transition-all whitespace-nowrap cursor-pointer"
+                        >
+                          <Pencil className="h-4 w-4 shrink-0" />
+                          <span>Sửa</span>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleEditRedirect(account)}
+                          className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-blue-600 px-2.5 py-1.5 hover:bg-slate-100 rounded-lg transition-all whitespace-nowrap cursor-pointer"
+                          title="Xem chi tiết thông tin tài khoản"
+                        >
+                          <Eye className="h-4 w-4 shrink-0 text-blue-600" />
+                          <span>Chỉ xem</span>
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
-          {/* Phân Trang (Pagination Control) */}
+          {/* Thanh phân trang ở chân bảng */}
           {meta.total > 0 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-surface-container-low px-4 py-3 border border-outline-variant rounded-2xl shadow-sm text-label-md text-on-surface-variant">
-              <div>
-                {t("showingRows", { 
-                  from: Math.min((meta.page - 1) * meta.size + 1, meta.total), 
-                  to: Math.min(meta.page * meta.size, meta.total), 
-                  total: meta.total 
-                })}
-              </div>
-              <div className="flex items-center gap-2">
-                <select
-                  value={pageSize}
-                  onChange={(e) => {
-                    setPageSize(Number(e.target.value))
-                    setPageNumber(1)
-                  }}
-                  className="bg-surface-container-lowest border border-outline-variant text-on-surface px-2 py-1.5 rounded-lg text-label-md focus:outline-none cursor-pointer mr-2 font-medium"
-                >
-                  <option value={5}>5 {t("rowsPerPage")}</option>
-                  <option value={10}>10 {t("rowsPerPage")}</option>
-                  <option value={20}>20 {t("rowsPerPage")}</option>
-                  <option value={50}>50 {t("rowsPerPage")}</option>
-                </select>
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+              <span className="text-sm text-slate-500">
+                Hiển thị {Math.min((meta.page - 1) * meta.size + 1, meta.total)} - {Math.min(meta.page * meta.size, meta.total)} của {meta.total} tài khoản
+              </span>
+              <div className="flex items-center gap-1">
                 <button
+                  type="button"
                   disabled={!meta.hasPrevious || loading}
                   onClick={() => setPageNumber(prev => Math.max(prev - 1, 1))}
-                  className="inline-flex items-center justify-center p-2 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-surface-container-lowest transition-colors"
-                  title={t("previousPage")}
+                  className="p-1.5 rounded-lg hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-600 cursor-pointer"
                 >
-                  <ChevronLeft className="h-4 w-4" />
+                  <ChevronLeft className="h-5 w-5" />
                 </button>
-                <span className="px-3 py-1 bg-primary text-on-primary font-semibold rounded-lg text-label-md">
-                  {meta.page} / {meta.totalPages}
-                </span>
+                <button className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-sm font-medium">
+                  {meta.page}
+                </button>
                 <button
+                  type="button"
                   disabled={!meta.hasNext || loading}
-                  onClick={() => setPageNumber(prev => Math.min(prev + 1, meta.totalPages))}
-                  className="inline-flex items-center justify-center p-2 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container-low disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-surface-container-lowest transition-colors"
-                  title={t("nextPage")}
+                  onClick={() => setPageNumber(prev => prev + 1)}
+                  className="p-1.5 rounded-lg hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-600 cursor-pointer"
                 >
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-5 w-5" />
                 </button>
               </div>
             </div>

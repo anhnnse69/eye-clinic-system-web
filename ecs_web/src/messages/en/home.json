@@ -42,5 +42,45 @@
     "subtitle": "Join over 450 clinical practices using Eye Clinic Support to deliver world-class eye care with operational precision.",
     "startTrial": "Start Free Trial",
     "speakExpert": "Speak with an Expert"
+  },
+  "search": {
+    "doctorResults": "{count} result(s) for \"{query}\"",
+    "doctorCount": "{count} doctor(s) available",
+    "clinicResults": "{count} result(s) for \"{query}\"",
+    "clinicCount": "{count} clinic(s) available",
+    "eyeServices": "Eye Care Services",
+    "certifiedSpecialty": "Certified Specialty",
+    "certifiedCenter": "Certified Center",
+    "bookingJourney": "Booking Journey",
+    "trustTitle": "100% Verified Doctors",
+    "trustDesc": "All medical facilities are fully licensed and certified by local authorities.",
+    "searching": "Searching...",
+    "noDoctors": "No doctors available",
+    "noDoctorsDesc": "There are currently no doctors available from published clinics.",
+    "noClinics": "No clinics available",
+    "noClinicsDesc": "There are currently no published clinics available.",
+    "notFound": "No clinics found",
+    "notFoundDesc": "Try searching with a different keyword or district name.",
+    "yrsExp": "yrs experience",
+    "reviews": "reviews",
+    "book": "Book",
+    "details": "Details",
+    "showMore": "Show {count} more doctor(s)",
+    "showMoreClinics": "Show {count} more clinic(s)",
+    "specialties": {
+      "comprehensive": "Comprehensive Eye Examination",
+      "pediatric": "Pediatric Ophthalmology",
+      "cataract": "Cataract Treatment"
+    },
+    "steps": {
+      "step1Title": "1. Select Doctor",
+      "step1Desc": "View profile & experience",
+      "step2Title": "2. Book Appointment",
+      "step2Desc": "Choose time in 1 minute",
+      "step3Title": "3. Safe Consultation",
+      "step3Desc": "Get priority at clinic",
+      "step1ClinicTitle": "1. Select Clinic",
+      "step1ClinicDesc": "Based on real reviews"
+    }
   }
 }

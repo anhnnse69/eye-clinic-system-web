@@ -87,9 +87,9 @@ export function HomePage() {
       `}</style>
 
       <div className="min-h-screen bg-background text-on-surface font-body-md selection:bg-primary-fixed-dim selection:text-on-primary-fixed">
-        
+
         {/* Header Component */}
-        <Header 
+        <Header
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           searchTab={searchTab}
@@ -252,7 +252,7 @@ export function HomePage() {
 
         {/* Footer Component */}
         <Footer />
-        
+
       </div>
     </>
   )

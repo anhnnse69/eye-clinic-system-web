@@ -69,6 +69,7 @@
       "relationship": "Relationship",
       "actions": "Actions",
       "viewDetails": "View Details",
+      "viewPrescriptionDetail": "View Prescriptions & Details",
       "noProfilesFound": "No patient profiles found",
       "noProfilesYet": "The system has not recorded any profiles matching your filters.",
       "loadingData": "Loading data...",

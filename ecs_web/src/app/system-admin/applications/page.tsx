@@ -31,15 +31,14 @@ export default function ClinicApplicationsPage() {
   
   const [applications, setApplications] = useState<BackendClinicApplication[]>([])
   const [searchTerm, setSearchTerm] = useState<string>("")
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>("") // State hỗ trợ hoãn gọi API chống giật lag
-  const [statusFilter, setStatusFilter] = useState<string>("") // Mặc định "" là Tất cả trạng thái
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>("")
+  const [statusFilter, setStatusFilter] = useState<string>("")
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [pageSize] = useState<number>(10)
   const [pagination, setPagination] = useState<BackendMetaResponse | null>(null)
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
 
-  // 1. Giúp debounce: Đợi người dùng gõ xong 400ms mới cập nhật debouncedSearchTerm
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm)
@@ -50,7 +49,6 @@ export default function ClinicApplicationsPage() {
     }
   }, [searchTerm])
 
-  // 2. Kích hoạt fetch dữ liệu dựa trên debouncedSearchTerm thay vì searchTerm gốc
   useEffect(() => {
     fetchApplications()
   }, [currentPage, pageSize, statusFilter, debouncedSearchTerm])
@@ -62,12 +60,10 @@ export default function ClinicApplicationsPage() {
       
       const response = await clinicApplicationsService.getApplications({
         searchTerm: debouncedSearchTerm || undefined,
-        status: statusFilter || undefined, // Gửi trạng thái lên Backend API
+        status: statusFilter || undefined,
         pageNumber: currentPage,
         pageSize: pageSize,
       })
-
-      console.log("=== API RESPONSE RAW ===", response);
 
       const resData = response?.data || (response as any)?.Data;
       const resMeta = response?.meta || (response as any)?.Meta;
@@ -94,12 +90,12 @@ export default function ClinicApplicationsPage() {
 
   const handleSearch = (value: string) => {
     setSearchTerm(value)
-    setCurrentPage(1) // Trở về trang 1 khi gõ tìm kiếm mới
+    setCurrentPage(1)
   }
 
   const handleStatusChange = (value: string) => {
     setStatusFilter(value)
-    setCurrentPage(1) // Trở về trang 1 khi đổi bộ lọc trạng thái
+    setCurrentPage(1)
   }
 
   const handlePreviousPage = () => {
@@ -165,7 +161,7 @@ export default function ClinicApplicationsPage() {
           <button 
             onClick={fetchApplications}
             disabled={loading}
-            className="border border-blue-600 text-blue-600 hover:bg-blue-50 px-4 py-2.5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 h-[45px] w-full"
+            className="border border-blue-600 text-blue-600 hover:bg-blue-50 px-4 py-2.5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 h-[45px] w-full cursor-pointer"
           >
             <Filter className="h-4 w-4" />
             {loading ? "Đang tải..." : "Làm mới dữ liệu"}
@@ -176,7 +172,7 @@ export default function ClinicApplicationsPage() {
       {/* Thông báo Lỗi */}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
           <div>
             <h3 className="font-semibold text-red-800 mb-0.5">Lỗi</h3>
             <p className="text-sm text-red-700">{error}</p>
@@ -205,11 +201,11 @@ export default function ClinicApplicationsPage() {
             <table className="w-full text-left border-collapse min-w-[800px]">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50">
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase">Mã đơn</th>
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase">Phòng khám / Liên hệ</th>
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase">Ngày gửi</th>
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase">Trạng thái</th>
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase text-right">Thao tác</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Mã đơn</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Phòng khám / Liên hệ</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Ngày gửi</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Trạng thái</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Thao tác</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
@@ -226,16 +222,16 @@ export default function ClinicApplicationsPage() {
                       <td className="px-6 py-4 font-mono font-semibold text-blue-600 text-sm">{id}</td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 border border-slate-200 flex-shrink-0">
+                          <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 border border-slate-200 shrink-0">
                             <Building2 className="h-5 w-5" />
                           </div>
                           <div className="flex flex-col">
-                            <span className="font-semibold text-sm text-slate-800">{name}</span>
+                            <span className="font-bold text-sm text-slate-800">{name}</span>
                             <span className="text-xs text-slate-500">{phone} • {email}</span>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-500">
+                      <td className="px-6 py-4 text-sm text-slate-500 font-medium">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-slate-400" />
                           {date}
@@ -243,26 +239,26 @@ export default function ClinicApplicationsPage() {
                       </td>
                       <td className="px-6 py-4">
                         {status === "PENDING" && (
-                          <div className="flex items-center gap-1.5 text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full w-fit text-xs font-medium">
+                          <div className="flex items-center gap-1.5 text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full w-fit text-xs font-semibold border border-amber-200">
                             <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
                             <span>Chờ duyệt</span>
                           </div>
                         )}
                         {status === "APPROVED" && (
-                          <div className="flex items-center gap-1.5 text-green-700 bg-green-50 px-2.5 py-1 rounded-full w-fit text-xs font-medium">
+                          <div className="flex items-center gap-1.5 text-green-700 bg-green-50 px-2.5 py-1 rounded-full w-fit text-xs font-semibold border border-green-200">
                             <span className="w-1.5 h-1.5 rounded-full bg-green-600"></span>
                             <span>Đã duyệt</span>
                           </div>
                         )}
                         {status === "REJECTED" && (
-                          <div className="flex items-center gap-1.5 text-red-700 bg-red-50 px-2.5 py-1 rounded-full w-fit text-xs font-medium">
+                          <div className="flex items-center gap-1.5 text-red-700 bg-red-50 px-2.5 py-1 rounded-full w-fit text-xs font-semibold border border-red-200">
                             <span className="w-1.5 h-1.5 rounded-full bg-red-600"></span>
                             <span>Từ chối</span>
                           </div>
                         )}
                       </td>
                       <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
-                        <button onClick={() => handleViewDetails(id)} className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-lg flex items-center gap-1 text-xs font-medium direct-btn">
+                        <button onClick={() => handleViewDetails(id)} className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-lg flex items-center gap-1 text-xs font-medium direct-btn cursor-pointer">
                           <Eye className="h-4 w-4" />
                           <span>Xem chi tiết</span>
                         </button>
@@ -284,7 +280,7 @@ export default function ClinicApplicationsPage() {
                 <button 
                   onClick={handlePreviousPage}
                   disabled={!pagination.hasPrevious || loading}
-                  className="p-1.5 rounded-lg hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-600"
+                  className="p-1.5 rounded-lg hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-600 cursor-pointer"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
@@ -294,7 +290,7 @@ export default function ClinicApplicationsPage() {
                 <button 
                   onClick={handleNextPage}
                   disabled={!pagination.hasNext || loading}
-                  className="p-1.5 rounded-lg hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-600"
+                  className="p-1.5 rounded-lg hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-600 cursor-pointer"
                 >
                   <ChevronRight className="h-5 w-5" />
                 </button>

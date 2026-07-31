@@ -32,7 +32,7 @@ interface QueueClientProps {
 }
 
 const STATUS_COLORS: Record<string, { bg: string; text: string; icon: string }> = {
-  WAITING: { bg: "bg-blue-100", text: "text-blue-700", icon: "bg-blue-500" },
+  WAITING: { bg: "bg-[#00658D]/10", text: "text-[#00658D]", icon: "bg-[#00658D]" },
   CALLING: { bg: "bg-purple-100", text: "text-purple-700", icon: "bg-purple-500" },
   IN_PROGRESS: { bg: "bg-amber-100", text: "text-amber-700", icon: "bg-amber-500" },
   COMPLETED: { bg: "bg-green-100", text: "text-green-700", icon: "bg-green-500" },
@@ -245,7 +245,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
           <button
             onClick={fetchQueueData}
             disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors disabled:opacity-50 shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-[#00658D] text-white rounded-xl hover:bg-[#005273] transition-colors disabled:opacity-50 shadow-sm"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             {tQueue("refresh")}
@@ -264,9 +264,9 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
           </button>
           
           <div className="flex items-center gap-4 flex-1 justify-center">
-            <div className="bg-linear-to-br from-blue-500 to-blue-600 rounded-2xl px-5 py-4 text-white shadow-lg min-w-[100px]">
+            <div className="bg-[#00658D] rounded-2xl px-5 py-4 text-white shadow-lg min-w-[100px]">
               <div className="text-center" suppressHydrationWarning>
-                <div className="text-xs font-medium text-blue-100 uppercase tracking-wider" suppressHydrationWarning>
+                <div className="text-xs font-medium text-white/80 uppercase tracking-wider" suppressHydrationWarning>
                   {selectedDate.toLocaleDateString(undefined, { weekday: "short" })}
                 </div>
                 <div className="text-4xl font-bold mt-1" suppressHydrationWarning>
@@ -304,9 +304,9 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
           <div className="relative">
             <button
               onClick={() => setShowCalendar(!showCalendar)}
-              className="inline-flex items-center gap-3 px-4 py-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-blue-300 transition-all shadow-sm"
+              className="inline-flex items-center gap-3 px-4 py-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-[#00658D]/50 transition-all shadow-sm"
             >
-              <CalendarDays className="w-5 h-5 text-blue-500" />
+              <CalendarDays className="w-5 h-5 text-[#00658D]" />
               <span className="text-sm font-medium text-gray-700" suppressHydrationWarning>
                 {selectedDate.toLocaleDateString()}
               </span>
@@ -355,9 +355,9 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                         onClick={() => selectDate(day)}
                         className={`w-11 h-11 rounded-xl text-sm font-medium transition-all ${
                           isSelected
-                            ? "bg-blue-500 text-white shadow-md"
+                            ? "bg-[#00658D] text-white shadow-md"
                             : isTodayDate
-                            ? "bg-blue-50 text-blue-600 hover:bg-blue-100"
+                            ? "bg-[#00658D]/10 text-[#00658D] hover:bg-[#00658D]/20"
                             : "text-gray-700 hover:bg-gray-100"
                         }`}
                       >
@@ -373,7 +373,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                       handleToday()
                       setCalendarDate(new Date())
                     }}
-                    className="w-full py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    className="w-full py-2 text-sm font-medium text-[#00658D] hover:bg-[#00658D]/10 rounded-lg transition-colors"
                   >
                     {tQueue("today")}
                   </button>
@@ -391,7 +391,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
             onClick={() => setFilter("ALL")}
             className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
               filter === "ALL"
-                ? "bg-blue-500 text-white"
+                ? "bg-[#00658D] text-white"
                 : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
           >
@@ -406,7 +406,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                 onClick={() => setFilter(status)}
                 className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
                   filter === status
-                    ? "bg-blue-500 text-white"
+                    ? "bg-[#00658D] text-white"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
@@ -421,7 +421,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
       <div className="p-4">
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00658D]"></div>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -429,7 +429,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
             <p className="text-gray-700 font-medium">{error}</p>
             <button
               onClick={fetchQueueData}
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              className="mt-4 px-4 py-2 bg-[#00658D] text-white rounded-lg hover:bg-[#005273] transition-colors"
             >
               {tQueue("refresh")}
             </button>
@@ -457,12 +457,12 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
               return (
                 <div
                   key={item.queueId}
-                  className="bg-gray-50 rounded-xl p-4 border border-gray-200 hover:border-blue-300 transition-colors"
+                  className="bg-gray-50 rounded-xl p-4 border border-gray-200 hover:border-[#00658D]/40 transition-colors"
                 >
                   <div className="flex items-start gap-4">
                     <div className="shrink-0">
-                      <div className="w-12 h-12 rounded-2xl bg-blue-500 text-white flex flex-col items-center justify-center shadow-md">
-                        <span className="text-[11px] font-medium text-blue-100 leading-none mb-px">STT</span>
+                      <div className="w-12 h-12 rounded-2xl bg-[#00658D] text-white flex flex-col items-center justify-center shadow-md">
+                        <span className="text-[11px] font-medium text-white/80 leading-none mb-px">STT</span>
                         <span className="text-lg font-bold leading-none">{item.queueNumber}</span>
                       </div>
                     </div>
@@ -536,7 +536,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                           !item.hasMedicalRecord && (
                             <button
                               onClick={() => handleStartExamination(item)}
-                              className="flex items-center gap-1 px-3 py-1.5 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                              className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[#00658D] text-white rounded-lg hover:bg-[#005273] transition-colors"
                             >
                               <CheckCircle className="w-4 h-4" />
                               {tQueue("startExam")}

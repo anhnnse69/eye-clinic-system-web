@@ -31,6 +31,7 @@ export interface GetAccountsRequest {
   role?: number | string;
   searchTerm?: string;
   isActive?: boolean;
+  clinicId?: string;
 }
 
 export interface GetAccountResponse {
@@ -158,6 +159,7 @@ class AccountService {
           role: params.role || undefined,
           searchTerm: params.searchTerm || undefined,
           isActive: params.isActive !== undefined ? params.isActive : undefined,
+          clinicId: params.clinicId || undefined,
         },
       }
     );

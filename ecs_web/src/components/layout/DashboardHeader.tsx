@@ -1,6 +1,6 @@
 "use client"
 
-import { Menu, Bell, LogOut, User as UserIcon, ChevronDown } from "lucide-react"
+import { Menu, LogOut, User as UserIcon, ChevronDown } from "lucide-react"
 import { useShell } from "./ShellProvider"
 import { useRouter } from "next/navigation"
 import { useState, useRef, useEffect } from "react"

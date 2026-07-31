@@ -41,12 +41,17 @@ function getRoleFromToken(token: string): string | null {
   }
 }
 
-export default function middleware(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Determine locale (default to 'vi')
+  // Determine locale (check URL prefix first, then NEXT_LOCALE cookie, default to 'vi')
   const localeMatch = pathname.match(/^\/(vi|en)(\/|$)/)
-  const locale = localeMatch ? localeMatch[1] : "vi"
+  const cookieLocale = request.cookies.get("NEXT_LOCALE")?.value
+  const locale = localeMatch
+    ? localeMatch[1]
+    : cookieLocale === "en" || cookieLocale === "vi"
+    ? cookieLocale
+    : "vi"
 
   const hasLocalePrefix = Boolean(localeMatch)
   const pathnameWithoutLocale = hasLocalePrefix

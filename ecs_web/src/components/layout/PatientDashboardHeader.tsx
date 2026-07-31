@@ -34,8 +34,19 @@ export default function PatientDashboardHeader({ className }: PatientDashboardHe
 
   const toggleLang = () => {
     const next = locale === "vi" ? "en" : "vi"
-    const pathname = window.location.pathname.replace(/^\/(vi|en)/, `/${next}`)
-    router.replace(pathname || `/${next}/home`)
+    localStorage.setItem("locale", next)
+    document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=31536000`
+    const currentPath = window.location.pathname
+    if (/^\/(vi|en)(\/|$)/.test(currentPath)) {
+      const newPath = currentPath.replace(/^\/(vi|en)/, `/${next}`) + window.location.search
+      // Full reload is required so the root layout re-renders
+      // NextIntlClientProvider with the new locale; soft router.replace would
+      // leave Header / Footer and other client components using the stale locale.
+      window.location.href = newPath
+    } else {
+      document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=31536000`
+      window.location.reload()
+    }
   }
 
   return (

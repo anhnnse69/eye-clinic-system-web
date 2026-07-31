@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import {
@@ -17,7 +18,10 @@ import {
   FileText
 } from "lucide-react"
 import { authService } from "@/services/auth.service"
+import { useAccountInfo } from "@/hooks/useAccountInfo"
 import HomeUserMenu from "@/components/home/HomeUserMenu"
+
+import Footer from "@/components/layout/Footer"
 
 const LOGO_IMG = "https://lh3.googleusercontent.com/aida-public/AB6AXuCwR5I14Ti14lR3BYE4S0RtQO-d8r8udA0haqFhxTaWQ9yQ-jmxbSRgYSkcBkNwuYRPxAbe8JXfK0F1YyrjzCFly6Lq3OZKEvx1ur-E7AyiXkpaXAzTA7fU0BJWAs3bleQjIy9M4iQHcccCFbjJuDPzFrUn_bu0p0mQxPoyXF7BOJMQYc0C1GCWXA0JfldNcZ4O0CzfxkpvbMhmEFf6B_IaHns3GgbAB4_djZJGV8mIcaRS8VLHh7-bKrri-dHqeG15ux8Eq6zGs31k"
 
@@ -30,53 +34,98 @@ interface PatientPortalLayoutClientProps {
 
 export default function PatientPortalLayoutClient({
   children,
-  locale,
+  locale: initialLocale,
   userName,
   email
 }: PatientPortalLayoutClientProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const { account, refetch } = useAccountInfo({ enabled: true })
+
+  const [currentLocale, setCurrentLocale] = useState<"vi" | "en">(() => {
+    if (initialLocale === "en" || initialLocale === "vi") return initialLocale
+    if (typeof window !== "undefined") {
+      const match = window.location.pathname.match(/^\/(vi|en)(\/|$)/)
+      if (match) return match[1] as "vi" | "en"
+      const cookieMatch = document.cookie.match(/(?:^|;\s*)NEXT_LOCALE=([^;]+)/)
+      if (cookieMatch && (cookieMatch[1] === "vi" || cookieMatch[1] === "en")) {
+        return cookieMatch[1] as "vi" | "en"
+      }
+      const stored = localStorage.getItem("locale")
+      if (stored === "vi" || stored === "en") return stored
+    }
+    return "vi"
+  })
+
+  useEffect(() => {
+    const handleAvatarUpdated = () => {
+      refetch()
+    }
+    const handleLocaleChanged = (e: any) => {
+      if (e?.detail?.locale === "vi" || e?.detail?.locale === "en") {
+        setCurrentLocale(e.detail.locale)
+      }
+    }
+    window.addEventListener("ecs-user-avatar-updated", handleAvatarUpdated)
+    window.addEventListener("ecs-locale-changed", handleLocaleChanged)
+    return () => {
+      window.removeEventListener("ecs-user-avatar-updated", handleAvatarUpdated)
+      window.removeEventListener("ecs-locale-changed", handleLocaleChanged)
+    }
+  }, [refetch])
+
+  const locale = currentLocale
 
   const navTabs = [
     {
       id: "account-info",
-      label: "Thông tin tài khoản",
+      label: locale === "en" ? "Account Info" : "Thông tin tài khoản",
       href: `/${locale}/patient/account-info`,
       icon: User,
     },
     {
       id: "profiles",
-      label: "Đơn thuốc & Bệnh án",
+      label: locale === "en" ? "Prescriptions & Records" : "Đơn thuốc & Bệnh án",
       href: `/${locale}/patient/profiles`,
       icon: Pill,
     },
     {
       id: "appointment-history",
-      label: "Lịch hẹn khám",
+      label: locale === "en" ? "Appointments" : "Lịch hẹn khám",
       href: `/${locale}/patient/appointment-history`,
       icon: CalendarDays,
     },
     {
       id: "feedback-history",
-      label: "Phản hồi & Đánh giá",
+      label: locale === "en" ? "Feedback & Reviews" : "Phản hồi & Đánh giá",
       href: `/${locale}/patient/feedback-history`,
       icon: MessageSquare,
     },
     {
       id: "change-password",
-      label: "Đổi mật khẩu",
+      label: locale === "en" ? "Change Password" : "Đổi mật khẩu",
       href: `/${locale}/patient/change-password`,
       icon: KeyRound,
     },
   ]
 
   const toggleLang = () => {
-    if (locale === "en") {
-      localStorage.setItem("locale", "vi")
-      router.replace(pathname.replace("/en/", "/vi/"))
+    const next = locale === "vi" ? "en" : "vi"
+    setCurrentLocale(next)
+    localStorage.setItem("locale", next)
+    document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=31536000`
+    window.dispatchEvent(new CustomEvent("ecs-locale-changed", { detail: { locale: next } }))
+    const currentPath = window.location.pathname
+    if (/^\/(vi|en)(\/|$)/.test(currentPath)) {
+      const newPath = currentPath.replace(/^\/(vi|en)/, `/${next}`) + window.location.search
+      // router.replace alone won't re-mount NextIntlClientProvider, so the
+      // Footer (and any other client component using useTranslations) keeps
+      // showing the old language. Force a full reload so the root layout
+      // re-renders with the new locale and fresh messages.
+      window.location.href = newPath
     } else {
-      localStorage.setItem("locale", "en")
-      router.replace(pathname.replace("/vi/", "/en/"))
+      document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=31536000`
+      window.location.href = `/${next}${currentPath}${window.location.search}`
     }
   }
 
@@ -108,19 +157,40 @@ export default function PatientPortalLayoutClient({
                 Eye Clinic Support System
               </span>
               <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase mt-1">
-                Hệ thống Chăm sóc Mắt Chuyên khoa
+                {locale === "en" ? "Specialized Eye Care System" : "Hệ thống Chăm sóc Mắt Chuyên khoa"}
               </span>
             </div>
           </Link>
 
-          {/* Menu Điều hướng Khách hàng */}
+          {/* Menu Điều hướng Khách hàng đồng bộ trang chủ */}
           <div className="hidden lg:flex items-center gap-6">
             <Link
               href={`/${locale}/home`}
-              className="flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-primary transition-colors"
+              className="flex items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-primary transition-colors"
             >
               <Home className="w-4 h-4 text-primary" />
-              <span>Trang chủ</span>
+              <span>{locale === "en" ? "Home" : "Trang chủ"}</span>
+            </Link>
+
+            <Link
+              href={`/${locale}/home`}
+              className="text-sm font-medium text-slate-600 hover:text-primary transition-colors"
+            >
+              {locale === "en" ? "Clinics" : "Phòng khám"}
+            </Link>
+
+            <Link
+              href={`/${locale}/home`}
+              className="text-sm font-medium text-slate-600 hover:text-primary transition-colors"
+            >
+              {locale === "en" ? "Doctors" : "Bác sĩ"}
+            </Link>
+
+            <Link
+              href={`/${locale}/register-clinic-application`}
+              className="text-sm font-medium text-slate-600 hover:text-primary transition-colors"
+            >
+              {locale === "en" ? "Partners" : "Đối tác"}
             </Link>
           </div>
 
@@ -152,23 +222,33 @@ export default function PatientPortalLayoutClient({
             
             {/* Thẻ Bệnh nhân */}
             <div className="flex items-center gap-4 sm:gap-5">
-              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/10 backdrop-blur-md text-white font-black text-xl sm:text-2xl flex items-center justify-center shadow-lg border-2 border-white/20 shrink-0">
-                {getInitials(userName)}
-              </div>
+              {account?.avatarUrl ? (
+                <img
+                  src={account.avatarUrl}
+                  alt={userName || "Avatar"}
+                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover shadow-lg border-2 border-white/20 shrink-0"
+                />
+              ) : (
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/10 backdrop-blur-md text-white font-black text-xl sm:text-2xl flex items-center justify-center shadow-lg border-2 border-white/20 shrink-0">
+                  {getInitials(userName)}
+                </div>
+              )}
               <div className="space-y-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white">
-                    {userName || "Bệnh nhân"}
+                    {userName || (locale === "en" ? "Patient" : "Bệnh nhân")}
                   </h1>
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-white/15 text-cyan-200 border border-white/20 backdrop-blur-md">
-                    <ShieldCheck className="w-3.5 h-3.5 text-cyan-300" /> Tài khoản Bệnh nhân
+                    <ShieldCheck className="w-3.5 h-3.5 text-cyan-300" /> {locale === "en" ? "Patient Account" : "Tài khoản Bệnh nhân"}
                   </span>
                 </div>
                 <p className="text-xs sm:text-sm font-medium text-slate-200">
-                  {email || "Chưa cập nhật email"}
+                  {email || (locale === "en" ? "Email not updated" : "Chưa cập nhật email")}
                 </p>
                 <p className="text-[11px] text-blue-100/80 font-medium">
-                  Cổng quản lý thông tin & đơn thuốc cá nhân tại Eye Clinic Support System
+                  {locale === "en"
+                    ? "Personal information & prescription management portal at Eye Clinic Support System"
+                    : "Cổng quản lý thông tin & đơn thuốc cá nhân tại Eye Clinic Support System"}
                 </p>
               </div>
             </div>
@@ -212,25 +292,9 @@ export default function PatientPortalLayoutClient({
       </main>
 
       {/* ─────────────────────────────────────────────────────────────
-          5. FOOTER ĐỒNG BỘ VỚI TRANG CHỦ
+          5. FOOTER ĐỒNG BỘ CHÍNH XÁC VỚI TRANG CHỦ
           ───────────────────────────────────────────────────────────── */}
-      <footer className="bg-surface-container-lowest border-t border-outline-variant py-6 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-medium">
-          <div className="flex items-center gap-2">
-            <img alt="Logo" className="w-5 h-5 object-contain" src={LOGO_IMG} />
-            <span className="font-bold text-slate-700">Eye Clinic Support System</span>
-            <span>— Chăm sóc sức khỏe đôi mắt của bạn</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link href={`/${locale}/home`} className="hover:text-primary transition-colors">
-              Trang chủ
-            </Link>
-            <Link href={`/${locale}/patient/account-info`} className="hover:text-primary transition-colors">
-              Tài khoản
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }

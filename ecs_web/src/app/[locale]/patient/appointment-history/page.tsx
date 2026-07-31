@@ -25,23 +25,57 @@ import {
     Star
 } from "lucide-react"
 
+import { useLocale } from "next-intl"
 import { appointmentHistoryService } from "@/services"
 import type { GetAppointmentHistoryResponse } from "@/services/appointment-history.service"
 import type { MetaResponse } from "@/types"
 import { ApiError } from "@/lib/axios"
 import SubmitFeedback from "@/components/submit-feedback/SubmitFeedback"
 
-const STATUS_OPTIONS = [
-    { value: "", label: "Tất cả", icon: Calendar, color: "text-gray-600", bgColor: "bg-gray-100", activeClass: "bg-gray-900 text-white border-gray-900" },
-    { value: "PENDING", label: "Chờ xác nhận", icon: ClockIcon, color: "text-amber-600", bgColor: "bg-amber-50", activeClass: "bg-amber-600 text-white border-amber-600" },
-    { value: "BOOKED", label: "Đã xác nhận", icon: CalendarCheck, color: "text-blue-600", bgColor: "bg-blue-50", activeClass: "bg-blue-600 text-white border-blue-600" },
-    { value: "COMPLETED", label: "Đã khám xong", icon: CheckCircle, color: "text-emerald-600", bgColor: "bg-emerald-50", activeClass: "bg-emerald-600 text-white border-emerald-600" },
-    { value: "CANCELLED", label: "Đã hủy lịch", icon: CalendarXIcon, color: "text-rose-600", bgColor: "bg-rose-50", activeClass: "bg-rose-600 text-white border-rose-600" },
-]
-
 const CANCELLABLE_STATUSES = new Set(["PENDING"])
 
 export default function AppointmentHistoryPage() {
+    const localeFromHook = useLocale()
+    const router = useRouter()
+    const params = useParams()
+
+    const [currentLocale, setCurrentLocale] = useState<"vi" | "en">(() => {
+        if (typeof window !== "undefined") {
+            const match = window.location.pathname.match(/^\/(vi|en)(\/|$)/)
+            if (match) return match[1] as "vi" | "en"
+            const cookieMatch = document.cookie.match(/(?:^|;\s*)NEXT_LOCALE=([^;]+)/)
+            if (cookieMatch && (cookieMatch[1] === "vi" || cookieMatch[1] === "en")) {
+                return cookieMatch[1] as "vi" | "en"
+            }
+            const stored = localStorage.getItem("locale")
+            if (stored === "vi" || stored === "en") return stored
+        }
+        const pLoc = params?.locale as string
+        if (pLoc === "en" || pLoc === "vi") return pLoc
+        return localeFromHook === "en" ? "en" : "vi"
+    })
+
+    useEffect(() => {
+        const handleLocaleChanged = (e: any) => {
+            if (e?.detail?.locale === "vi" || e?.detail?.locale === "en") {
+                setCurrentLocale(e.detail.locale)
+            }
+        }
+        window.addEventListener("ecs-locale-changed", handleLocaleChanged)
+        return () => window.removeEventListener("ecs-locale-changed", handleLocaleChanged)
+    }, [])
+
+    const locale = currentLocale
+    const t = (vi: string, en: string) => (locale === "en" ? en : vi)
+
+    const STATUS_OPTIONS = [
+        { value: "", label: t("Tất cả", "All"), icon: Calendar, color: "text-gray-600", bgColor: "bg-gray-100", activeClass: "bg-gray-900 text-white border-gray-900" },
+        { value: "PENDING", label: t("Chờ xác nhận", "Pending"), icon: ClockIcon, color: "text-amber-600", bgColor: "bg-amber-50", activeClass: "bg-amber-600 text-white border-amber-600" },
+        { value: "BOOKED", label: t("Đã xác nhận", "Confirmed"), icon: CalendarCheck, color: "text-blue-600", bgColor: "bg-blue-50", activeClass: "bg-blue-600 text-white border-blue-600" },
+        { value: "COMPLETED", label: t("Đã khám xong", "Completed"), icon: CheckCircle, color: "text-emerald-600", bgColor: "bg-emerald-50", activeClass: "bg-emerald-600 text-white border-emerald-600" },
+        { value: "CANCELLED", label: t("Đã hủy lịch", "Cancelled"), icon: CalendarXIcon, color: "text-rose-600", bgColor: "bg-rose-50", activeClass: "bg-rose-600 text-white border-rose-600" },
+    ]
+
     const [appointments, setAppointments] = useState<GetAppointmentHistoryResponse[]>([])
     const [metadata, setMetadata] = useState<MetaResponse | null>(null)
 
@@ -63,10 +97,6 @@ export default function AppointmentHistoryPage() {
 
     const [cancelError, setCancelError] = useState<string | null>(null)
     const [showFeedbackFor, setShowFeedbackFor] = useState<string | null>(null)
-
-    const router = useRouter()
-    const params = useParams()
-    const locale = (params?.locale as string) || ""
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -108,12 +138,12 @@ export default function AppointmentHistoryPage() {
             }
         } catch (err: any) {
             if (err instanceof ApiError) {
-                setError(err.codeMessage || "Không thể tải lịch sử cuộc hẹn của bạn")
+                setError(err.codeMessage || t("Không thể tải lịch sử cuộc hẹn của bạn", "Failed to load your appointment history"))
             } else {
                 setError(
                     err?.response?.data?.message ||
                     err?.message ||
-                    "Không thể tải lịch sử cuộc hẹn của bạn"
+                    t("Không thể tải lịch sử cuộc hẹn của bạn", "Failed to load your appointment history")
                 )
             }
         } finally {
@@ -287,8 +317,8 @@ export default function AppointmentHistoryPage() {
                                 <XCircle className="w-6 h-6 text-rose-600" />
                             </div>
                             <div>
-                                <h3 className="text-lg font-semibold text-gray-900">Xác nhận hủy lịch hẹn</h3>
-                                <p className="text-sm text-gray-500">Bạn có chắc chắn muốn hủy lịch hẹn này?</p>
+                                <h3 className="text-lg font-semibold text-gray-900">{t("Xác nhận hủy lịch hẹn", "Confirm Appointment Cancellation")}</h3>
+                                <p className="text-sm text-gray-500">{t("Bạn có chắc chắn muốn hủy lịch hẹn này?", "Are you sure you want to cancel this appointment?")}</p>
                             </div>
                         </div>
 
@@ -301,12 +331,12 @@ export default function AppointmentHistoryPage() {
 
                         <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Lý do hủy (tùy chọn)
+                                {t("Lý do hủy (tùy chọn)", "Cancellation reason (optional)")}
                             </label>
                             <textarea
                                 value={cancelReason}
                                 onChange={(e) => setCancelReason(e.target.value)}
-                                placeholder="Nhập lý do hủy lịch..."
+                                placeholder={t("Nhập lý do hủy lịch...", "Enter cancellation reason...")}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent resize-none"
                                 rows={3}
                             />
@@ -317,7 +347,7 @@ export default function AppointmentHistoryPage() {
                                 onClick={closeCancelModal}
                                 className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
                             >
-                                Quay lại
+                                {t("Quay lại", "Back")}
                             </button>
                             <button
                                 onClick={handleCancelAppointment}
@@ -327,10 +357,10 @@ export default function AppointmentHistoryPage() {
                                 {cancellingId === selectedAppointmentId ? (
                                     <>
                                         <Loader2 className="w-4 h-4 animate-spin" />
-                                        Đang xử lý...
+                                        {t("Đang xử lý...", "Processing...")}
                                     </>
                                 ) : (
-                                    'Xác nhận hủy'
+                                    t("Xác nhận hủy", "Confirm Cancellation")
                                 )}
                             </button>
                         </div>
@@ -341,16 +371,16 @@ export default function AppointmentHistoryPage() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-gray-100">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-                        Lịch sử cuộc hẹn
+                        {t("Lịch sử cuộc hẹn", "Appointment History")}
                     </h1>
                     <p className="text-sm text-gray-500 mt-1">
-                        Theo dõi lịch trình khám bệnh và quản lý thông tin các ca hẹn tại các cơ sở phòng khám
+                        {t("Theo dõi lịch trình khám bệnh và quản lý thông tin các ca hẹn tại các cơ sở phòng khám", "Track your medical appointment schedule and manage appointment details at clinics")}
                     </p>
                 </div>
 
                 {!loading && metadata && (
                     <div className="text-sm text-gray-500 bg-gray-50 px-4 py-2 rounded-xl border border-gray-200/60 w-fit">
-                        Tổng số: <span className="font-semibold text-gray-900">{metadata.total || appointments.length}</span> cuộc hẹn
+                        {t("Tổng số:", "Total:")} <span className="font-semibold text-gray-900">{metadata.total || appointments.length}</span> {t("cuộc hẹn", "appointments")}
                     </div>
                 )}
             </div>
@@ -363,7 +393,7 @@ export default function AppointmentHistoryPage() {
                             type="text"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder="Tìm kiếm cơ sở, tên bác sĩ hoặc bệnh nhân..."
+                            placeholder={t("Tìm kiếm cơ sở, tên bác sĩ hoặc bệnh nhân...", "Search by clinic, doctor or patient name...")}
                             className="w-full text-sm text-gray-900 placeholder-gray-400 bg-transparent border-0 focus:outline-none focus:ring-0"
                         />
                         {searchTerm && (
@@ -385,7 +415,7 @@ export default function AppointmentHistoryPage() {
                             className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors shrink-0"
                         >
                             <RotateCcw className="w-4 h-4" />
-                            <span>Xóa bộ lọc</span>
+                            <span>{t("Xóa bộ lọc", "Clear Filters")}</span>
                         </button>
                     )}
                 </div>
@@ -435,13 +465,13 @@ export default function AppointmentHistoryPage() {
                     <table className="w-full text-sm text-gray-600 min-w-[1000px]">
                         <thead>
                             <tr className="bg-gray-50/75 border-b border-gray-200 text-gray-700 font-semibold">
-                                <th className="px-6 py-4 text-left font-semibold">Cơ sở Phòng khám</th>
-                                <th className="px-6 py-4 text-left font-semibold">Bệnh nhân</th>
-                                <th className="px-6 py-4 text-left font-semibold">Bác sĩ phụ trách</th>
-                                <th className="px-6 py-4 text-left font-semibold">Dịch vụ</th>
-                                <th className="px-6 py-4 text-left font-semibold">Thời gian khám</th>
-                                <th className="px-6 py-4 text-left font-semibold">Trạng thái</th>
-                                <th className="px-6 py-4 text-center font-semibold">Hành động</th>
+                                <th className="px-6 py-4 text-left font-semibold">{t("Cơ sở Phòng khám", "Clinic Facility")}</th>
+                                <th className="px-6 py-4 text-left font-semibold">{t("Bệnh nhân", "Patient")}</th>
+                                <th className="px-6 py-4 text-left font-semibold">{t("Bác sĩ phụ trách", "Attending Doctor")}</th>
+                                <th className="px-6 py-4 text-left font-semibold">{t("Dịch vụ", "Service")}</th>
+                                <th className="px-6 py-4 text-left font-semibold">{t("Thời gian khám", "Appointment Time")}</th>
+                                <th className="px-6 py-4 text-left font-semibold">{t("Trạng thái", "Status")}</th>
+                                <th className="px-6 py-4 text-center font-semibold">{t("Hành động", "Actions")}</th>
                             </tr>
                         </thead>
 
@@ -452,7 +482,7 @@ export default function AppointmentHistoryPage() {
                                         <td colSpan={7} className="px-6 py-8 text-center">
                                             <div className="flex items-center justify-center gap-3">
                                                 <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
-                                                <span className="text-gray-400 font-medium">Đang tải dữ liệu...</span>
+                                                <span className="text-gray-400 font-medium">{t("Đang tải dữ liệu...", "Loading data...")}</span>
                                             </div>
                                         </td>
                                     </tr>
@@ -530,7 +560,7 @@ export default function AppointmentHistoryPage() {
                                                         className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-amber-600 bg-amber-50/70 rounded-lg hover:bg-amber-100 hover:text-amber-700 transition-colors whitespace-nowrap"
                                                     >
                                                         <Star className="w-3.5 h-3.5" />
-                                                        Đánh giá
+                                                        {t("Đánh giá", "Review")}
                                                     </button>
                                                 ) : showDetail ? (
                                                     <button
@@ -540,7 +570,7 @@ export default function AppointmentHistoryPage() {
                                                         className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-primary bg-primary/10 border border-primary/20 rounded-lg hover:bg-primary hover:text-white transition-all cursor-pointer whitespace-nowrap"
                                                     >
                                                         <Eye className="w-3.5 h-3.5" />
-                                                        Xem chi tiết
+                                                        {t("Xem chi tiết", "View Details")}
                                                     </button>
                                                 ) : canCancel ? (
                                                     <button
@@ -551,12 +581,12 @@ export default function AppointmentHistoryPage() {
                                                         {isCancelling ? (
                                                             <>
                                                                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                                                Đang hủy...
+                                                                {t("Đang hủy...", "Cancelling...")}
                                                             </>
                                                         ) : (
                                                             <>
                                                                 <XCircle className="w-3.5 h-3.5" />
-                                                                Hủy lịch
+                                                                {t("Hủy lịch", "Cancel Appointment")}
                                                             </>
                                                         )}
                                                     </button>
@@ -580,19 +610,19 @@ export default function AppointmentHistoryPage() {
                             <CalendarX className="w-8 h-8" />
                         </div>
                         <h3 className="text-base font-semibold text-gray-900 mb-1">
-                            {selectedStatus ? "Không tìm thấy cuộc hẹn" : "Lịch sử trống"}
+                            {selectedStatus ? t("Không tìm thấy cuộc hẹn", "No appointments found") : t("Lịch sử trống", "No appointment history")}
                         </h3>
                         <p className="text-sm text-gray-400 max-w-3xl mb-4">
                             {selectedStatus
-                                ? `Không có cuộc hẹn nào ở trạng thái "${selectedStatusInfo?.label}".`
-                                : "Bạn chưa có dữ liệu cuộc hẹn nào được ghi nhận trên hệ thống."}
+                                ? t(`Không có cuộc hẹn nào ở trạng thái "${selectedStatusInfo?.label}".`, `No appointments with status "${selectedStatusInfo?.label}".`)
+                                : t("Bạn chưa có dữ liệu cuộc hẹn nào được ghi nhận trên hệ thống.", "You have no recorded appointments in the system yet.")}
                         </p>
                         {selectedStatus && (
                             <button
                                 onClick={() => handleStatusChange("")}
                                 className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors"
                             >
-                                Xem tất cả cuộc hẹn
+                                {t("Xem tất cả cuộc hẹn", "View all appointments")}
                             </button>
                         )}
                     </div>
@@ -601,9 +631,9 @@ export default function AppointmentHistoryPage() {
                 {metadata && metadata.totalPages > 1 && (
                     <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50">
                         <div className="text-sm text-gray-500 font-medium">
-                            Trang <span className="text-gray-900 font-semibold">{metadata.page}</span> trên <span className="text-gray-900 font-semibold">{metadata.totalPages}</span>
+                            {t("Trang", "Page")} <span className="text-gray-900 font-semibold">{metadata.page}</span> {t("trên", "of")} <span className="text-gray-900 font-semibold">{metadata.totalPages}</span>
                             <span className="ml-2 text-gray-400">
-                                ({metadata.total || appointments.length} cuộc hẹn)
+                                ({metadata.total || appointments.length} {t("cuộc hẹn", "appointments")})
                             </span>
                         </div>
 

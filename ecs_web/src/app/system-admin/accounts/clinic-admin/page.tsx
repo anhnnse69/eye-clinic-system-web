@@ -67,6 +67,18 @@ export default function CreateClinicAdminPage() {
             return
         }
 
+        const phoneRegex = /^[0-9]{10}$/
+        if (!phoneRegex.test(phone.trim())) {
+            setError("Số điện thoại không hợp lệ. Vui lòng nhập đúng 10 chữ số!")
+            return
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        if (!emailRegex.test(email.trim())) {
+            setError("Địa chỉ email không hợp lệ. Vui lòng nhập đúng định dạng email (ví dụ: name@example.com)!")
+            return
+        }
+
         try {
             setSubmitting(true)
             setError(null)

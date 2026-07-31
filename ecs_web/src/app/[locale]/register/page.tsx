@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2, Globe } from "lucide-react";
@@ -31,9 +31,15 @@ export default function RegisterPage() {
   const t = useTranslations("auth");
   const router = useRouter();
   const params = useParams();
-  const locale = params.locale as string;
+  const activeLocale = useLocale();
+  const locale = activeLocale || (params?.locale as string) || "vi";
 
-  const toggleLocale = () => router.push(`/${locale === "vi" ? "en" : "vi"}/register`);
+  const toggleLocale = () => {
+    const newLocale = locale === "vi" ? "en" : "vi";
+    localStorage.setItem("locale", newLocale);
+    document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000`;
+    router.push(`/${newLocale}/register`);
+  };
 
   const [fullName, setFullName]               = useState("");
   const [email, setEmail]                     = useState("");
@@ -167,9 +173,13 @@ export default function RegisterPage() {
       {/* Right Side: Register Form */}
       <section className="w-full md:w-1/2 bg-surface-container-lowest flex flex-col items-center justify-center px-4 py-8 md:py-12 md:px-8 overflow-y-auto">
         <div className="absolute top-4 right-4 md:top-6 md:right-6 z-20">
-          <button onClick={toggleLocale} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors font-label-sm shadow-sm">
-            <Globe className="w-4 h-4" />
-            <span className="uppercase font-medium">{locale}</span>
+          <button
+            onClick={toggleLocale}
+            className="px-3 py-1.5 text-xs font-bold text-on-surface-variant border border-outline-variant rounded-xl hover:bg-surface-container transition-colors shrink-0 shadow-sm flex items-center gap-1.5"
+            aria-label="Switch language"
+          >
+            <Globe className="w-3.5 h-3.5 text-slate-500" />
+            <span>{locale === "vi" ? "EN" : "VI"}</span>
           </button>
         </div>
 

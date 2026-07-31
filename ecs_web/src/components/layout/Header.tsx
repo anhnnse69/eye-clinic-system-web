@@ -27,12 +27,23 @@ export default function Header({
   const router = useRouter()
 
   const toggleLang = () => {
-    const nextLocale = locale === "en" ? "vi" : "en"
-    localStorage.setItem("locale", nextLocale)
-    const currentPath = window.location.pathname.replace(/^\/((vi|en))(\/|$)/, "/")
-    const nextPath = `/${nextLocale}${currentPath === "/" ? "/home" : currentPath}`
-    router.replace(nextPath)
-    router.refresh()
+    const next = locale === "vi" ? "en" : "vi"
+    localStorage.setItem("locale", next)
+    document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=31536000`
+
+    const currentPath = window.location.pathname
+    if (/^\/(vi|en)(\/|$)/.test(currentPath)) {
+      const newPath = currentPath.replace(/^\/(vi|en)/, `/${next}`) + window.location.search
+      // router.replace alone does NOT re-mount NextIntlClientProvider in the root
+      // layout, so client components like <Footer /> keep the stale locale and
+      // their useTranslations() lookups never re-run. A full reload forces the
+      // root layout to re-render with the new messages so Header, Footer and
+      // every other client component reflect the new language immediately.
+      window.location.href = newPath
+    } else {
+      document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=31536000`
+      window.location.reload()
+    }
   }
 
   return (
@@ -127,7 +138,7 @@ export default function Header({
                 className="text-on-surface-variant font-medium text-sm hover:text-primary transition-colors whitespace-nowrap" 
                 href={`/${locale}/register-clinic-application`}
               >
-                {locale === "vi" ? "Đối tác" : "Partners"}
+                {t("common.nav.partners")}
               </a>
             </div>
 

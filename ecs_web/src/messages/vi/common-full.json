@@ -3,7 +3,7 @@
     "brand": "Eye Clinic Support",
     "login": "Đăng nhập",
     "logout": "Đăng xuất",
-    "requestDemo": "Yêu cầu Demo",
+    "requestDemo": "Đăng Ký",
     "getStarted": "Bắt đầu",
     "learnMore": "Tìm hiểu thêm",
     "viewMore": "Xem thêm",
@@ -21,7 +21,7 @@
       "forDoctors": "Dành cho Bác sĩ",
       "forPatients": "Dành cho Bệnh nhân",
       "login": "Đăng nhập",
-      "requestDemo": "Yêu cầu Demo"
+      "requestDemo": "Đăng Ký"
     },
     "footer": {
       "tagline": "Độ chính xác trong Tầm nhìn. Hệ điều hành tiên tiến nhất thế giới cho mạng lưới nhãn khoa.",

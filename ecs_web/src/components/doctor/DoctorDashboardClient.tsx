@@ -153,19 +153,6 @@ export default function DoctorDashboardClient({
             {tDashboard("overview")}
           </h2>
         </div>
-        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-          {/* Language switcher (cookie-based; reload to apply SSR locale) */}
-          <LanguageSwitcher />
-          <button
-            onClick={fetchDashboard}
-            disabled={loading}
-            className="p-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-500 rounded-xl transition-all shadow-sm active:scale-95 disabled:opacity-50"
-            aria-label="Refresh dashboard"
-            title="Refresh"
-          >
-            <RotateCw className={`h-3.5 w-3.5 ${loading ? "animate-spin text-blue-600" : ""}`} />
-          </button>
-        </div>
       </div>
 
       {error && (

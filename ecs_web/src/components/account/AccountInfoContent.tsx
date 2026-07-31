@@ -79,13 +79,6 @@ export default function AccountInfoContent({
             Thông tin đăng nhập và cấu hình tài khoản của bạn. Khác với hồ sơ cá nhân và hồ sơ bệnh án (nếu có).
           </p>
         </div>
-        <button
-          onClick={() => router.back()}
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Quay lại
-        </button>
       </div>
 
       {/* Loading */}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useRouter as useNextRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ChevronLeft, Loader2, Calendar, Clock, 
@@ -92,6 +93,7 @@ export default function DoctorSlotsPage() {
   const params = useParams();
   const router = useRouter();
   const locale = params.locale as string;
+  const [isCheckingAuth, setIsCheckingAuth] = useState(false);
   const doctorId = params.id as string;
   const isVI = locale === "vi";
 
@@ -111,6 +113,25 @@ export default function DoctorSlotsPage() {
     e.preventDefault();
     const trimmed = searchQuery.trim();
     router.push(`/${locale}/search/${searchTab}${trimmed ? `?q=${encodeURIComponent(trimmed)}` : ""}`);
+  };
+
+  const handleContinueBooking = async () => {
+    if (!selectedSlot) return;
+
+    try {
+      setIsCheckingAuth(true);
+      const res = await fetch(`/api/booking-appointment`, { credentials: "include" });
+      if (res.ok) {
+        router.push(`/${locale}/book-appointment?doctorId=${data?.doctorId}&slotId=${selectedSlot}`);
+        return;
+      }
+
+      router.push(`/${locale}/login?redirect=${encodeURIComponent(`/${locale}/book-appointment?doctorId=${data?.doctorId}&slotId=${selectedSlot}`)}`);
+    } catch {
+      router.push(`/${locale}/login?redirect=${encodeURIComponent(`/${locale}/book-appointment?doctorId=${data?.doctorId}&slotId=${selectedSlot}`)}`);
+    } finally {
+      setIsCheckingAuth(false);
+    }
   };
 
   const groupedSchedules = useMemo(() => {
@@ -377,17 +398,23 @@ export default function DoctorSlotsPage() {
                   </div>
 
                   <button
-                    disabled={!selectedSlot}
-                    onClick={() => router.push(`/${locale}/book-appointment?doctorId=${data.doctorId}&slotId=${selectedSlot}`)}
+                    onClick={handleContinueBooking}
+                    disabled={!selectedSlot || isCheckingAuth}
                     className={cn(
                       "w-full md:w-auto px-10 py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg",
-                      selectedSlot 
+                      selectedSlot && !isCheckingAuth
                         ? "bg-primary text-white hover:bg-primary/90 hover:shadow-primary/30" 
                         : "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
                     )}
                   >
-                    {isVI ? "TIẾP TỤC ĐẶT LỊCH" : "CONTINUE BOOKING"}
-                    <ChevronRight className="w-4 h-4" />
+                    {isCheckingAuth ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" /> {isVI ? "ĐANG KIỂM TRA" : "CHECKING"}</>
+                    ) : (
+                      <>
+                        {isVI ? "TIẾP TỤC ĐẶT LỊCH" : "CONTINUE BOOKING"}
+                        <ChevronRight className="w-4 h-4" />
+                      </>
+                    )}
                   </button>
                 </div>
               </div>

@@ -165,14 +165,6 @@ export default function PersonalProfileContent({ roleSegment, showAccountHeader 
                             )}
                         </p>
                     </div>
-
-                    <button
-                        onClick={() => router.push(`/${roleSegment}/dashboard`)}
-                        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-xs shrink-0 self-start cursor-pointer"
-                    >
-                        <ArrowLeft className="h-4 w-4" />
-                        {t("Quay lại tổng quan", "Back to Dashboard")}
-                    </button>
                 </div>
 
                 {avatarSuccessMsg && (

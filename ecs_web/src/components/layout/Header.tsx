@@ -27,7 +27,6 @@ export default function Header({
   const router = useRouter()
 
   const toggleLang = () => {
-<<<<<<< HEAD
     const next = locale === "vi" ? "en" : "vi"
     localStorage.setItem("locale", next)
     document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=31536000`
@@ -45,14 +44,6 @@ export default function Header({
       document.cookie = `NEXT_LOCALE=${next}; path=/; max-age=31536000`
       window.location.reload()
     }
-=======
-    const nextLocale = locale === "en" ? "vi" : "en"
-    localStorage.setItem("locale", nextLocale)
-    const currentPath = window.location.pathname.replace(/^\/((vi|en))(\/|$)/, "/")
-    const nextPath = `/${nextLocale}${currentPath === "/" ? "/home" : currentPath}`
-    router.replace(nextPath)
-    router.refresh()
->>>>>>> develop
   }
 
   return (

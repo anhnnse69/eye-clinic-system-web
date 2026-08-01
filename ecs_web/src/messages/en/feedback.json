@@ -1,0 +1,38 @@
+{
+  "feedback": {
+    "title": "Feedback",
+    "submit": "Submit Feedback",
+    "rating": "Rating",
+    "comment": "Comment",
+    "submitSuccess": "Feedback submitted successfully",
+    "listTitle": "Feedback List",
+    "patient": "Patient",
+    "doctor": "Doctor",
+    "date": "Date",
+    "noFeedback": "No feedback yet",
+    "appointmentRating": "Appointment Feedback",
+    "subtitle": "Share your experience about this appointment",
+    "thanksTitle": "Thank you for your review!",
+    "thanksSubtitle": "Your feedback helps us improve our service quality.",
+    "clinic": "Clinic",
+    "service": "Service",
+    "appointmentDate": "Appointment Date",
+    "rateDoctor": "Rate Doctor *",
+    "rateClinic": "Rate Clinic *",
+    "commentLabel": "Your comments (optional)",
+    "commentPlaceholder": "Share your experience about the appointment...",
+    "charLimit": "{count}/500 characters",
+    "selectStars": "Select rating",
+    "cancel": "Cancel",
+    "submitting": "Submitting...",
+    "errors": {
+      "selectBoth": "Please rate both doctor and clinic",
+      "submitFailed": "Unable to submit feedback. Please try again.",
+      "notFound": "Appointment not found",
+      "noPermission": "You do not have permission to rate this appointment",
+      "completedOnly": "Only completed appointments can be rated",
+      "alreadyRated": "This appointment has already been rated",
+      "starRange": "Rating must be between 1 and 5 stars"
+    }
+  }
+}

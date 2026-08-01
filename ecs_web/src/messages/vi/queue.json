@@ -1,0 +1,28 @@
+{
+  "queue": {
+    "title": "Hàng chờ",
+    "currentQueue": "Hàng chờ hiện tại",
+    "waiting": "Đang chờ",
+    "called": "Đã gọi",
+    "completed": "Hoàn thành",
+    "callNext": "Gọi tiếp",
+    "callPatient": "Gọi bệnh nhân",
+    "completePatient": "Hoàn thành khám",
+    "noQueue": "Không có bệnh nhân trong hàng chờ",
+    "queueNumber": "Số thứ tự",
+    "patientName": "Tên bệnh nhân",
+    "appointmentTime": "Giờ hẹn",
+    "waitTime": "Thời gian chờ",
+    "status": {
+      "waiting": "Đang chờ",
+      "calling": "Đang gọi",
+      "completed": "Hoàn thành",
+      "noShow": "Không đến"
+    },
+    "action": {
+      "callNext": "Gọi tiếp",
+      "callPatient": "Gọi bệnh nhân",
+      "complete": "Hoàn thành"
+    }
+  }
+}

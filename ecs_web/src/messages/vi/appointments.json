@@ -1,0 +1,47 @@
+{
+  "appointments": {
+    "title": "Lịch hẹn",
+    "listTitle": "Danh sách lịch hẹn",
+    "booking": {
+      "title": "Đặt lịch khám",
+      "selectClinic": "Chọn phòng khám",
+      "selectDoctor": "Chọn bác sĩ",
+      "selectDate": "Chọn ngày",
+      "selectTime": "Chọn giờ",
+      "selectService": "Chọn dịch vụ",
+      "patient": "Bệnh nhân",
+      "symptoms": "Triệu chứng",
+      "submit": "Xác nhận đặt lịch",
+      "success": "Đặt lịch thành công",
+      "failed": "Đặt lịch thất bại"
+    },
+    "status": {
+      "pending": "Chờ xác nhận",
+      "depositPaid": "Đã đặt cọc",
+      "confirmed": "Đã xác nhận",
+      "booked": "Đã đặt lịch",
+      "arrived": "Đã đến",
+      "inProgress": "Đang khám",
+      "completed": "Hoàn thành",
+      "cancelled": "Đã hủy",
+      "noShow": "Không đến"
+    },
+    "type": {
+      "newPatient": "Bệnh nhân mới",
+      "followUp": "Tái khám",
+      "routine": "Khám định kỳ",
+      "emergency": "Cấp cứu"
+    },
+    "patient": "Bệnh nhân",
+    "doctor": "Bác sĩ",
+    "clinic": "Phòng khám",
+    "date": "Ngày",
+    "time": "Giờ",
+    "service": "Dịch vụ",
+    "symptoms": "Triệu chứng",
+    "noAppointments": "Chưa có lịch hẹn nào",
+    "upcoming": "Sắp tới",
+    "past": "Đã qua",
+    "today": "Hôm nay"
+  }
+}

@@ -1,0 +1,314 @@
+@import "tailwindcss";
+
+@theme {
+  /* ===== MÀU SẮC ===== */
+  --color-background: #f7f9fb;
+  --color-surface: #f7f9fb;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f2f4f6;
+  --color-surface-container: #eceef0;
+  --color-surface-container-high: #e6e8ea;
+  --color-surface-container-highest: #e0e3e5;
+  --color-surface-dim: #d8dadc;
+  --color-surface-bright: #f7f9fb;
+  --color-surface-variant: #e0e3e5;
+  --color-surface-tint: #00658d;
+  --color-on-surface: #191c1e;
+  --color-on-surface-variant: #3e4850;
+  --color-on-background: #191c1e;
+  --color-primary: #00658d;
+  --color-primary-container: #00a3e0;
+  --color-primary-fixed: #c6e7ff;
+  --color-primary-fixed-dim: #81cfff;
+  --color-on-primary: #ffffff;
+  --color-on-primary-container: #00354b;
+  --color-on-primary-fixed: #001e2d;
+  --color-on-primary-fixed-variant: #004c6b;
+  --color-secondary: #565e74;
+  --color-secondary-container: #dae2fd;
+  --color-secondary-fixed: #dae2fd;
+  --color-secondary-fixed-dim: #bec6e0;
+  --color-on-secondary: #ffffff;
+  --color-on-secondary-container: #5c647a;
+  --color-on-secondary-fixed: #131b2e;
+  --color-on-secondary-fixed-variant: #3f465c;
+  --color-tertiary: #006c49;
+  --color-tertiary-container: #00ae78;
+  --color-tertiary-fixed: #6ffbbe;
+  --color-tertiary-fixed-dim: #4edea3;
+  --color-on-tertiary: #ffffff;
+  --color-on-tertiary-container: #003925;
+  --color-on-tertiary-fixed: #002113;
+  --color-on-tertiary-fixed-variant: #005236;
+  --color-error: #ba1a1a;
+  --color-error-container: #ffdad6;
+  --color-on-error: #ffffff;
+  --color-on-error-container: #93000a;
+  --color-outline: #6e7881;
+  --color-outline-variant: #bdc8d1;
+  --color-inverse-surface: #2d3133;
+  --color-inverse-on-surface: #eff1f3;
+  --color-inverse-primary: #81cfff;
+
+  /* ===== KHOẢNG CÁCH ===== */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-base: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-gutter: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  --spacing-margin: 32px;
+
+  /* ===== BO GÓC ===== */
+  --radius-DEFAULT: 0.25rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-full: 9999px;
+
+  /* ===== FONT FAMILY ===== */
+  --font-family-sans: "Inter", sans-serif;
+  --font-family-body-md: "Inter", sans-serif;
+  --font-family-body-lg: "Inter", sans-serif;
+  --font-family-body-sm: "Inter", sans-serif;
+  --font-family-label-md: "Inter", sans-serif;
+  --font-family-label-lg: "Inter", sans-serif;
+  --font-family-label-sm: "Inter", sans-serif;
+  --font-family-headline-md: "Inter", sans-serif;
+  --font-family-headline-lg: "Inter", sans-serif;
+  --font-family-headline-sm: "Inter", sans-serif;
+  --font-family-headline-lg-mobile: "Inter", sans-serif;
+  --font-family-display-lg: "Inter", sans-serif;
+  --font-family-data-mono: "JetBrains Mono", monospace;
+
+  /* ===== CỠ CHỮ (text-* classes) ===== */
+  --font-size-body-sm: ["14px", { lineHeight: "20px", fontWeight: "400" }];
+  --font-size-body-md: ["16px", { lineHeight: "24px", fontWeight: "400" }];
+  --font-size-body-lg: ["18px", { lineHeight: "28px", fontWeight: "400" }];
+  --font-size-label-sm: ["11px", { lineHeight: "16px", fontWeight: "500" }];
+  --font-size-label-md: ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "600" }];
+  --font-size-label-lg: ["14px", { lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "600" }];
+  --font-size-headline-sm: ["20px", { lineHeight: "28px", fontWeight: "600" }];
+  --font-size-headline-md: ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }];
+  --font-size-headline-lg: ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700" }];
+  --font-size-headline-lg-mobile: ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "700" }];
+  --font-size-display-lg: ["48px", { lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700" }];
+}
+
+/* ===== CÁC CLASS TIỆN ÍCH TÙY CHỈNH ===== */
+@utility medical-overlay {
+  background-color: rgba(14, 165, 233, 0.8);
+}
+
+/* ===== COMPONENT STYLES ===== */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.hero-gradient {
+  background: radial-gradient(circle at 70% 30%, #dae2fd 0%, #f7f9fb 60%);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: #81cfff;
+  color: #001e2d;
+}
+
+/* ===== PRINT-FRIENDLY STYLES CHO BỆNH ÁN ===== */
+/* ===== PRINT-FRIENDLY STYLES CHO BỆNH ÁN NHÃN KHOA (MẪU MS WORD A4) ===== */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  html,
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 9.5pt !important;
+    line-height: 1.35 !important;
+    padding: 10mm 12mm !important;
+    font-family: "Times New Roman", Times, serif, "Inter", sans-serif !important;
+  }
+
+  /* Loai bo hoan toan thanh cuon (scrollbars) khi in PDF */
+  *,
+  *::before,
+  *::after {
+    overflow: visible !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+
+  ::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  /* An sidebar, header, navigation, nut bam ko can thiet */
+  aside,
+  header:not(.print\:block),
+  nav,
+  footer:not(.print\:block),
+  [data-no-print],
+  .print-hidden,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* An border va background cua nut bam */
+  button {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  /* Input hien thi kieu MS Word: chieu gach chan nhe dot giong bieu mau giay */
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  input[type="datetime-local"],
+  textarea,
+  select {
+    border: none !important;
+    border-bottom: 1px dotted #777 !important;
+    background: transparent !important;
+    padding: 1px 3px !important;
+    box-shadow: none !important;
+    color: black !important;
+    font-size: 9.5pt !important;
+    border-radius: 0 !important;
+  }
+
+  textarea {
+    resize: none !important;
+    min-height: auto !important;
+  }
+
+  /* Details / Summary trong bieu mau */
+  details > summary {
+    list-style: none !important;
+    cursor: default !important;
+  }
+
+  details[open] > summary ~ *,
+  details:not([open]) > summary ~ * {
+    display: block !important;
+  }
+
+  /* Tranh cat ngang dong trong bang */
+  table,
+  tr,
+  td,
+  th {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Form rong full-width, khoang cach nhan gon de tiet kiem giay */
+  form,
+  .max-w-5xl,
+  .max-w-3xl,
+  .max-w-7xl {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Nhom các khoi section tranh bi cat ngang giua trang mot va trang hai */
+  section,
+  .section-card {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    margin-bottom: 6px !important;
+  }
+
+  .border {
+    border-color: #b0b0b0 !important;
+  }
+
+  /* Benh an mat — giu 2 cot MP/MT song song tren A4 */
+  .grid-cols-1.md\:grid-cols-2,
+  .md\:grid-cols-2.print\:grid-cols-2,
+  [class*="print:grid-cols-2"] {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.5rem !important;
+  }
+
+  /* Checkbox hien thi o kiem tra Word (☐ va ☑) */
+  input[type="checkbox"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 0.85rem !important;
+    height: 0.85rem !important;
+    border: 1px solid #333 !important;
+    background: white !important;
+    margin-right: 3px !important;
+    vertical-align: middle !important;
+    display: inline-block !important;
+  }
+
+  input[type="checkbox"]:checked {
+    background: #333 !important;
+  }
+}
+
+/* ===== AI RESULT ANIMATIONS ===== */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slide-in-from-bottom-4 {
+  from { transform: translateY(1rem); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes slide-in-from-top-2 {
+  from { transform: translateY(-0.5rem); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes slide-in-from-top-1 {
+  from { transform: translateY(-0.25rem); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-in {
+  animation-duration: 400ms;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  animation-fill-mode: both;
+}
+.fade-in { animation-name: fade-in; }
+.slide-in-from-bottom-4 { animation-name: slide-in-from-bottom-4; }
+.slide-in-from-top-2 { animation-name: slide-in-from-top-2; }
+.slide-in-from-top-1 { animation-name: slide-in-from-top-1; }
+.duration-300 { animation-duration: 300ms; }
+.duration-500 { animation-duration: 500ms; }
+.duration-1000 { animation-duration: 1000ms; }
+
+/* Shimmer for progress bar */
+.bg-linear-to-r {
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}

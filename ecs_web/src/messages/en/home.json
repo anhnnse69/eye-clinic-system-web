@@ -1,0 +1,86 @@
+{
+  "hero": {
+    "badge": "Next-Gen Ophthalmology",
+    "title1": "Precision Care for Your Vision, ",
+    "title2": "Powered by Data.",
+    "subtitle": "Digitizing the ophthalmology workflow from check-in to surgery. Experience a clinical OS built for accuracy, patient comfort, and operational excellence.",
+    "clinicEfficiency": "Clinic Efficiency",
+    "throughput": "Real-time throughput increased across 12 hub locations.",
+    "bookAppointment": "Book Appointment",
+    "viewTour": "View Platform Tour"
+  },
+  "features": {
+    "title": "Specialized Tools for Modern Practices",
+    "subtitle": "Designed by ophthalmologists for ophthalmologists. Every module is fine-tuned to the unique requirements of eye health delivery.",
+    "multiClinic": {
+      "title": "Multi-Clinic Hub",
+      "description": "Manage multiple locations from one central portal. Sync schedules, staff rosters, and inventory across your entire network with enterprise-grade synchronization.",
+      "locations": "Locations Connected",
+      "connected": "Locations Connected"
+    },
+    "queue": {
+      "title": "Intelligent Queueing",
+      "description": "Real-time patient flow management. Automatically direct patients to the next available pre-screening or dilation station."
+    },
+    "emr": {
+      "title": "Specialized EMR",
+      "description": "Ophthalmology-specific electronic medical records featuring native DICOM viewers for OCT, Fundus, and Perimetry imaging."
+    },
+    "portal": {
+      "title": "Patient Portal",
+      "description": "Easy scheduling and direct prescription access. Patients can view vision history and post-op care instructions from any device, reducing clinical call volume.",
+      "nextAppointment": "Next Appointment"
+    }
+  },
+  "testimonial": {
+    "quote": "This platform has transformed how we manage our clinic. The efficiency gains are remarkable, and our patients love the seamless experience.",
+    "name": "Dr. Elena Sterling, MD",
+    "role": "Chief of Ophthalmology, City Eye Center"
+  },
+  "cta": {
+    "title": "Ready to Scale Your Clinic?",
+    "subtitle": "Join over 450 clinical practices using Eye Clinic Support to deliver world-class eye care with operational precision.",
+    "startTrial": "Start Free Trial",
+    "speakExpert": "Speak with an Expert"
+  },
+  "search": {
+    "doctorResults": "{count} result(s) for \"{query}\"",
+    "doctorCount": "{count} doctor(s) available",
+    "clinicResults": "{count} result(s) for \"{query}\"",
+    "clinicCount": "{count} clinic(s) available",
+    "eyeServices": "Eye Care Services",
+    "certifiedSpecialty": "Certified Specialty",
+    "certifiedCenter": "Certified Center",
+    "bookingJourney": "Booking Journey",
+    "trustTitle": "100% Verified Doctors",
+    "trustDesc": "All medical facilities are fully licensed and certified by local authorities.",
+    "searching": "Searching...",
+    "noDoctors": "No doctors available",
+    "noDoctorsDesc": "There are currently no doctors available from published clinics.",
+    "noClinics": "No clinics available",
+    "noClinicsDesc": "There are currently no published clinics available.",
+    "notFound": "No clinics found",
+    "notFoundDesc": "Try searching with a different keyword or district name.",
+    "yrsExp": "yrs experience",
+    "reviews": "reviews",
+    "book": "Book",
+    "details": "Details",
+    "showMore": "Show {count} more doctor(s)",
+    "showMoreClinics": "Show {count} more clinic(s)",
+    "specialties": {
+      "comprehensive": "Comprehensive Eye Examination",
+      "pediatric": "Pediatric Ophthalmology",
+      "cataract": "Cataract Treatment"
+    },
+    "steps": {
+      "step1Title": "1. Select Doctor",
+      "step1Desc": "View profile & experience",
+      "step2Title": "2. Book Appointment",
+      "step2Desc": "Choose time in 1 minute",
+      "step3Title": "3. Safe Consultation",
+      "step3Desc": "Get priority at clinic",
+      "step1ClinicTitle": "1. Select Clinic",
+      "step1ClinicDesc": "Based on real reviews"
+    }
+  }
+}

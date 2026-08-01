@@ -20,7 +20,7 @@ import { useForm, FormProvider } from "react-hook-form"
 import type { Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useTranslations } from "next-intl"
-import { Loader2, AlertCircle, CheckCircle2, Printer, Sparkles } from "lucide-react"
+import { Loader2, AlertCircle, CheckCircle2, Printer, Sparkles, Plus, X, Microscope } from "lucide-react"
 
 import {
   medicalRecordFormDataSchema,
@@ -50,7 +50,7 @@ import PreliminaryExamination, {
   type PreliminaryData,
 } from "./medical-record-form/PreliminaryExamination"
 import { getAccentForRecordType } from "./medical-record-form/SectionHeading"
-import ParaclinicalPanel from "./ParaclinicalPanel"
+import ParaclinicalPanel, { CreateLabRequestForm } from "./ParaclinicalPanel"
 
 interface CreateMedicalRecordClientProps {
   appointmentId: string
@@ -124,6 +124,9 @@ export default function CreateMedicalRecordClient({
   const [submitting, setSubmitting] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)
   const [successInfo, setSuccessInfo] = useState<{ recordId: string; mongoDocumentId?: string } | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
+  const [showLabRequestForm, setShowLabRequestForm] = useState(false)
+  const [pendingLabRequest, setPendingLabRequest] = useState(false)
 
   // ── Step flow: preliminary → template → form ───────────────────────
   const [step, setStep] = useState<"preliminary" | "template">(initialType ? "template" : "preliminary")
@@ -341,7 +344,52 @@ export default function CreateMedicalRecordClient({
           )}
         </div>
 
-        <ParaclinicalPanel recordId={successInfo.recordId} />
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-indigo-200 bg-indigo-50/50 p-4">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-md bg-indigo-100 text-indigo-700">
+              <Microscope className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-indigo-900">
+                Tạo yêu cầu cận lâm sàng
+              </p>
+              <p className="text-xs text-indigo-700 mt-0.5">
+                Chỉ định OCT, Thị trường, Siêu âm hoặc Xét nghiệm chung cho bệnh nhân này.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowLabRequestForm(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
+          >
+            <Plus className="h-4 w-4" /> Tạo yêu cầu cận lâm sàng
+          </button>
+        </div>
+
+        {showLabRequestForm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
+            <div className="relative w-full max-w-2xl rounded-2xl bg-white shadow-2xl my-8">
+              <button
+                type="button"
+                onClick={() => setShowLabRequestForm(false)}
+                className="absolute right-3 top-3 rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                aria-label="Đóng"
+              >
+                <X className="h-5 w-5" />
+              </button>
+              <CreateLabRequestForm
+                recordId={successInfo.recordId}
+                onCreated={() => {
+                  setShowLabRequestForm(false)
+                  setRefreshKey((k) => k + 1)
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        <ParaclinicalPanel key={refreshKey} recordId={successInfo.recordId} />
 
         <div className="flex justify-center gap-3">
           <button
@@ -768,6 +816,11 @@ export default function CreateMedicalRecordClient({
           recordId: response.data.medicalRecordId,
           mongoDocumentId: response.data.mongoDocumentId,
         })
+
+        if (pendingLabRequest) {
+          setShowLabRequestForm(true)
+          setPendingLabRequest(false)
+        }
       } catch (err) {
         setServerError(
           formatSystemErrorMessage(err instanceof Error ? err.message : null)
@@ -792,6 +845,25 @@ export default function CreateMedicalRecordClient({
       document.title = originalTitle
     }, 1000)
   }
+
+  /**
+   * Save the medical record first, then open the Paraclinical create-form
+   * modal. The Paraclinical API requires a real MedicalRecord in SQL Server,
+   * so we cannot open the modal before the record exists. This handler
+   * sets a flag that the submit success branch reads to auto-open the modal.
+   */
+  const handleSaveAndCreateLab = methods.handleSubmit(
+    async () => {
+      setPendingLabRequest(true)
+      // Delegate to the main onSubmit handler so validation + save logic
+      // stays in one place.
+      await onSubmit()
+    },
+    (formErrors) => {
+      console.warn("Form validation errors:", formErrors)
+      setServerError("Một số trường dữ liệu không hợp lệ. Đã điền sẵn dữ liệu mẫu để bạn thử lại.")
+    }
+  )
 
   return (
     <FormProvider {...methods}>
@@ -939,7 +1011,7 @@ export default function CreateMedicalRecordClient({
           </div>
         </footer>
 
-        <div className="flex items-center justify-end gap-3 border-t border-gray-200 pt-6 print:hidden">
+        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-gray-200 pt-6 print:hidden">
           <button
             type="button"
             onClick={handleQuickFill}
@@ -955,6 +1027,15 @@ export default function CreateMedicalRecordClient({
             className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
           >
             {tCommon("cancel")}
+          </button>
+          <button
+            type="button"
+            onClick={handleSaveAndCreateLab}
+            disabled={submitting}
+            className="inline-flex items-center gap-2 rounded-lg border border-indigo-300 bg-white px-5 py-2 text-sm font-bold text-indigo-700 shadow-sm hover:bg-indigo-50 disabled:opacity-50 transition-colors"
+            title="Lưu bệnh án và mở phiếu tạo yêu cầu cận lâm sàng"
+          >
+            <Microscope className="h-4 w-4" /> Lưu & tạo yêu cầu cận lâm sàng
           </button>
           <button
             type="submit"
@@ -973,11 +1054,6 @@ export default function CreateMedicalRecordClient({
           </button>
         </div>
       </form>
-
-      {/* VI. CẬN LÂM SÀNG (OCT / Thị trường / Siêu âm / Chẩn đoán AI) — Đặt ngoài form chính để tránh lỗi form lồng form */}
-      <section id="can-lam-sang" className="mt-8 print:hidden">
-        <ParaclinicalPanel recordId={appointmentId} />
-      </section>
     </FormProvider>
   )
 }

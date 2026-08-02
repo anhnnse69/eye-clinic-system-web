@@ -22,19 +22,18 @@ import { useTranslations } from "next-intl"
 import { accountService } from "@/services/account.service"
 import type { GetAccountResponse } from "@/services/account.service"
 
-// Bộ từ điển để hiển thị tên vai trò thân thiện bằng tiếng Việt
-const roleMapping: Record<string, string> = {
-  SYSTEM_ADMIN: "System Admin",
-  CLINIC_ADMIN: "Clinic Admin",
-  DOCTOR: "Bác sĩ",
-  RECEPTIONIST: "Nhân viên lễ tân",
-  PATIENT: "Bệnh nhân"
-}
-
 export default function SystemAccountsManagementPage() {
   const t = useTranslations("systemAdmin.accounts")
 
   const router = useRouter()
+
+  const roleMapping: Record<string, string> = {
+    SYSTEM_ADMIN: t("systemAdmin"),
+    CLINIC_ADMIN: t("clinicAdminRoleOption"),
+    DOCTOR: t("doctor"),
+    RECEPTIONIST: t("receptionist"),
+    PATIENT: t("patient")
+  }
   const [accountsList, setAccountsList] = useState<GetAccountResponse[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
@@ -174,7 +173,7 @@ export default function SystemAccountsManagementPage() {
           <nav className="flex text-sm text-slate-500 gap-1 mt-1">
             <span className="cursor-pointer hover:text-blue-600" onClick={() => router.push("/system-admin/dashboard")}>Dashboard</span>
             <span>/</span>
-            <span className="text-slate-800">Danh sách tài khoản</span>
+            <span className="text-slate-800">{t("listTitle")}</span>
           </nav>
         </div>
 
@@ -191,10 +190,9 @@ export default function SystemAccountsManagementPage() {
       <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-start gap-3">
         <Info className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
         <div className="text-sm">
-          <p className="font-semibold text-blue-900 mb-0.5">Phạm vi phân quyền Quản trị Hệ thống (System Admin):</p>
+          <p className="font-semibold text-blue-900 mb-0.5">{t("accountScopeTitle")}</p>
           <p className="text-blue-700 leading-relaxed">
-            System Admin quản lý danh sách toàn bộ tài khoản và trực tiếp <strong>Cấp tài khoản Quản trị phòng khám (Clinic Admin)</strong>.
-            Đối với tài khoản Bác sĩ (Doctor) và Lễ tân (Receptionist) sẽ do <strong>Quản trị phòng khám (Clinic Admin)</strong> trực tiếp tạo và quản lý tại cơ sở của họ.
+            {t("accountScopeBody")}
           </p>
         </div>
       </div>
@@ -204,7 +202,7 @@ export default function SystemAccountsManagementPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
           {/* Ô Tìm kiếm */}
           <div className="flex flex-col gap-1.5 w-full">
-            <label className="text-sm font-semibold text-slate-600">Tìm kiếm tài khoản</label>
+            <label className="text-sm font-semibold text-slate-600">{t("searchAccount")}</label>
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
               <input
@@ -219,7 +217,7 @@ export default function SystemAccountsManagementPage() {
 
           {/* Lọc theo Vai Trò */}
           <div className="flex flex-col gap-1.5 w-full">
-            <label className="text-sm font-semibold text-slate-600">Vai trò hệ thống</label>
+            <label className="text-sm font-semibold text-slate-600">{t("systemRole")}</label>
             <select
               value={roleFilter}
               onChange={(e) => {
@@ -237,7 +235,7 @@ export default function SystemAccountsManagementPage() {
 
           {/* Lọc theo Trạng Thái */}
           <div className="flex flex-col gap-1.5 w-full">
-            <label className="text-sm font-semibold text-slate-600">Trạng thái hoạt động</label>
+            <label className="text-sm font-semibold text-slate-600">{t("activityStatus")}</label>
             <select
               value={statusFilter}
               onChange={(e) => {
@@ -246,9 +244,9 @@ export default function SystemAccountsManagementPage() {
               }}
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all outline-none text-slate-700 font-medium cursor-pointer"
             >
-              <option value="all">Tất cả trạng thái</option>
-              <option value="active">Đang hoạt động</option>
-              <option value="locked">Bị khóa</option>
+              <option value="all">{t("allStatuses")}</option>
+              <option value="active">{t("statusActive")}</option>
+              <option value="locked">{t("statusLocked")}</option>
             </select>
           </div>
         </div>
@@ -259,7 +257,7 @@ export default function SystemAccountsManagementPage() {
         <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
           <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
           <div>
-            <h3 className="font-semibold text-red-800 mb-0.5">Lỗi hệ thống</h3>
+            <h3 className="font-semibold text-red-800 mb-0.5">{t("systemError")}</h3>
             <p className="text-sm text-red-700">{error}</p>
           </div>
         </div>
@@ -269,7 +267,7 @@ export default function SystemAccountsManagementPage() {
       {loading && (
         <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
           <Loader2 className="h-8 w-8 text-blue-600 animate-spin mb-3" />
-          <p className="text-sm text-slate-500">Đang tải danh sách tài khoản...</p>
+          <p className="text-sm text-slate-500">{t("loadingAccounts")}</p>
         </div>
       )}
 
@@ -277,8 +275,8 @@ export default function SystemAccountsManagementPage() {
       {!loading && accountsList.length === 0 ? (
         <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[300px] w-full">
           <Users className="h-12 w-12 text-slate-300 mb-3" />
-          <h3 className="text-lg font-bold text-slate-800 mb-1">Không tìm thấy tài khoản</h3>
-          <p className="text-sm text-slate-500">Hiện tại không có dữ liệu tài khoản nào khớp với bộ lọc.</p>
+          <h3 className="text-lg font-bold text-slate-800 mb-1">{t("noAccountsFound")}</h3>
+          <p className="text-sm text-slate-500">{t("noAccountsDescription")}</p>
         </div>
       ) : !loading && (
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full">
@@ -286,12 +284,12 @@ export default function SystemAccountsManagementPage() {
             <table className="w-full text-left border-collapse min-w-[1000px]">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50">
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Thông tin cá nhân</th>
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Số điện thoại / Email</th>
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Vai trò</th>
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Ngày tạo</th>
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Trạng thái</th>
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Thao tác</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">{t("tablePersonalInfo")}</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">{t("tablePhoneEmail")}</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">{t("tableRole")}</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">{t("tableCreatedAt")}</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">{t("tableStatus")}</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">{t("tableActions")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
@@ -352,17 +350,17 @@ export default function SystemAccountsManagementPage() {
                           className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-blue-600 px-2.5 py-1.5 hover:bg-blue-50 rounded-lg transition-all whitespace-nowrap cursor-pointer"
                         >
                           <Pencil className="h-4 w-4 shrink-0" />
-                          <span>Sửa</span>
+                          <span>{t("edit")}</span>
                         </button>
                       ) : (
                         <button
                           type="button"
                           onClick={() => handleEditRedirect(account)}
                           className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-blue-600 px-2.5 py-1.5 hover:bg-slate-100 rounded-lg transition-all whitespace-nowrap cursor-pointer"
-                          title="Xem chi tiết thông tin tài khoản"
+                          title={t("accountDetailTitle")}
                         >
                           <Eye className="h-4 w-4 shrink-0 text-blue-600" />
-                          <span>Chỉ xem</span>
+                          <span>{t("viewOnly")}</span>
                         </button>
                       )}
                     </td>
@@ -376,7 +374,7 @@ export default function SystemAccountsManagementPage() {
           {meta.total > 0 && (
             <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
               <span className="text-sm text-slate-500">
-                Hiển thị {Math.min((meta.page - 1) * meta.size + 1, meta.total)} - {Math.min(meta.page * meta.size, meta.total)} của {meta.total} tài khoản
+                {t("showingRows", { from: Math.min((meta.page - 1) * meta.size + 1, meta.total), to: Math.min(meta.page * meta.size, meta.total), total: meta.total })}
               </span>
               <div className="flex items-center gap-1">
                 <button

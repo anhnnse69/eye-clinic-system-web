@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import {
     UserPlus,
     AlertCircle,
@@ -17,6 +18,7 @@ import type { GetClinicLookupResponse } from "@/services/clinic.service"
 
 export default function CreateClinicAdminPage() {
     const router = useRouter()
+    const t = useTranslations("systemAdmin.accounts")
 
     // Form State
     const [clinicId, setClinicId] = useState<string>("")
@@ -50,7 +52,7 @@ export default function CreateClinicAdminPage() {
                 }
             } catch (err: any) {
                 console.error("Lỗi khi tải danh sách phòng khám:", err)
-                setClinicFetchError("Không thể kết nối dữ liệu danh sách phòng khám. Vui lòng thử lại sau!")
+                setClinicFetchError(t("clinicLookupError"))
             } finally {
                 setLoadingClinics(false)
             }
@@ -63,19 +65,19 @@ export default function CreateClinicAdminPage() {
         e.preventDefault()
 
         if (!clinicId.trim() || !phone.trim() || !email.trim() || !fullName.trim()) {
-            setError("Vui lòng điền đầy đủ tất cả các trường thông tin bắt buộc!")
+            setError(t("requiredFields"))
             return
         }
 
         const phoneRegex = /^[0-9]{10}$/
         if (!phoneRegex.test(phone.trim())) {
-            setError("Số điện thoại không hợp lệ. Vui lòng nhập đúng 10 chữ số!")
+            setError(t("invalidPhone"))
             return
         }
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (!emailRegex.test(email.trim())) {
-            setError("Địa chỉ email không hợp lệ. Vui lòng nhập đúng định dạng email (ví dụ: name@example.com)!")
+            setError(t("invalidEmail"))
             return
         }
 
@@ -93,7 +95,7 @@ export default function CreateClinicAdminPage() {
 
             if (response.codeMessage === "APP_MESSAGE_2000") {
                 // CẬP NHẬT: Thay đổi nội dung thông báo thành công khớp với luồng nghiệp vụ bảo mật mới chỉ gửi về email cá nhân
-                setSuccess("Tạo tài khoản Quản trị phòng khám thành công! Thông tin đăng nhập và mật khẩu tạm thời đã được gửi an toàn tới duy nhất email cá nhân của tài khoản vừa tạo.")
+                setSuccess(t("createClinicAdminSuccess"))
                 setClinicId("")
                 setPhone("")
                 setEmail("")
@@ -104,13 +106,13 @@ export default function CreateClinicAdminPage() {
 
             // CẬP NHẬT: Thay đổi các mã Key Mapping khớp chính xác với mã GeneralCode ném ra từ backend thực tế
             const errorMessages: Record<string, string> = {
-                "APP_MESSAGE_4001": "Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại!",
-                "APP_MESSAGE_4008": "Không tìm thấy thông tin phòng khám được chỉ định trên hệ thống dữ liệu!", // Khớp với VerifyClinicAvailabilityAsync
-                "APP_MESSAGE_4017": "Số điện thoại hoặc Email này đã tồn tại trên hệ thống phòng khám!", // Khớp với ValidateIdentityConflictAsync
-                "APP_MESSAGE_4020": "Không tìm thấy thông tin phòng khám gắn liền với tài khoản quản trị của bạn!"
+                "APP_MESSAGE_4001": t("sessionExpired"),
+                "APP_MESSAGE_4008": t("clinicNotFound"),
+                "APP_MESSAGE_4017": t("identityConflict"),
+                "APP_MESSAGE_4020": t("clinicAdminNotLinked")
             }
 
-            const fallbackMessage = "Không thể kết nối tới máy chủ hệ thống hoặc dữ liệu xử lý không hợp lệ. Vui lòng thử lại sau!"
+            const fallbackMessage = t("connectionError")
             setError(errorMessages[errCode] || fallbackMessage)
         } finally {
             setSubmitting(false)
@@ -132,10 +134,10 @@ export default function CreateClinicAdminPage() {
                     <div className="flex-1 min-w-0">
                         <h2 className="text-headline-md font-bold text-on-surface flex items-center gap-2 flex-wrap">
                             <UserPlus className="h-6 w-6 text-primary shrink-0" />
-                            <span>Cấp tài khoản Clinic Admin</span>
+                            <span>{t("createClinicAdminTitle")}</span>
                         </h2>
-                        <p className="text-body-md text-on-surface-variant mt-1 break-words">
-                            Khởi tạo tài khoản quản trị viên gắn liền với một phòng khám cụ thể trong hệ thống.
+                        <p className="text-body-md text-on-surface-variant mt-1 wrap-break-word">
+                            {t("createClinicAdminSubtitle")}
                         </p>
                     </div>
                 </div>
@@ -146,7 +148,7 @@ export default function CreateClinicAdminPage() {
                 {clinicFetchError && (
                     <div className="p-4 bg-amber-50 text-amber-900 rounded-xl flex items-center gap-2 text-body-md font-medium border border-amber-200 w-full">
                         <AlertCircle className="h-5 w-5 text-amber-600 shrink-0" />
-                        <span className="break-words">{clinicFetchError}</span>
+                        <span className="wrap-break-word">{clinicFetchError}</span>
                     </div>
                 )}
 
@@ -154,7 +156,7 @@ export default function CreateClinicAdminPage() {
                 {error && (
                     <div className="p-4 bg-error-container text-on-error-container rounded-xl flex items-center gap-2 text-body-md font-medium border border-error/20 w-full">
                         <AlertCircle className="h-5 w-5 text-error shrink-0" />
-                        <span className="break-words">{error}</span>
+                        <span className="wrap-break-word">{error}</span>
                     </div>
                 )}
 
@@ -162,7 +164,7 @@ export default function CreateClinicAdminPage() {
                 {success && (
                     <div className="p-4 bg-emerald-50 text-emerald-800 rounded-xl flex items-center gap-2 text-body-md font-medium border border-emerald-200 w-full">
                         <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
-                        <span className="break-words">{success}</span>
+                        <span className="wrap-break-word">{success}</span>
                     </div>
                 )}
 
@@ -172,7 +174,7 @@ export default function CreateClinicAdminPage() {
                     {/* Hộp lựa chọn (Select) phòng khám từ DB */}
                     <div className="flex flex-col space-y-2 w-full">
                         <label className="text-label-md font-semibold text-on-surface">
-                            Chọn phòng khám quản lý <span className="text-error">*</span>
+                            {t("selectClinicLabel")} <span className="text-error">*</span>
                         </label>
                         <div className="relative w-full">
                             <select
@@ -182,7 +184,7 @@ export default function CreateClinicAdminPage() {
                                 className="w-full px-4 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors disabled:opacity-60 block cursor-pointer appearance-none pr-10 font-medium"
                             >
                                 <option value="">
-                                    {loadingClinics ? "Đang tải danh sách phòng khám..." : "-- Chọn phòng khám trong hệ thống --"}
+                                    {loadingClinics ? t("loadingClinics") : t("selectClinicPlaceholder")}
                                 </option>
 
                                 {clinics.map((item) => (
@@ -202,11 +204,11 @@ export default function CreateClinicAdminPage() {
 
                     <div className="flex flex-col space-y-2 w-full">
                         <label className="text-label-md font-semibold text-on-surface">
-                            Họ và tên Quản trị viên <span className="text-error">*</span>
+                            {t("adminFullNameLabel")} <span className="text-error">*</span>
                         </label>
                         <input
                             type="text"
-                            placeholder="Nhập tên đầy đủ người đại diện phòng khám"
+                            placeholder={t("adminFullNamePlaceholder")}
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
                             disabled={submitting}
@@ -218,11 +220,11 @@ export default function CreateClinicAdminPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                         <div className="flex flex-col space-y-2 w-full">
                             <label className="text-label-md font-semibold text-on-surface">
-                                Số điện thoại <span className="text-error">*</span>
+                                {t("phoneLabel")} <span className="text-error">*</span>
                             </label>
                             <input
                                 type="tel"
-                                placeholder="Nhập số điện thoại liên hệ"
+                                placeholder={t("phonePlaceholder")}
                                 value={phone}
                                 onChange={(e) => setPhone(e.target.value)}
                                 disabled={submitting}
@@ -232,11 +234,11 @@ export default function CreateClinicAdminPage() {
 
                         <div className="flex flex-col space-y-2 w-full">
                             <label className="text-label-md font-semibold text-on-surface">
-                                Địa chỉ Email <span className="text-error">*</span>
+                                {t("emailLabel")} <span className="text-error">*</span>
                             </label>
                             <input
                                 type="email"
-                                placeholder="Email nhận thông tin tài khoản mật khẩu"
+                                placeholder={t("emailPlaceholder")}
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 disabled={submitting}
@@ -251,7 +253,7 @@ export default function CreateClinicAdminPage() {
                             href="/system-admin/accounts"
                             className="px-5 py-2.5 border border-outline-variant rounded-xl text-label-md font-medium text-on-surface hover:bg-surface-container-low transition-colors whitespace-nowrap"
                         >
-                            Hủy bỏ
+                            {t("cancel")}
                         </Link>
                         <button
                             type="submit"
@@ -260,10 +262,10 @@ export default function CreateClinicAdminPage() {
                         >
                             {submitting ? (
                                 <>
-                                    <Loader2 className="h-4 w-4 animate-spin" /> <span>Đang tạo...</span>
+                                    <Loader2 className="h-4 w-4 animate-spin" /> <span>{t("creating")}</span>
                                 </>
                             ) : (
-                                "Cấp tài khoản"
+                                t("createAccount")
                             )}
                         </button>
                     </div>

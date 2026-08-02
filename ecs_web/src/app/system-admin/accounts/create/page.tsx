@@ -2,21 +2,23 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import Link from "next/link"
-import { 
-  UserPlus, 
-  ArrowLeft, 
-  AlertCircle, 
-  CheckCircle2, 
+import {
+  UserPlus,
+  ArrowLeft,
+  AlertCircle,
+  CheckCircle2,
   Loader2,
-  Info 
+  Info
 } from "lucide-react"
 import { accountService } from "@/services/account.service"
 import type { CreateAccountRequest } from "@/services/account.service"
 
 export default function CreateAccountPage() {
   const router = useRouter()
-  
+  const t = useTranslations("systemAdmin.accounts")
+
   // Khởi tạo trạng thái form dữ liệu - Mặc định vai trò là CLINIC_ADMIN (value = 2 trong UserRole enum)
   const [formData, setFormData] = useState<CreateAccountRequest>({
     phone: "",
@@ -39,28 +41,28 @@ export default function CreateAccountPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!formData.fullName.trim()) {
-      setError("Vui lòng nhập đầy đủ Họ và tên!")
+      setError(t("fullNameRequired"))
       return
     }
 
     const phoneRegex = /^[0-9]{10}$/
     if (!phoneRegex.test(formData.phone.trim())) {
-      setError("Số điện thoại không hợp lệ. Vui lòng nhập đúng 10 chữ số!")
+      setError(t("invalidPhone"))
       return
     }
 
     if (formData.email?.trim()) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       if (!emailRegex.test(formData.email.trim())) {
-        setError("Địa chỉ email không hợp lệ. Vui lòng nhập đúng định dạng (name@example.com)!")
+        setError(t("invalidEmail"))
         return
       }
     }
 
     if (!formData.password || formData.password.length < 8) {
-      setError("Mật khẩu ban đầu phải có độ dài tối thiểu từ 8 ký tự!")
+      setError(t("passwordMinLength"))
       return
     }
 
@@ -84,14 +86,14 @@ export default function CreateAccountPage() {
       }
     } catch (err: any) {
       const errCode = err?.response?.data?.codeMessage || err?.codeMessage || err?.data?.codeMessage;
-      
+
       const errorMessages: Record<string, string> = {
-        "APP_MESSAGE_4001": "Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại!",
-        "APP_MESSAGE_4017": "Địa chỉ Email này đã tồn tại trên hệ thống!", 
-        "APP_MESSAGE_4018": "Số điện thoại này đã được đăng ký bởi một tài khoản khác!" 
+        "APP_MESSAGE_4001": t("sessionExpired"),
+        "APP_MESSAGE_4017": t("emailExists"),
+        "APP_MESSAGE_4018": t("phoneExists")
       };
 
-      const fallbackMessage = "Không thể kết nối đến máy chủ hoặc dữ liệu đầu vào không hợp lệ.";
+      const fallbackMessage = t("connectionError");
       setError(errorMessages[errCode] || fallbackMessage);
     } finally {
       setSubmitting(false)
@@ -102,19 +104,19 @@ export default function CreateAccountPage() {
     <div className="p-4 md:p-6 space-y-6 max-w-3xl mx-auto text-left w-full">
       {/* Thanh Header Điều Hướng */}
       <div className="flex items-center gap-4">
-        <Link 
-          href="/system-admin/accounts" 
+        <Link
+          href="/system-admin/accounts"
           className="p-2 border border-outline-variant rounded-xl hover:bg-surface-container-low transition-colors"
-          title="Quay lại danh sách"
+          title={t("backToList")}
         >
           <ArrowLeft className="h-5 w-5 text-on-surface-variant" />
         </Link>
         <div>
           <h2 className="text-headline-md font-bold text-on-surface flex items-center gap-2">
             <UserPlus className="h-6 w-6 text-primary shrink-0" />
-            Tạo tài khoản Quản trị phòng khám
+            {t("createClinicAdminTitle")}
           </h2>
-          <p className="text-body-md text-on-surface-variant">Khởi tạo và cấp quyền tài khoản Quản trị phòng khám (CLINIC_ADMIN)</p>
+          <p className="text-body-md text-on-surface-variant">{t("createClinicAdminSubtitle")}</p>
         </div>
       </div>
 
@@ -122,10 +124,9 @@ export default function CreateAccountPage() {
       <div className="p-4 bg-primary/5 text-on-surface border border-primary/20 rounded-xl flex items-start gap-3 text-body-md">
         <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
         <div className="space-y-1">
-          <p className="font-semibold text-primary">Lưu ý phân quyền Quản trị System Admin:</p>
+          <p className="font-semibold text-primary">{t("createAccountNoticeTitle")}</p>
           <p className="text-body-sm text-on-surface-variant leading-relaxed">
-            System Admin trực tiếp khởi tạo tài khoản **Quản trị phòng khám (CLINIC_ADMIN)**.
-            Đối với nhân sự **Bác sĩ (Doctor)** và **Nhân viên tiếp đón/Lễ tân (Receptionist)** sẽ do Quản trị phòng khám (Clinic Admin) trực tiếp khởi tạo và quản lý tại cơ sở của họ.
+            {t("createAccountNoticeBody")}
           </p>
         </div>
       </div>
@@ -142,7 +143,7 @@ export default function CreateAccountPage() {
       {success && (
         <div className="p-4 bg-emerald-50 text-emerald-800 rounded-xl flex items-center gap-3 text-body-md font-medium border border-emerald-200">
           <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
-          <span>Tạo tài khoản thành công! Hệ thống đang chuyển hướng về danh sách tài khoản...</span>
+          <span>{t("createSuccessMessage")}</span>
         </div>
       )}
 
@@ -150,7 +151,7 @@ export default function CreateAccountPage() {
       <form onSubmit={handleSubmit} className="bg-surface-container-low p-6 rounded-2xl border border-outline-variant space-y-4 shadow-sm">
         {/* Họ và tên */}
         <div className="space-y-1.5">
-          <label className="text-label-md font-medium text-on-surface">Họ và tên người quản trị <span className="text-error">*</span></label>
+          <label className="text-label-md font-medium text-on-surface">{t("fullNameLabel")} <span className="text-error">*</span></label>
           <input
             type="text"
             name="fullName"
@@ -158,7 +159,7 @@ export default function CreateAccountPage() {
             disabled={submitting || success}
             value={formData.fullName}
             onChange={handleChange}
-            placeholder="Nhập tên đầy đủ người quản trị phòng khám..."
+            placeholder={t("fullNamePlaceholder")}
             className="w-full px-4 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors"
           />
         </div>
@@ -166,7 +167,7 @@ export default function CreateAccountPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Số điện thoại */}
           <div className="space-y-1.5">
-            <label className="text-label-md font-medium text-on-surface">Số điện thoại liên hệ <span className="text-error">*</span></label>
+            <label className="text-label-md font-medium text-on-surface">{t("phoneLabel")} <span className="text-error">*</span></label>
             <input
               type="tel"
               name="phone"
@@ -174,21 +175,21 @@ export default function CreateAccountPage() {
               disabled={submitting || success}
               value={formData.phone}
               onChange={handleChange}
-              placeholder="Nhập 10 chữ số (VD: 0912345678)"
+              placeholder={t("phonePlaceholder")}
               className="w-full px-4 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors"
             />
           </div>
 
           {/* Email */}
           <div className="space-y-1.5">
-            <label className="text-label-md font-medium text-on-surface">Địa chỉ Email</label>
+            <label className="text-label-md font-medium text-on-surface">{t("emailLabel")}</label>
             <input
               type="email"
               name="email"
               disabled={submitting || success}
               value={formData.email || ""}
               onChange={handleChange}
-              placeholder="name@example.com"
+              placeholder={t("emailPlaceholder")}
               className="w-full px-4 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors"
             />
           </div>
@@ -197,7 +198,7 @@ export default function CreateAccountPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Mật khẩu */}
           <div className="space-y-1.5">
-            <label className="text-label-md font-medium text-on-surface">Mật khẩu kích hoạt ban đầu <span className="text-error">*</span></label>
+            <label className="text-label-md font-medium text-on-surface">{t("passwordLabel")} <span className="text-error">*</span></label>
             <input
               type="password"
               name="password"
@@ -205,14 +206,14 @@ export default function CreateAccountPage() {
               disabled={submitting || success}
               value={formData.password || ""}
               onChange={handleChange}
-              placeholder="Tối thiểu 8 ký tự..."
+              placeholder={t("passwordPlaceholder")}
               className="w-full px-4 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors"
             />
           </div>
 
           {/* Vai trò */}
           <div className="space-y-1.5">
-            <label className="text-label-md font-medium text-on-surface">Vai trò phân quyền <span className="text-error">*</span></label>
+            <label className="text-label-md font-medium text-on-surface">{t("roleLabel")} <span className="text-error">*</span></label>
             <select
               name="role"
               disabled={submitting || success}
@@ -220,21 +221,21 @@ export default function CreateAccountPage() {
               onChange={handleChange}
               className="w-full px-4 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors cursor-pointer font-medium"
             >
-              <option value={2}>Quản trị viên Phòng khám (CLINIC_ADMIN)</option>
+              <option value={2}>{t("clinicAdminRoleOption")}</option>
             </select>
           </div>
         </div>
 
         {/* Đường dẫn ảnh đại diện */}
         <div className="space-y-1.5">
-          <label className="text-label-md font-medium text-on-surface">Đường dẫn ảnh đại diện (Avatar URL)</label>
+          <label className="text-label-md font-medium text-on-surface">{t("avatarLabel")}</label>
           <input
             type="text"
             name="avatarUrl"
             disabled={submitting || success}
             value={formData.avatarUrl || ""}
             onChange={handleChange}
-            placeholder="https://link-to-avatar.png (Không bắt buộc)"
+            placeholder={t("avatarPlaceholder")}
             className="w-full px-4 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors"
           />
         </div>
@@ -245,7 +246,7 @@ export default function CreateAccountPage() {
             href="/system-admin/accounts"
             className="px-5 py-2.5 border border-outline-variant rounded-xl text-label-md font-medium text-on-surface hover:bg-surface-container-low transition-all"
           >
-            Hủy thao tác
+            {t("cancel")}
           </Link>
           <button
             type="submit"
@@ -255,10 +256,10 @@ export default function CreateAccountPage() {
             {submitting ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Đang khởi tạo...
+                {t("creating")}
               </>
             ) : (
-              "Tạo & Cấp quyền"
+              t("createAndAssign")
             )}
           </button>
         </div>

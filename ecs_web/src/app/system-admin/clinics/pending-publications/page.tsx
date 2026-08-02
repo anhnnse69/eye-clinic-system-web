@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import {
     Building2, ArrowLeft, AlertCircle, Loader2, CheckCircle, MapPin,
     Phone, Mail, X, ChevronLeft, ChevronRight
@@ -12,6 +13,7 @@ import type { ClinicManagementItem, MetaResponse } from "@/types"
 
 export default function ClinicsPendingPublicationPage() {
     const router = useRouter()
+    const t = useTranslations("systemAdmin.clinics.pendingPublications")
     const [allClinics, setAllClinics] = useState<ClinicManagementItem[]>([])
     const [displayedClinics, setDisplayedClinics] = useState<ClinicManagementItem[]>([])
     const [loading, setLoading] = useState<boolean>(false)
@@ -74,7 +76,7 @@ export default function ClinicsPendingPublicationPage() {
                 setTotalPending(0)
             }
         } catch (err) {
-            setError("Không thể tải danh sách phòng khám chờ duyệt công khai.")
+            setError(t("loadingList"))
             console.error(err)
         } finally {
             setLoading(false)
@@ -104,7 +106,7 @@ export default function ClinicsPendingPublicationPage() {
 
             setToast({
                 isOpen: true,
-                message: "Duyệt công khai phòng khám thành công!",
+                message: t("approveSuccess"),
                 type: "success"
             })
 
@@ -113,7 +115,7 @@ export default function ClinicsPendingPublicationPage() {
             const apiErrorMessage = handleApiError(err)
             setToast({
                 isOpen: true,
-                message: `Duyệt thất bại: ${apiErrorMessage}`,
+                message: t("approveFailure", { message: apiErrorMessage }),
                 type: "error"
             })
         } finally {
@@ -139,7 +141,7 @@ export default function ClinicsPendingPublicationPage() {
 
             {/* --- ELEGANT TOAST NOTIFICATION --- */}
             {toast.isOpen && (
-                <div className={`fixed top-6 right-6 z-[100] flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border animate-in slide-in-from-top-5 duration-300 min-w-[320px] max-w-md ${toast.type === "success"
+                <div className={`fixed top-6 right-6 z-100 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border animate-in slide-in-from-top-5 duration-300 min-w-80 max-w-md ${toast.type === "success"
                     ? "bg-emerald-50 border-emerald-200 text-emerald-900"
                     : "bg-red-50 border-red-200 text-red-900"
                     }`}>
@@ -166,13 +168,11 @@ export default function ClinicsPendingPublicationPage() {
                             <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-amber-600 shrink-0">
                                 <Building2 className="h-6 w-6" />
                             </div>
-                            <h3 className="text-lg font-bold text-slate-800">Xác nhận duyệt</h3>
+                            <h3 className="text-lg font-bold text-slate-800">{t("confirmTitle")}</h3>
                         </div>
 
                         <p className="text-sm text-slate-600 mb-6 leading-relaxed">
-                            Bạn có chắc chắn muốn duyệt yêu cầu công khai cho phòng khám
-                            <span className="font-semibold text-slate-800 px-1">"{confirmModal.name}"</span>?
-                            Thay đổi này sẽ kích hoạt không gian làm việc của phòng khám trên hệ thống ngay lập tức.
+                            {t("confirmMessage", { name: confirmModal.name })}
                         </p>
 
                         <div className="flex items-center justify-end gap-3 mt-auto">
@@ -180,13 +180,13 @@ export default function ClinicsPendingPublicationPage() {
                                 onClick={() => setConfirmModal({ isOpen: false, id: "", name: "" })}
                                 className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-slate-50 transition-colors"
                             >
-                                Hủy bỏ
+                                {t("cancel")}
                             </button>
                             <button
                                 onClick={handleApprovePublication}
                                 className="px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 shadow-sm transition-colors"
                             >
-                                Duyệt yêu cầu
+                                {t("confirmApprove")}
                             </button>
                         </div>
                     </div>
@@ -202,8 +202,8 @@ export default function ClinicsPendingPublicationPage() {
                     <ArrowLeft className="h-5 w-5 text-slate-600" />
                 </button>
                 <div>
-                    <h2 className="text-2xl font-bold text-slate-800">Yêu cầu công khai chờ duyệt</h2>
-                    <p className="text-sm text-slate-500 mt-0.5">Danh sách các phòng khám đang nộp đơn xin phát hành lên hệ thống</p>
+                    <h2 className="text-2xl font-bold text-slate-800">{t("title")}</h2>
+                    <p className="text-sm text-slate-500 mt-0.5">{t("subtitle")}</p>
                 </div>
             </div>
 
@@ -211,36 +211,36 @@ export default function ClinicsPendingPublicationPage() {
                 <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
                     <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
                     <div>
-                        <h3 className="font-semibold text-red-800 mb-0.5">Lỗi hệ thống</h3>
+                        <h3 className="font-semibold text-red-800 mb-0.5">{t("systemError")}</h3>
                         <p className="text-sm text-red-700">{error}</p>
                     </div>
                 </div>
             )}
 
             {loading && (
-                <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
+                <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center flex flex-col items-center justify-center min-h-75">
                     <Loader2 className="h-8 w-8 text-blue-600 animate-spin mb-3" />
-                    <p className="text-sm text-slate-500">Đang kiểm tra hồ sơ công khai...</p>
+                    <p className="text-sm text-slate-500">{t("loading")}</p>
                 </div>
             )}
 
             {/* --- DATA TABLE --- */}
             {!loading && totalPending === 0 ? (
-                <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[300px] w-full">
+                <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-75 w-full">
                     <Building2 className="h-12 w-12 text-slate-300 mb-3" />
-                    <h3 className="text-lg font-bold text-slate-800 mb-1">Hiện tại không có yêu cầu nào</h3>
-                    <p className="text-sm text-slate-500">Tất cả các phòng khám hoạt động hiện đã được xuất bản hoặc chưa gửi đơn.</p>
+                    <h3 className="text-lg font-bold text-slate-800 mb-1">{t("emptyTitle")}</h3>
+                    <p className="text-sm text-slate-500">{t("emptyDescription")}</p>
                 </div>
             ) : !loading && (
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full">
                     <div className="overflow-x-auto w-full">
-                        <table className="w-full text-left border-collapse min-w-[1000px]">
+                        <table className="w-full text-left border-collapse min-w-250">
                             <thead>
                                 <tr className="border-b border-slate-200 bg-slate-50">
-                                    <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider w-[120px]">Mã cơ sở</th>
-                                    <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Tên phòng khám / Địa chỉ</th>
-                                    <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Thông tin liên hệ</th>
-                                    <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider text-center w-[260px] whitespace-nowrap">Thao tác</th>
+                                    <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider w-30">{t("tableId")}</th>
+                                    <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">{t("tableClinic")}</th>
+                                    <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">{t("tableContact")}</th>
+                                    <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider text-center w-65 whitespace-nowrap">{t("tableActions")}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200">
@@ -281,7 +281,7 @@ export default function ClinicsPendingPublicationPage() {
                                                         className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded-lg transition-all shadow-sm active:scale-95 whitespace-nowrap"
                                                     >
                                                         <CheckCircle className="h-4 w-4 shrink-0" />
-                                                        <span>Duyệt công khai</span>
+                                                        <span>{t("approve")}</span>
                                                     </button>
                                                 </div>
                                             </td>
@@ -296,7 +296,7 @@ export default function ClinicsPendingPublicationPage() {
                     {totalPending > 0 && (
                         <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
                             <span className="text-sm text-slate-500">
-                                Hiển thị {currentPage === 1 ? 1 : (currentPage - 1) * pageSize + 1} - {Math.min(currentPage * pageSize, totalPending)} của {totalPending} phòng khám
+                                {t("showing", { from: currentPage === 1 ? 1 : (currentPage - 1) * pageSize + 1, to: Math.min(currentPage * pageSize, totalPending), total: totalPending })}
                             </span>
                             <div className="flex items-center gap-1">
                                 <button

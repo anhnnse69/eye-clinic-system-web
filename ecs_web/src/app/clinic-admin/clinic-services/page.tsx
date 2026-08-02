@@ -2,24 +2,25 @@
 
 import { useEffect, useState, useCallback } from "react"
 import Link from "next/link"
-import { 
-  Briefcase, 
-  Clock, 
-  AlertCircle, 
-  Plus, 
-  Search, 
-  ChevronLeft, 
+import {
+  Briefcase,
+  Clock,
+  AlertCircle,
+  Plus,
+  Search,
+  ChevronLeft,
   ChevronRight,
   Pencil,
   RefreshCw
 } from "lucide-react"
-import { useTranslations } from "next-intl"
+import { useTranslations, useLocale } from "next-intl"
 import { serviceService } from "@/services/service.service"
 import type { ViewClinicServiceResponse } from "@/services/service.service"
 
 export default function ClinicServiceManagementPage() {
   const t = useTranslations("clinicAdmin.service")
   const tCommon = useTranslations("clinicAdmin.common")
+  const locale = useLocale()
 
   const [servicesList, setServicesList] = useState<ViewClinicServiceResponse[]>([])
   const [loading, setLoading] = useState<boolean>(true)
@@ -124,7 +125,7 @@ export default function ClinicServiceManagementPage() {
 
   const formatCurrency = (value: number | null) => {
     if (value === null || value === undefined) return t("freeContact")
-    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value)
+    return new Intl.NumberFormat(locale, { style: "currency", currency: "VND" }).format(value)
   }
 
   return (
@@ -142,7 +143,7 @@ export default function ClinicServiceManagementPage() {
             className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-100 active:scale-95 transition-all disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-            {t("refresh") || "Làm mới"}
+            {t("refresh")}
           </button>
           <Link 
             href="/clinic-admin/clinic-services/create"
@@ -196,7 +197,7 @@ export default function ClinicServiceManagementPage() {
             onClick={loadServicesData}
             className="mt-4 px-5 py-2 bg-primary text-white font-medium rounded-xl hover:opacity-90 transition active:scale-95 shadow-sm"
           >
-            {t("retry") || "Thử lại"}
+            {t("retry")}
           </button>
         </div>
       ) : (

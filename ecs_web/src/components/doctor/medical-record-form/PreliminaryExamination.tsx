@@ -18,7 +18,7 @@ import { useState } from "react"
 import { useTranslations } from "next-intl"
 import {
   Stethoscope, Eye, Activity, AlertTriangle, Clock,
-  ChevronRight, ChevronLeft, Save, Info,
+  ChevronRight, ChevronLeft, Info,
 } from "lucide-react"
 
 export type PreliminaryCategory =

@@ -2,14 +2,10 @@
 
 /**
  * PupillaryReflexSection — Ánh đồng tử (MS22 PDF mục 13).
- *
- * Theo PDF MS22 mục 13 "Ánh đồng tử":
- *  - Hồng / Xám / Không soi được
- *
- * Áp dụng cho từng mắt MP / MT.
  */
 
 import { useFormContext } from "react-hook-form"
+import { useTranslations } from "next-intl"
 import { Eye } from "lucide-react"
 import type { MedicalRecordFormDataPayload } from "@/types"
 import { SectionHeading } from "./SectionHeading"
@@ -24,6 +20,7 @@ interface SideProps {
 }
 
 function SideFields({ side, sideLabel }: SideProps) {
+  const t = useTranslations("form.pupillary")
   const { register } = useFormContext<MedicalRecordFormDataPayload>()
 
   return (
@@ -33,15 +30,15 @@ function SideFields({ side, sideLabel }: SideProps) {
       </legend>
 
       <div>
-        <label className={labelClass}>Ánh đồng tử</label>
+        <label className={labelClass}>{t("label")}</label>
         <select
           {...register(`khamBenh.mongMatDongTu.${side}.anhDongTu` as any)}
           className={inputClass}
         >
           <option value="">—</option>
-          <option value="Hồng">Hồng</option>
-          <option value="Xám">Xám</option>
-          <option value="Không soi được">Không soi được</option>
+          <option value="Hồng">{t("options.hong")}</option>
+          <option value="Xám">{t("options.xam")}</option>
+          <option value="Không soi được">{t("options.khongSoi")}</option>
         </select>
       </div>
     </fieldset>
@@ -49,19 +46,21 @@ function SideFields({ side, sideLabel }: SideProps) {
 }
 
 export function PupillaryReflexSection() {
+  const t = useTranslations("form.pupillary")
   return (
-    <div className="space-y-3">
-      <SectionHeading
-        title="Ánh đồng tử"
-        subtitle="Soi ánh đồng tử để đánh giá tổn thương đáy mắt / thị thần kinh"
-        icon={Eye}
-        accentColor="teal"
-        level={3}
-      />
+    <SectionHeading
+      title={t("title")}
+      subtitle={t("subtitle")}
+      icon={Eye}
+      accentColor="teal"
+      level={3}
+      collapsible
+      defaultOpen
+    >
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <SideFields side="matPhai" sideLabel="Mắt phải (MP)" />
-        <SideFields side="matTrai" sideLabel="Mắt trái (MT)" />
+        <SideFields side="matPhai" sideLabel={t("matPhai")} />
+        <SideFields side="matTrai" sideLabel={t("matTrai")} />
       </div>
-    </div>
+    </SectionHeading>
   )
 }

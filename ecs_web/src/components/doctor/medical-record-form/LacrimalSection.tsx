@@ -2,15 +2,10 @@
 
 /**
  * LacrimalSection — Khám Lệ đạo (MS22 + MS26 PDF).
- *
- * Theo PDF MS22 mục 4 "Lệ đạo" và MS26 mục 2 "Lệ đạo":
- *  - Bơm lệ quản: Nước thoát tốt / Trào lệ quản đối diện / Trào tại chỗ
- *  - Ghi chú khác (bệnh lý khác)
- *
- * Render theo 2 cột MP / MT đúng format Bộ Y tế.
  */
 
 import { useFormContext } from "react-hook-form"
+import { useTranslations } from "next-intl"
 import { Droplet } from "lucide-react"
 import type { MedicalRecordFormDataPayload } from "@/types"
 import { SectionHeading } from "./SectionHeading"
@@ -24,7 +19,8 @@ interface LacrimalSideProps {
   sideLabel: string
 }
 
-function LacrimalSideFields({ side, sideLabel }: LacrimalSideProps) {
+function LacrimalSideFields({ sideLabel }: LacrimalSideProps) {
+  const t = useTranslations("form.lacrimal")
   const { register } = useFormContext<MedicalRecordFormDataPayload>()
 
   return (
@@ -34,48 +30,48 @@ function LacrimalSideFields({ side, sideLabel }: LacrimalSideProps) {
       </legend>
 
       <div>
-        <label className={labelClass}>Bơm lệ quản — Nước thoát tốt</label>
+        <label className={labelClass}>{t("nuocThoatTot")}</label>
         <select
           {...register(`khamBenh.lacrimalRecords.0.irrigationFree` as any)}
           className={inputClass}
         >
           <option value="">—</option>
-          <option value="true">Có (Nước thoát tốt)</option>
-          <option value="false">Không</option>
+          <option value="true">{t("trueOpt")}</option>
+          <option value="false">{t("falseOpt")}</option>
         </select>
       </div>
 
       <div>
-        <label className={labelClass}>Bơm lệ quản — Trào lệ quản đối diện</label>
+        <label className={labelClass}>{t("traoDoiDien")}</label>
         <select
           {...register(`khamBenh.lacrimalRecords.0.irrigationRegurgitationOpposite` as any)}
           className={inputClass}
         >
           <option value="">—</option>
-          <option value="true">Có (Trào đối diện)</option>
-          <option value="false">Không</option>
+          <option value="true">{t("trueOpt")}</option>
+          <option value="false">{t("falseOpt")}</option>
         </select>
       </div>
 
       <div>
-        <label className={labelClass}>Bơm lệ quản — Trào tại chỗ</label>
+        <label className={labelClass}>{t("traoTaiCho")}</label>
         <select
           {...register(`khamBenh.lacrimalRecords.0.irrigationRegurgitationSame` as any)}
           className={inputClass}
         >
           <option value="">—</option>
-          <option value="true">Có (Trào tại chỗ)</option>
-          <option value="false">Không</option>
+          <option value="true">{t("trueOpt")}</option>
+          <option value="false">{t("falseOpt")}</option>
         </select>
       </div>
 
       <div>
-        <label className={labelClass}>Ghi chú</label>
+        <label className={labelClass}>{t("ghiChu")}</label>
         <textarea
           {...register(`khamBenh.lacrimalRecords.0.lacrimalOther` as any)}
           rows={2}
           className={inputClass}
-          placeholder="Tổn thương / bệnh lý khác..."
+          placeholder={t("ghiChuPh")}
         />
       </div>
     </fieldset>
@@ -83,19 +79,21 @@ function LacrimalSideFields({ side, sideLabel }: LacrimalSideProps) {
 }
 
 export function LacrimalSection() {
+  const t = useTranslations("form.lacrimal")
   return (
-    <div className="space-y-3">
-      <SectionHeading
-        title="Lệ đạo"
-        subtitle="Bơm lệ quản — Nước thoát / Trào đối diện / Trào tại chỗ"
-        icon={Droplet}
-        accentColor="teal"
-        level={3}
-      />
+    <SectionHeading
+      title={t("title")}
+      subtitle={t("subtitle")}
+      icon={Droplet}
+      accentColor="teal"
+      level={3}
+      collapsible
+      defaultOpen
+    >
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <LacrimalSideFields side="matPhai" sideLabel="Mắt phải (MP)" />
-        <LacrimalSideFields side="matTrai" sideLabel="Mắt trái (MT)" />
+        <LacrimalSideFields side="matPhai" sideLabel={t("matPhai")} />
+        <LacrimalSideFields side="matTrai" sideLabel={t("matTrai")} />
       </div>
-    </div>
+    </SectionHeading>
   )
 }

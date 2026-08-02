@@ -110,7 +110,45 @@
       "saveChanges": "Lưu thay đổi",
       "fetching": "Đang tìm kiếm dữ liệu nhân viên...",
       "refresh": "Làm mới",
-      "retry": "Thử lại"
+      "retry": "Thử lại",
+      "fields": {
+        "fullNameRequired": "Họ và tên *",
+        "emailRequired": "Địa chỉ Email *",
+        "phoneRequired": "Số điện thoại *",
+        "passwordRequired": "Mật khẩu ban đầu *",
+        "roleRequired": "Phân quyền chức vụ *",
+        "activeStatus": "Trạng thái hoạt động"
+      },
+      "placeholders": {
+        "phone": "10 chữ số (ví dụ: 0901234567)",
+        "email": "name@example.com",
+        "password": "Tối thiểu 8 ký tự"
+      },
+      "create": {
+        "validation": {
+          "phoneInvalid": "Số điện thoại không hợp lệ. Vui lòng nhập đúng 10 chữ số.",
+          "emailInvalid": "Địa chỉ email không hợp lệ. Vui lòng nhập đúng định dạng email (name@example.com).",
+          "passwordTooShort": "Mật khẩu bảo mật quá ngắn. Chiều dài bắt buộc tối thiểu từ 8 ký tự."
+        },
+        "errors": {
+          "generic": "Đã xảy ra lỗi không xác định từ máy chủ."
+        }
+      },
+      "edit": {
+        "loadErrors": {
+          "notFound": "Không tìm thấy thông tin nhân viên này hoặc tài khoản đã bị khóa/ẩn khỏi danh sách.",
+          "emptyList": "Hệ thống phòng khám hiện chưa có nhân viên nào.",
+          "syncFailed": "Không thể kết nối máy chủ để tải danh sách và trích xuất thông tin nhân viên."
+        },
+        "validation": {
+          "phoneInvalid": "Số điện thoại không hợp lệ. Vui lòng nhập chính xác 10 chữ số."
+        },
+        "errors": {
+          "generic": "Đã xảy ra lỗi không mong muốn trong quá trình cập nhật dữ liệu."
+        },
+        "activeState": "Tài khoản đang hoạt động (Active)",
+        "inactiveState": "Tài khoản đang bị khóa (Inactive)"
+      }
     },
     "medicine": {
       "title": "Danh mục thuốc",
@@ -206,7 +244,49 @@
       "saveChanges": "Lưu thông tin",
       "fetching": "Đang truy xuất thông tin cấu trúc vật lý phòng bệnh...",
       "refresh": "Làm mới",
-      "retry": "Thử lại"
+      "retry": "Thử lại",
+      "modal": {
+        "title": "Chi tiết Phòng chức năng",
+        "close": "Đóng"
+      },
+      "fields": {
+        "roomNameLabel": "Tên phòng chức năng",
+        "roomNameRequired": "Tên phòng chức năng *",
+        "roomTypeLabel": "Loại phòng / Chuyên khoa",
+        "roomTypeRequired": "Loại phòng / Chuyên khoa *"
+      },
+      "placeholders": {
+        "roomName": "Ví dụ: Phòng khám Nội 1, Phòng Siêu Âm...",
+        "roomType": "Ví dụ: Phòng Khám, Phòng Cấp Cứu, Xét Nghiệm..."
+      },
+      "create": {
+        "validation": {
+          "roomNameRequired": "Tên phòng không được phép để trống."
+        },
+        "errors": {
+          "duplicateRoom": "Tên phòng này đã tồn tại trong hệ thống. Vui lòng chọn tên khác.",
+          "sessionExpired": "Phiên làm việc đã hết hạn hoặc xác thực không hợp lệ. Vui lòng đăng nhập lại.",
+          "clinicUnavailable": "Phòng khám liên kết không tồn tại hoặc đã ngừng hoạt động.",
+          "generic": "Đã xảy ra lỗi hệ thống trong quá trình khởi tạo phòng chức năng."
+        }
+      },
+      "edit": {
+        "loadErrors": {
+          "roomNotFound": "Không tìm thấy thông tin căn phòng chức năng này trên hệ thống.",
+          "noRoomsYet": "Phòng khám hiện tại chưa được thiết lập bất kỳ phân khu phòng chức năng nào.",
+          "syncFailed": "Đã xảy ra lỗi khi đồng bộ dữ liệu cấu trúc phòng ban từ máy chủ."
+        },
+        "validation": {
+          "roomNameRequired": "Tên phòng không được phép để trống.",
+          "roomTypeRequired": "Phân loại phân khu phòng không được phép để trống."
+        },
+        "errors": {
+          "sessionExpired": "Hành động bị từ chối! Phiên đăng nhập Quản trị viên phòng khám (CLINIC_ADMIN) không hợp lệ hoặc hết hạn.",
+          "roomNotFound": "Lỗi hệ thống: Phòng chức năng mục tiêu không tồn tại trong cơ sở dữ liệu của phòng khám hoặc đã bị xóa trước đó.",
+          "duplicateRoom": "Tên phòng này đã tồn tại trong phân khu của phòng khám. Vui lòng chọn một tên gọi khác để tránh trùng lặp danh định!",
+          "generic": "Đã xảy ra sự cố không xác định trong quá trình cập nhật cơ sở dữ liệu phòng khám."
+        }
+      }
     },
     "service": {
       "title": "Quản lý dịch vụ",
@@ -252,7 +332,50 @@
       "backToList": "Quay lại danh sách",
       "loadingDetail": "Đang tải cấu trúc dữ liệu dịch vụ phòng khám...",
       "refresh": "Làm mới",
-      "retry": "Thử lại"
+      "retry": "Thử lại",
+      "fields": {
+        "serviceNameRequired": "Tên dịch vụ y tế *",
+        "priceRequired": "Giá dịch vụ (VNĐ) *",
+        "priceStandardRequired": "Giá dịch vụ niêm yết (VND) *",
+        "durationRequired": "Thời lượng thực hiện (Phút) *",
+        "durationStandardRequired": "Thời lượng chuẩn (Phút) *"
+      },
+      "placeholders": {
+        "serviceName": "Ví dụ: Khám nội tổng quát, Siêu âm tim Doppler..."
+      },
+      "create": {
+        "validation": {
+          "serviceNameRequired": "Tên dịch vụ y tế không được để trống.",
+          "priceNegative": "Đơn giá dịch vụ không được phép là số âm.",
+          "durationNonPositive": "Thời gian thực hiện dịch vụ phải lớn hơn 0 phút."
+        },
+        "errors": {
+          "duplicateService": "Tên dịch vụ y tế này đã tồn tại trong hệ thống phòng khám của bạn.",
+          "sessionExpired": "Phiên đăng nhập không hợp lệ hoặc tài khoản không có quyền Admin.",
+          "clinicUnavailable": "Hệ thống không tìm thấy hồ sơ phòng khám gắn liền với tài khoản quản trị này.",
+          "generic": "Đã xảy ra lỗi hệ thống trong quá trình khởi tạo dịch vụ."
+        }
+      },
+      "edit": {
+        "loadErrors": {
+          "notFound": "Không tìm thấy thông tin dịch vụ y tế được yêu cầu bên trong hệ thống.",
+          "syncFailed": "Không thể tải thông tin chi tiết dịch vụ. Vui lòng thử lại sau!"
+        },
+        "success": "Cập nhật thông tin dịch vụ khám bệnh thành công!",
+        "validation": {
+          "serviceNameRequired": "Tên dịch vụ khám bệnh không được phép để trống.",
+          "priceNegative": "Giá dịch vụ chuẩn không được phép nhỏ hơn 0 VND.",
+          "durationNonPositive": "Thời lượng chuẩn thực hiện phải lớn hơn 0 phút."
+        },
+        "errors": {
+          "sessionExpired": "Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại.",
+          "clinicNotFound": "Không tìm thấy thông tin phòng khám gắn liền với tài khoản quản trị của bạn.",
+          "serviceNotFound": "Dịch vụ y tế này hiện không tồn tại hoặc đã bị gỡ bỏ khỏi hệ thống dữ liệu.",
+          "noPermission": "Hành vi bị từ chối: Bạn không có quyền truy cập chỉnh sửa dịch vụ của phòng khám khác!",
+          "duplicateService": "Tên dịch vụ y tế này đã tồn tại trong danh mục phòng khám của bạn. Vui lòng chọn tên khác!",
+          "generic": "Hệ thống gặp lỗi trong quá trình lưu dữ liệu cập nhật."
+        }
+      }
     },
     "profile": {
       "title": "Hồ sơ phòng khám",

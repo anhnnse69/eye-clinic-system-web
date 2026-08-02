@@ -10,6 +10,7 @@
  * Field name khớp với `medicalRecordFormDataSchema` → map thẳng vào formData envelope.
  */
 import { useFormContext, useFieldArray } from "react-hook-form"
+import { useTranslations } from "next-intl"
 import {
   MessageCircle,
   Activity,
@@ -30,183 +31,185 @@ import { GlaucomaMedicationTable } from "./GlaucomaMedicationTable"
 const inputClass =
   "w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
 const labelClass = "mb-1 block text-xs font-medium text-gray-700"
-const sectionSubtitle = "mb-3 text-sm font-medium text-gray-700"
 
 // =========================================================
 // Section: BỆNH ÁN — chung cho MS24 (Glaucoma)
 // =========================================================
 function BenhAnSection() {
+  const t = useTranslations("form.glaucoma")
   const { register } = useFormContext<MedicalRecordFormDataPayload>()
   return (
     <div className="space-y-6">
       <SectionHeading
-        title="Lý do đi khám"
+        title={t("reasonTitle")}
         icon={MessageCircle}
         accentColor="indigo"
         level={3}
-      />
-      <div className="space-y-4 rounded-lg border border-gray-100 bg-white p-4">
+        collapsible
+        defaultOpen
+      >
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <label className={labelClass}>Nhức mắt</label>
+            <label className={labelClass}>{t("nhucMat")}</label>
             <select {...register("benhAn.lyDoVaoVien" as any)} className={inputClass}>
               <option value="">—</option>
-              <option value="Dữ dội">Dữ dội</option>
-              <option value="Vừa">Vừa</option>
-              <option value="Nhẹ">Nhẹ</option>
-              <option value="Không">Không</option>
+              <option value="Dữ dội">{t("nhucMatOptions.duDoi")}</option>
+              <option value="Vừa">{t("nhucMatOptions.vua")}</option>
+              <option value="Nhẹ">{t("nhucMatOptions.nhe")}</option>
+              <option value="Không">{t("nhucMatOptions.khong")}</option>
             </select>
           </div>
           <div>
-            <label className={labelClass}>Triệu chứng về nhìn</label>
+            <label className={labelClass}>{t("trieuChungNhin")}</label>
             <input
               {...register("khamBenh.glaucomaRecord.visionSymptoms" as any)}
-              placeholder="Mờ đột ngột / Sương mù / ..."
+              placeholder={t("trieuChungNhinPh")}
               className={inputClass}
             />
           </div>
           <div>
-            <label className={labelClass}>Triệu chứng khác</label>
+            <label className={labelClass}>{t("trieuChungKhac")}</label>
             <div className="flex flex-wrap gap-3 text-sm text-gray-700">
               <label className="inline-flex items-center gap-1">
                 <input type="checkbox" {...register("khamBenh.glaucomaRecord.hasPhotophobia" as any)} />
-                Sợ ánh sáng
+                {t("soAnhSang")}
               </label>
               <label className="inline-flex items-center gap-1">
                 <input type="checkbox" {...register("khamBenh.glaucomaRecord.hasTearing" as any)} />
-                Chảy nước mắt
+                {t("chayNuocMat")}
               </label>
               <label className="inline-flex items-center gap-1">
                 <input type="checkbox" {...register("khamBenh.glaucomaRecord.hasRedness" as any)} />
-                Đỏ mắt
+                {t("doMat")}
               </label>
             </div>
           </div>
           <div>
-            <label className={labelClass}>Triệu chứng toàn thân</label>
+            <label className={labelClass}>{t("trieuChungToanThan")}</label>
             <input
               {...register("khamBenh.glaucomaRecord.systemicSymptoms" as any)}
-              placeholder="Đau đầu / Buồn nôn / ..."
+              placeholder={t("trieuChungToanThanPh")}
               className={inputClass}
             />
           </div>
         </div>
-      </div>
+      </SectionHeading>
 
       <SectionHeading
-        title="Quá trình bệnh lý"
+        title={t("processTitle")}
         icon={Activity}
         accentColor="indigo"
         level={3}
-      />
-      <div className="space-y-4 rounded-lg border border-gray-100 bg-white p-4">
+        collapsible
+        defaultOpen
+      >
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <label className={labelClass}>Thời gian xuất hiện bệnh</label>
+            <label className={labelClass}>{t("thoiGianBenh")}</label>
             <input {...register("benhAn.glaucomaThoiGianBenh" as any)} className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>Cơ sở y tế đã khám</label>
+            <label className={labelClass}>{t("coSoYTe")}</label>
             <select {...register("benhAn.glaucomaCoSoYTeDaKham" as any)} className={inputClass}>
               <option value="">—</option>
-              <option value="Huyện">Huyện</option>
-              <option value="Tỉnh">Tỉnh</option>
-              <option value="Trung ương">Trung ương</option>
-              <option value="Khác">Khác</option>
+              <option value="Huyện">{t("coSoYTeOptions.huyen")}</option>
+              <option value="Tỉnh">{t("coSoYTeOptions.tinh")}</option>
+              <option value="Trung ương">{t("coSoYTeOptions.trungUong")}</option>
+              <option value="Khác">{t("coSoYTeOptions.khac")}</option>
             </select>
           </div>
           <div className="md:col-span-2">
-            <label className={labelClass}>Phương pháp đã điều trị</label>
+            <label className={labelClass}>{t("phuongPhapDT")}</label>
             <input
               {...register("benhAn.glaucomaPhuongPhapDaDT" as any)}
-              placeholder="Phẫu thuật / Thuốc / Laser"
+              placeholder={t("phauThuat")}
               className={inputClass}
             />
           </div>
         </div>
-      </div>
+      </SectionHeading>
 
-      {/* Bảng PT glôcôm 8-cột (PDF MS24 mục 4) */}
       <GlaucomaSurgeryTable />
 
-      {/* Bảng thuốc hạ nhãn áp 5-cột (PDF MS24 mục 5) */}
       <GlaucomaMedicationTable />
 
       <SectionHeading
-        title="Tiền sử các bệnh mắt khác"
+        title={t("eyeHistoryTitle")}
         icon={History}
         accentColor="indigo"
         level={3}
-      />
-      <div className="space-y-4 rounded-lg border border-gray-100 bg-white p-4">
+        collapsible
+        defaultOpen
+      >
         <textarea
           {...register("benhAn.glaucomaTienSuMat" as any)}
           rows={3}
           className={inputClass}
-          placeholder="Cận thị / Viễn thị / Viêm màng bồ đào / Đã PT mắt / ..."
+          placeholder=""
         />
-      </div>
+      </SectionHeading>
 
       <SectionHeading
-        title="Tiền sử bệnh toàn thân"
+        title={t("systemicHistoryTitle")}
         icon={HeartPulse}
         accentColor="indigo"
         level={3}
-      />
-      <div className="space-y-4 rounded-lg border border-gray-100 bg-white p-4">
+        collapsible
+        defaultOpen
+      >
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <label className={labelClass}>Bệnh toàn thân</label>
+            <label className={labelClass}>{t("benhToanThan")}</label>
             <div className="flex flex-wrap gap-3 text-sm text-gray-700">
               <label className="inline-flex items-center gap-1">
                 <input type="checkbox" {...register("khamBenh.glaucomaRecord.hasCardiovascularDisease" as any)} />
-                Tim mạch
+                {t("timMach")}
               </label>
               <label className="inline-flex items-center gap-1">
                 <input type="checkbox" {...register("khamBenh.glaucomaRecord.hasHypertension" as any)} />
-                Huyết áp
+                {t("huyetAp")}
               </label>
               <label className="inline-flex items-center gap-1">
                 <input type="checkbox" {...register("khamBenh.glaucomaRecord.hasDiabetes" as any)} />
-                Đái đường
+                {t("daiDuong")}
               </label>
               <label className="inline-flex items-center gap-1">
                 <input type="checkbox" {...register("khamBenh.glaucomaRecord.hasCarotidFistula" as any)} />
-                Rò động mạch cảnh
+                {t("roDongMachCanh")}
               </label>
             </div>
             <input
               {...register("khamBenh.glaucomaRecord.otherSystemicDisease" as any)}
-              placeholder="Bệnh khác..."
+              placeholder={t("benhKhac")}
               className={`${inputClass} mt-2`}
             />
           </div>
 
           <div>
-            <label className={labelClass}>Tiền sử dùng corticosteroid kéo dài</label>
+            <label className={labelClass}>{t("corticoidSuDung")}</label>
             <input
               {...register("khamBenh.glaucomaRecord.steroidUse" as any)}
               className={inputClass}
-              placeholder="Tên thuốc / Thời gian / Đường dùng"
+              placeholder={t("corticoidSuDungPh")}
             />
           </div>
 
           <div>
-            <label className={labelClass}>Tiền sử glôcôm trong gia đình</label>
+            <label className={labelClass}>{t("glaucomaGiaDinh")}</label>
             <div className="flex items-center gap-3 text-sm text-gray-700">
               <label className="inline-flex items-center gap-1">
                 <input type="checkbox" {...register("khamBenh.glaucomaRecord.familyHasGlaucoma" as any)} />
-                Có
+                {t("co")}
               </label>
               <input
                 {...register("khamBenh.glaucomaRecord.familyGlaucomaRelation" as any)}
-                placeholder="Quan hệ: ông/bà, bố/mẹ, ..."
+                placeholder={t("quanHe")}
                 className={inputClass}
               />
             </div>
           </div>
         </div>
-      </div>
+      </SectionHeading>
     </div>
   )
 }
@@ -215,8 +218,9 @@ function BenhAnSection() {
 // Section: III.1 — Khám chuyên khoa mắt (MP/MT)
 // =========================================================
 function EyeSideFields({ side }: { side: "matPhai" | "matTrai" }) {
+  const t = useTranslations("form.glaucoma")
   const { register } = useFormContext<MedicalRecordFormDataPayload>()
-  const sideLabel = side === "matPhai" ? "Mắt phải (MP)" : "Mắt trái (MT)"
+  const sideLabel = side === "matPhai" ? t("matPhai") : t("matTrai")
   const vaOdOs = side === "matPhai" ? "Od" : "Os"
 
   return (
@@ -225,14 +229,14 @@ function EyeSideFields({ side }: { side: "matPhai" | "matTrai" }) {
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
-          <label className={labelClass}>Không kính</label>
+          <label className={labelClass}>{t("khongKinh")}</label>
           <input
             {...register(`khamBenh.glaucomaRecord.vaWithoutCorrection${vaOdOs}` as any)}
             className={inputClass}
           />
         </div>
         <div>
-          <label className={labelClass}>Có kính</label>
+          <label className={labelClass}>{t("coKinh")}</label>
           <input
             {...register(`khamBenh.glaucomaRecord.vaWithCorrection${vaOdOs}` as any)}
             className={inputClass}
@@ -242,18 +246,18 @@ function EyeSideFields({ side }: { side: "matPhai" | "matTrai" }) {
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div>
-          <label className={labelClass}>Nhãn áp (mmHg)</label>
+          <label className={labelClass}>{t("nhanAp")}</label>
           <input
             {...register(`khamBenh.glaucomaRecord.iop${vaOdOs}` as any)}
             className={inputClass}
           />
         </div>
         <div>
-          <label className={labelClass}>Phương pháp đo</label>
+          <label className={labelClass}>{t("phuongPhapDo")}</label>
           <input {...register("khamBenh.glaucomaRecord.iopMethod" as any)} className={inputClass} />
         </div>
         <div>
-          <label className={labelClass}>Nhãn áp mục tiêu</label>
+          <label className={labelClass}>{t("nhanApMucTieu")}</label>
           <input
             {...register(`khamBenh.glaucomaRecord.iopTarget${vaOdOs}` as any)}
             className={inputClass}
@@ -262,7 +266,7 @@ function EyeSideFields({ side }: { side: "matPhai" | "matTrai" }) {
       </div>
 
       <div>
-        <label className={labelClass}>Góc tiền phòng / Khác</label>
+        <label className={labelClass}>{t("gonioscopy")}</label>
         <input
           {...register(`khamBenh.glaucomaRecord.gonioscopy${vaOdOs}` as any)}
           className={inputClass}
@@ -271,14 +275,14 @@ function EyeSideFields({ side }: { side: "matPhai" | "matTrai" }) {
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
-          <label className={labelClass}>Viền thần kinh</label>
+          <label className={labelClass}>{t("vienThanKinh")}</label>
           <input
             {...register(`khamBenh.glaucomaRecord.nerveRim${vaOdOs}` as any)}
             className={inputClass}
           />
         </div>
         <div>
-          <label className={labelClass}>Giai đoạn</label>
+          <label className={labelClass}>{t("giaiDoan")}</label>
           <input
             {...register(`khamBenh.glaucomaRecord.stage${vaOdOs}` as any)}
             className={inputClass}
@@ -290,50 +294,58 @@ function EyeSideFields({ side }: { side: "matPhai" | "matTrai" }) {
 }
 
 function KhamBenhSection() {
+  const t = useTranslations("form.glaucoma")
   const { register } = useFormContext<MedicalRecordFormDataPayload>()
 
   return (
     <div className="space-y-6">
       <SectionHeading
-        title="Khám chuyên khoa mắt"
-        subtitle="Mắt phải / Mắt trái"
+        title={t("khamTitle")}
+        subtitle={t("khamSubtitle")}
         icon={Eye}
         accentColor="indigo"
         level={3}
-      />
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <EyeSideFields side="matPhai" />
-        <EyeSideFields side="matTrai" />
-      </div>
+        collapsible
+        defaultOpen
+      >
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <EyeSideFields side="matPhai" />
+          <EyeSideFields side="matTrai" />
+        </div>
+      </SectionHeading>
 
       <SectionHeading
-        title="Khám toàn thân"
+        title={t("khamToanThanTitle")}
         icon={Stethoscope}
         accentColor="indigo"
         level={3}
-      />
-      <div className="grid grid-cols-1 gap-4 rounded-lg border border-gray-100 bg-white p-4 md:grid-cols-3">
+        collapsible
+        defaultOpen
+      >
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div>
-          <label className={labelClass}>Huyết áp</label>
+          <label className={labelClass}>{t("huyetAp")}</label>
           <input {...register("khamBenh.khamToanThan.huyetAp" as any)} className={inputClass} />
         </div>
         <div>
-          <label className={labelClass}>Mạch</label>
+          <label className={labelClass}>{t("mach")}</label>
           <input {...register("khamBenh.khamToanThan.mach" as any)} className={inputClass} />
         </div>
         <div>
-          <label className={labelClass}>Nhiệt độ</label>
+          <label className={labelClass}>{t("nhietDo")}</label>
           <input {...register("khamBenh.khamToanThan.nhietDo" as any)} className={inputClass} />
         </div>
-      </div>
+        </div>
+      </SectionHeading>
     </div>
   )
 }
 
 // =========================================================
-// Section: Glaucoma extras (classification, treatment plan, history list)
+// Section: Glaucoma extras
 // =========================================================
 function GlaucomaExtrasSection() {
+  const t = useTranslations("form.glaucoma")
   const { control, register } = useFormContext<MedicalRecordFormDataPayload>()
   const histories = useFieldArray({
     control,
@@ -343,23 +355,25 @@ function GlaucomaExtrasSection() {
   return (
     <div className="space-y-6">
       <SectionHeading
-        title="Phân loại và điều trị glôcôm"
+        title={t("classificationTitle")}
         icon={Pill}
         accentColor="indigo"
         level={3}
-      />
-      <div className="space-y-4 rounded-lg border border-gray-100 bg-white p-4">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        collapsible
+        defaultOpen
+      >
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div>
-            <label className={labelClass}>Loại glôcôm</label>
+            <label className={labelClass}>{t("loaiGlaucoma")}</label>
             <input {...register("khamBenh.glaucomaRecord.glaucomaType" as any)} className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>Chiều dài trục nhãn cầu</label>
+            <label className={labelClass}>{t("chieuDaiTruc")}</label>
             <input {...register("khamBenh.glaucomaRecord.eyeAxialLength" as any)} className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>Sẹo mổ củng mạc — vị trí</label>
+            <label className={labelClass}>{t("seMoViTri")}</label>
             <input
               {...register("khamBenh.glaucomaRecord.scleralScarLocation" as any)}
               className={inputClass}
@@ -369,7 +383,7 @@ function GlaucomaExtrasSection() {
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <label className={labelClass}>Phương pháp điều trị — Phẫu thuật</label>
+            <label className={labelClass}>{t("phauThuat")}</label>
             <textarea
               {...register("khamBenh.glaucomaRecord.treatmentPlanSurgery" as any)}
               rows={2}
@@ -377,7 +391,7 @@ function GlaucomaExtrasSection() {
             />
           </div>
           <div>
-            <label className={labelClass}>Phương pháp điều trị — Laser</label>
+            <label className={labelClass}>{t("laser")}</label>
             <textarea
               {...register("khamBenh.glaucomaRecord.treatmentPlanLaser" as any)}
               rows={2}
@@ -385,7 +399,7 @@ function GlaucomaExtrasSection() {
             />
           </div>
           <div>
-            <label className={labelClass}>Phương pháp điều trị — Thuốc</label>
+            <label className={labelClass}>{t("thuoc")}</label>
             <textarea
               {...register("khamBenh.glaucomaRecord.treatmentPlanMedication" as any)}
               rows={2}
@@ -393,7 +407,7 @@ function GlaucomaExtrasSection() {
             />
           </div>
           <div>
-            <label className={labelClass}>Kế hoạch theo dõi</label>
+            <label className={labelClass}>{t("keHoachTheoDoi")}</label>
             <textarea
               {...register("khamBenh.glaucomaRecord.followUpPlan" as any)}
               rows={2}
@@ -402,10 +416,9 @@ function GlaucomaExtrasSection() {
           </div>
         </div>
 
-        {/* Lịch sử điều trị - dùng useFieldArray để có thể add/remove rows */}
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <h3 className="text-sm font-medium text-gray-700">Lịch sử điều trị</h3>
+            <h3 className="text-sm font-medium text-gray-700">{t("lichSuDieuTri")}</h3>
             <button
               type="button"
               onClick={() =>
@@ -425,12 +438,12 @@ function GlaucomaExtrasSection() {
               }
               className="inline-flex items-center gap-1 rounded-md border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-100"
             >
-              <Plus className="h-3 w-3" /> Thêm dòng
+              <Plus className="h-3 w-3" /> {t("addRow")}
             </button>
           </div>
 
           {histories.fields.length === 0 ? (
-            <p className="text-xs text-gray-500">Chưa có lịch sử điều trị.</p>
+            <p className="text-xs text-gray-500">{t("lichSuEmpty")}</p>
           ) : (
             <div className="space-y-3">
               {histories.fields.map((field, index) => (
@@ -440,17 +453,17 @@ function GlaucomaExtrasSection() {
                 >
                   <input
                     {...register(`khamBenh.glaucomaHistories.${index}.historyType` as any)}
-                    placeholder="Loại (PT/Thuốc/Laser)"
+                    placeholder={t("historyTypePh")}
                     className={inputClass}
                   />
                   <input
                     {...register(`khamBenh.glaucomaHistories.${index}.procedureType` as any)}
-                    placeholder="Cắt bè / Trabeculectomy / ..."
+                    placeholder={t("procedureTypePh")}
                     className={inputClass}
                   />
                   <input
                     {...register(`khamBenh.glaucomaHistories.${index}.procedureDate` as any)}
-                    placeholder="YYYY-MM-DD"
+                    placeholder={t("procedureDatePh")}
                     className={inputClass}
                   />
                   <button
@@ -458,46 +471,54 @@ function GlaucomaExtrasSection() {
                     onClick={() => histories.remove(index)}
                     className="col-span-full inline-flex w-fit items-center gap-1 text-xs text-red-600 hover:text-red-700"
                   >
-                    <Trash2 className="h-3 w-3" /> Xoá dòng
+                    <Trash2 className="h-3 w-3" /> {t("removeRow")}
                   </button>
                 </div>
               ))}
             </div>
           )}
         </div>
-      </div>
+        </div>
+      </SectionHeading>
     </div>
   )
 }
 
 export default function GlaucomaFormSections() {
+  const t = useTranslations("form.glaucoma")
   return (
     <div className="space-y-10">
       <section aria-labelledby="glaucoma-benh-an">
         <SectionHeading
-          title="Bệnh Án"
-          subtitle="Lý do vào viện, hỏi bệnh, tiền sử"
+          title={t("benhAnSection")}
+          subtitle={t("benhAnSubtitle")}
           icon={FileText}
           accentColor="amber"
           level={2}
-        />
-        <div className="mt-4">
-          <BenhAnSection />
-        </div>
+          collapsible
+          defaultOpen
+        >
+          <div className="mt-2">
+            <BenhAnSection />
+          </div>
+        </SectionHeading>
       </section>
 
       <section aria-labelledby="glaucoma-kham-benh" className="print-page-break">
         <SectionHeading
-          title="Khám bệnh"
-          subtitle="Khám chuyên khoa mắt + toàn thân + glôcôm"
+          title={t("khamBenhSection")}
+          subtitle={t("khamBenhSubtitle")}
           icon={Stethoscope}
           accentColor="amber"
           level={2}
-        />
-        <div className="mt-4 space-y-8">
-          <KhamBenhSection />
-          <GlaucomaExtrasSection />
-        </div>
+          collapsible
+          defaultOpen
+        >
+          <div className="mt-2 space-y-8">
+            <KhamBenhSection />
+            <GlaucomaExtrasSection />
+          </div>
+        </SectionHeading>
       </section>
     </div>
   )

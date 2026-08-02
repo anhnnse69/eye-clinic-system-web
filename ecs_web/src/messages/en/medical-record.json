@@ -43,6 +43,43 @@
       "draft": "Draft",
       "finalized": "Finalized"
     },
+    "edit": {
+      "loadingTitle": "Loading data",
+      "loadingHint": "Please wait a moment...",
+      "errorTitle": "Oops! Something went wrong",
+      "errorBack": "Back",
+      "loadErrorNotFound": "Medical record not found",
+      "loadErrorLocked": "The record is past its edit window or has been locked — it cannot be modified any more.",
+      "loadErrorLegacy": "This record has no form data (legacy version)",
+      "loadErrorGeneric": "Could not load the medical record for editing",
+      "saveErrorGeneric": "Failed to update record",
+      "saveErrorSystem": "A system error occurred while saving the record. Please check your connection or try again later.",
+      "validationError": "Some fields are invalid. Sample data has been pre-filled for you to try again.",
+      "successTitle": "Medical record updated successfully",
+      "recordIdLabel": "Medical Record ID:",
+      "recordTypeUnknown": "Could not determine the record type",
+      "editLabel": "Edit medical record",
+      "printTooltip": "Print record as PDF/A4",
+      "tocLabel": "Record table of contents",
+      "tocSections": {
+        "hanhChinh": "Administrative",
+        "benhAn": "Medical record",
+        "khamBenh": "Examination",
+        "chanDoan": "Diagnosis",
+        "tongKet": "Summary"
+      },
+      "footer": {
+        "patient": "Patient / Next of kin",
+        "signHint": "(Sign and print full name)",
+        "date": "Day ..... month ..... year 20...",
+        "doctor": "Examining doctor",
+        "system": "Eye Clinic Support System",
+        "systemSubtitle": "Eye medical record — Printed from medical software"
+      },
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "saveChanges": "Save changes"
+    },
     "selectTemplate": "Select medical record template",
     "selectTemplateDesc": "Records are stored in MongoDB. Pick one of 6 standard templates that best matches the preliminary diagnosis.",
     "savedSuccess": "Medical record created successfully",

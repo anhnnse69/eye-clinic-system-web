@@ -2,6 +2,7 @@
 
 import React from "react"
 import { MEDICAL_RECORD_TYPE_LABELS } from "@/types"
+import { useTranslations } from "next-intl"
 
 export interface OfficialMedicalRecordA4PrintProps {
   recordType: string
@@ -16,13 +17,17 @@ export interface OfficialMedicalRecordA4PrintProps {
   createdAt?: string | null
 }
 
-export const RECORD_TYPE_FORM_CODES: Record<string, { code: string; title: string }> = {
-  MS21_TRAUMA: { code: "21/BV-01", title: "BỆNH ÁN MẮT (CHẤN THƯƠNG)" },
-  MS22_ANTERIOR: { code: "22/BV-01", title: "BỆNH ÁN BÁN PHẦN TRƯỚC" },
-  MS23_FUNDUS: { code: "23/BV-01", title: "BỆNH ÁN ĐÁY MẮT (BÁN PHẦN SAU)" },
-  MS24_GLAUCOMA: { code: "24/BV-01", title: "BỆNH ÁN GLÔCÔM (TĂNG NHÃN ÁP)" },
-  MS25_STRABISMUS_PTOSIS: { code: "25/BV-01", title: "BỆNH ÁN LÁC & SỤP MI" },
-  MS26_PEDIATRIC: { code: "26/BV-01", title: "BỆNH ÁN MẮT TRẺ EM" },
+// Title-only metadata — ICD code labels for each record type. We localize
+// the user-visible strings via `form.print.formCodes` so English & Vietnamese
+// both render properly. The actual numeric MS code (21/BV-01, etc.) is stored
+// here because it's an officially recognized identifier.
+export const RECORD_TYPE_FORM_CODES: Record<string, { code: string; titleKey: string }> = {
+  MS21_TRAUMA: { code: "21/BV-01", titleKey: "ms21" },
+  MS22_ANTERIOR: { code: "22/BV-01", titleKey: "ms22" },
+  MS23_FUNDUS: { code: "23/BV-01", titleKey: "ms23" },
+  MS24_GLAUCOMA: { code: "24/BV-01", titleKey: "ms24" },
+  MS25_STRABISMUS_PTOSIS: { code: "25/BV-01", titleKey: "ms25" },
+  MS26_PEDIATRIC: { code: "26/BV-01", titleKey: "ms26" },
 }
 
 export default function OfficialMedicalRecordA4Print({
@@ -37,19 +42,25 @@ export default function OfficialMedicalRecordA4Print({
   doctorName,
   createdAt,
 }: OfficialMedicalRecordA4PrintProps) {
+  const tPrint = useTranslations("form.print")
+
   const formInfo = RECORD_TYPE_FORM_CODES[recordType] || {
     code: "21/BV-01",
-    title: "BỆNH ÁN NHÃN KHOA",
+    titleKey: "msDefault",
   }
 
-  const recordLabel = MEDICAL_RECORD_TYPE_LABELS[recordType as keyof typeof MEDICAL_RECORD_TYPE_LABELS] || "Bệnh án Nhãn khoa"
+  const recordLabel =
+    MEDICAL_RECORD_TYPE_LABELS[recordType as keyof typeof MEDICAL_RECORD_TYPE_LABELS] ||
+    tPrint("fallbackRecord")
+
+  const titleText = tPrint(`formCodes.${formInfo.titleKey}` as any)
 
   const formatGender = (g?: string | null) => {
     if (!g) return "—"
     const upper = String(g).trim().toUpperCase()
-    if (upper === "MALE" || upper === "NAM" || upper === "1") return "Nam"
-    if (upper === "FEMALE" || upper === "NỮ" || upper === "NU" || upper === "0") return "Nữ"
-    if (upper === "OTHER" || upper === "KHÁC" || upper === "KHAC" || upper === "2") return "Khác"
+    if (upper === "MALE" || upper === "NAM" || upper === "1") return tPrint("genderMale")
+    if (upper === "FEMALE" || upper === "NỮ" || upper === "NU" || upper === "0") return tPrint("genderFemale")
+    if (upper === "OTHER" || upper === "KHÁC" || upper === "KHAC" || upper === "2") return tPrint("genderOther")
     return g
   }
 
@@ -62,7 +73,7 @@ export default function OfficialMedicalRecordA4Print({
         @media print {
           @page {
             size: A4 portrait;
-            margin: 0 !important; /* Removes browser default URL, date, and page title */
+            margin: 0 !important;
           }
 
           body {
@@ -88,12 +99,10 @@ export default function OfficialMedicalRecordA4Print({
             font-weight: bold !important;
           }
 
-          /* Hide screen UI elements */
           header, nav, aside, footer, button, .no-print, .print\\:hidden {
             display: none !important;
           }
 
-          /* Show print-only elements */
           .print\\:block {
             display: block !important;
           }
@@ -104,7 +113,6 @@ export default function OfficialMedicalRecordA4Print({
             display: grid !important;
           }
 
-          /* Force grid & column layouts on paper */
           .print\\:grid-cols-2 {
             grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
           }
@@ -112,13 +120,11 @@ export default function OfficialMedicalRecordA4Print({
             grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
           }
 
-          /* Page break controls */
           .print\\:break-inside-avoid, section, article, table, tr {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
           }
 
-          /* Border & Typography resets for ultra-clean B&W print */
           input, textarea, select {
             border: none !important;
             background: transparent !important;
@@ -154,14 +160,14 @@ export default function OfficialMedicalRecordA4Print({
         {/* Header 2 columns */}
         <div className="flex justify-between items-start text-xs font-semibold">
           <div className="text-left space-y-0.5">
-            <p className="uppercase font-bold text-xs tracking-wider">SỞ Y TẾ / HỆ THỐNG PHÒNG KHÁM MẮT</p>
-            <p className="font-black text-xs text-black">EYE CLINIC SUPPORT SYSTEM</p>
-            <p className="text-[10px] text-gray-700">Khoa: Khám bệnh / Nhãn khoa chuyên sâu</p>
+            <p className="uppercase font-bold text-xs tracking-wider">{tPrint("agency")}</p>
+            <p className="font-black text-xs text-black">{tPrint("systemName")}</p>
+            <p className="text-[10px] text-gray-700">{tPrint("department")}</p>
           </div>
 
           <div className="text-right space-y-0.5">
-            <p className="uppercase font-black text-xs">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
-            <p className="font-bold text-[11px]">Độc lập - Tự do - Hạnh phúc</p>
+            <p className="uppercase font-black text-xs">{tPrint("country")}</p>
+            <p className="font-bold text-[11px]">{tPrint("motto")}</p>
             <div className="w-24 h-0.5 bg-black ml-auto mt-1" />
           </div>
         </div>
@@ -169,11 +175,15 @@ export default function OfficialMedicalRecordA4Print({
         {/* Title */}
         <div className="mt-3 text-center space-y-1">
           <h1 className="text-lg font-black uppercase tracking-tight text-black">
-            {formInfo.title}
+            {titleText}
           </h1>
           <p className="text-xs font-bold text-gray-800">
-            {recordLabel} — Mẫu số: <span className="font-mono">{formInfo.code}</span>
-            {recordCode && <span className="ml-2 font-mono">| Mã BA: {recordCode}</span>}
+            {recordLabel} — {tPrint("templateCode")}: <span className="font-mono">{formInfo.code}</span>
+            {recordCode && (
+              <span className="ml-2 font-mono">
+                | {tPrint("recordCodeShort")}: {recordCode}
+              </span>
+            )}
           </p>
         </div>
 
@@ -181,12 +191,27 @@ export default function OfficialMedicalRecordA4Print({
         {patientName && (
           <div className="mt-3 text-xs border border-black rounded-sm p-2 bg-gray-50/50">
             <div className="grid grid-cols-4 gap-2 font-medium">
-              <div><strong>Họ tên:</strong> <span className="font-bold uppercase text-black">{patientName}</span></div>
-              <div><strong>Ngày sinh:</strong> {patientDob || "—"}</div>
-              <div><strong>Giới tính:</strong> <span className="font-bold">{formatGender(patientGender)}</span></div>
-              <div><strong>SĐT:</strong> {patientPhone || "—"}</div>
-              <div className="col-span-2"><strong>CCCD/CMND:</strong> <span className="font-mono">{identityNumber || "—"}</span></div>
-              <div className="col-span-2"><strong>Địa chỉ:</strong> {address || "—"}</div>
+              <div>
+                <strong>{tPrint("name")}:</strong>{" "}
+                <span className="font-bold uppercase text-black">{patientName}</span>
+              </div>
+              <div>
+                <strong>{tPrint("dob")}:</strong> {patientDob || "—"}
+              </div>
+              <div>
+                <strong>{tPrint("gender")}:</strong>{" "}
+                <span className="font-bold">{formatGender(patientGender)}</span>
+              </div>
+              <div>
+                <strong>{tPrint("phoneShort")}:</strong> {patientPhone || "—"}
+              </div>
+              <div className="col-span-2">
+                <strong>{tPrint("idNumber")}:</strong>{" "}
+                <span className="font-mono">{identityNumber || "—"}</span>
+              </div>
+              <div className="col-span-2">
+                <strong>{tPrint("address")}:</strong> {address || "—"}
+              </div>
             </div>
           </div>
         )}
@@ -196,16 +221,26 @@ export default function OfficialMedicalRecordA4Print({
       <div className="hidden print:block mt-8 pt-4 border-t border-black text-black print:break-inside-avoid">
         <div className="flex justify-between items-start text-xs font-serif">
           <div className="text-left space-y-1">
-            <p className="font-bold uppercase">XÁC NHẬN CỦA BỆNH NHÂN / NGƯỜI NHÀ</p>
-            <p className="text-[10px] italic text-gray-700">(Ký và ghi rõ họ tên)</p>
+            <p className="font-bold uppercase">{tPrint("patientConfirmation")}</p>
+            <p className="text-[10px] italic text-gray-700">({tPrint("signAndPrintName")})</p>
             <div className="h-16" />
           </div>
           <div className="text-right space-y-1">
-            <p className="italic text-[11px]">Ngày ..... tháng ..... năm 2026</p>
-            <p className="font-bold uppercase">BÁC SĨ KHÁM & ĐIỀU TRỊ</p>
-            <p className="text-[10px] italic text-gray-700">(Ký, đóng dấu & ghi rõ họ tên)</p>
+          <p className="italic text-[11px]">
+            {createdAt
+              ? new Date(createdAt).toLocaleDateString("vi-VN", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                })
+              : tPrint("datePlaceholderLine")}
+          </p>
+          <p className="font-bold uppercase">{tPrint("treatingDoctor")}</p>
+          <p className="text-[10px] italic text-gray-700">{tPrint("signSealName")}</p>
             <div className="h-16" />
-            <p className="font-bold text-xs">{doctorName || "Bác sĩ Chuyên khoa Mắt"}</p>
+            <p className="font-bold text-xs">
+              {doctorName || tPrint("defaultDoctorName")}
+            </p>
           </div>
         </div>
       </div>

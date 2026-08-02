@@ -10,11 +10,16 @@
  *  - Optional subtitle
  *  - Optional collapsible (mặc định mở)
  *
+ * Cách dùng:
+ *  - Không collapsible: `<SectionHeading ... />` (đứng riêng, không bao bọc).
+ *  - Collapsible: `<SectionHeading ... collapsible>{nội dung}</SectionHeading>`.
+ *
  * Không hiển thị số La Mã theo yêu cầu Bộ Y tế PDF — chỉ hiển thị tiêu đề chữ.
  */
 
-import { type LucideIcon } from "lucide-react"
-import { useState } from "react"
+import { type LucideIcon, ChevronUp, ChevronDown } from "lucide-react"
+import { useState, type ReactNode } from "react"
+import { useTranslations } from "next-intl"
 
 export type SectionAccent =
   | "indigo"
@@ -37,10 +42,12 @@ interface SectionHeadingProps {
   accentColor?: SectionAccent
   /** Cấp heading: 2 = heading chính của phần lớn, 3 = tiểu mục */
   level?: 2 | 3
-  /** Cho phép thu gọn/mở rộng */
+  /** Cho phép thu gọn/mở rộng — bắt buộc truyền children để hoạt động */
   collapsible?: boolean
   /** Trạng thái mở ban đầu (chỉ áp dụng khi collapsible=true) */
   defaultOpen?: boolean
+  /** Nội dung section — bắt buộc khi collapsible=true */
+  children?: ReactNode
 }
 
 const accentMap: Record<
@@ -105,10 +112,11 @@ export function SectionHeading({
   level = 2,
   collapsible = false,
   defaultOpen = true,
+  children,
 }: SectionHeadingProps) {
+  const t = useTranslations("form.sectionHeading")
   const [open, setOpen] = useState(defaultOpen)
   const accent = accentMap[accentColor]
-
   const sizing =
     level === 2
       ? {
@@ -126,8 +134,8 @@ export function SectionHeading({
           subtitle: "text-xs",
         }
 
-  const content = (
-    <div className={`flex items-center gap-3 ${sizing.wrapper}`}>
+  const headerInner = (
+    <>
       <div
         className={`flex shrink-0 items-center justify-center rounded-md ${accent.chip} ${sizing.iconBox}`}
         aria-hidden="true"
@@ -141,11 +149,23 @@ export function SectionHeading({
         )}
       </div>
       {collapsible && (
-        <span className={`text-xs font-medium ${accent.text}`}>
-          {open ? "Thu gọn" : "Mở rộng"}
+        <span
+          className={`flex shrink-0 items-center gap-1 text-xs font-medium ${accent.text}`}
+        >
+          {open ? (
+            <>
+              <ChevronUp className="h-3.5 w-3.5" />
+              {t("collapse")}
+            </>
+          ) : (
+            <>
+              <ChevronDown className="h-3.5 w-3.5" />
+              {t("expand")}
+            </>
+          )}
         </span>
       )}
-    </div>
+    </>
   )
 
   if (!collapsible) {
@@ -153,23 +173,28 @@ export function SectionHeading({
       <div
         className={`rounded-lg border ${accent.ring} ${accent.bg} print:border-gray-300 print:bg-white`}
       >
-        {content}
+        <div className={`flex items-center gap-3 ${sizing.wrapper}`}>{headerInner}</div>
       </div>
     )
   }
 
+  const sectionId = `section-content-${title.replace(/\s+/g, "-").toLowerCase()}`
+
   return (
-    <div className={`rounded-lg border ${accent.ring} ${accent.bg} overflow-hidden`}>
+    <div className={`overflow-hidden rounded-lg border ${accent.ring} ${accent.bg}`}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="w-full text-left transition hover:brightness-95"
+        className={`flex w-full items-center gap-3 text-left transition hover:brightness-95 ${sizing.wrapper}`}
         aria-expanded={open}
+        aria-controls={sectionId}
       >
-        {content}
+        {headerInner}
       </button>
-      {open && (
-        <div className="border-t border-gray-200 bg-white p-4">{/* children injected by parent */}</div>
+      {open && children !== undefined && (
+        <div id={sectionId} className="border-t border-gray-200 bg-white p-4">
+          {children}
+        </div>
       )}
     </div>
   )

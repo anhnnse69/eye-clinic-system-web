@@ -1,7 +1,7 @@
 /**
- * AI Suggestion service — uploads an OCT image to the FastAPI VGG16 classifier
+ * AI Suggestion service — uploads an OCT image to the FastAPI OCT CNN classifier
  * via the .NET backend proxy (which polls until completion and persists the
- * result in MongoDB).
+ * result in MongoDB). Supports 4-class classification.
  */
 import { apiClient } from "@/lib/axios"
 import type { ApiResponse } from "@/types"

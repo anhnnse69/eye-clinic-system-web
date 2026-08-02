@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslations } from "next-intl"
+
 /**
  * Stub HistoryStep — phiên bản multi-step cũ (đã lỗi thời).
  *
@@ -10,19 +12,11 @@
  * Trang edit hiện chưa được port sang form mới. Component này được giữ lại để
  * build pass — sẽ được viết lại trong UC/US tiếp theo.
  */
-// Dùng kiểu rộng để chấp nhận prop tuỳ UI cũ truyền vào (recordType, ...).
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-interface HistoryStepProps {
-  formData: unknown
-  updateFormData: (updates: unknown) => void
-  [key: string]: any
-}
-
-export default function HistoryStep(_: HistoryStepProps) {
+export default function HistoryStep() {
+  const t = useTranslations("form.steps")
   return (
     <div className="rounded-lg border border-dashed border-amber-300 bg-amber-50 p-4 text-sm text-amber-800">
-      <strong>HistoryStep (stub)</strong> — phiên bản multi-step đã lỗi thời.
-      Form bệnh án hiện dùng <code>formData</code> JSON envelope (Cloudinary).
+      <strong>{t("historyStubTitle")}</strong> — {t("historyStubDesc")}
     </div>
   )
 }

@@ -2,18 +2,9 @@
 
 /**
  * SurgeryForm — Surgery / Procedure form, pages 9-10 of MS22 Ministry of Health form.
- *
- * Fields:
- *  - Surgery date/time
- *  - Surgical procedure method
- *  - Anesthesia (general, local, regional, none)
- *  - Anesthesiologist
- *  - Main surgeon + Assistant
- *  - Surgery diagram (textarea — can paste ASCII diagram or description)
- *  - Surgical steps
- *  - Intra/postoperative progress
  */
 import { useFormContext } from "react-hook-form"
+import { useTranslations } from "next-intl"
 import type { MedicalRecordFormDataPayload } from "@/types"
 
 const inputClass =
@@ -25,67 +16,68 @@ const sectionBoxClass =
 const titleClass = "mb-3 text-sm font-semibold text-gray-800 print:text-black"
 
 export default function SurgeryForm() {
+  const t = useTranslations("form.surgery")
   const { register } = useFormContext<MedicalRecordFormDataPayload>()
 
   return (
     <div className={sectionBoxClass}>
       <h3 className={titleClass}>
-        SURGERY / PROCEDURE FORM
+        {t("title")}
         <span className="ml-2 text-xs font-normal text-gray-600">
-          (Pages 9-10, MS22 template)
+          {t("subtitle")}
         </span>
       </h3>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2 print:grid-cols-2">
         <div>
-          <label className={labelClass}>Surgery date/time</label>
+          <label className={labelClass}>{t("ngayGio")}</label>
           <input
             type="text"
             {...register("benhAn.phieuPhauThuat.ngayGioPT" as any)}
             className={inputClass}
-            placeholder="e.g.: 2:00 PM, 1/7/2026"
+            placeholder={t("ngayGioPh")}
           />
         </div>
         <div>
-          <label className={labelClass}>Anesthesia method</label>
+          <label className={labelClass}>{t("voCam")}</label>
           <select
             {...register("benhAn.phieuPhauThuat.voCam" as any)}
             className={inputClass}
           >
             <option value="">—</option>
-            <option value="Gây mê">1. General anesthesia</option>
-            <option value="Gây tê">2. Regional anesthesia</option>
-            <option value="Tê tại chỗ">3. Local anesthesia</option>
-            <option value="Không">4. None</option>
+            <option value="Gây mê">{t("voCamOptions.gayMe")}</option>
+            <option value="Gây tê">{t("voCamOptions.gayTe")}</option>
+            <option value="Tê tại chỗ">{t("voCamOptions.teTaiCho")}</option>
+            <option value="Không">{t("voCamOptions.khong")}</option>
           </select>
         </div>
 
         <div className="md:col-span-2 print:col-span-2">
-          <label className={labelClass}>Surgical procedure / method</label>
+          <label className={labelClass}>{t("phuongPhap")}</label>
           <textarea
             rows={2}
             {...register("benhAn.phieuPhauThuat.phuongPhapPT" as any)}
             className={inputClass}
-            placeholder="e.g.: Phaco + IOL, peripheral iridectomy by laser…"
+            placeholder={t("phuongPhapPh")}
           />
         </div>
 
         <div>
-          <label className={labelClass}>Anesthesiologist (Full Name)</label>
+          <label className={labelClass}>{t("bacSiGayMe")}</label>
           <input
             {...register("benhAn.phieuPhauThuat.bacSiGayMe" as any)}
             className={inputClass}
           />
         </div>
         <div>
-          <label className={labelClass}>Main Surgeon (Full Name)</label>
+          <label className={labelClass}>{t("phauThuatVienChinh")}</label>
           <input
             {...register("benhAn.phieuPhauThuat.phauThuatVienChinh" as any)}
             className={inputClass}
           />
         </div>
         <div>
-          <label className={labelClass}>Assistant Surgeon (Full Name)</label>
+          <label className={labelClass}>{t("phauThuatVienPhu")}</label>
           <input
             {...register("benhAn.phieuPhauThuat.phauThuatVienPhu" as any)}
             className={inputClass}
@@ -93,30 +85,28 @@ export default function SurgeryForm() {
         </div>
 
         <div className="md:col-span-2 print:col-span-2">
-          <label className={labelClass}>Surgery diagram</label>
+          <label className={labelClass}>{t("lyDo")}</label>
           <textarea
             rows={6}
             {...register("benhAn.phieuPhauThuat.lycDoPT" as any)}
             className={`${inputClass} font-mono`}
-            placeholder={`You can paste an ASCII diagram:\n  ┌─────┐\n  │     │\n  │  ●  │  (left eye)\n  │     │\n  └──┬──┘\n     │\n  incision`}
+            placeholder={t("lyDoPh")}
           />
-          <p className="mt-1 text-[10px] text-gray-500">
-            Draw patient position, incision location, anatomical structures, sutures…
-          </p>
+          <p className="mt-1 text-[10px] text-gray-500">{t("lyDoHint")}</p>
         </div>
 
         <div className="md:col-span-2 print:col-span-2">
-          <label className={labelClass}>Surgical steps</label>
+          <label className={labelClass}>{t("trinhTu")}</label>
           <textarea
             rows={4}
             {...register("benhAn.phieuPhauThuat.trinhTuPT" as any)}
             className={inputClass}
-            placeholder="Surgical steps in chronological order"
+            placeholder={t("trinhTuPh")}
           />
         </div>
 
         <div className="md:col-span-2 print:col-span-2">
-          <label className={labelClass}>Intra and post-operative progress</label>
+          <label className={labelClass}>{t("dienBien")}</label>
           <textarea
             rows={3}
             {...register("benhAn.phieuPhauThuat.dienBien" as any)}

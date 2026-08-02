@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter, useParams, useSearchParams } from "next/navigation"
+import { useTranslations } from "next-intl"
 import {
     AlertCircle, Loader2, ArrowLeft, Save, User, FileText,
     Lock, Calendar, Phone, CreditCard, MapPin, Droplet, ShieldAlert, FileClock
@@ -14,6 +15,8 @@ export default function PatientProfilesEditPage() {
     const router = useRouter()
     const params = useParams()
     const searchParams = useSearchParams()
+    const t = useTranslations("patient.profile")
+    const tCommon = useTranslations("patient.common")
 
     const locale = (params?.locale as string) || ""
     const profileId = searchParams.get("id") || ""
@@ -37,9 +40,20 @@ export default function PatientProfilesEditPage() {
         relationship: "Bản thân",
     })
 
+    const relationshipOptions = [
+        { value: "Bản thân", label: t("relationshipSelf") },
+        { value: "Cha", label: t("relationshipFather") },
+        { value: "Mẹ", label: t("relationshipMother") },
+        { value: "Vợ", label: t("relationshipWife") },
+        { value: "Chồng", label: t("relationshipHusband") },
+        { value: "Con", label: t("relationshipChild") },
+        { value: "Cháu", label: t("relationshipGrandchild") },
+        { value: "Người thân khác", label: t("relationshipOther") },
+    ]
+
     useEffect(() => {
         if (!profileId) {
-            setSubmitError("Thiếu thông tin mã định danh hồ sơ bệnh nhân (id).")
+            setSubmitError(t("profileMissingId"))
             setPageLoading(false)
             return
         }
@@ -67,10 +81,10 @@ export default function PatientProfilesEditPage() {
                         relationship: detail.relationship || "Bản thân",
                     })
                 } else {
-                    setSubmitError("Không thể tìm thấy dữ liệu của hồ sơ này.")
+                    setSubmitError(t("profileNotFound"))
                 }
             } catch (err: any) {
-                setSubmitError(err?.response?.data?.message || err?.message || "Có lỗi xảy ra khi tải dữ liệu.")
+                setSubmitError(err?.response?.data?.message || err?.message || t("profileLoadFailed"))
             } finally {
                 setPageLoading(false)
             }
@@ -106,36 +120,36 @@ export default function PatientProfilesEditPage() {
         const nameTrimmed = formData.fullName.trim()
 
         if (!nameTrimmed) {
-            errors.fullName = "Vui lòng nhập họ và tên."
+            errors.fullName = t("fullNameRequired")
         } else {
             const nameRegex = /^(?=.{2,100}$)[A-Za-zÀ-ỹ]+(?:\s+[A-Za-zÀ-ỹ]+)*$/u;
             if (!nameRegex.test(nameTrimmed)) {
-                errors.fullName = "Họ và tên chỉ được chứa chữ cái và khoảng trắng."
+                errors.fullName = t("fullNameInvalid")
             }
         }
 
         if (!formData.dob) {
-            errors.dob = "Vui lòng chọn ngày sinh."
+            errors.dob = t("dobRequired")
         } else {
             const selectedDate = new Date(formData.dob)
             const today = new Date()
             today.setHours(23, 59, 59, 999)
             if (selectedDate > today) {
-                errors.dob = "Ngày sinh không được vượt quá ngày hiện tại."
+                errors.dob = t("dobFuture")
             }
         }
 
         if (formData.phoneNumber && formData.phoneNumber.trim()) {
             const phoneRegex = /^0[0-9]{9}$/
             if (!phoneRegex.test(formData.phoneNumber.trim())) {
-                errors.phoneNumber = "Số điện thoại không hợp lệ (Bắt đầu bằng số 0 và gồm đúng 10 chữ số)."
+                errors.phoneNumber = t("phoneInvalid")
             }
         }
 
         if (formData.identityNumber && formData.identityNumber.trim()) {
             const idRegex = /^[0-9]{9}$|^[0-9]{12}$/
             if (!idRegex.test(formData.identityNumber.trim())) {
-                errors.identityNumber = "Số CMND/CCCD không hợp lệ (Phải dài đúng 9 hoặc 12 số)."
+                errors.identityNumber = t("identityInvalid")
             }
         }
 
@@ -146,7 +160,7 @@ export default function PatientProfilesEditPage() {
     const handleSubmitProfile = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!validateForm()) {
-            setSubmitError("Vui lòng kiểm tra lại các trường thông tin lỗi bên dưới.")
+            setSubmitError(t("checkFormAgain"))
             window.scrollTo({ top: 0, behavior: 'smooth' })
             return
         }
@@ -174,8 +188,8 @@ export default function PatientProfilesEditPage() {
                 (typeof codeMsg === "string" && codeMsg.includes("4043")) ||
                 (typeof codeMsg === "string" && (codeMsg.toLowerCase().includes("trùng") || codeMsg.toLowerCase().includes("tồn tại") || codeMsg.toLowerCase().includes("already exist") || codeMsg.toLowerCase().includes("already exists")))
             ) {
-                setFieldErrors(prev => ({ ...prev, identityNumber: "Số CMND/CCCD này đã tồn tại trên một hồ sơ bệnh nhân khác." }))
-                setSubmitError("Vui lòng kiểm tra lại các thông tin lỗi bên dưới.")
+                setFieldErrors(prev => ({ ...prev, identityNumber: t("identityDuplicateOther") }))
+                setSubmitError(t("checkFormAgain"))
                 window.scrollTo({ top: 0, behavior: 'smooth' })
                 return
             }
@@ -184,17 +198,17 @@ export default function PatientProfilesEditPage() {
                 if (locale) router.push(`/${locale}/patient/profiles`)
                 else router.push(`/patient/profiles`)
             } else {
-                setSubmitError(codeMsg || "Cập nhật hồ sơ thất bại. Vui lòng kiểm tra lại thông tin.")
+                setSubmitError(codeMsg || t("updateFailed"))
                 window.scrollTo({ top: 0, behavior: 'smooth' })
             }
         } catch (err: any) {
             const catchMsg = err?.response?.data?.codeMessage || err?.response?.data?.message || err?.message || ""
             const lowerCatch = typeof catchMsg === "string" ? catchMsg.toLowerCase() : ""
             if (catchMsg.includes("4043") || lowerCatch.includes("trùng") || lowerCatch.includes("tồn tại") || lowerCatch.includes("already exist") || lowerCatch.includes("already exists")) {
-                setFieldErrors(prev => ({ ...prev, identityNumber: "Số CMND/CCCD này đã tồn tại trên hệ thống." }))
-                setSubmitError("Vui lòng kiểm tra lại các thông tin lỗi bên dưới.")
+                setFieldErrors(prev => ({ ...prev, identityNumber: t("identityDuplicate") }))
+                setSubmitError(t("checkFormAgain"))
             } else {
-                setSubmitError(catchMsg || "Có lỗi kết nối xảy ra.")
+                setSubmitError(catchMsg || t("connectionError"))
             }
             window.scrollTo({ top: 0, behavior: 'smooth' })
         } finally {
@@ -206,7 +220,7 @@ export default function PatientProfilesEditPage() {
         return (
             <div className="flex flex-col items-center justify-center min-h-[480px] gap-3 bg-slate-50/50 rounded-2xl m-4">
                 <Loader2 className="w-9 h-9 animate-spin text-blue-600" />
-                <p className="text-sm text-slate-500 font-medium animate-pulse">Đang tải dữ liệu hồ sơ bệnh nhân...</p>
+                <p className="text-sm text-slate-500 font-medium animate-pulse">{t("loadingProfile")}</p>
             </div>
         )
     }
@@ -220,13 +234,13 @@ export default function PatientProfilesEditPage() {
                         type="button"
                         onClick={handleBack}
                         className="p-2.5 hover:bg-white active:scale-95 rounded-xl text-slate-500 hover:text-slate-800 transition-all border border-slate-200/80 shadow-sm bg-slate-50/50"
-                        title="Quay lại danh sách"
+                        title={t("backToList")}
                     >
                         <ArrowLeft className="w-4 h-4" />
                     </button>
                     <div>
-                        <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">Chỉnh sửa hồ sơ bệnh nhân</h2>
-                        <p className="text-xs md:text-sm text-slate-500 mt-1">Cập nhật thông tin hành chính chính xác để phục vụ công tác khám chữa bệnh</p>
+                        <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 tracking-tight">{t("editTitle")}</h2>
+                        <p className="text-xs md:text-sm text-slate-500 mt-1">{t("editSubtitle")}</p>
                     </div>
                 </div>
             </div>
@@ -245,12 +259,12 @@ export default function PatientProfilesEditPage() {
                         <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
                             <User className="w-4 h-4" />
                         </div>
-                        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Thông tin cá nhân cơ bản</h3>
+                        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">{t("personalInfo")}</h3>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
                         <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-slate-700">Họ và tên bệnh nhân <span className="text-red-500">*</span></label>
+                            <label className="text-xs font-bold text-slate-700">{t("fullName")} <span className="text-red-500">*</span></label>
                             <div className="relative">
                                 <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
                                     <User className="w-4 h-4" />
@@ -261,7 +275,7 @@ export default function PatientProfilesEditPage() {
                                     name="fullName"
                                     value={formData.fullName}
                                     onChange={handleInputChange}
-                                    placeholder="Ví dụ: Nguyễn Văn A"
+                                    placeholder={t("fullNamePlaceholder")}
                                     className={`w-full pl-10 pr-3.5 py-2.5 text-sm bg-slate-50/50 border rounded-xl focus:outline-none focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all ${fieldErrors.fullName ? 'border-red-400 focus:border-red-500 focus:ring-red-500/10' : 'border-slate-200 focus:border-blue-500'}`}
                                 />
                             </div>
@@ -269,26 +283,21 @@ export default function PatientProfilesEditPage() {
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-slate-700">Mối quan hệ với chủ tài khoản <span className="text-red-500">*</span></label>
+                            <label className="text-xs font-bold text-slate-700">{t("relationship")} <span className="text-red-500">*</span></label>
                             <select
                                 name="relationship"
                                 value={formData.relationship}
                                 onChange={handleInputChange}
                                 className="w-full px-3.5 py-2.5 text-sm bg-slate-50/50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-slate-700"
                             >
-                                <option value="Bản thân">Bản thân</option>
-                                <option value="Cha">Cha</option>
-                                <option value="Mẹ">Mẹ</option>
-                                <option value="Vợ">Vợ</option>
-                                <option value="Chồng">Chồng</option>
-                                <option value="Con">Con</option>
-                                <option value="Cháu">Cháu</option>
-                                <option value="Người thân khác">Người thân khác</option>
+                                {relationshipOptions.map((option) => (
+                                    <option key={option.value} value={option.value}>{option.label}</option>
+                                ))}
                             </select>
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-slate-700">Ngày tháng năm sinh <span className="text-red-500">*</span></label>
+                            <label className="text-xs font-bold text-slate-700">{t("dateOfBirth")} <span className="text-red-500">*</span></label>
                             <div className="relative">
                                 <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
                                     <Calendar className="w-4 h-4" />
@@ -306,16 +315,16 @@ export default function PatientProfilesEditPage() {
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-slate-700">Giới tính sinh học <span className="text-red-500">*</span></label>
+                            <label className="text-xs font-bold text-slate-700">{t("gender")} <span className="text-red-500">*</span></label>
                             <select
                                 name="gender"
                                 value={formData.gender}
                                 onChange={handleInputChange}
                                 className="w-full px-3.5 py-2.5 text-sm bg-slate-50/50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-slate-700"
                             >
-                                <option value={0}>Nam</option>
-                                <option value={1}>Nữ</option>
-                                <option value={2}>Khác</option>
+                                <option value={0}>{t("male")}</option>
+                                <option value={1}>{t("female")}</option>
+                                <option value={2}>{t("other")}</option>
                             </select>
                         </div>
                     </div>
@@ -326,12 +335,12 @@ export default function PatientProfilesEditPage() {
                         <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg">
                             <FileText className="w-4 h-4" />
                         </div>
-                        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Thông tin liên hệ & Định danh</h3>
+                        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">{t("contactAndInsurance")}</h3>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4">
                         <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-slate-700">Số CMND / CCCD</label>
+                            <label className="text-xs font-bold text-slate-700">{t("identityLabel")}</label>
                             <div className="relative">
                                 <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
                                     <CreditCard className="w-4 h-4" />
@@ -341,7 +350,7 @@ export default function PatientProfilesEditPage() {
                                     name="identityNumber"
                                     value={formData.identityNumber || ""}
                                     onChange={handleInputChange}
-                                    placeholder="Nhập đủ 9 hoặc 12 chữ số hợp lệ"
+                                    placeholder={t("identityPlaceholder")}
                                     className={`w-full pl-10 pr-3.5 py-2.5 text-sm bg-slate-50/50 border rounded-xl focus:outline-none focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all ${fieldErrors.identityNumber ? 'border-red-400 focus:border-red-500 focus:ring-red-500/10' : 'border-slate-200 focus:border-blue-500'}`}
                                 />
                             </div>
@@ -349,7 +358,7 @@ export default function PatientProfilesEditPage() {
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-slate-700">Số điện thoại liên lạc</label>
+                            <label className="text-xs font-bold text-slate-700">{t("phone")}</label>
                             <div className="relative">
                                 <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
                                     <Phone className="w-4 h-4" />
@@ -359,7 +368,7 @@ export default function PatientProfilesEditPage() {
                                     name="phoneNumber"
                                     value={formData.phoneNumber || ""}
                                     onChange={handleInputChange}
-                                    placeholder="Ví dụ: 0912345678"
+                                    placeholder={t("phonePlaceholder")}
                                     className={`w-full pl-10 pr-3.5 py-2.5 text-sm bg-slate-50/50 border rounded-xl focus:outline-none focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all ${fieldErrors.phoneNumber ? 'border-red-400 focus:border-red-500 focus:ring-red-500/10' : 'border-slate-200 focus:border-blue-500'}`}
                                 />
                             </div>
@@ -367,7 +376,7 @@ export default function PatientProfilesEditPage() {
                         </div>
 
                         <div className="space-y-1.5 md:col-span-2">
-                            <label className="text-xs font-bold text-slate-700">Mã số thẻ bảo hiểm y tế (BHYT)</label>
+                            <label className="text-xs font-bold text-slate-700">{t("bhytNumber")}</label>
                             <div className="relative">
                                 <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
                                     <CreditCard className="w-4 h-4" />
@@ -377,14 +386,14 @@ export default function PatientProfilesEditPage() {
                                     name="bhytNumber"
                                     value={formData.bhytNumber || ""}
                                     onChange={handleInputChange}
-                                    placeholder="Nhập mã số định danh in trên thẻ BHYT"
+                                    placeholder={t("bhytPlaceholder")}
                                     className="w-full pl-10 pr-3.5 py-2.5 text-sm bg-slate-50/50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all text-slate-700"
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-1.5 md:col-span-2">
-                            <label className="text-xs font-bold text-slate-700">Địa chỉ cư trú hiện tại</label>
+                            <label className="text-xs font-bold text-slate-700">{t("address")}</label>
                             <div className="relative">
                                 <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
                                     <MapPin className="w-4 h-4" />
@@ -394,70 +403,10 @@ export default function PatientProfilesEditPage() {
                                     name="address"
                                     value={formData.address || ""}
                                     onChange={handleInputChange}
-                                    placeholder="Số nhà, tên đường, khu phố, xã/phường, quận/huyện..."
+                                    placeholder={t("addressPlaceholder")}
                                     className="w-full pl-10 pr-3.5 py-2.5 text-sm bg-slate-50/50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all text-slate-700"
                                 />
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="p-5 md:p-6 bg-slate-50/80 border border-slate-200/80 rounded-2xl space-y-5 shadow-inner">
-                    <div className="flex items-start gap-3 p-3.5 text-xs md:text-sm text-slate-600 border border-amber-200 bg-amber-50/40 rounded-xl">
-                        <Lock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                        <div>
-                            <span className="font-bold text-slate-800">Thông tin y tế chuyên sâu (Đã khóa tự động): </span>
-                            Để đảm bảo an toàn và tính pháp lý, các thông tin chuyên môn lâm sàng dưới đây sẽ do bác sĩ trực tiếp khám bệnh cập nhật vào hệ thống.
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="space-y-1.5 md:col-span-1">
-                            <label className="text-xs font-bold text-slate-500 flex items-center gap-1.5">
-                                <Droplet className="w-3.5 h-3.5 text-slate-400" /> Nhóm máu
-                            </label>
-                            <div className="relative">
-                                <input
-                                    disabled
-                                    type="text"
-                                    value={formData.bloodType || ""}
-                                    placeholder="Chờ bác sĩ cập nhật"
-                                    className="w-full px-3.5 py-2.5 text-sm bg-slate-200/50 border border-slate-300 border-dashed rounded-xl cursor-not-allowed text-slate-700 font-semibold focus:outline-none"
-                                />
-                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] uppercase tracking-wider font-bold text-slate-500 bg-slate-200 px-1.5 py-0.5 rounded">Đã khóa</span>
-                            </div>
-                        </div>
-
-                        <div className="space-y-1.5 md:col-span-2">
-                            <label className="text-xs font-bold text-slate-500 flex items-center gap-1.5">
-                                <ShieldAlert className="w-3.5 h-3.5 text-slate-400" /> Tiền sử dị ứng thuốc / thức ăn
-                            </label>
-                            <div className="relative">
-                                <input
-                                    disabled
-                                    type="text"
-                                    value={formData.allergies || ""}
-                                    placeholder="Chưa có dữ liệu lâm sàng"
-                                    className="w-full px-3.5 py-2.5 text-sm bg-slate-200/50 border border-slate-300 border-dashed rounded-xl cursor-not-allowed text-slate-700 focus:outline-none"
-                                />
-                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] uppercase tracking-wider font-bold text-slate-500 bg-slate-200 px-1.5 py-0.5 rounded">Đã khóa</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-slate-500 flex items-center gap-1.5">
-                            <FileClock className="w-3.5 h-3.5 text-slate-400" /> Tiền sử bệnh lý nền
-                        </label>
-                        <div className="relative">
-                            <textarea
-                                disabled
-                                rows={2}
-                                value={formData.medicalHistory || ""}
-                                placeholder="Ghi nhận các bệnh lý mạn tính (nếu có) như Cao huyết áp, Đái tháo đường, Tim mạch..."
-                                className="w-full px-3.5 py-2.5 text-sm bg-slate-200/50 border border-slate-300 border-dashed rounded-xl cursor-not-allowed text-slate-700 resize-none focus:outline-none"
-                            />
-                            <span className="absolute right-3 bottom-3 text-[10px] uppercase tracking-wider font-bold text-slate-500 bg-slate-200 px-1.5 py-0.5 rounded">Đã khóa</span>
                         </div>
                     </div>
                 </div>
@@ -469,7 +418,7 @@ export default function PatientProfilesEditPage() {
                         onClick={handleBack}
                         className="px-5 py-2.5 border border-slate-200 text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-800 active:scale-98 rounded-xl transition-all disabled:opacity-50"
                     >
-                        Hủy bỏ
+                        {t("cancel")}
                     </button>
                     <button
                         type="submit"
@@ -479,12 +428,12 @@ export default function PatientProfilesEditPage() {
                         {submitLoading ? (
                             <>
                                 <Loader2 className="w-4 h-4 animate-spin" />
-                                Đang lưu...
+                                {tCommon("loading")}
                             </>
                         ) : (
                             <>
                                 <Save className="w-4 h-4" />
-                                Lưu thay đổi
+                                {t("saveProfile")}
                             </>
                         )}
                     </button>

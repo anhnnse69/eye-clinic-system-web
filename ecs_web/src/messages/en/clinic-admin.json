@@ -110,7 +110,45 @@
       "saveChanges": "Save Changes",
       "fetching": "Searching for staff data...",
       "refresh": "Refresh",
-      "retry": "Retry"
+      "retry": "Retry",
+      "fields": {
+        "fullNameRequired": "Full Name *",
+        "emailRequired": "Email Address *",
+        "phoneRequired": "Phone Number *",
+        "passwordRequired": "Initial Password *",
+        "roleRequired": "Role / Position *",
+        "activeStatus": "Activity Status"
+      },
+      "placeholders": {
+        "phone": "10 digits (e.g. 0901234567)",
+        "email": "name@example.com",
+        "password": "Minimum 8 characters"
+      },
+      "create": {
+        "validation": {
+          "phoneInvalid": "Invalid phone number. Please enter exactly 10 digits.",
+          "emailInvalid": "Invalid email address. Please use the correct email format (name@example.com).",
+          "passwordTooShort": "Password is too short. Minimum 8 characters required."
+        },
+        "errors": {
+          "generic": "An unknown server error occurred."
+        }
+      },
+      "edit": {
+        "loadErrors": {
+          "notFound": "Staff not found or the account has been locked/hidden from the list.",
+          "emptyList": "Your clinic system does not have any staff yet.",
+          "syncFailed": "Unable to connect to the server to load the list and retrieve staff information."
+        },
+        "validation": {
+          "phoneInvalid": "Invalid phone number. Please enter exactly 10 digits."
+        },
+        "errors": {
+          "generic": "An unexpected error occurred while updating the data."
+        },
+        "activeState": "Account is Active",
+        "inactiveState": "Account is Locked (Inactive)"
+      }
     },
     "medicine": {
       "title": "Medicine Catalog",
@@ -206,7 +244,49 @@
       "saveChanges": "Save Information",
       "fetching": "Retrieving physical room structure info...",
       "refresh": "Refresh",
-      "retry": "Retry"
+      "retry": "Retry",
+      "modal": {
+        "title": "Functional Room Details",
+        "close": "Close"
+      },
+      "fields": {
+        "roomNameLabel": "Functional room name",
+        "roomNameRequired": "Functional room name *",
+        "roomTypeLabel": "Room type / Specialty",
+        "roomTypeRequired": "Room type / Specialty *"
+      },
+      "placeholders": {
+        "roomName": "e.g. Internal Medicine Room 1, Ultrasound Room...",
+        "roomType": "e.g. Examination, Emergency, Laboratory..."
+      },
+      "create": {
+        "validation": {
+          "roomNameRequired": "Room name is required."
+        },
+        "errors": {
+          "duplicateRoom": "This room name already exists in the system. Please choose another name.",
+          "sessionExpired": "Your session has expired or authentication is invalid. Please log in again.",
+          "clinicUnavailable": "The linked clinic does not exist or has been deactivated.",
+          "generic": "A system error occurred while creating the functional room."
+        }
+      },
+      "edit": {
+        "loadErrors": {
+          "roomNotFound": "This functional room was not found on the system.",
+          "noRoomsYet": "This clinic has not set up any functional room sections yet.",
+          "syncFailed": "An error occurred while syncing room structure data from the server."
+        },
+        "validation": {
+          "roomNameRequired": "Room name is required.",
+          "roomTypeRequired": "Room classification is required."
+        },
+        "errors": {
+          "sessionExpired": "Action refused! Your CLINIC_ADMIN session is invalid or has expired.",
+          "roomNotFound": "System error: the target functional room does not exist in the clinic database or was previously deleted.",
+          "duplicateRoom": "This room name already exists within the clinic. Please choose a different name to avoid duplicate identifiers!",
+          "generic": "An unknown error occurred while updating the clinic database."
+        }
+      }
     },
     "service": {
       "title": "Service Management",
@@ -252,7 +332,50 @@
       "backToList": "Back to List",
       "loadingDetail": "Loading clinic service details...",
       "refresh": "Refresh",
-      "retry": "Retry"
+      "retry": "Retry",
+      "fields": {
+        "serviceNameRequired": "Medical service name *",
+        "priceRequired": "Service price (VND) *",
+        "priceStandardRequired": "Listed service price (VND) *",
+        "durationRequired": "Execution duration (Minutes) *",
+        "durationStandardRequired": "Standard duration (Minutes) *"
+      },
+      "placeholders": {
+        "serviceName": "e.g. General Internal Medicine, Doppler Echocardiography..."
+      },
+      "create": {
+        "validation": {
+          "serviceNameRequired": "Medical service name is required.",
+          "priceNegative": "Service price must not be negative.",
+          "durationNonPositive": "Service duration must be greater than 0 minutes."
+        },
+        "errors": {
+          "duplicateService": "This medical service name already exists in your clinic system.",
+          "sessionExpired": "Your session is invalid or your account does not have Admin privileges.",
+          "clinicUnavailable": "The system cannot find the clinic profile linked to this admin account.",
+          "generic": "A system error occurred while creating the service."
+        }
+      },
+      "edit": {
+        "loadErrors": {
+          "notFound": "The requested medical service was not found in the system.",
+          "syncFailed": "Unable to load service details. Please try again later!"
+        },
+        "success": "Service information updated successfully!",
+        "validation": {
+          "serviceNameRequired": "Service name is required.",
+          "priceNegative": "Standard service price must not be less than 0 VND.",
+          "durationNonPositive": "Standard duration must be greater than 0 minutes."
+        },
+        "errors": {
+          "sessionExpired": "Session is invalid or expired. Please login again.",
+          "clinicNotFound": "Clinic information not found for your admin account.",
+          "serviceNotFound": "This medical service does not exist or has been removed from the database.",
+          "noPermission": "Action refused: You are not allowed to edit services of another clinic!",
+          "duplicateService": "This medical service name already exists in your clinic catalog. Please choose a different name!",
+          "generic": "The system encountered an error while saving the update."
+        }
+      }
     },
     "profile": {
       "title": "Clinic Profile",

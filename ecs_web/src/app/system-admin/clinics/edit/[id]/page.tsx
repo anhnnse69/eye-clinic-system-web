@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter, useParams, useSearchParams } from "next/navigation"
+import { useTranslations } from "next-intl"
 import {
   Building2, MapPin, Phone, Mail, FileText, Image as ImageIcon,
   Star, MessageSquare, Save, X, ArrowLeft, Loader2, AlertCircle, Upload, Trash2
@@ -31,6 +32,7 @@ export default function EditClinicPage() {
   const router = useRouter()
   const params = useParams()
   const searchParams = useSearchParams()
+  const t = useTranslations("systemAdmin.clinics.editPage")
   const clinicId = params?.id as string
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -79,10 +81,10 @@ export default function EditClinicPage() {
             reviewCount: resData.reviewCount || 0,
           })
         } else {
-          setGlobalError(`Hệ thống phản hồi mã kiểm tra lỗi: ${codeMessage || "Mất kết nối dữ liệu"}`)
+          setGlobalError(t("fetchErrorWithCode", { code: codeMessage || "Mất kết nối dữ liệu" }))
         }
       } catch (err: any) {
-        const errorMsg = err?.codeMessage || "Không thể tải thông tin chi tiết phòng khám này. Vui lòng thử lại sau."
+        const errorMsg = err?.codeMessage || t("loadFailed")
         setGlobalError(errorMsg)
         console.error("Error fetching clinic detail:", err)
       } finally {
@@ -114,7 +116,7 @@ export default function EditClinicPage() {
     if (!file) return
 
     if (!file.type.startsWith("image/")) {
-      alert("Vui lòng chọn tệp tin định dạng hình ảnh (png, jpg, jpeg, webp).")
+      alert(t("imageFileWarning"))
       return
     }
 
@@ -142,35 +144,35 @@ export default function EditClinicPage() {
 
     // 1. Validate Tên phòng khám
     if (!formData.name?.trim()) {
-      newErrors.name = "Tên phòng khám không được để trống."
+      newErrors.name = t("nameRequired")
     } else if (formData.name.trim().length > 255) {
-      newErrors.name = "Tên phòng khám không được vượt quá 255 ký tự."
+      newErrors.name = t("nameMaxLength")
     }
 
     // 2. Validate Địa chỉ
     if (!formData.address?.trim()) {
-      newErrors.address = "Địa chỉ chi tiết không được để trống."
+      newErrors.address = t("addressRequired")
     } else if (formData.address.trim().length > 500) {
-      newErrors.address = "Địa chỉ không được vượt quá 500 ký tự."
+      newErrors.address = t("addressMaxLength")
     }
 
     // 3. Validate Số điện thoại
     const phoneRegex = /^0[0-9]{9}$/
     if (!formData.phone?.trim()) {
-      newErrors.phone = "Số điện thoại không được để trống."
+      newErrors.phone = t("phoneRequired")
     } else if (!phoneRegex.test(formData.phone.trim())) {
-      newErrors.phone = "Số điện thoại không hợp lệ. Phải đủ 10 chữ số bắt đầu bằng số 0."
+      newErrors.phone = t("phoneInvalid")
     }
 
     // 4. Validate Email
     if (!formData.email?.trim()) {
-      newErrors.email = "Địa chỉ Email không được để trống."
+      newErrors.email = t("emailRequired")
     } else {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       if (!emailRegex.test(formData.email.trim())) {
-        newErrors.email = "Địa chỉ Email không đúng định dạng."
+        newErrors.email = t("emailInvalid")
       } else if (formData.email.trim().length > 150) {
-        newErrors.email = "Email không được vượt quá 150 ký tự."
+        newErrors.email = t("emailMaxLength")
       }
     }
 
@@ -184,7 +186,7 @@ export default function EditClinicPage() {
     if (!validateForm()) return
 
     // --- BỔ SUNG LOGIC CONFIRM TẠI ĐÂY ---
-    const isConfirmed = window.confirm("Bạn có chắc chắn muốn lưu các thay đổi này không?")
+    const isConfirmed = window.confirm(t("confirmSave"))
     if (!isConfirmed) return // Nếu người dùng nhấn 'Hủy', dừng thực hiện logic lưu dữ liệu
     // -------------------------------------
 
@@ -205,27 +207,27 @@ export default function EditClinicPage() {
       const codeMessage = response?.codeMessage || (response as any)?.CodeMessage
 
       if (codeMessage === "APP_MESSAGE_2000") {
-        setToastMessage("Cập nhật thông tin phòng khám thành công.")
+        setToastMessage(t("saveSuccess"))
         setTimeout(() => {
           router.push("/system-admin/clinics")
         }, 1500)
       } else {
-        setGlobalError(`Lưu thất bại. Hệ thống trả về lỗi mã: ${codeMessage}`)
+        setGlobalError(t("saveFailedWithCode", { code: codeMessage }))
         setSaving(false)
       }
     } catch (err: any) {
       const serverValidationCode = err?.codeMessage || err?.response?.data?.CodeMessage || err?.response?.data?.codeMessage
 
       if (serverValidationCode === "APP_MESSAGE_4017") {
-        setErrors(prev => ({ ...prev, email: "Địa chỉ Email này đã tồn tại trên hệ thống phòng khám khác." }))
+        setErrors(prev => ({ ...prev, email: t("duplicateEmail") }))
       } else if (serverValidationCode === "APP_MESSAGE_4018") {
-        setErrors(prev => ({ ...prev, phone: "Số điện thoại này đã được đăng ký bởi phòng khám khác." }))
+        setErrors(prev => ({ ...prev, phone: t("duplicatePhone") }))
       } else if (serverValidationCode === "APP_MESSAGE_4019" || serverValidationCode === "APP_MESSAGE_4003" || serverValidationCode === "APP_MESSAGE_4001") {
-        setGlobalError(`Dữ liệu nhập vào không hợp lệ. Mã lỗi kiểm tra: ${serverValidationCode}`)
+        setGlobalError(t("invalidData", { code: serverValidationCode }))
       } else {
         const errorMsg = serverValidationCode
-          ? `Lỗi từ máy chủ: ${serverValidationCode}`
-          : "Không thể lưu các thay đổi. Vui lòng kiểm tra lại kết nối mạng hoặc thử lại sau."
+          ? t("serverError", { code: serverValidationCode })
+          : t("saveErrorFallback")
         setGlobalError(errorMsg)
       }
 
@@ -241,7 +243,7 @@ export default function EditClinicPage() {
       return
     }
 
-    if (window.confirm("Bạn có chắc chắn muốn hủy bỏ các thay đổi và quay lại danh sách?")) {
+    if (window.confirm(t("confirmCancel"))) {
       router.push("/system-admin/clinics")
     }
   }
@@ -265,13 +267,13 @@ export default function EditClinicPage() {
             className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-blue-600 mb-2 transition-colors"
           >
             <ArrowLeft className="h-4 w-4" />
-            Quay lại danh sách phòng khám
+            {t("backToList")}
           </button>
           <h2 className="text-2xl font-bold text-slate-800">
-            {isViewOnly ? "Chi tiết hồ sơ phòng khám" : "Chỉnh sửa hồ sơ phòng khám"}
+            {isViewOnly ? t("viewTitle") : t("title")}
           </h2>
           <p className="text-sm text-slate-500 mt-0.5">
-            {isViewOnly ? "Xem thông tin định danh, liên hệ và thông số hoạt động của cơ sở." : "Cập nhật thông tin định danh, liên hệ và thông số hoạt động trên toàn hệ thống."}
+            {isViewOnly ? t("viewSubtitle") : t("subtitle")}
           </p>
         </div>
       </div>
@@ -279,10 +281,10 @@ export default function EditClinicPage() {
       {/* Dòng cảnh báo khi phòng khám đã ngưng hoạt động (Chế độ chỉ xem) */}
       {isViewOnly && !loading && (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3 shadow-sm animate-fadeIn">
-          <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
           <div>
             <p className="text-sm text-amber-700 font-medium">
-              Không thể chỉnh sửa thông tin của phòng khám đã ngưng hoạt động.
+              {t("viewOnlyAlert")}
             </p>
           </div>
         </div>
@@ -291,9 +293,9 @@ export default function EditClinicPage() {
       {/* Thông báo lỗi hệ thống */}
       {globalError && (
         <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
           <div>
-            <h3 className="font-semibold text-red-800 mb-0.5">Lỗi hệ thống</h3>
+            <h3 className="font-semibold text-red-800 mb-0.5">{t("systemError")}</h3>
             <p className="text-sm text-red-700">{globalError}</p>
           </div>
         </div>
@@ -301,9 +303,9 @@ export default function EditClinicPage() {
 
       {/* Trạng thái đang tải */}
       {loading ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center flex flex-col items-center justify-center min-h-[400px]">
+        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center flex flex-col items-center justify-center min-h-100">
           <Loader2 className="h-8 w-8 text-blue-600 animate-spin mb-3" />
-          <p className="text-sm text-slate-500">Đang tải cấu trúc dữ liệu phòng khám từ hệ thống...</p>
+          <p className="text-sm text-slate-500">{t("loading")}</p>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -314,7 +316,7 @@ export default function EditClinicPage() {
             {/* 1. Box Chức năng Upload Logo */}
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
               <h3 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
-                <ImageIcon className="h-4 w-4 text-slate-400" /> Logo phòng khám
+                <ImageIcon className="h-4 w-4 text-slate-400" /> {t("logoTitle")}
               </h3>
 
               <div className="flex flex-col gap-4">
@@ -336,7 +338,7 @@ export default function EditClinicPage() {
                   {formData.logoUrl ? (
                     <img
                       src={formData.logoUrl}
-                      alt="Clinic Logo Preview"
+                      alt={t("logoPreviewAlt")}
                       className="h-full w-full object-contain"
                     />
                   ) : (
@@ -344,8 +346,8 @@ export default function EditClinicPage() {
                       <div className="p-3 bg-white rounded-xl border border-slate-200 text-slate-400 mb-2 transition-colors shadow-sm">
                         <Upload className="h-5 w-5" />
                       </div>
-                      <span className="text-xs font-bold text-slate-700">Tải ảnh logo lên</span>
-                      <p className="text-[11px] text-slate-400 mt-1">Hỗ trợ định dạng PNG, JPG hoặc WEBP</p>
+                      <span className="text-xs font-bold text-slate-700">{t("uploadPrompt")}</span>
+                      <p className="text-[11px] text-slate-400 mt-1">{t("uploadHint")}</p>
                     </>
                   )}
                 </div>
@@ -358,7 +360,7 @@ export default function EditClinicPage() {
                       className="flex-1 px-3 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200/50 rounded-xl font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm"
                     >
                       <Upload className="h-3.5 w-3.5" />
-                      Thay ảnh khác
+                      {t("changeImage")}
                     </button>
 
                     <button
@@ -367,7 +369,7 @@ export default function EditClinicPage() {
                       className="px-3 py-2 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200/50 rounded-xl font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
-                      Xóa ảnh
+                      {t("removeImage")}
                     </button>
                   </div>
                 )}
@@ -376,35 +378,35 @@ export default function EditClinicPage() {
 
             {/* 2. Box Chỉ số phòng khám */}
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">Chỉ số phòng khám</h3>
+              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">{t("metricsTitle")}</h3>
 
               <div>
-                <label className="text-xs text-slate-400 block font-medium">Mã cơ sở (ID)</label>
+                <label className="text-xs text-slate-400 block font-medium">{t("clinicId")}</label>
                 <span className="text-sm font-mono font-bold text-blue-600 break-all">{clinicId}</span>
               </div>
 
               {/* Phần hiển thị trạng thái */}
               <div className="pt-2">
-                <label className="text-xs text-slate-400 block font-medium mb-1.5">Trạng thái hiện tại</label>
+                <label className="text-xs text-slate-400 block font-medium mb-1.5">{t("currentStatus")}</label>
                 {formData.isActive ? (
                   <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-50 border border-green-200 text-green-700 rounded-full w-fit text-xs font-semibold">
                     <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                    Đang hoạt động
+                    {t("activeStatus")}
                   </div>
                 ) : (
                   <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 border border-amber-200 text-amber-700 rounded-full w-fit text-xs font-semibold">
                     <span className="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
-                    Ngưng hoạt động
+                    {t("inactiveStatus")}
                   </div>
                 )}
-                <p className="text-[11px] text-slate-400 mt-1.5">Trạng thái này được quản lý bởi quy trình phê duyệt riêng biệt.</p>
+                <p className="text-[11px] text-slate-400 mt-1.5">{t("statusDescription")}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
                 <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                   <div className="flex items-center gap-1.5 text-amber-500 mb-1">
                     <Star className="h-4 w-4 fill-amber-500" />
-                    <span className="text-xs font-bold text-slate-700">Đánh giá</span>
+                    <span className="text-xs font-bold text-slate-700">{t("rating")}</span>
                   </div>
                   <p className="text-lg font-black text-slate-800">{formData.ratingAvg} / 5</p>
                 </div>
@@ -412,9 +414,9 @@ export default function EditClinicPage() {
                 <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                   <div className="flex items-center gap-1.5 text-blue-500 mb-1">
                     <MessageSquare className="h-4 w-4" />
-                    <span className="text-xs font-bold text-slate-700">Phản hồi</span>
+                    <span className="text-xs font-bold text-slate-700">{t("feedback")}</span>
                   </div>
-                  <p className="text-lg font-black text-slate-800">{formData.reviewCount} lượt</p>
+                  <p className="text-lg font-black text-slate-800">{t("feedbackCount", { count: formData.reviewCount })}</p>
                 </div>
               </div>
             </div>
@@ -425,13 +427,13 @@ export default function EditClinicPage() {
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
               <h3 className="text-base font-bold text-slate-800 border-b border-slate-100 pb-3">
-                {isViewOnly ? "Nội dung hồ sơ chi tiết" : "Chi tiết thông tin chỉnh sửa"}
+                {isViewOnly ? t("detailsTitle") : t("detailsEditTitle")}
               </h3>
 
               {/* Tên phòng khám */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-semibold text-slate-700 flex items-center gap-1">
-                  Tên phòng khám {!isViewOnly && <span className="text-red-500">*</span>}
+                  {t("clinicName")} {!isViewOnly && <span className="text-red-500">*</span>}
                 </label>
                 <div className="relative">
                   <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -441,7 +443,7 @@ export default function EditClinicPage() {
                     value={formData.name}
                     onChange={handleChange}
                     disabled={isViewOnly}
-                    placeholder="Nhập đầy đủ tên phòng khám cơ sở chính..."
+                    placeholder={t("clinicNamePlaceholder")}
                     className={`w-full pl-10 pr-4 py-2.5 rounded-xl text-sm transition-all outline-none text-slate-800 border
                       ${errors.name ? 'border-red-500 focus:ring-red-200' : 'border-slate-200 focus:ring-blue-500'} 
                       ${isViewOnly ? 'bg-slate-100 text-slate-500 cursor-not-allowed border-slate-200' : 'bg-slate-50 focus:ring-2'}`}
@@ -453,7 +455,7 @@ export default function EditClinicPage() {
               {/* Địa chỉ */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-semibold text-slate-700">
-                  Địa chỉ chi tiết {!isViewOnly && <span className="text-red-500">*</span>}
+                  {t("address")} {!isViewOnly && <span className="text-red-500">*</span>}
                 </label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-3.5 h-4 w-4 text-slate-400" />
@@ -463,7 +465,7 @@ export default function EditClinicPage() {
                     value={formData.address}
                     onChange={handleChange}
                     disabled={isViewOnly}
-                    placeholder="Số nhà, tên đường, quận/huyện, tỉnh thành..."
+                    placeholder={t("addressPlaceholder")}
                     className={`w-full pl-10 pr-4 py-2.5 rounded-xl text-sm transition-all outline-none text-slate-800 resize-none border
                       ${errors.address ? 'border-red-500 focus:ring-red-200' : 'border-slate-200 focus:ring-blue-500'} 
                       ${isViewOnly ? 'bg-slate-100 text-slate-500 cursor-not-allowed border-slate-200' : 'bg-slate-50 focus:ring-2'}`}
@@ -477,7 +479,7 @@ export default function EditClinicPage() {
                 {/* Số điện thoại */}
                 <div className="flex flex-col gap-1.5">
                   <label className="text-sm font-semibold text-slate-700">
-                    Số điện thoại liên hệ {!isViewOnly && <span className="text-red-500">*</span>}
+                    {t("phone")} {!isViewOnly && <span className="text-red-500">*</span>}
                   </label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -487,7 +489,7 @@ export default function EditClinicPage() {
                       value={formData.phone}
                       onChange={handleChange}
                       disabled={isViewOnly}
-                      placeholder="Ví dụ: 0912345678..."
+                      placeholder={t("phonePlaceholder")}
                       className={`w-full pl-10 pr-4 py-2.5 rounded-xl text-sm transition-all outline-none text-slate-800 border
                         ${errors.phone ? 'border-red-500 focus:ring-red-200' : 'border-slate-200 focus:ring-blue-500'} 
                         ${isViewOnly ? 'bg-slate-100 text-slate-500 cursor-not-allowed border-slate-200' : 'bg-slate-50 focus:ring-2'}`}
@@ -499,7 +501,7 @@ export default function EditClinicPage() {
                 {/* Email phòng khám */}
                 <div className="flex flex-col gap-1.5">
                   <label className="text-sm font-semibold text-slate-700">
-                    Địa chỉ Email {!isViewOnly && <span className="text-red-500">*</span>}
+                    {t("email")} {!isViewOnly && <span className="text-red-500">*</span>}
                   </label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -509,7 +511,7 @@ export default function EditClinicPage() {
                       value={formData.email}
                       onChange={handleChange}
                       disabled={isViewOnly}
-                      placeholder="example@clinic.com"
+                      placeholder={t("emailPlaceholder")}
                       className={`w-full pl-10 pr-4 py-2.5 rounded-xl text-sm transition-all outline-none text-slate-800 border
                         ${errors.email ? 'border-red-500 focus:ring-red-200 border-2' : 'border-slate-200 focus:ring-blue-500'} 
                         ${isViewOnly ? 'bg-slate-100 text-slate-500 cursor-not-allowed border-slate-200' : 'bg-slate-50 focus:ring-2'}`}
@@ -522,7 +524,7 @@ export default function EditClinicPage() {
               {/* Mô tả chi tiết */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-                  <FileText className="h-4 w-4 text-slate-400" /> Mô tả ngắn phòng khám
+                  <FileText className="h-4 w-4 text-slate-400" /> {t("description")}
                 </label>
                 <textarea
                   name="description"
@@ -530,7 +532,7 @@ export default function EditClinicPage() {
                   value={formData.description}
                   onChange={handleChange}
                   disabled={isViewOnly}
-                  placeholder="Nhập thông tin giới thiệu, các chuyên khoa mắt hoặc thế mạnh của phòng khám này..."
+                  placeholder={t("descriptionPlaceholder")}
                   className={`w-full px-4 py-2.5 border rounded-xl text-sm transition-all outline-none text-slate-800
                     ${isViewOnly ? 'bg-slate-100 text-slate-500 cursor-not-allowed border-slate-200' : 'bg-slate-50 border-slate-200 focus:ring-2 focus:ring-blue-500'}`}
                 />
@@ -546,7 +548,7 @@ export default function EditClinicPage() {
                 className="px-5 py-2.5 border border-slate-200 text-slate-600 bg-white hover:bg-slate-100 font-semibold text-sm rounded-xl flex items-center gap-2 transition-all active:scale-95 disabled:opacity-50"
               >
                 <X className="h-4 w-4" />
-                {isViewOnly ? "Quay lại" : "Hủy bỏ"}
+                {isViewOnly ? t("back") : t("cancel")}
               </button>
 
               {/* Chỉ hiển thị nút Lưu các thay đổi nếu như đang ở chế độ chỉnh sửa (isActive = true) */}
@@ -559,12 +561,12 @@ export default function EditClinicPage() {
                   {saving ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Đang cập nhật...
+                      {t("saving")}
                     </>
                   ) : (
                     <>
                       <Save className="h-4 w-4" />
-                      Lưu các thay đổi
+                      {t("saveChanges")}
                     </>
                   )}
                 </button>

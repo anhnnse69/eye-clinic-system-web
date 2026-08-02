@@ -739,7 +739,7 @@ export default function BookAppointmentPage() {
                                         className="w-full py-3 bg-primary text-white text-xs font-bold rounded-xl shadow-md hover:bg-blue-600 active:scale-98 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                                        <span>{submitting ? (isVI ? "Đang xử lý đặt lịch..." : "Processing...") : (isVI ? "Xác nhận Đặt Lịch Hẹn & Đóng Cọc" : "Confirm Booking & Deposit")}</span>
+                                        <span>{submitting ? (isVI ? "Đang xử lý đặt lịch..." : "Processing...") : (isVI ? "Xác nhận Đặt Lịch Hẹn" : "Confirm Booking")}</span>
                                     </button>
                                 </div>
                             </form>

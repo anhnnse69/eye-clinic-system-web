@@ -17,6 +17,7 @@
  * (window.print) các cột MP/MT hiển thị cạnh nhau trên khổ A4.
  */
 import { useFormContext } from "react-hook-form"
+import { useTranslations } from "next-intl"
 import {
   Eye,
   EyeOff,
@@ -47,11 +48,8 @@ interface EyeSideProps {
   side: "matPhai" | "matTrai"
 }
 
-/**
- * EyeSideColumn — render header cột MP/MT và wrapper cho các field của một mắt.
- * Layout: 2 cột MP/MT nằm ngang hàng trên màn hình, và in ra PDF cũng cạnh nhau.
- */
 function EyeSideHeader({ side }: EyeSideProps) {
+  const t = useTranslations("form.exam")
   const isOD = side === "matPhai"
   return (
     <div className="mb-2 flex items-center gap-1.5 border-b border-gray-200 pb-1 print:border-gray-400">
@@ -61,17 +59,12 @@ function EyeSideHeader({ side }: EyeSideProps) {
         <EyeOff className="h-3.5 w-3.5 text-gray-500 print:text-black" />
       )}
       <span className="text-xs font-semibold text-gray-800 print:text-black">
-        {isOD ? "Mắt phải (MP / OD)" : "Mắt trái (MT / OS)"}
+        {isOD ? t("sideOD") : t("sideOS")}
       </span>
     </div>
   )
 }
 
-/**
- * EyePairGrid — render 2 cột MP/MT song song, mỗi cột là children.
- * Trên print: giữ nguyên 2 cột nằm ngang, dùng `print:grid-cols-2` để MP/MT
- * hiển thị cạnh nhau trên A4 (không bị stack dọc).
- */
 function EyePairGrid({ children }: { children: (side: "matPhai" | "matTrai") => ReactNode }) {
   return (
     <div className="grid grid-cols-1 gap-3 md:grid-cols-2 print:grid-cols-2 print:gap-2">
@@ -87,12 +80,10 @@ function EyePairGrid({ children }: { children: (side: "matPhai" | "matTrai") => 
   )
 }
 
-/** Helper: tạo field name cho path RHF, ví dụ "khamBenh.miMat.matPhai.supMi" */
 function f(base: string, side: "matPhai" | "matTrai", leaf: string) {
   return `${base}.${side}.${leaf}` as const
 }
 
-/** Text input cho 1 mắt (gắn label) */
 function EyeTextField({
   base,
   side,
@@ -123,7 +114,6 @@ function EyeTextField({
   )
 }
 
-/** Checkbox row cho 1 mắt — render nhiều option cùng lúc */
 function EyeCheckboxField({
   base,
   side,
@@ -144,7 +134,6 @@ function EyeCheckboxField({
   )
 }
 
-/** Group nhiều checkbox theo nhóm (nhãn đầu mục + bullet checkboxes) */
 function EyeCheckboxGroup({
   base,
   side,
@@ -176,7 +165,6 @@ function EyeCheckboxGroup({
   )
 }
 
-/** Select với danh sách option cố định */
 function EyeSelectField({
   base,
   side,
@@ -198,8 +186,8 @@ function EyeSelectField({
       <label className={labelClass}>{label}</label>
       <select {...register(f(base, side, leaf) as any)} className={inputClass}>
         {allowEmpty && <option value="">—</option>}
-        {options.map((o) => (
-          <option key={o} value={o}>
+        {options.map((o, idx) => (
+          <option key={`${idx}-${o}`} value={o}>
             {o}
           </option>
         ))}
@@ -212,26 +200,27 @@ function EyeSelectField({
 // Section 1: Thị lực & Nhãn áp (vào viện)
 // =========================================================
 function ThiLucNhanApSection() {
+  const t = useTranslations("form.exam.thiLucNhanAp")
   return (
     <EyePairGrid>
       {(side) => (
         <div className="space-y-1">
-          <EyeTextField base="khamBenh.thiLucNhanApVaoVien" side={side} leaf="thiLucKhongKinh" label="Không kính" placeholder="vd: 10/10" />
-          <EyeTextField base="khamBenh.thiLucNhanApVaoVien" side={side} leaf="thiLucCoKinh" label="Có kính" />
-          <EyeTextField base="khamBenh.thiLucNhanApVaoVien" side={side} leaf="thiLucNhinGan" label="Nhìn gần" />
-          <EyeTextField base="khamBenh.thiLucNhanApVaoVien" side={side} leaf="thiLucQuaLo" label="Qua lỗ" />
-          <EyeTextField base="khamBenh.thiLucNhanApVaoVien" side={side} leaf="nhanAp" label="Nhãn áp (mmHg)" placeholder="vd: 14" />
+          <EyeTextField base="khamBenh.thiLucNhanApVaoVien" side={side} leaf="thiLucKhongKinh" label={t("withoutGlasses")} placeholder={t("withoutGlassesPh")} />
+          <EyeTextField base="khamBenh.thiLucNhanApVaoVien" side={side} leaf="thiLucCoKinh" label={t("withGlasses")} />
+          <EyeTextField base="khamBenh.thiLucNhanApVaoVien" side={side} leaf="thiLucNhinGan" label={t("nearVision")} />
+          <EyeTextField base="khamBenh.thiLucNhanApVaoVien" side={side} leaf="thiLucQuaLo" label={t("pinHole")} />
+          <EyeTextField base="khamBenh.thiLucNhanApVaoVien" side={side} leaf="nhanAp" label={t("iop")} placeholder={t("iopPh")} />
           <EyeSelectField
             base="khamBenh.thiLucNhanApVaoVien"
             side={side}
             leaf="phuongPhapNhanAp"
-            label="Phương pháp đo NA"
+            label={t("iopMethod")}
             options={["Maclakov", "Goldmann", "Non-contact", "Schiotz"]}
           />
-          <EyeTextField base="khamBenh.thiLucNhanApVaoVien" side={side} leaf="khucXaMay" label="Khúc xạ máy" />
-          <EyeTextField base="khamBenh.thiLucNhanApVaoVien" side={side} leaf="khucXaChuQuan" label="Khúc xạ chủ quan" />
-          <EyeTextField base="khamBenh.thiLucNhanApVaoVien" side={side} leaf="soiBongDongTu" label="Soi bóng đồng tử" />
-          <EyeTextField base="khamBenh.thiLucNhanApVaoVien" side={side} leaf="thiTruong" label="Thị trường" />
+          <EyeTextField base="khamBenh.thiLucNhanApVaoVien" side={side} leaf="khucXaMay" label={t("refractionAuto")} />
+          <EyeTextField base="khamBenh.thiLucNhanApVaoVien" side={side} leaf="khucXaChuQuan" label={t("refractionSubj")} />
+          <EyeTextField base="khamBenh.thiLucNhanApVaoVien" side={side} leaf="soiBongDongTu" label={t("retinoscopy")} />
+          <EyeTextField base="khamBenh.thiLucNhanApVaoVien" side={side} leaf="thiTruong" label={t("visualField")} />
         </div>
       )}
     </EyePairGrid>
@@ -239,9 +228,10 @@ function ThiLucNhanApSection() {
 }
 
 // =========================================================
-// Section 2: Mi mắt (PDF MS21-26 mục 1 / MS25 mục "Mi mắt")
+// Section 2: Mi mắt
 // =========================================================
 function MiMatSection() {
+  const t = useTranslations("form.exam.miMat")
   return (
     <EyePairGrid>
       {(side) => (
@@ -250,64 +240,85 @@ function MiMatSection() {
             base="khamBenh.miMat"
             side={side}
             leaf="tinhTrang"
-            label="Tình trạng chung"
-            options={["Bình thường", "Phù nề", "Tụ máu", "Sưng nề", "Bệnh lý"]}
+            label={t("tinhTrang")}
+            options={[
+              t("tinhTrangOptions.normal"),
+              t("tinhTrangOptions.phuNe"),
+              t("tinhTrangOptions.tuMau"),
+              t("tinhTrangOptions.sungNe"),
+              t("tinhTrangOptions.benhLy"),
+            ]}
           />
           <EyeCheckboxGroup
             base="khamBenh.miMat"
             side={side}
-            title="Tổn thương"
+            title={t("tonThuong")}
             items={[
-              { leaf: "supMi", label: "Sụp mi" },
-              { leaf: "rachMi", label: "Rách mi" },
-              { leaf: "seoMi", label: "Sẹo mi" },
-              { leaf: "uMi", label: "U mi" },
-              { leaf: "quam", label: "Quặm" },
-              { leaf: "epicanthus", label: "Epicanthus" },
-              { leaf: "hoMi", label: "Hở mi" },
-              { leaf: "treMi", label: "Trễ mi" },
-              { leaf: "chapLeo", label: "Chắp / Lẹo" },
+              { leaf: "supMi", label: t("supMi") },
+              { leaf: "rachMi", label: t("rachMi") },
+              { leaf: "seoMi", label: t("seoMi") },
+              { leaf: "uMi", label: t("uMi") },
+              { leaf: "quam", label: t("quam") },
+              { leaf: "epicanthus", label: t("epicanthus") },
+              { leaf: "hoMi", label: t("hoMi") },
+              { leaf: "treMi", label: t("treMi") },
+              { leaf: "chapLeo", label: t("chapLeo") },
             ]}
           />
-          <EyeTextField base="khamBenh.miMat" side={side} leaf="doSupMi" label="Độ sụp mi / Sụp mi (Độ 1/2/3)" />
-          <EyeTextField base="khamBenh.miMat" side={side} leaf="mucDoRach" label="Mức độ rách mi (Lớp/Toàn bộ/Mất tổ chức)" />
-          <EyeTextField base="khamBenh.miMat" side={side} leaf="viTriRach" label="Vị trí rách / Quặm (1/3 trong/giữa/ngoài)" />
+          <EyeTextField base="khamBenh.miMat" side={side} leaf="doSupMi" label={t("doSupMi")} />
+          <EyeTextField base="khamBenh.miMat" side={side} leaf="mucDoRach" label={t("mucDoRach")} />
+          <EyeTextField base="khamBenh.miMat" side={side} leaf="viTriRach" label={t("viTriRach")} />
           <EyeSelectField
             base="khamBenh.miMat"
             side={side}
             leaf="khuyetMi"
-            label="Khuyết mi"
-            options={["Không", "1/3 trong", "1/3 giữa", "1/3 ngoài", "Toàn bộ"]}
+            label={t("khuyetMi")}
+            options={[
+              t("khuyetMiOptions.none"),
+              t("khuyetMiOptions.trong"),
+              t("khuyetMiOptions.giua"),
+              t("khuyetMiOptions.ngoai"),
+              t("khuyetMiOptions.toanBo"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.miMat"
             side={side}
             leaf="leQuan"
-            label="Lệ quản"
-            options={["Bình thường", "Đứt 1 lệ quản", "Đứt 2 lệ quản"]}
+            label={t("leQuan")}
+            options={[
+              t("leQuanOptions.normal"),
+              t("leQuanOptions.dut1"),
+              t("leQuanOptions.dut2"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.miMat"
             side={side}
             leaf="leQuanViTri"
-            label="Vị trí đứt lệ quản"
-            options={["—", "1/3 ngoài", "1/3 giữa", "1/3 trong"]}
+            label={t("viTriLeQuan")}
+            options={[
+              "—",
+              t("viTriLeQuanOptions.ngoai"),
+              t("viTriLeQuanOptions.giua"),
+              t("viTriLeQuanOptions.trong"),
+            ]}
           />
           <EyeCheckboxGroup
             base="khamBenh.miMat"
             side={side}
-            title="Xử trí rách mi"
+            title={t("xuTriRach")}
             items={[
-              { leaf: "daKhau", label: "Đã khâu" },
-              { leaf: "chuaKhau", label: "Chưa khâu" },
+              { leaf: "daKhau", label: t("daKhau") },
+              { leaf: "chuaKhau", label: t("chuaKhau") },
             ]}
           />
-          <EyeTextField base="khamBenh.miMat" side={side} leaf="moTaSeo" label="Mô tả sẹo mi" />
-          <EyeTextField base="khamBenh.miMat" side={side} leaf="uMiTinhChat" label="U mi — Tính chất" />
-          <EyeTextField base="khamBenh.miMat" side={side} leaf="uMiViTri" label="U mi — Vị trí" />
-          <EyeTextField base="khamBenh.miMat" side={side} leaf="uMiKichThuoc" label="U mi — Kích thước" />
-          <EyeTextField base="khamBenh.miMat" side={side} leaf="chuaKhac" label="Khác (viêm bờ mi, tuyến bờ mi…)" />
-          <EyeTextField base="khamBenh.miMat" side={side} leaf="tomThuongKhac" label="Tổn thương khác" />
+          <EyeTextField base="khamBenh.miMat" side={side} leaf="moTaSeo" label={t("moTaSeo")} />
+          <EyeTextField base="khamBenh.miMat" side={side} leaf="uMiTinhChat" label={t("uMiTinhChat")} />
+          <EyeTextField base="khamBenh.miMat" side={side} leaf="uMiViTri" label={t("uMiViTri")} />
+          <EyeTextField base="khamBenh.miMat" side={side} leaf="uMiKichThuoc" label={t("uMiKichThuoc")} />
+          <EyeTextField base="khamBenh.miMat" side={side} leaf="chuaKhac" label={t("khac")} />
+          <EyeTextField base="khamBenh.miMat" side={side} leaf="tomThuongKhac" label={t("tonThuongKhac")} />
         </div>
       )}
     </EyePairGrid>
@@ -318,6 +329,7 @@ function MiMatSection() {
 // Section 3: Kết mạc
 // =========================================================
 function KetMacSection() {
+  const t = useTranslations("form.exam.ketMac")
   return (
     <EyePairGrid>
       {(side) => (
@@ -326,62 +338,86 @@ function KetMacSection() {
             base="khamBenh.ketMac"
             side={side}
             leaf="tinhTrang"
-            label="Tình trạng chung"
-            options={["Bình thường", "Cương tụ", "Bệnh lý"]}
+            label={t("tinhTrang")}
+            options={[
+              t("tinhTrangOptions.normal"),
+              t("tinhTrangOptions.cuongTu"),
+              t("tinhTrangOptions.benhLy"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.ketMac"
             side={side}
             leaf="cuongTu"
-            label="Cương tụ"
-            options={["Không", "Tỏa lan", "Ở rìa", "Ở KM nhãn cầu", "Toàn bộ"]}
+            label={t("cuongTu")}
+            options={[
+              t("cuongTuOptions.none"),
+              t("cuongTuOptions.toaLan"),
+              t("cuongTuOptions.oRia"),
+              t("cuongTuOptions.oKMNhanCau"),
+              t("cuongTuOptions.toanBo"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.ketMac"
             side={side}
             leaf="cuongTuViTri"
-            label="Vị trí cương tụ"
-            options={["—", "Rìa", "Nhãn cầu", "Cùng đồ"]}
+            label={t("viTriCuongTu")}
+            options={[
+              "—",
+              t("viTriCuongTuOptions.ria"),
+              t("viTriCuongTuOptions.nhanCau"),
+              t("viTriCuongTuOptions.cungDo"),
+            ]}
           />
           <EyeCheckboxGroup
             base="khamBenh.ketMac"
             side={side}
-            title="Tổn thương"
+            title={t("tonThuong")}
             items={[
-              { leaf: "xuatHuyet", label: "Xuất huyết" },
-              { leaf: "rachKM", label: "Rách KM" },
-              { leaf: "thieuMau", label: "Thiếu máu" },
-              { leaf: "phuNe", label: "Phù nề" },
-              { leaf: "nhu", label: "Nhú" },
-              { leaf: "hot", label: "Hột" },
-              { leaf: "sungHoa", label: "Sừng hóa" },
-              { leaf: "seoKM", label: "Sẹo KM" },
-              { leaf: "batMauFluor", label: "Bắt màu fluor" },
-              { leaf: "uKM", label: "U kết mạc" },
+              { leaf: "xuatHuyet", label: t("xuatHuyet") },
+              { leaf: "rachKM", label: t("rachKM") },
+              { leaf: "thieuMau", label: t("thieuMau") },
+              { leaf: "phuNe", label: t("phuNe") },
+              { leaf: "nhu", label: t("nhu") },
+              { leaf: "hot", label: t("hot") },
+              { leaf: "sungHoa", label: t("sungHoa") },
+              { leaf: "seoKM", label: t("seoKM") },
+              { leaf: "batMauFluor", label: t("batMauFluor") },
+              { leaf: "uKM", label: t("uKM") },
             ]}
           />
-          <EyeTextField base="khamBenh.ketMac" side={side} leaf="moTaXuatHuyet" label="Mô tả xuất huyết" />
-          <EyeTextField base="khamBenh.ketMac" side={side} leaf="rachKMViTri" label="Vị trí rách KM" />
+          <EyeTextField base="khamBenh.ketMac" side={side} leaf="moTaXuatHuyet" label={t("moTaXuatHuyet")} />
+          <EyeTextField base="khamBenh.ketMac" side={side} leaf="rachKMViTri" label={t("viTriRach")} />
           <EyeSelectField
             base="khamBenh.ketMac"
             side={side}
             leaf="tietTo"
-            label="Tiết tố"
-            options={["—", "Trong", "Mủ", "Giả mạc"]}
+            label={t("tietTo")}
+            options={[
+              "—",
+              t("tietToOptions.trong"),
+              t("tietToOptions.mu"),
+              t("tietToOptions.giaMac"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.ketMac"
             side={side}
             leaf="cungDo"
-            label="Cùng đồ"
-            options={["Bình thường", "Cạn", "Dính"]}
+            label={t("cungDo")}
+            options={[
+              t("cungDoOptions.normal"),
+              t("cungDoOptions.can"),
+              t("cungDoOptions.dinh"),
+            ]}
           />
-          <EyeTextField base="khamBenh.ketMac" side={side} leaf="symblepharonChieuCao" label="Dính cùng đồ — Chiều cao cầu dính" />
-          <EyeTextField base="khamBenh.ketMac" side={side} leaf="symblepharonDoRong" label="Dính cùng đồ — Độ rộng cầu dính" />
-          <EyeTextField base="khamBenh.ketMac" side={side} leaf="uKMTinhChat" label="U kết mạc — Tính chất" />
-          <EyeTextField base="khamBenh.ketMac" side={side} leaf="uKMViTri" label="U kết mạc — Vị trí" />
-          <EyeTextField base="khamBenh.ketMac" side={side} leaf="uKMKichThuoc" label="U kết mạc — Kích thước" />
-          <EyeTextField base="khamBenh.ketMac" side={side} leaf="tomThuongKhac" label="Tổn thương khác" />
+          <EyeTextField base="khamBenh.ketMac" side={side} leaf="symblepharonChieuCao" label={t("symblepharonChieuCao")} />
+          <EyeTextField base="khamBenh.ketMac" side={side} leaf="symblepharonDoRong" label={t("symblepharonDoRong")} />
+          <EyeTextField base="khamBenh.ketMac" side={side} leaf="uKMTinhChat" label={t("uKMTinhChat")} />
+          <EyeTextField base="khamBenh.ketMac" side={side} leaf="uKMViTri" label={t("uKMViTri")} />
+          <EyeTextField base="khamBenh.ketMac" side={side} leaf="uKMKichThuoc" label={t("uKMKichThuoc")} />
+          <EyeTextField base="khamBenh.ketMac" side={side} leaf="tomThuongKhac" label={t("tonThuongKhac")} />
         </div>
       )}
     </EyePairGrid>
@@ -392,6 +428,7 @@ function KetMacSection() {
 // Section 4: Giác mạc
 // =========================================================
 function GiacMacSection() {
+  const t = useTranslations("form.exam.giacMac")
   return (
     <EyePairGrid>
       {(side) => (
@@ -400,161 +437,247 @@ function GiacMacSection() {
             base="khamBenh.giacMac"
             side={side}
             leaf="trongSuot"
-            label="Tình trạng trong suốt"
-            options={["Trong", "Sẹo", "Phù", "Loạn dưỡng", "Thoái hóa"]}
+            label={t("trongSuot")}
+            options={[
+              t("trongSuotOptions.trong"),
+              t("trongSuotOptions.seo"),
+              t("trongSuotOptions.phu"),
+              t("trongSuotOptions.loanDuong"),
+              t("trongSuotOptions.thoaiHoa"),
+            ]}
           />
-          <EyeTextField base="khamBenh.giacMac" side={side} leaf="seo" label="Mô tả sẹo" />
+          <EyeTextField base="khamBenh.giacMac" side={side} leaf="seo" label={t("moTaSeo")} />
           <EyeSelectField
             base="khamBenh.giacMac"
             side={side}
             leaf="kichThuoc"
-            label="Kích thước"
-            options={["Bình thường", "To", "Nhỏ"]}
+            label={t("kichThuoc")}
+            options={[
+              t("kichThuocOptions.normal"),
+              t("kichThuocOptions.to"),
+              t("kichThuocOptions.nho"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.giacMac"
             side={side}
             leaf="hinhDang"
-            label="Hình dạng"
-            options={["Bình thường", "Nón", "Cầu"]}
+            label={t("hinhDang")}
+            options={[
+              t("hinhDangOptions.normal"),
+              t("hinhDangOptions.non"),
+              t("hinhDangOptions.cau"),
+            ]}
           />
-          <EyeTextField base="khamBenh.giacMac" side={side} leaf="duongKinhMm" label="Đường kính (mm)" type="number" />
-          <EyeTextField base="khamBenh.giacMac" side={side} leaf="bieuMo" label="Biểu mô (tổn thương dạng chấm)" />
-          <EyeCheckboxField base="khamBenh.giacMac" side={side} leaf="bieuMoCham" label="Biểu mô tổn thương dạng chấm" />
+          <EyeTextField base="khamBenh.giacMac" side={side} leaf="duongKinhMm" label={t("duongKinhMm")} type="number" />
+          <EyeTextField base="khamBenh.giacMac" side={side} leaf="bieuMo" label={t("bieuMo")} />
+          <EyeCheckboxField base="khamBenh.giacMac" side={side} leaf="bieuMoCham" label={t("bieuMoCham")} />
           <EyeSelectField
             base="khamBenh.giacMac"
             side={side}
             leaf="bieuMoBong"
-            label="Phù bọng biểu mô"
-            options={["—", "Nhẹ", "Vừa", "Nặng"]}
+            label={t("phuBongBieuMo")}
+            options={[
+              "—",
+              t("phuBongBieuMoOptions.nhe"),
+              t("phuBongBieuMoOptions.vua"),
+              t("phuBongBieuMoOptions.nang"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.giacMac"
             side={side}
             leaf="bieuMoMat"
-            label="Mất biểu mô"
-            options={["—", "< 1/3 diện tích", "1/3–1/2 diện tích", "> 1/2 diện tích"]}
+            label={t("matBieuMo")}
+            options={[
+              "—",
+              t("matBieuMoOptions.lt1_3"),
+              t("matBieuMoOptions.1_3_1_2"),
+              t("matBieuMoOptions.gt1_2"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.giacMac"
             side={side}
             leaf="tuaMatSau"
-            label="Tủa mặt sau"
-            options={["—", "Tủa mới", "Tủa cũ", "Tủa mỡ cừu", "Tủa sắc tố"]}
+            label={t("tuaMatSau")}
+            options={[
+              "—",
+              t("tuaMatSauOptions.tuaMoi"),
+              t("tuaMatSauOptions.tuaCu"),
+              t("tuaMatSauOptions.tuaMoCuu"),
+              t("tuaMatSauOptions.tuaSacTo"),
+            ]}
           />
-          <EyeTextField base="khamBenh.giacMac" side={side} leaf="tuaMatSauViTri" label="Vị trí tủa mặt sau" />
+          <EyeTextField base="khamBenh.giacMac" side={side} leaf="tuaMatSauViTri" label={t("viTriTuaMatSau")} />
           <EyeSelectField
             base="khamBenh.giacMac"
             side={side}
             leaf="nhuMo"
-            label="Nhu mô — Phù"
-            options={["—", "Nhẹ", "Vừa", "Nặng"]}
+            label={t("nhuMoPhu")}
+            options={[
+              "—",
+              t("nhuMoPhuOptions.nhe"),
+              t("nhuMoPhuOptions.vua"),
+              t("nhuMoPhuOptions.nang"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.giacMac"
             side={side}
             leaf="thamLau"
-            label="Nhu mô — Thẩm lậu"
-            options={["—", "Nông", "Sâu", "Rất sâu"]}
+            label={t("thamLau")}
+            options={[
+              "—",
+              t("thamLauOptions.nong"),
+              t("thamLauOptions.sau"),
+              t("thamLauOptions.ratSau"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.giacMac"
             side={side}
             leaf="tieuMon"
-            label="Nhu mô — Tiêu mỏng"
-            options={["—", "< 1/2 chiều dày", "> 1/2 chiều dày"]}
+            label={t("tieuMon")}
+            options={[
+              "—",
+              t("tieuMonOptions.lt1_2"),
+              t("tieuMonOptions.gt1_2"),
+            ]}
           />
           <EyeCheckboxGroup
             base="khamBenh.giacMac"
             side={side}
-            title="Tổn thương giác mạc"
+            title={t("tonThuongGM")}
             items={[
-              { leaf: "loet", label: "Loét" },
-              { leaf: "abces", label: "Áp xe" },
-              { leaf: "ngamMau", label: "Ngấm máu" },
-              { leaf: "rachGM", label: "Rách" },
-              { leaf: "thung", label: "Thủng" },
-              { leaf: "descemetocele", label: "Dọa thủng" },
-              { leaf: "viem", label: "Viêm" },
-              { leaf: "gianLoi", label: "Giãn lồi" },
-              { leaf: "diVat", label: "Dị vật" },
+              { leaf: "loet", label: t("loet") },
+              { leaf: "abces", label: t("abces") },
+              { leaf: "ngamMau", label: t("ngamMau") },
+              { leaf: "rachGM", label: t("rach") },
+              { leaf: "thung", label: t("thung") },
+              { leaf: "descemetocele", label: t("descemetocele") },
+              { leaf: "viem", label: t("viem") },
+              { leaf: "gianLoi", label: t("gianLoi") },
+              { leaf: "diVat", label: t("diVat") },
             ]}
           />
-          <EyeTextField base="khamBenh.giacMac" side={side} leaf="loetKichThuoc" label="Loét — kích thước" />
-          <EyeTextField base="khamBenh.giacMac" side={side} leaf="loetViTri" label="Loét — vị trí" />
-          <EyeTextField base="khamBenh.giacMac" side={side} leaf="loetMoTa" label="Loét — bờ / mô tả" />
-          <EyeTextField base="khamBenh.giacMac" side={side} leaf="rachGMKichThuoc" label="Rách — kích thước" />
-          <EyeTextField base="khamBenh.giacMac" side={side} leaf="rachGMViTri" label="Rách — vị trí" />
+          <EyeTextField base="khamBenh.giacMac" side={side} leaf="loetKichThuoc" label={t("loetKichThuoc")} />
+          <EyeTextField base="khamBenh.giacMac" side={side} leaf="loetViTri" label={t("loetViTri")} />
+          <EyeTextField base="khamBenh.giacMac" side={side} leaf="loetMoTa" label={t("loetMoTa")} />
+          <EyeTextField base="khamBenh.giacMac" side={side} leaf="rachGMKichThuoc" label={t("rachKichThuoc")} />
+          <EyeTextField base="khamBenh.giacMac" side={side} leaf="rachGMViTri" label={t("rachViTri")} />
           <EyeSelectField
             base="khamBenh.giacMac"
             side={side}
             leaf="rachGMLoai"
-            label="Rách — tính chất"
-            options={["—", "Gọn", "Nham nhở", "Mất tổ chức"]}
+            label={t("rachTinhChat")}
+            options={[
+              "—",
+              t("rachTinhChatOptions.gon"),
+              t("rachTinhChatOptions.nhamNho"),
+              t("rachTinhChatOptions.matToChuc"),
+            ]}
           />
-          <EyeCheckboxField base="khamBenh.giacMac" side={side} leaf="rachGMKhoaGiaiPhau" label="Rách — đúng giải phẫu" />
-          <EyeTextField base="khamBenh.giacMac" side={side} leaf="thungDuongKinhMm" label="Thủng — đường kính (mm)" type="number" />
+          <EyeCheckboxField base="khamBenh.giacMac" side={side} leaf="rachGMKhoaGiaiPhau" label={t("rachDungGiaiPhau")} />
+          <EyeTextField base="khamBenh.giacMac" side={side} leaf="thungDuongKinhMm" label={t("thungDuongKinh")} type="number" />
           <EyeSelectField
             base="khamBenh.giacMac"
             side={side}
             leaf="thungViTri"
-            label="Thủng — vị trí"
-            options={["—", "Trung tâm", "Lệch tâm", "Sát rìa"]}
+            label={t("thungViTri")}
+            options={[
+              "—",
+              t("thungViTriOptions.trungTam"),
+              t("thungViTriOptions.lechTam"),
+              t("thungViTriOptions.satRia"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.giacMac"
             side={side}
             leaf="seidel"
-            label="Seidel"
-            options={["—", "Âm tính", "Dương tính"]}
+            label={t("seidel")}
+            options={[
+              "—",
+              t("seidelOptions.amTinh"),
+              t("seidelOptions.duongTinh"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.giacMac"
             side={side}
             leaf="camGiacGM"
-            label="Cảm giác giác mạc"
-            options={["Bình thường", "Giảm", "Mất"]}
+            label={t("camGiacGM")}
+            options={[
+              t("camGiacGMOptions.normal"),
+              t("camGiacGMOptions.giam"),
+              t("camGiacGMOptions.mat"),
+            ]}
           />
-          <EyeCheckboxField base="khamBenh.giacMac" side={side} leaf="tanMach" label="Tân mạch giác mạc" />
+          <EyeCheckboxField base="khamBenh.giacMac" side={side} leaf="tanMach" label={t("tanMach")} />
           <EyeSelectField
             base="khamBenh.giacMac"
             side={side}
             leaf="tanMachHuong"
-            label="Tân mạch — hướng"
-            options={["—", "Hướng tâm", "Ly tâm"]}
+            label={t("tanMachHuong")}
+            options={[
+              "—",
+              t("tanMachHuongOptions.huongTam"),
+              t("tanMachHuongOptions.lyTam"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.giacMac"
             side={side}
             leaf="tanMachDo"
-            label="Tân mạch — mức độ"
-            options={["—", "≤ 1/3 chu vi", "1/3–2/3 chu vi", "≥ 2/3 chu vi"]}
+            label={t("tanMachDo")}
+            options={[
+              "—",
+              t("tanMachDoOptions.lt1_3"),
+              t("tanMachDoOptions.1_3_2_3"),
+              t("tanMachDoOptions.gt2_3"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.giacMac"
             side={side}
             leaf="vungRia"
-            label="Vùng rìa giác mạc"
-            options={["—", "Bình thường", "Suy tế bào nguồn", "Thoái hóa già", "Lắng đọng Canxi"]}
+            label={t("vungRia")}
+            options={[
+              "—",
+              t("vungRiaOptions.normal"),
+              t("vungRiaOptions.suyTBNg"),
+              t("vungRiaOptions.thoaiHoaGia"),
+              t("vungRiaOptions.langCanxi"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.giacMac"
             side={side}
             leaf="viemLoai"
-            label="Viêm — hình thái"
-            options={["—", "Nốt", "Lan tỏa", "Áp xe"]}
+            label={t("viemHinhThai")}
+            options={[
+              "—",
+              t("viemHinhThaiOptions.not"),
+              t("viemHinhThaiOptions.lanToa"),
+              t("viemHinhThaiOptions.abces"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.giacMac"
             side={side}
             leaf="viemDoSau"
-            label="Viêm — độ sâu"
-            options={["—", "Nông", "Sâu"]}
+            label={t("viemDoSau")}
+            options={[
+              "—",
+              t("viemDoSauOptions.nong"),
+              t("viemDoSauOptions.sau"),
+            ]}
           />
-          <EyeCheckboxField base="khamBenh.giacMac" side={side} leaf="viemThuongCM" label="Viêm thượng củng mạc" />
-          <EyeTextField base="khamBenh.giacMac" side={side} leaf="diVatMoTa" label="Dị vật — mô tả" />
-          <EyeTextField base="khamBenh.giacMac" side={side} leaf="diBatThuongKhac" label="Bất thường khác" />
-          <EyeTextField base="khamBenh.giacMac" side={side} leaf="tomThuongKhac" label="Tổn thương khác" />
+          <EyeCheckboxField base="khamBenh.giacMac" side={side} leaf="viemThuongCM" label={t("viemThuongCM")} />
+          <EyeTextField base="khamBenh.giacMac" side={side} leaf="diVatMoTa" label={t("diVatMoTa")} />
+          <EyeTextField base="khamBenh.giacMac" side={side} leaf="diBatThuongKhac" label={t("diBatThuongKhac")} />
+          <EyeTextField base="khamBenh.giacMac" side={side} leaf="tomThuongKhac" label={t("tonThuongKhac")} />
         </div>
       )}
     </EyePairGrid>
@@ -565,6 +688,7 @@ function GiacMacSection() {
 // Section 5: Củng mạc
 // =========================================================
 function CungMacSection() {
+  const t = useTranslations("form.exam.cungMac")
   return (
     <EyePairGrid>
       {(side) => (
@@ -573,40 +697,50 @@ function CungMacSection() {
             base="khamBenh.cungMac"
             side={side}
             leaf="tinhTrang"
-            label="Tình trạng chung"
-            options={["Bình thường", "Sẹo CM", "Bệnh lý"]}
+            label={t("tinhTrang")}
+            options={[
+              t("tinhTrangOptions.normal"),
+              t("tinhTrangOptions.seoCM"),
+              t("tinhTrangOptions.benhLy"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.cungMac"
             side={side}
             leaf="viem"
-            label="Viêm"
-            options={["—", "Nốt", "Lan tỏa", "Áp xe", "Viêm thượng củng mạc"]}
+            label={t("viem")}
+            options={[
+              "—",
+              t("viemOptions.not"),
+              t("viemOptions.lanToa"),
+              t("viemOptions.abces"),
+              t("viemOptions.viemThuongCM"),
+            ]}
           />
           <EyeCheckboxGroup
             base="khamBenh.cungMac"
             side={side}
-            title="Tổn thương củng mạc"
+            title={t("tonThuongCM")}
             items={[
-              { leaf: "gianLoi", label: "Giãn lồi" },
-              { leaf: "tieuMon", label: "Tiêu mỏng" },
-              { leaf: "hoaiTu", label: "Hoại tử" },
-              { leaf: "rach", label: "Rách" },
-              { leaf: "ketTNMaoMau", label: "Kết TN mao mạch" },
+              { leaf: "gianLoi", label: t("gianLoi") },
+              { leaf: "tieuMon", label: t("tieuMon") },
+              { leaf: "hoaiTu", label: t("hoaiTu") },
+              { leaf: "rach", label: t("rach") },
+              { leaf: "ketTNMaoMau", label: t("ketTNMaoMau") },
             ]}
           />
-          <EyeTextField base="khamBenh.cungMac" side={side} leaf="rachKichThuoc" label="Rách — kích thước" />
-          <EyeTextField base="khamBenh.cungMac" side={side} leaf="rachViTri" label="Rách — vị trí" />
+          <EyeTextField base="khamBenh.cungMac" side={side} leaf="rachKichThuoc" label={t("rachKichThuoc")} />
+          <EyeTextField base="khamBenh.cungMac" side={side} leaf="rachViTri" label={t("rachViTri")} />
           <EyeCheckboxGroup
             base="khamBenh.cungMac"
             side={side}
-            title="Xử trí rách"
+            title={t("xuTriRach")}
             items={[
-              { leaf: "daKhau", label: "Đã khâu" },
-              { leaf: "chuaKhau", label: "Chưa khâu" },
+              { leaf: "daKhau", label: t("daKhau") },
+              { leaf: "chuaKhau", label: t("chuaKhau") },
             ]}
           />
-          <EyeTextField base="khamBenh.cungMac" side={side} leaf="tomThuongKhac" label="Tổn thương khác" />
+          <EyeTextField base="khamBenh.cungMac" side={side} leaf="tomThuongKhac" label={t("tonThuongKhac")} />
         </div>
       )}
     </EyePairGrid>
@@ -617,6 +751,7 @@ function CungMacSection() {
 // Section 6: Tiền phòng
 // =========================================================
 function TienPhongSection() {
+  const t = useTranslations("form.exam.tienPhong")
   return (
     <EyePairGrid>
       {(side) => (
@@ -625,49 +760,74 @@ function TienPhongSection() {
             base="khamBenh.tienPhong"
             side={side}
             leaf="doSau"
-            label="Độ sâu"
-            options={["Bình thường", "Nông", "Mất TP", "Sâu"]}
+            label={t("doSau")}
+            options={[
+              t("doSauOptions.normal"),
+              t("doSauOptions.nong"),
+              t("doSauOptions.matTP"),
+              t("doSauOptions.sau"),
+            ]}
           />
-          <EyeTextField base="khamBenh.tienPhong" side={side} leaf="doSauMm" label="Độ sâu (mm) — p.p Smith" type="number" />
+          <EyeTextField base="khamBenh.tienPhong" side={side} leaf="doSauMm" label={t("doSauMm")} type="number" />
           <EyeSelectField
             base="khamBenh.tienPhong"
             side={side}
             leaf="herick"
-            label="p.p Herick"
-            options={["—", "< 1/4", "1/4", "1/2", "≥ GM"]}
+            label={t("herick")}
+            options={[
+              "—",
+              t("herickOptions.lt1_4"),
+              t("herickOptions.1_4"),
+              t("herickOptions.1_2"),
+              t("herickOptions.gteqGM"),
+            ]}
           />
           <EyeCheckboxGroup
             base="khamBenh.tienPhong"
             side={side}
-            title="Nội dung tiền phòng"
+            title={t("noiDung")}
             items={[
-              { leaf: "xepTP", label: "Xẹp tiền phòng" },
-              { leaf: "theTTTTrongTP", label: "Chất TTT trong TP" },
-              { leaf: "mu", label: "Mủ" },
-              { leaf: "xuatTiet", label: "Xuất tiết" },
-              { leaf: "xuatHuyet", label: "Xuất huyết" },
-              { leaf: "mang", label: "Màng xuất tiết" },
-              { leaf: "diVat", label: "Dị vật" },
+              { leaf: "xepTP", label: t("xepTP") },
+              { leaf: "theTTTTrongTP", label: t("theTTT") },
+              { leaf: "mu", label: t("mu") },
+              { leaf: "xuatTiet", label: t("xuatTiet") },
+              { leaf: "xuatHuyet", label: t("xuatHuyet") },
+              { leaf: "mang", label: t("mang") },
+              { leaf: "diVat", label: t("diVat") },
             ]}
           />
-          <EyeTextField base="khamBenh.tienPhong" side={side} leaf="muMm" label="Mủ — độ (mm)" type="number" />
-          <EyeTextField base="khamBenh.tienPhong" side={side} leaf="xuatTietMoTa" label="Xuất tiết — mô tả" />
+          <EyeTextField base="khamBenh.tienPhong" side={side} leaf="muMm" label={t("muMm")} type="number" />
+          <EyeTextField base="khamBenh.tienPhong" side={side} leaf="xuatTietMoTa" label={t("xuatTietMoTa")} />
           <EyeSelectField
             base="khamBenh.tienPhong"
             side={side}
             leaf="tyndall"
-            label="Tyndall"
-            options={["—", "Âm tính", "+", "++", "+++", "Độ"]}
+            label={t("tyndall")}
+            options={[
+              "—",
+              t("tyndallOptions.amTinh"),
+              t("tyndallOptions.1"),
+              t("tyndallOptions.2"),
+              t("tyndallOptions.3"),
+              t("tyndallOptions.do"),
+            ]}
           />
-          <EyeTextField base="khamBenh.tienPhong" side={side} leaf="xuatHuyetMucDo" label="Xuất huyết — mức độ" />
+          <EyeTextField base="khamBenh.tienPhong" side={side} leaf="xuatHuyetMucDo" label={t("xuatHuyetMucDo")} />
           <EyeSelectField
             base="khamBenh.tienPhong"
             side={side}
             leaf="gocTP"
-            label="Góc tiền phòng"
-            options={["—", "Mở", "Dính", "Sắc tố", "Tân mạch", "Đóng"]}
+            label={t("gocTP")}
+            options={[
+              "—",
+              t("gocTPOptions.mo"),
+              t("gocTPOptions.dinh"),
+              t("gocTPOptions.sacTo"),
+              t("gocTPOptions.tanMach"),
+              t("gocTPOptions.dong"),
+            ]}
           />
-          <EyeTextField base="khamBenh.tienPhong" side={side} leaf="tomThuongKhac" label="Tổn thương khác" />
+          <EyeTextField base="khamBenh.tienPhong" side={side} leaf="tomThuongKhac" label={t("tonThuongKhac")} />
         </div>
       )}
     </EyePairGrid>
@@ -675,74 +835,102 @@ function TienPhongSection() {
 }
 
 // =========================================================
-// Section 7: Mống mắt & Đồng tử (PDF mục 6 + 10/11)
+// Section 7: Mống mắt & Đồng tử
 // =========================================================
 function MongMatDongTuSection() {
+  const t = useTranslations("form.exam.mongMat")
   return (
     <EyePairGrid>
       {(side) => (
         <div className="space-y-1.5">
-          <p className="text-[11px] font-semibold text-gray-700 print:text-black">Mống mắt</p>
+          <p className="text-[11px] font-semibold text-gray-700 print:text-black">{t("subsectionMongMat")}</p>
           <EyeSelectField
             base="khamBenh.mongMatDongTu"
             side={side}
             leaf="mauSac"
-            label="Màu sắc"
-            options={["Nâu xốp", "Nâu", "Xơ teo", "Khác"]}
+            label={t("mauSac")}
+            options={[
+              t("mauSacOptions.nauXop"),
+              t("mauSacOptions.nau"),
+              t("mauSacOptions.xoTeo"),
+              t("mauSacOptions.khac"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.mongMatDongTu"
             side={side}
             leaf="tinhTrang"
-            label="Tình trạng"
-            options={["Bình thường", "Cương tụ", "Phòi", "Kẹt", "Tân mạch", "Bệnh lý"]}
+            label={t("tinhTrang")}
+            options={[
+              t("tinhTrangOptions.normal"),
+              t("tinhTrangOptions.cuongTu"),
+              t("tinhTrangOptions.phoi"),
+              t("tinhTrangOptions.ket"),
+              t("tinhTrangOptions.tanMach"),
+              t("tinhTrangOptions.benhLy"),
+            ]}
           />
           <EyeCheckboxGroup
             base="khamBenh.mongMatDongTu"
             side={side}
-            title="Tổn thương mống mắt"
+            title={t("tonThuongMM")}
             items={[
-              { leaf: "thoaiHoa", label: "Thoái hóa" },
-              { leaf: "tanMach", label: "Tân mạch" },
-              { leaf: "theMi", label: "Phản ứng thể mi" },
-              { leaf: "koeppe", label: "Hạt Koeppe" },
-              { leaf: "busacca", label: "Hạt Busacca" },
-              { leaf: "dutChanMM", label: "Đứt chân mống mắt" },
-              { leaf: "matMM", label: "Mất mống mắt" },
-              { leaf: "thungMM", label: "Thủng mống mắt" },
-              { leaf: "gianLiet", label: "Giãn liệt" },
-              { leaf: "ptdt", label: "PXĐT" },
+              { leaf: "thoaiHoa", label: t("thoaiHoa") },
+              { leaf: "tanMach", label: t("tanMach") },
+              { leaf: "theMi", label: t("theMi") },
+              { leaf: "koeppe", label: t("koeppe") },
+              { leaf: "busacca", label: t("busacca") },
+              { leaf: "dutChanMM", label: t("dutChanMM") },
+              { leaf: "matMM", label: t("matMM") },
+              { leaf: "thungMM", label: t("thungMM") },
+              { leaf: "gianLiet", label: t("gianLiet") },
+              { leaf: "ptdt", label: t("ptdt") },
             ]}
           />
-          <EyeTextField base="khamBenh.mongMatDongTu" side={side} leaf="dutChanMMDO" label="Đứt chân MM — độ / mô tả" />
-          <EyeTextField base="khamBenh.mongMatDongTu" side={side} leaf="duongKinh" label="Đường kính MM (mm)" type="number" />
+          <EyeTextField base="khamBenh.mongMatDongTu" side={side} leaf="dutChanMMDO" label={t("dutChanMMDo")} />
+          <EyeTextField base="khamBenh.mongMatDongTu" side={side} leaf="duongKinh" label={t("duongKinhMM")} type="number" />
 
-          <p className="mt-2 text-[11px] font-semibold text-gray-700 print:text-black">Đồng tử</p>
+          <p className="mt-2 text-[11px] font-semibold text-gray-700 print:text-black">{t("subsectionDongTu")}</p>
           <EyeSelectField
             base="khamBenh.mongMatDongTu"
             side={side}
             leaf="hinhDang"
-            label="Hình dạng"
-            options={["Tròn", "Méo", "Dính"]}
+            label={t("hinhDang")}
+            options={[
+              t("hinhDangOptions.tron"),
+              t("hinhDangOptions.meo"),
+              t("hinhDangOptions.dinh"),
+            ]}
           />
-          <EyeTextField base="khamBenh.mongMatDongTu" side={side} leaf="viTriDinh" label="Vị trí dính" />
+          <EyeTextField base="khamBenh.mongMatDongTu" side={side} leaf="viTriDinh" label={t("viTriDinh")} />
           <EyeSelectField
             base="khamBenh.mongMatDongTu"
             side={side}
             leaf="phanXa"
-            label="Phản xạ đồng tử"
-            options={["Bình thường", "Tốt", "Giảm", "Kém", "Mất"]}
+            label={t("phanXa")}
+            options={[
+              t("phanXaOptions.normal"),
+              t("phanXaOptions.tot"),
+              t("phanXaOptions.giam"),
+              t("phanXaOptions.kem"),
+              t("phanXaOptions.mat"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.mongMatDongTu"
             side={side}
             leaf="anhDongTu"
-            label="Ánh đồng tử"
-            options={["Hồng", "Xám", "Không quan sát được", "Không soi được"]}
+            label={t("anhDongTu")}
+            options={[
+              t("anhDongTuOptions.hong"),
+              t("anhDongTuOptions.xam"),
+              t("anhDongTuOptions.khongQuanSat"),
+              t("anhDongTuOptions.khongSoi"),
+            ]}
           />
-          <EyeTextField base="khamBenh.mongMatDongTu" side={side} leaf="canhSacTo" label="Viền sắc tố" />
-          <EyeTextField base="khamBenh.mongMatDongTu" side={side} leaf="dinhVi" label="Định vị đồng tử (trung tâm/cạnh tâm/ngoại tâm)" />
-          <EyeTextField base="khamBenh.mongMatDongTu" side={side} leaf="tomThuongKhac" label="Tổn thương khác" />
+          <EyeTextField base="khamBenh.mongMatDongTu" side={side} leaf="canhSacTo" label={t("canhSacTo")} />
+          <EyeTextField base="khamBenh.mongMatDongTu" side={side} leaf="dinhVi" label={t("dinhVi")} />
+          <EyeTextField base="khamBenh.mongMatDongTu" side={side} leaf="tomThuongKhac" label={t("tonThuongKhac")} />
         </div>
       )}
     </EyePairGrid>
@@ -753,6 +941,7 @@ function MongMatDongTuSection() {
 // Section 8: Thể thủy tinh
 // =========================================================
 function TheThuyTinhSection() {
+  const t = useTranslations("form.exam.theThuyTinh")
   return (
     <EyePairGrid>
       {(side) => (
@@ -761,46 +950,70 @@ function TheThuyTinhSection() {
             base="khamBenh.theThuyTinh"
             side={side}
             leaf="tinhTrang"
-            label="Tình trạng"
-            options={["Bình thường", "Trong", "Đục", "Vỡ", "Sa lệch", "Dị vật"]}
+            label={t("tinhTrang")}
+            options={[
+              t("tinhTrangOptions.normal"),
+              t("tinhTrangOptions.trong"),
+              t("tinhTrangOptions.duc"),
+              t("tinhTrangOptions.vo"),
+              t("tinhTrangOptions.saLech"),
+              t("tinhTrangOptions.diVat"),
+            ]}
           />
-          <EyeTextField base="khamBenh.theThuyTinh" side={side} leaf="ducHinhThai" label="Hình thái đục" />
+          <EyeTextField base="khamBenh.theThuyTinh" side={side} leaf="ducHinhThai" label={t("hinhThaiDuc")} />
           <EyeSelectField
             base="khamBenh.theThuyTinh"
             side={side}
             leaf="ducViTri"
-            label="Vị trí đục"
-            options={["—", "Nhân", "Vỏ", "Dưới bao", "Toàn bộ", "Đục bao", "Đục nhân"]}
+            label={t("viTriDuc")}
+            options={[
+              "—",
+              t("viTriDucOptions.nhan"),
+              t("viTriDucOptions.vo"),
+              t("viTriDucOptions.duoiBao"),
+              t("viTriDucOptions.toanBo"),
+              t("viTriDucOptions.ducBao"),
+              t("viTriDucOptions.ducNhan"),
+            ]}
           />
           <EyeCheckboxGroup
             base="khamBenh.theThuyTinh"
             side={side}
-            title="Biến chứng / IOL"
+            title={t("bienChungIOL")}
             items={[
-              { leaf: "lech", label: "Lệch" },
-              { leaf: "trongTP", label: "Trong TP" },
-              { leaf: "trongHP", label: "Trong HP" },
-              { leaf: "viemMu", label: "Viêm mủ" },
-              { leaf: "dinhSacTo", label: "Dính sắc tố mặt trước" },
-              { leaf: "iol", label: "Đã đặt IOL" },
+              { leaf: "lech", label: t("lech") },
+              { leaf: "trongTP", label: t("trongTP") },
+              { leaf: "trongHP", label: t("trongHP") },
+              { leaf: "viemMu", label: t("viemMu") },
+              { leaf: "dinhSacTo", label: t("dinhSacTo") },
+              { leaf: "iol", label: t("iol") },
             ]}
           />
-          <EyeTextField base="khamBenh.theThuyTinh" side={side} leaf="lechViTri" label="Lệch — vị trí" />
+          <EyeTextField base="khamBenh.theThuyTinh" side={side} leaf="lechViTri" label={t("viTriLech")} />
           <EyeSelectField
             base="khamBenh.theThuyTinh"
             side={side}
             leaf="iolTinhTrang"
-            label="IOL — tình trạng"
-            options={["—", "Cân", "Lệch", "Đục bao sau"]}
+            label={t("iolTinhTrang")}
+            options={[
+              "—",
+              t("iolTinhTrangOptions.can"),
+              t("iolTinhTrangOptions.lech"),
+              t("iolTinhTrangOptions.ducBaoSau"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.theThuyTinh"
             side={side}
             leaf="iolViTri"
-            label="IOL — vị trí"
-            options={["—", "Trong TP", "Trong HP"]}
+            label={t("iolViTri")}
+            options={[
+              "—",
+              t("trongTP"),
+              t("trongHP"),
+            ]}
           />
-          <EyeTextField base="khamBenh.theThuyTinh" side={side} leaf="tomThuongKhac" label="Tổn thương khác" />
+          <EyeTextField base="khamBenh.theThuyTinh" side={side} leaf="tomThuongKhac" label={t("tonThuongKhac")} />
         </div>
       )}
     </EyePairGrid>
@@ -811,6 +1024,7 @@ function TheThuyTinhSection() {
 // Section 9: Dịch kính
 // =========================================================
 function DichKinhSection() {
+  const t = useTranslations("form.exam.dichKinh")
   return (
     <EyePairGrid>
       {(side) => (
@@ -819,37 +1033,55 @@ function DichKinhSection() {
             base="khamBenh.dichKinh"
             side={side}
             leaf="tinhTrang"
-            label="Tình trạng"
-            options={["Bình thường", "Sạch", "Đục", "Xuất huyết", "Bệnh lý"]}
+            label={t("tinhTrang")}
+            options={[
+              t("tinhTrangOptions.normal"),
+              t("tinhTrangOptions.sach"),
+              t("tinhTrangOptions.duc"),
+              t("tinhTrangOptions.xuatHuyet"),
+              t("tinhTrangOptions.benhLy"),
+            ]}
           />
           <EyeCheckboxGroup
             base="khamBenh.dichKinh"
             side={side}
-            title="Tổn thương"
+            title={t("tonThuong")}
             items={[
-              { leaf: "duc", label: "Đục" },
-              { leaf: "xuatHuyet", label: "Xuất huyết" },
-              { leaf: "toChucHoa", label: "Tổ chức hóa" },
-              { leaf: "pvd", label: "Bong dịch kính sau (PVD)" },
-              { leaf: "viemMu", label: "Viêm mủ" },
-              { leaf: "diVat", label: "Dị vật" },
+              { leaf: "duc", label: t("duc") },
+              { leaf: "xuatHuyet", label: t("xuatHuyet") },
+              { leaf: "toChucHoa", label: t("toChucHoa") },
+              { leaf: "pvd", label: t("pvd") },
+              { leaf: "viemMu", label: t("viemMu") },
+              { leaf: "diVat", label: t("diVat") },
             ]}
           />
           <EyeSelectField
             base="khamBenh.dichKinh"
             side={side}
             leaf="mucDoDuc"
-            label="Mức độ đục"
-            options={["—", "Nhẹ", "Vừa", "Nặng"]}
+            label={t("mucDoDuc")}
+            options={[
+              "—",
+              t("mucDoDucOptions.nhe"),
+              t("mucDoDucOptions.vua"),
+              t("mucDoDucOptions.nang"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.dichKinh"
             side={side}
             leaf="tyndall"
-            label="Tyndall"
-            options={["—", "Âm tính", "+", "++", "+++", "Độ"]}
+            label={t("tyndall")}
+            options={[
+              "—",
+              t("tyndallOptions.amTinh"),
+              t("tyndallOptions.1"),
+              t("tyndallOptions.2"),
+              t("tyndallOptions.3"),
+              t("tyndallOptions.do"),
+            ]}
           />
-          <EyeTextField base="khamBenh.dichKinh" side={side} leaf="tomThuongKhac" label="Tổn thương khác" />
+          <EyeTextField base="khamBenh.dichKinh" side={side} leaf="tomThuongKhac" label={t("tonThuongKhac")} />
         </div>
       )}
     </EyePairGrid>
@@ -860,85 +1092,122 @@ function DichKinhSection() {
 // Section 10: Đáy mắt — Gai thị & Hoàng điểm
 // =========================================================
 function DayMatDiscMaculaSection() {
+  const t = useTranslations("form.exam.dayMat")
   return (
     <EyePairGrid>
       {(side) => (
         <div className="space-y-1.5">
-          <p className="text-[11px] font-semibold text-gray-700 print:text-black">Đĩa thị / Gai thị</p>
-          <EyeTextField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="gaiThi" label="Đĩa thị — mô tả" />
+          <p className="text-[11px] font-semibold text-gray-700 print:text-black">{t("subsectionDiaThi")}</p>
+          <EyeTextField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="gaiThi" label={t("diaThiMoTa")} />
           <EyeSelectField
             base="khamBenh.dayMatDiaThiHoangDiem"
             side={side}
             leaf="gaiThiMau"
-            label="Màu sắc gai thị"
-            options={["Bình thường", "Bạc màu", "Phù", "Teo", "Bất thường"]}
+            label={t("mauSacGaiThi")}
+            options={[
+              t("mauSacGaiThiOptions.normal"),
+              t("mauSacGaiThiOptions.bacMau"),
+              t("mauSacGaiThiOptions.phu"),
+              t("mauSacGaiThiOptions.teo"),
+              t("mauSacGaiThiOptions.batThuong"),
+            ]}
           />
-          <EyeTextField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="cdRatio" label="Tỷ lệ C/D" placeholder="vd: 0.3" />
+          <EyeTextField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="cdRatio" label={t("cdRatio")} placeholder={t("cdRatioPh")} />
           <EyeSelectField
             base="khamBenh.dayMatDiaThiHoangDiem"
             side={side}
             leaf="vungNerveRim"
-            label="Viền thần kinh"
-            options={["Bình thường", "Bất thường"]}
+            label={t("vienThanKinh")}
+            options={[
+              t("vienThanKinhOptions.normal"),
+              t("vienThanKinhOptions.batThuong"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.dayMatDiaThiHoangDiem"
             side={side}
             leaf="vungNerveRimViTri"
-            label="Vị trí viền bất thường"
-            options={["—", "Dưới", "Trên", "Mũi", "Thái dương"]}
+            label={t("viTriVienBatThuong")}
+            options={[
+              "—",
+              t("viTriVienOptions.duoi"),
+              t("viTriVienOptions.tren"),
+              t("viTriVienOptions.mui"),
+              t("viTriVienOptions.thaiDuong"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.dayMatDiaThiHoangDiem"
             side={side}
             leaf="machMauDoi"
-            label="Mạch máu đĩa thị"
-            options={["Bình thường", "Chuyển hướng", "Gập góc", "Teo cạnh gai"]}
+            label={t("machMauDiaThi")}
+            options={[
+              t("machMauDiaThiOptions.normal"),
+              t("machMauDiaThiOptions.chuyenHuong"),
+              t("machMauDiaThiOptions.gapGoc"),
+              t("machMauDiaThiOptions.teoCanhGai"),
+            ]}
           />
-          <EyeCheckboxField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="xuatHuyetGai" label="Xuất huyết đĩa thị" />
-          <EyeCheckboxField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="tanMachGai" label="Tân mạch gai" />
+          <EyeCheckboxField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="xuatHuyetGai" label={t("xuatHuyetDiaThi")} />
+          <EyeCheckboxField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="tanMachGai" label={t("tanMachGai")} />
           <EyeSelectField
             base="khamBenh.dayMatDiaThiHoangDiem"
             side={side}
             leaf="tanMachGaiDo"
-            label="Tân mạch gai — độ"
-            options={["—", "< 1/4 gai", "1/4–1/2 gai", "> 1/2 gai"]}
+            label={t("tanMachGaiDo")}
+            options={[
+              "—",
+              t("tanMachGaiDoOptions.lt1_4"),
+              t("tanMachGaiDoOptions.1_4_1_2"),
+              t("tanMachGaiDoOptions.gt1_2"),
+            ]}
           />
-          <EyeCheckboxField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="khongSoi" label="Không soi được" />
+          <EyeCheckboxField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="khongSoi" label={t("khongSoi")} />
 
-          <p className="mt-2 text-[11px] font-semibold text-gray-700 print:text-black">Hoàng điểm</p>
-          <EyeTextField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="hoangDiem" label="Hoàng điểm — mô tả" />
-          <EyeCheckboxField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="matAnhHD" label="Mất ánh hoàng điểm" />
+          <p className="mt-2 text-[11px] font-semibold text-gray-700 print:text-black">{t("subsectionHoangDiem")}</p>
+          <EyeTextField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="hoangDiem" label={t("hoangDiemMoTa")} />
+          <EyeCheckboxField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="matAnhHD" label={t("matAnhHD")} />
           <EyeSelectField
             base="khamBenh.dayMatDiaThiHoangDiem"
             side={side}
             leaf="phuHD"
-            label="Phù hoàng điểm"
-            options={["—", "Không", "Khu trú", "Tỏa lan"]}
+            label={t("phuHD")}
+            options={[
+              "—",
+              t("phuHDOptions.none"),
+              t("phuHDOptions.khuTru"),
+              t("phuHDOptions.toaLan"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.dayMatDiaThiHoangDiem"
             side={side}
             leaf="loHD"
-            label="Lỗ hoàng điểm"
-            options={["—", "Không", "Lỗ lớp", "Giả lỗ", "Lỗ toàn bộ"]}
+            label={t("loHD")}
+            options={[
+              "—",
+              t("loHDOptions.none"),
+              t("loHDOptions.loLop"),
+              t("loHDOptions.giaLo"),
+              t("loHDOptions.loToanBo"),
+            ]}
           />
-          <EyeTextField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="loHDDo" label="Lỗ hoàng điểm — độ" />
-          <EyeCheckboxField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="seoHD" label="Sẹo hoàng điểm" />
-          <EyeCheckboxField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="bongThanhDich" label="Bong thanh dịch" />
-          <EyeCheckboxField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="xuatHuyetHD" label="Xuất huyết hoàng điểm" />
-          <EyeTextField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="tinhTrangHD" label="Tình trạng HĐ (khác)" />
+          <EyeTextField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="loHDDo" label={t("loHDDo")} />
+          <EyeCheckboxField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="seoHD" label={t("seoHD")} />
+          <EyeCheckboxField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="bongThanhDich" label={t("bongThanhDich")} />
+          <EyeCheckboxField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="xuatHuyetHD" label={t("xuatHuyetHD")} />
+          <EyeTextField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="tinhTrangHD" label={t("tinhTrangHDKhac")} />
 
-          <p className="mt-2 text-[11px] font-semibold text-gray-700 print:text-black">Hắc mạc / Ổ viêm</p>
-          <EyeTextField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="hacMac" label="Hắc mạc — mô tả" />
-          <EyeTextField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="tomThuongHacMac" label="Tổn thương hắc mạc" />
-          <EyeCheckboxField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="cnv" label="CNV" />
-          <EyeCheckboxField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="oViEm" label="Ổ viêm hắc mạc" />
-          <EyeCheckboxField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="oViEmHoatTinh" label="Hoạt tính" />
-          <EyeCheckboxField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="oViEmSeo" label="Sẹo" />
-          <EyeTextField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="oViEmSoLuong" label="Số lượng ổ viêm" type="number" />
-          <EyeTextField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="oViEmViTri" label="Vị trí ổ viêm" />
-          <EyeTextField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="tomThuongKhac" label="Tổn thương khác" />
+          <p className="mt-2 text-[11px] font-semibold text-gray-700 print:text-black">{t("subsectionHacMac")}</p>
+          <EyeTextField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="hacMac" label={t("hacMacMoTa")} />
+          <EyeTextField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="tomThuongHacMac" label={t("tonThuongHacMac")} />
+          <EyeCheckboxField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="cnv" label={t("cnv")} />
+          <EyeCheckboxField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="oViEm" label={t("oViEm")} />
+          <EyeCheckboxField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="oViEmHoatTinh" label={t("hoatTinh")} />
+          <EyeCheckboxField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="oViEmSeo" label={t("seo")} />
+          <EyeTextField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="oViEmSoLuong" label={t("soLuongOViEm")} type="number" />
+          <EyeTextField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="oViEmViTri" label={t("viTriOViEm")} />
+          <EyeTextField base="khamBenh.dayMatDiaThiHoangDiem" side={side} leaf="tomThuongKhac" label={t("tonThuongKhac")} />
         </div>
       )}
     </EyePairGrid>
@@ -949,101 +1218,135 @@ function DayMatDiscMaculaSection() {
 // Section 11: Đáy mắt — Võng mạc & Mạch máu
 // =========================================================
 function DayMatRetinaVesselSection() {
+  const t = useTranslations("form.exam.dayMatRetina")
   return (
     <EyePairGrid>
       {(side) => (
         <div className="space-y-1.5">
-          <p className="text-[11px] font-semibold text-gray-700 print:text-black">Hệ mạch máu</p>
+          <p className="text-[11px] font-semibold text-gray-700 print:text-black">{t("subsectionMachMau")}</p>
           <EyeSelectField
             base="khamBenh.dayMatVongMacMachMau"
             side={side}
             leaf="heMach"
-            label="Tình trạng"
-            options={["Bình thường", "Tắc ĐM", "Tắc TM", "Phù", "Thiếu máu", "Hỗn hợp"]}
+            label={t("tinhTrang")}
+            options={[
+              t("tinhTrangOptions.normal"),
+              t("tinhTrangOptions.tacDM"),
+              t("tinhTrangOptions.tacTM"),
+              t("tinhTrangOptions.phu"),
+              t("tinhTrangOptions.thieuMau"),
+              t("tinhTrangOptions.honHop"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.dayMatVongMacMachMau"
             side={side}
             leaf="tacDM"
-            label="Tắc động mạch"
-            options={["—", "Trung tâm", "Nhánh", "Mi võng mạc"]}
+            label={t("tacDM")}
+            options={[
+              "—",
+              t("tacDMOptions.trungTam"),
+              t("tacDMOptions.nhanh"),
+              t("tacDMOptions.miVongMac"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.dayMatVongMacMachMau"
             side={side}
             leaf="tacTM"
-            label="Tắc tĩnh mạch"
-            options={["—", "Trung tâm", "Nhánh"]}
+            label={t("tacTM")}
+            options={[
+              "—",
+              t("tacTMOptions.trungTam"),
+              t("tacTMOptions.nhanh"),
+            ]}
           />
           <EyeCheckboxGroup
             base="khamBenh.dayMatVongMacMachMau"
             side={side}
-            title="Biến chứng mạch"
+            title={t("bienChungMach")}
             items={[
-              { leaf: "thieuMau", label: "Thiếu máu" },
-              { leaf: "honHop", label: "Hỗn hợp" },
-              { leaf: "viemMaoMach", label: "Viêm mao mạch" },
-              { leaf: "tanMachVM", label: "Tân mạch võng mạc" },
-              { leaf: "tanMachHM", label: "Tân mạch hắc mạc" },
+              { leaf: "thieuMau", label: t("thieuMau") },
+              { leaf: "honHop", label: t("honHop") },
+              { leaf: "viemMaoMach", label: t("viemMaoMach") },
+              { leaf: "tanMachVM", label: t("tanMachVM") },
+              { leaf: "tanMachHM", label: t("tanMachHM") },
             ]}
           />
           <EyeSelectField
             base="khamBenh.dayMatVongMacMachMau"
             side={side}
             leaf="tanMachHMViTri"
-            label="Tân mạch hắc mạc — vị trí"
-            options={["—", "Dưới HĐ", "Ngoài HĐ"]}
+            label={t("tanMachHMViTri")}
+            options={[
+              "—",
+              t("tanMachHMViTriOptions.duoiHD"),
+              t("tanMachHMViTriOptions.ngoaiHD"),
+            ]}
           />
 
-          <p className="mt-2 text-[11px] font-semibold text-gray-700 print:text-black">Võng mạc</p>
-          <EyeTextField base="khamBenh.dayMatVongMacMachMau" side={side} leaf="vongMac" label="Võng mạc — mô tả" />
-          <EyeTextField base="khamBenh.dayMatVongMacMachMau" side={side} leaf="vongMacTinhTrang" label="Tình trạng võng mạc" />
+          <p className="mt-2 text-[11px] font-semibold text-gray-700 print:text-black">{t("subsectionVongMac")}</p>
+          <EyeTextField base="khamBenh.dayMatVongMacMachMau" side={side} leaf="vongMac" label={t("vongMacMoTa")} />
+          <EyeTextField base="khamBenh.dayMatVongMacMachMau" side={side} leaf="vongMacTinhTrang" label={t("vongMacTinhTrang")} />
           <EyeSelectField
             base="khamBenh.dayMatVongMacMachMau"
             side={side}
             leaf="vongMacDieuKien"
-            label="Điều kiện khám (liệt cơ, mờ mắt…)"
-            options={["Bình thường", "Khó khám"]}
+            label={t("vongMacDieuKien")}
+            options={[
+              t("vongMacDieuKienOptions.normal"),
+              t("vongMacDieuKienOptions.khoKham"),
+            ]}
           />
           <EyeCheckboxGroup
             base="khamBenh.dayMatVongMacMachMau"
             side={side}
-            title="Bong / Xuất huyết / Xuất tiết"
+            title={t("bongXuatHuyet")}
             items={[
-              { leaf: "vongMacPhu", label: "Phù võng mạc" },
-              { leaf: "bongThanhDich", label: "Bong thanh dịch" },
-              { leaf: "bongBMST", label: "Bong BMST" },
-              { leaf: "xuatHuyetVM", label: "Xuất huyết VM" },
-              { leaf: "bongVR", label: "Bong võng mạc" },
-              { leaf: "rachVR", label: "Rách võng mạc" },
-              { leaf: "thoaiHoaVM", label: "Thoái hóa VM" },
-              { leaf: "diVatNoiNhan", label: "Dị vật nội nhãn" },
+              { leaf: "vongMacPhu", label: t("vongMacPhu") },
+              { leaf: "bongThanhDich", label: t("bongThanhDich") },
+              { leaf: "bongBMST", label: t("bongBMST") },
+              { leaf: "xuatHuyetVM", label: t("xuatHuyetVM") },
+              { leaf: "bongVR", label: t("bongVR") },
+              { leaf: "rachVR", label: t("rachVR") },
+              { leaf: "thoaiHoaVM", label: t("thoaiHoaVM") },
+              { leaf: "diVatNoiNhan", label: t("diVatNoiNhan") },
             ]}
           />
           <EyeSelectField
             base="khamBenh.dayMatVongMacMachMau"
             side={side}
             leaf="xuatHuyetType"
-            label="Xuất huyết — loại"
-            options={["—", "VM nông", "VM sâu", "Hắc mạc"]}
+            label={t("xuatHuyetType")}
+            options={[
+              "—",
+              t("xuatHuyetTypeOptions.vongMacNong"),
+              t("xuatHuyetTypeOptions.vongMacSau"),
+              t("xuatHuyetTypeOptions.hacMac"),
+            ]}
           />
           <EyeSelectField
             base="khamBenh.dayMatVongMacMachMau"
             side={side}
             leaf="xuatTiet"
-            label="Xuất tiết"
-            options={["—", "Không", "Cứng", "Dạng bông"]}
+            label={t("xuatTiet")}
+            options={[
+              "—",
+              t("xuatTietOptions.none"),
+              t("xuatTietOptions.cung"),
+              t("xuatTietOptions.dangBong"),
+            ]}
           />
-          <EyeTextField base="khamBenh.dayMatVongMacMachMau" side={side} leaf="bongVRMucDo" label="Bong VM — mức độ" />
-          <EyeTextField base="khamBenh.dayMatVongMacMachMau" side={side} leaf="rachVRSoLuong" label="Rách VM — số lượng" type="number" />
-          <EyeTextField base="khamBenh.dayMatVongMacMachMau" side={side} leaf="rachVRViTri" label="Rách VM — vị trí" />
-          <EyeTextField base="khamBenh.dayMatVongMacMachMau" side={side} leaf="rachVRHinhThai" label="Rách VM — hình thái" />
-          <EyeTextField base="khamBenh.dayMatVongMacMachMau" side={side} leaf="diVatViTri" label="Dị vật nội nhãn — vị trí" />
-          <EyeTextField base="khamBenh.dayMatVongMacMachMau" side={side} leaf="diVatKichThuoc" label="Dị vật nội nhãn — kích thước" />
-          <EyeTextField base="khamBenh.dayMatVongMacMachMau" side={side} leaf="thoaiHoaType" label="Thoái hóa — vị trí" />
-          <EyeTextField base="khamBenh.dayMatVongMacMachMau" side={side} leaf="thoaiHoaHinhThai" label="Thoái hóa — hình thái" />
-          <EyeTextField base="khamBenh.dayMatVongMacMachMau" side={side} leaf="tomThuongPhoiHop" label="Tổn thương phối hợp" />
-          <EyeTextField base="khamBenh.dayMatVongMacMachMau" side={side} leaf="tomThuongKhac" label="Tổn thương khác" />
+          <EyeTextField base="khamBenh.dayMatVongMacMachMau" side={side} leaf="bongVRMucDo" label={t("bongVRMucDo")} />
+          <EyeTextField base="khamBenh.dayMatVongMacMachMau" side={side} leaf="rachVRSoLuong" label={t("rachVRSoLuong")} type="number" />
+          <EyeTextField base="khamBenh.dayMatVongMacMachMau" side={side} leaf="rachVRViTri" label={t("rachVRViTri")} />
+          <EyeTextField base="khamBenh.dayMatVongMacMachMau" side={side} leaf="rachVRHinhThai" label={t("rachVRHinhThai")} />
+          <EyeTextField base="khamBenh.dayMatVongMacMachMau" side={side} leaf="diVatViTri" label={t("diVatViTri")} />
+          <EyeTextField base="khamBenh.dayMatVongMacMachMau" side={side} leaf="diVatKichThuoc" label={t("diVatKichThuoc")} />
+          <EyeTextField base="khamBenh.dayMatVongMacMachMau" side={side} leaf="thoaiHoaType" label={t("thoaiHoaViTri")} />
+          <EyeTextField base="khamBenh.dayMatVongMacMachMau" side={side} leaf="thoaiHoaHinhThai" label={t("thoaiHoaHinhThai")} />
+          <EyeTextField base="khamBenh.dayMatVongMacMachMau" side={side} leaf="tomThuongPhoiHop" label={t("tonThuongPhoiHop")} />
+          <EyeTextField base="khamBenh.dayMatVongMacMachMau" side={side} leaf="tomThuongKhac" label={t("tonThuongKhac")} />
         </div>
       )}
     </EyePairGrid>
@@ -1054,6 +1357,7 @@ function DayMatRetinaVesselSection() {
 // Section 12: Hốc mắt
 // =========================================================
 function HocMatSection() {
+  const t = useTranslations("form.exam.hocMat")
   return (
     <EyePairGrid>
       {(side) => (
@@ -1062,38 +1366,52 @@ function HocMatSection() {
             base="khamBenh.hocMat"
             side={side}
             leaf="tinhTrang"
-            label="Tình trạng"
-            options={["Bình thường", "Bệnh lý"]}
+            label={t("tinhTrang")}
+            options={[
+              t("tinhTrangOptions.normal"),
+              t("tinhTrangOptions.benhLy"),
+            ]}
           />
-          <EyeTextField base="khamBenh.hocMat" side={side} leaf="diVatMoTa" label="Dị vật — mô tả" />
-          <EyeCheckboxField base="khamBenh.hocMat" side={side} leaf="diVat" label="Có dị vật" />
+          <EyeTextField base="khamBenh.hocMat" side={side} leaf="diVatMoTa" label={t("diVatMoTa")} />
+          <EyeCheckboxField base="khamBenh.hocMat" side={side} leaf="diVat" label={t("coDiVat")} />
           <EyeSelectField
             base="khamBenh.hocMat"
             side={side}
             leaf="vanNhan"
-            label="Vận nhãn"
-            options={["Bình thường", "Bệnh lý"]}
+            label={t("vanNhan")}
+            options={[
+              t("vanNhanOptions.normal"),
+              t("vanNhanOptions.benhLy"),
+            ]}
           />
-          <EyeTextField base="khamBenh.hocMat" side={side} leaf="vanNhanBenhLy" label="Vận nhãn — mô tả bệnh lý" />
+          <EyeTextField base="khamBenh.hocMat" side={side} leaf="vanNhanBenhLy" label={t("vanNhanBenhLy")} />
           <EyeSelectField
             base="khamBenh.hocMat"
             side={side}
             leaf="nhanCauTinhTrang"
-            label="Nhãn cầu — tình trạng"
-            options={["Bình thường", "Mềm", "Căng", "To", "Nhỏ", "Teo", "Dãn lồi"]}
+            label={t("nhanCauTinhTrang")}
+            options={[
+              t("nhanCauTinhTrangOptions.normal"),
+              t("nhanCauTinhTrangOptions.mem"),
+              t("nhanCauTinhTrangOptions.cang"),
+              t("nhanCauTinhTrangOptions.to"),
+              t("nhanCauTinhTrangOptions.nho"),
+              t("nhanCauTinhTrangOptions.teo"),
+              t("nhanCauTinhTrangOptions.danLoi"),
+            ]}
           />
           <EyeCheckboxGroup
             base="khamBenh.hocMat"
             side={side}
-            title="Nhãn cầu"
+            title={t("nhanCau")}
             items={[
-              { leaf: "nhanCau", label: "Bất thường" },
-              { leaf: "nhanCauLo", label: "Dãn lồi" },
-              { leaf: "nhanCauNho", label: "Nhỏ" },
-              { leaf: "nhanCauTeo", label: "Teo" },
+              { leaf: "nhanCau", label: t("batThuong") },
+              { leaf: "nhanCauLo", label: t("danLoi") },
+              { leaf: "nhanCauNho", label: t("nho") },
+              { leaf: "nhanCauTeo", label: t("teo") },
             ]}
           />
-          <EyeTextField base="khamBenh.hocMat" side={side} leaf="chatLuong" label="Chất lượng / Độ lồi" />
+          <EyeTextField base="khamBenh.hocMat" side={side} leaf="chatLuong" label={t("chatLuong")} />
         </div>
       )}
     </EyePairGrid>
@@ -1101,114 +1419,113 @@ function HocMatSection() {
 }
 
 // =========================================================
-// Section 13: Khám toàn thân (chung, không chia 2 mắt)
-// Updated for outpatient: Added SpO2, blood glucose, BMI
+// Section 13: Khám toàn thân
 // =========================================================
 function KhamToanThanSection() {
+  const t = useTranslations("form.exam.khamToanThan")
+  const tMM = useTranslations("form.exam.mongMat")
   const { register } = useFormContext<MedicalRecordFormDataPayload>()
   return (
     <div className="space-y-4">
-      {/* Vital Signs - Important for outpatient triage */}
       <div className="rounded-lg border border-gray-100 bg-gray-50/60 p-3">
         <p className="mb-2 text-[11px] font-semibold text-gray-700 print:text-black">
-          Sinh hiệu (dùng cho phân loại bệnh nhân ngoại trú)
+          {t("vitalSigns")}
         </p>
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4 print:grid-cols-4">
           <div>
-            <label className={labelClass}>Huyết áp (mmHg)</label>
-            <input {...register("khamBenh.khamToanThan.huyetAp" as any)} className={inputClass} placeholder="120/80" />
+            <label className={labelClass}>{t("huyetAp")}</label>
+            <input {...register("khamBenh.khamToanThan.huyetAp" as any)} className={inputClass} placeholder={t("huyetApPh")} />
           </div>
           <div>
-            <label className={labelClass}>Mạch (lần/phút)</label>
+            <label className={labelClass}>{t("mach")}</label>
             <input {...register("khamBenh.khamToanThan.mach" as any)} className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>Nhiệt độ (°C)</label>
-            <input {...register("khamBenh.khamToanThan.nhietDo" as any)} className={inputClass} placeholder="37.0" />
+            <label className={labelClass}>{t("nhietDo")}</label>
+            <input {...register("khamBenh.khamToanThan.nhietDo" as any)} className={inputClass} placeholder={t("nhietDoPh")} />
           </div>
           <div>
-            <label className={labelClass}>SpO2 (%)</label>
-            <input {...register("khamBenh.khamToanThan.spo2" as any)} className={inputClass} placeholder="98" />
+            <label className={labelClass}>{t("spo2")}</label>
+            <input {...register("khamBenh.khamToanThan.spo2" as any)} className={inputClass} placeholder={t("spo2Ph")} />
           </div>
           <div>
-            <label className={labelClass}>Nhịp thở (lần/phút)</label>
+            <label className={labelClass}>{t("nhipTho")}</label>
             <input {...register("khamBenh.khamToanThan.nhipTho" as any)} className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>Đường huyết (mg/dL)</label>
-            <input {...register("khamBenh.khamToanThan.duongHuyet" as any)} className={inputClass} placeholder="100" />
+            <label className={labelClass}>{t("duongHuyet")}</label>
+            <input {...register("khamBenh.khamToanThan.duongHuyet" as any)} className={inputClass} placeholder={t("duongHuyetPh")} />
           </div>
           <div>
-            <label className={labelClass}>Cân nặng (kg)</label>
+            <label className={labelClass}>{t("canNang")}</label>
             <input {...register("khamBenh.khamToanThan.canNang" as any)} className={inputClass} />
           </div>
           <div>
-            <label className={labelClass}>Chiều cao (cm)</label>
+            <label className={labelClass}>{t("chieuCao")}</label>
             <input {...register("khamBenh.khamToanThan.chieuCao" as any)} className={inputClass} />
           </div>
         </div>
       </div>
 
-      {/* Systemic Exam - Standard */}
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3 print:grid-cols-4 print:gap-2">
         <div>
-          <label className={labelClass}>Nội tiết</label>
+          <label className={labelClass}>{t("noiTiet")}</label>
           <select {...register("khamBenh.khamToanThan.noiTiet" as any)} className={inputClass}>
             <option value="">—</option>
-            <option value="Bình thường">Bình thường</option>
-            <option value="Có bệnh">Có bệnh</option>
+            <option value="Bình thường">{tMM("tinhTrangOptions.normal")}</option>
+            <option value="Có bệnh">{t("noiTietOptions.benh")}</option>
           </select>
         </div>
         <div>
-          <label className={labelClass}>Tâm thần, thần kinh</label>
+          <label className={labelClass}>{t("thanKinh")}</label>
           <select {...register("khamBenh.khamToanThan.thanKinh" as any)} className={inputClass}>
             <option value="">—</option>
-            <option value="Bình thường">Bình thường</option>
-            <option value="Có bệnh">Có bệnh</option>
+            <option value="Bình thường">{tMM("tinhTrangOptions.normal")}</option>
+            <option value="Có bệnh">{t("thanKinhOptions.benh")}</option>
           </select>
         </div>
         <div>
-          <label className={labelClass}>Tuần hoàn</label>
+          <label className={labelClass}>{t("tuanHoan")}</label>
           <select {...register("khamBenh.khamToanThan.tuanHoan" as any)} className={inputClass}>
             <option value="">—</option>
-            <option value="Bình thường">Bình thường</option>
-            <option value="Có bệnh">Có bệnh</option>
+            <option value="Bình thường">{tMM("tinhTrangOptions.normal")}</option>
+            <option value="Có bệnh">{t("tuanHoanOptions.benh")}</option>
           </select>
         </div>
         <div>
-          <label className={labelClass}>Hô hấp</label>
+          <label className={labelClass}>{t("hoHap")}</label>
           <select {...register("khamBenh.khamToanThan.hoHap" as any)} className={inputClass}>
             <option value="">—</option>
-            <option value="Bình thường">Bình thường</option>
-            <option value="Có bệnh">Có bệnh</option>
+            <option value="Bình thường">{tMM("tinhTrangOptions.normal")}</option>
+            <option value="Có bệnh">{t("hoHapOptions.benh")}</option>
           </select>
         </div>
         <div>
-          <label className={labelClass}>Tiêu hóa</label>
+          <label className={labelClass}>{t("tieuHoa")}</label>
           <select {...register("khamBenh.khamToanThan.tieuHoa" as any)} className={inputClass}>
             <option value="">—</option>
-            <option value="Bình thường">Bình thường</option>
-            <option value="Có bệnh">Có bệnh</option>
+            <option value="Bình thường">{tMM("tinhTrangOptions.normal")}</option>
+            <option value="Có bệnh">{t("tieuHoaOptions.benh")}</option>
           </select>
         </div>
         <div>
-          <label className={labelClass}>Cơ xương khớp</label>
+          <label className={labelClass}>{t("coXuongKhop")}</label>
           <select {...register("khamBenh.khamToanThan.coXuongKhop" as any)} className={inputClass}>
             <option value="">—</option>
-            <option value="Bình thường">Bình thường</option>
-            <option value="Có bệnh">Có bệnh</option>
+            <option value="Bình thường">{tMM("tinhTrangOptions.normal")}</option>
+            <option value="Có bệnh">{t("coXuongKhopOptions.benh")}</option>
           </select>
         </div>
         <div>
-          <label className={labelClass}>Tiết niệu, sinh dục</label>
+          <label className={labelClass}>{t("nieuSinhDuc")}</label>
           <select {...register("khamBenh.khamToanThan.nieuSinhDuc" as any)} className={inputClass}>
             <option value="">—</option>
-            <option value="Bình thường">Bình thường</option>
-            <option value="Có bệnh">Có bệnh</option>
+            <option value="Bình thường">{tMM("tinhTrangOptions.normal")}</option>
+            <option value="Có bệnh">{t("nieuSinhDucOptions.benh")}</option>
           </select>
         </div>
         <div className="md:col-span-2 print:col-span-2">
-          <label className={labelClass}>Tổn thương / bệnh lý toàn thân khác</label>
+          <label className={labelClass}>{t("tomThuongKhac")}</label>
           <input {...register("khamBenh.khamToanThan.tomThuongKhac" as any)} className={inputClass} />
         </div>
       </div>
@@ -1217,7 +1534,7 @@ function KhamToanThanSection() {
 }
 
 // =========================================================
-// Collapsible section wrapper (giữ nguyên behavior)
+// Collapsible section wrapper
 // =========================================================
 interface SectionProps {
   title: string
@@ -1236,6 +1553,7 @@ function CollapsibleSection({
   children,
   defaultOpen = true,
 }: SectionProps) {
+  const t = useTranslations("form.exam")
   const [open, setOpen] = useState(defaultOpen)
   const accentText =
     accentColor === "indigo"
@@ -1269,11 +1587,10 @@ function CollapsibleSection({
           )}
         </span>
         <span className={`text-xs ${accentText}`}>
-          {open ? "Thu gọn" : "Mở rộng"}
+          {open ? t("collapse") : t("expand")}
         </span>
       </button>
 
-      {/* Tiêu đề cho chế độ in (luôn hiển thị) */}
       <div className="hidden border-b border-gray-200 bg-gray-50 px-4 py-2 print:block print:border-gray-400">
         <span className="flex items-center gap-2 text-sm font-semibold text-gray-800 print:text-black">
           {Icon && <Icon className={`h-4 w-4 ${accentText} print:text-black`} />}
@@ -1284,69 +1601,69 @@ function CollapsibleSection({
         </span>
       </div>
 
-      <div className="space-y-4 border-t border-gray-100 p-4 print:border-t-0 print:p-2">
+      <div
+        className={`space-y-4 border-t border-gray-100 p-4 print:border-t-0 print:p-2 ${
+          open ? "block" : "hidden"
+        } print:!block`}
+      >
         {children}
       </div>
     </section>
   )
 }
 
-/**
- * UniversalEyeExamSections — drop into any subspecialty create/edit form.
- * Renders every eye-exam field used across the 6 record types theo mẫu Bộ Y tế
- * (2 cột MP/MT song song).
- */
 export default function UniversalEyeExamSections() {
+  const t = useTranslations("form.exam")
   return (
     <div className="space-y-4">
       <SectionHeading
-        title="Khám bệnh"
-        subtitle="Khám chuyên khoa mắt — Mắt phải (MP/OD) và Mắt trái (MT/OS)"
+        title={t("title")}
+        subtitle={t("subtitle")}
         icon={Stethoscope}
         accentColor={getAccentForRecordType(undefined)}
       />
       <CollapsibleSection
-        title="Thị lực & Nhãn áp (vào viện)"
-        subtitle="Không kính / Có kính / Nhìn gần / Nhãn áp / Thị trường"
+        title={t("thiLucNhanAp.title")}
+        subtitle={t("thiLucNhanAp.subtitle")}
         icon={Eye}
         accentColor="indigo"
       >
         <ThiLucNhanApSection />
       </CollapsibleSection>
-      <CollapsibleSection title="1. Mi mắt" subtitle="MP / MT song song" icon={Hand} accentColor="teal">
+      <CollapsibleSection title={t("miMat.title")} subtitle={t("subtitleMPMT")} icon={Hand} accentColor="teal">
         <MiMatSection />
       </CollapsibleSection>
-      <CollapsibleSection title="2. Kết mạc" subtitle="MP / MT song song" icon={CircleDot} accentColor="amber">
+      <CollapsibleSection title={t("ketMac.title")} subtitle={t("subtitleMPMT")} icon={CircleDot} accentColor="amber">
         <KetMacSection />
       </CollapsibleSection>
-      <CollapsibleSection title="3. Giác mạc" subtitle="MP / MT song song" icon={ScanLine} accentColor="rose">
+      <CollapsibleSection title={t("giacMac.title")} subtitle={t("subtitleMPMT")} icon={ScanLine} accentColor="rose">
         <GiacMacSection />
       </CollapsibleSection>
-      <CollapsibleSection title="4. Củng mạc" subtitle="MP / MT song song" icon={Layers} accentColor="slate">
+      <CollapsibleSection title={t("cungMac.title")} subtitle={t("subtitleMPMT")} icon={Layers} accentColor="slate">
         <CungMacSection />
       </CollapsibleSection>
-      <CollapsibleSection title="5. Tiền phòng" subtitle="MP / MT song song" icon={Droplet} accentColor="sky">
+      <CollapsibleSection title={t("tienPhong.title")} subtitle={t("subtitleMPMT")} icon={Droplet} accentColor="sky">
         <TienPhongSection />
       </CollapsibleSection>
-      <CollapsibleSection title="6. Mống mắt & Đồng tử" subtitle="MP / MT song song" icon={CircleDot} accentColor="violet">
+      <CollapsibleSection title={t("mongMat.title")} subtitle={t("subtitleMPMT")} icon={CircleDot} accentColor="violet">
         <MongMatDongTuSection />
       </CollapsibleSection>
-      <CollapsibleSection title="7. Thể thủy tinh" subtitle="MP / MT song song" icon={Microscope} accentColor="emerald">
+      <CollapsibleSection title={t("theThuyTinh.title")} subtitle={t("subtitleMPMT")} icon={Microscope} accentColor="emerald">
         <TheThuyTinhSection />
       </CollapsibleSection>
-      <CollapsibleSection title="8. Dịch kính" subtitle="MP / MT song song" icon={Activity} accentColor="sky">
+      <CollapsibleSection title={t("dichKinh.title")} subtitle={t("subtitleMPMT")} icon={Activity} accentColor="sky">
         <DichKinhSection />
       </CollapsibleSection>
-      <CollapsibleSection title="9. Đáy mắt — Gai thị & Hoàng điểm" subtitle="MP / MT song song" icon={Eye} accentColor="amber">
+      <CollapsibleSection title={t("dayMat.titleDiaThi")} subtitle={t("subtitleMPMT")} icon={Eye} accentColor="amber">
         <DayMatDiscMaculaSection />
       </CollapsibleSection>
-      <CollapsibleSection title="10. Đáy mắt — Võng mạc & Mạch máu" subtitle="MP / MT song song" icon={Globe} accentColor="rose">
+      <CollapsibleSection title={t("dayMatRetina.title")} subtitle={t("subtitleMPMT")} icon={Globe} accentColor="rose">
         <DayMatRetinaVesselSection />
       </CollapsibleSection>
-      <CollapsibleSection title="11. Hốc mắt" subtitle="MP / MT song song" icon={Layers} accentColor="slate">
+      <CollapsibleSection title={t("hocMat.title")} subtitle={t("subtitleMPMT")} icon={Layers} accentColor="slate">
         <HocMatSection />
       </CollapsibleSection>
-      <CollapsibleSection title="12. Khám toàn thân" icon={HeartPulse} accentColor="emerald">
+      <CollapsibleSection title={t("khamToanThan.title")} icon={HeartPulse} accentColor="emerald">
         <KhamToanThanSection />
       </CollapsibleSection>
     </div>

@@ -317,11 +317,10 @@ export default function ClinicFeedbackPage() {
                         <button
                           onClick={() => openDeleteModal(item.id_feedback)}
                           disabled={deletingId === item.id_feedback}
-                          className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
-                            deletingId === item.id_feedback
+                          className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${deletingId === item.id_feedback
                               ? "opacity-50 cursor-wait bg-slate-100 text-slate-500 border-slate-200"
                               : "bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100"
-                          }`}
+                            }`}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                           {tCommon("delete")}
@@ -370,7 +369,7 @@ export default function ClinicFeedbackPage() {
       {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-5 shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-3xl max-w-3xl w-full p-6 space-y-5 shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
                 <AlertCircle className="w-5 h-5 text-rose-500" />

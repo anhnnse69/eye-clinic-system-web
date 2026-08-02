@@ -501,7 +501,7 @@ export default function SystemDashboardPage() {
                             </div>
                             <div className="text-right shrink-0 flex items-center gap-2.5">
                               <span className="font-bold text-slate-700 font-mono">
-                                {service.count} ca
+                                {service.count} {tDashboard("cases")}
                               </span>
                               <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
                                 {service.growth}

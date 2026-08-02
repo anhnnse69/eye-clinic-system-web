@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import {
   Building2, Search, Filter, ChevronLeft, ChevronRight,
   MapPin, Phone, Mail, AlertCircle, Loader2, Edit2, Ban, X
@@ -12,6 +13,8 @@ import type { ClinicManagementItem, MetaResponse } from "@/types"
 
 export default function ClinicsListPage() {
   const router = useRouter()
+  const t = useTranslations("systemAdmin.clinics")
+  const tCommon = useTranslations("systemAdmin.common")
 
   const [clinics, setClinics] = useState<ClinicManagementItem[]>([])
   const [searchTerm, setSearchTerm] = useState<string>("")
@@ -72,7 +75,7 @@ export default function ClinicsListPage() {
         setClinics([])
       }
     } catch (err) {
-      setError("Không thể tải danh sách phòng khám. Vui lòng kiểm tra lại kết nối hệ thống.")
+      setError(t("loadError"))
       console.error("Error fetching clinics:", err)
     } finally {
       setLoading(false)
@@ -135,7 +138,7 @@ export default function ClinicsListPage() {
       await fetchPendingPublicationCount()
     } catch (err) {
       const apiErrorMessage = handleApiError(err)
-      setDeleteError(`Vô hiệu hóa thất bại: ${apiErrorMessage}`)
+      setDeleteError(`${t("disableFailed")}: ${apiErrorMessage}`)
       console.error("Error deleting clinic:", err)
     } finally {
       setDeleting(false)
@@ -173,19 +176,19 @@ export default function ClinicsListPage() {
     const stateMap = {
       UNPUBLISHED: {
         key: "UNPUBLISHED" as const,
-        label: "Chưa công khai",
+        label: t("unpublished"),
         dotClass: "bg-slate-400",
         wrapperClass: "text-slate-600 bg-slate-100 border-slate-200",
       },
       ACTIVE: {
         key: "ACTIVE" as const,
-        label: "Đang hoạt động",
+        label: tCommon("active"),
         dotClass: "bg-green-600",
         wrapperClass: "text-green-700 bg-green-50 border-green-200",
       },
       INACTIVE: {
         key: "INACTIVE" as const,
-        label: "Ngưng hoạt động",
+        label: tCommon("inactive"),
         dotClass: "bg-amber-500",
         wrapperClass: "text-amber-700 bg-amber-50 border-amber-200",
       },
@@ -201,11 +204,11 @@ export default function ClinicsListPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">Danh sách phòng khám</h2>
+          <h2 className="text-2xl font-bold text-slate-800">{t("listHeader")}</h2>
           <nav className="flex text-sm text-slate-500 gap-1 mt-1">
-            <span className="cursor-pointer hover:text-blue-600" onClick={() => router.push("/system-admin/dashboard")}>Dashboard</span>
+            <span className="cursor-pointer hover:text-blue-600" onClick={() => router.push("/system-admin/dashboard")}>{t("title")}</span>
             <span>/</span>
-            <span className="text-slate-800">Danh sách phòng khám</span>
+            <span className="text-slate-800">{t("listHeader")}</span>
           </nav>
         </div>
 
@@ -214,7 +217,7 @@ export default function ClinicsListPage() {
           className="relative inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm rounded-xl transition-all shadow-sm active:scale-95 self-start sm:self-center cursor-pointer"
         >
           <Building2 className="h-4 w-4" />
-          <span>Yêu cầu duyệt công khai</span>
+          <span>{t("publicationRequests")}</span>
 
           {pendingPublicationCount > 0 && (
             <span className="absolute -top-2 -right-2 flex items-center justify-center min-w-[20px] h-5 px-1 rounded-full bg-red-600 text-white text-[11px] font-bold shadow-md border-2 border-white">
@@ -227,12 +230,12 @@ export default function ClinicsListPage() {
       <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
           <div className="flex flex-col gap-1.5 w-full">
-            <label className="text-sm font-semibold text-slate-600">Tìm kiếm phòng khám</label>
+            <label className="text-sm font-semibold text-slate-600">{t("searchLabel")}</label>
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
               <input
                 type="text"
-                placeholder="Nhập mã cơ sở hoặc tên phòng khám..."
+                placeholder={t("searchPlaceholder")}
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all outline-none"
@@ -241,15 +244,15 @@ export default function ClinicsListPage() {
           </div>
 
           <div className="flex flex-col gap-1.5 w-full">
-            <label className="text-sm font-semibold text-slate-600">Trạng thái hoạt động</label>
+            <label className="text-sm font-semibold text-slate-600">{t("statusLabel")}</label>
             <select
               value={statusFilter}
               onChange={(e) => handleStatusChange(e.target.value)}
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all outline-none text-slate-700 font-medium cursor-pointer"
             >
-              <option value="">Tất cả trạng thái</option>
-              <option value="ACTIVE">Đang hoạt động</option>
-              <option value="INACTIVE">Ngưng hoạt động</option>
+              <option value="">{t("statusAll")}</option>
+              <option value="ACTIVE">{tCommon("active")}</option>
+              <option value="INACTIVE">{tCommon("inactive")}</option>
             </select>
           </div>
 
@@ -259,7 +262,7 @@ export default function ClinicsListPage() {
             className="border border-blue-600 text-blue-600 hover:bg-blue-50 px-4 py-2.5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 h-[45px] w-full cursor-pointer"
           >
             <Filter className="h-4 w-4" />
-            {loading ? "Đang tải..." : "Làm mới dữ liệu"}
+            {loading ? tCommon("loading") : t("refresh")}
           </button>
         </div>
       </div>
@@ -268,7 +271,7 @@ export default function ClinicsListPage() {
         <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
           <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
           <div>
-            <h3 className="font-semibold text-red-800 mb-0.5">Lỗi hệ thống</h3>
+            <h3 className="font-semibold text-red-800 mb-0.5">{tCommon("error")}</h3>
             <p className="text-sm text-red-700">{error}</p>
           </div>
         </div>
@@ -278,15 +281,15 @@ export default function ClinicsListPage() {
       {loading && (
         <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
           <Loader2 className="h-8 w-8 text-blue-600 animate-spin mb-3" />
-          <p className="text-sm text-slate-500">Đang xử lý dữ liệu hệ thống...</p>
+          <p className="text-sm text-slate-500">{t("loadingList")}</p>
         </div>
       )}
 
       {!loading && clinics.length === 0 ? (
         <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[300px] w-full">
           <Building2 className="h-12 w-12 text-slate-300 mb-3" />
-          <h3 className="text-lg font-bold text-slate-800 mb-1">Không tìm thấy phòng khám</h3>
-          <p className="text-sm text-slate-500">Hiện tại không có dữ liệu phòng khám nào khớp với bộ lọc.</p>
+          <h3 className="text-lg font-bold text-slate-800 mb-1">{t("emptyTitle")}</h3>
+          <p className="text-sm text-slate-500">{t("emptyDescription")}</p>
         </div>
       ) : !loading && (
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full">
@@ -294,11 +297,11 @@ export default function ClinicsListPage() {
             <table className="w-full text-left border-collapse min-w-[1000px]">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50">
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider text-center w-[70px]">STT</th>
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Tên phòng khám / Địa chỉ</th>
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Thông tin liên hệ</th>
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider w-[160px]">Trạng thái</th>
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider text-center w-[260px] whitespace-nowrap">Thao tác</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider text-center w-[70px]">{t("tableIndex")}</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">{t("tableClinic")}</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">{t("tableContact")}</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider w-[160px]">{t("tableStatus")}</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider text-center w-[260px] whitespace-nowrap">{t("tableActions")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
@@ -363,7 +366,7 @@ export default function ClinicsListPage() {
                               className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-blue-600 px-2.5 py-1.5 hover:bg-blue-50 rounded-lg transition-all whitespace-nowrap cursor-pointer"
                             >
                               <Edit2 className="h-4 w-4 shrink-0" />
-                              <span>Chỉnh sửa</span>
+                              <span>{t("edit")}</span>
                             </button>
                           )}
 
@@ -373,12 +376,12 @@ export default function ClinicsListPage() {
                               className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 px-2.5 py-1.5 hover:bg-red-50 rounded-lg transition-all whitespace-nowrap cursor-pointer"
                             >
                               <Ban className="h-4 w-4 shrink-0" />
-                              <span>Vô hiệu hóa</span>
+                              <span>{t("disable")}</span>
                             </button>
                           )}
 
                           {displayState.key === "UNPUBLISHED" && (
-                            <span className="text-xs text-slate-400 italic">Chưa có thao tác</span>
+                            <span className="text-xs text-slate-400 italic">{t("noActions")}</span>
                           )}
                         </div>
                       </td>
@@ -392,7 +395,11 @@ export default function ClinicsListPage() {
           {pagination && (
             <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
               <span className="text-sm text-slate-500">
-                Hiển thị {pagination.page === 1 ? 1 : (pagination.page - 1) * pagination.size + 1} - {Math.min(pagination.page * pagination.size, pagination.total)} của {pagination.total} phòng khám
+                {t("pagination", {
+                  from: pagination.page === 1 ? 1 : (pagination.page - 1) * pagination.size + 1,
+                  to: Math.min(pagination.page * pagination.size, pagination.total),
+                  total: pagination.total
+                })}
               </span>
               <div className="flex items-center gap-1">
                 <button
@@ -428,7 +435,7 @@ export default function ClinicsListPage() {
                   <div className="p-2 bg-red-50 rounded-full">
                     <Ban className="h-6 w-6 text-red-600" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900">Xác nhận vô hiệu hóa</h3>
+                  <h3 className="text-xl font-bold text-gray-900">{t("confirmDisable")}</h3>
                 </div>
                 <button
                   onClick={handleCloseDeleteModal}
@@ -443,17 +450,17 @@ export default function ClinicsListPage() {
             {/* Body */}
             <div className="p-6 space-y-4">
               <p className="text-gray-600 text-base leading-relaxed">
-                Bạn có chắc chắn muốn vô hiệu hóa phòng khám <strong className="text-gray-900">{selectedClinicName}</strong>?
+                {t("confirmDisableDescription", { clinicName: selectedClinicName })}
               </p>
 
               <div className="bg-red-50 border border-red-100 rounded-xl p-4">
                 <div className="flex items-start gap-3">
                   <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
                   <div className="text-sm text-red-700">
-                    <p className="font-semibold">Cảnh báo:</p>
+                    <p className="font-semibold">{t("warningTitle")}</p>
                     <ul className="list-disc list-inside space-y-1 mt-1">
-                      <li>Phòng khám sẽ ngừng hoạt động trên hệ thống</li>
-                      <li>Các dữ liệu liên quan vẫn được lưu trữ để tham khảo</li>
+                      <li>{t("warningPoint1")}</li>
+                      <li>{t("warningPoint2")}</li>
                     </ul>
                   </div>
                 </div>
@@ -474,7 +481,7 @@ export default function ClinicsListPage() {
                 disabled={deleting}
                 className="px-4 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-xl font-semibold hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
-                Hủy bỏ
+                {tCommon("cancel")}
               </button>
               <button
                 onClick={handleConfirmDelete}
@@ -484,12 +491,12 @@ export default function ClinicsListPage() {
                 {deleting ? (
                   <>
                     <Loader2 className="h-5 w-5 animate-spin" />
-                    Đang xử lý...
+                    {t("processing")}
                   </>
                 ) : (
                   <>
                     <Ban className="h-5 w-5" />
-                    Xác nhận vô hiệu hóa
+                    {t("disable")}
                   </>
                 )}
               </button>

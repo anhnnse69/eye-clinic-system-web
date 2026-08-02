@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { 
   FileText, Search, Filter, ChevronLeft, ChevronRight, 
   Eye, Building2, Calendar, AlertCircle, Loader2
@@ -28,6 +29,8 @@ interface BackendMetaResponse {
 
 export default function ClinicApplicationsPage() {
   const router = useRouter()
+  const t = useTranslations("systemAdmin.applications")
+  const tCommon = useTranslations("systemAdmin.common")
   
   const [applications, setApplications] = useState<BackendClinicApplication[]>([])
   const [searchTerm, setSearchTerm] = useState<string>("")
@@ -77,7 +80,7 @@ export default function ClinicApplicationsPage() {
         setApplications([])
       }
     } catch (err) {
-      setError("Không thể tải danh sách đơn đăng ký. Vui lòng kiểm tra lại kết nối hệ thống.")
+      setError(t("loadError"))
       console.error("Error fetching applications:", err)
     } finally {
       setLoading(false)
@@ -115,11 +118,11 @@ export default function ClinicApplicationsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">Đơn đăng ký phòng khám</h2>
+          <h2 className="text-2xl font-bold text-slate-800">{t("listHeader")}</h2>
           <nav className="flex text-sm text-slate-500 gap-1 mt-1">
-            <span className="cursor-pointer hover:text-blue-600" onClick={() => router.push("/system-admin/dashboard")}>Dashboard</span>
+            <span className="cursor-pointer hover:text-blue-600" onClick={() => router.push("/system-admin/dashboard")}>{t("title")}</span>
             <span>/</span>
-            <span className="text-slate-800">Đơn đăng ký phòng khám</span>
+            <span className="text-slate-800">{t("listHeader")}</span>
           </nav>
         </div>
       </div>
@@ -129,12 +132,12 @@ export default function ClinicApplicationsPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
           {/* Ô Tìm kiếm */}
           <div className="flex flex-col gap-1.5 w-full">
-            <label className="text-sm font-semibold text-slate-600">Tìm kiếm đơn đăng ký</label>
+            <label className="text-sm font-semibold text-slate-600">{t("searchLabel")}</label>
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
               <input 
                 type="text"
-                placeholder="Nhập mã đơn hoặc tên phòng khám..."
+                placeholder={t("searchPlaceholder")}
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all outline-none"
@@ -144,16 +147,16 @@ export default function ClinicApplicationsPage() {
 
           {/* Ô lọc Trạng thái */}
           <div className="flex flex-col gap-1.5 w-full">
-            <label className="text-sm font-semibold text-slate-600">Trạng thái duyệt</label>
+            <label className="text-sm font-semibold text-slate-600">{t("statusLabel")}</label>
             <select
               value={statusFilter}
               onChange={(e) => handleStatusChange(e.target.value)}
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all outline-none text-slate-700 font-medium cursor-pointer"
             >
-              <option value="">Tất cả trạng thái</option>
-              <option value="PENDING">Chờ duyệt</option>
-              <option value="APPROVED">Đã chấp thuận</option>
-              <option value="REJECTED">Đã từ chối</option>
+              <option value="">{t("statusAll")}</option>
+              <option value="PENDING">{t("pending")}</option>
+              <option value="APPROVED">{t("approved")}</option>
+              <option value="REJECTED">{t("rejected")}</option>
             </select>
           </div>
 
@@ -164,7 +167,7 @@ export default function ClinicApplicationsPage() {
             className="border border-blue-600 text-blue-600 hover:bg-blue-50 px-4 py-2.5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 h-[45px] w-full cursor-pointer"
           >
             <Filter className="h-4 w-4" />
-            {loading ? "Đang tải..." : "Làm mới dữ liệu"}
+            {loading ? tCommon("loading") : t("refresh")}
           </button>
         </div>
       </div>
@@ -174,7 +177,7 @@ export default function ClinicApplicationsPage() {
         <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
           <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
           <div>
-            <h3 className="font-semibold text-red-800 mb-0.5">Lỗi</h3>
+            <h3 className="font-semibold text-red-800 mb-0.5">{tCommon("error")}</h3>
             <p className="text-sm text-red-700">{error}</p>
           </div>
         </div>
@@ -184,7 +187,7 @@ export default function ClinicApplicationsPage() {
       {loading && (
         <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
           <Loader2 className="h-8 w-8 text-blue-600 animate-spin mb-3" />
-          <p className="text-sm text-slate-500">Đang tải danh sách đơn đăng ký...</p>
+          <p className="text-sm text-slate-500">{t("loadingList")}</p>
         </div>
       )}
 
@@ -192,8 +195,8 @@ export default function ClinicApplicationsPage() {
       {!loading && applications.length === 0 ? (
         <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[300px] w-full">
           <FileText className="h-12 w-12 text-slate-400 mb-3" />
-          <h3 className="text-lg font-bold text-slate-800 mb-1">Không có đơn đăng ký phòng khám</h3>
-          <p className="text-sm text-slate-500"> Hiện tại không có đơn đăng ký nào khớp với bộ lọc hoặc cơ sở dữ liệu trống.</p>
+          <h3 className="text-lg font-bold text-slate-800 mb-1">{t("emptyTitle")}</h3>
+          <p className="text-sm text-slate-500">{t("emptyDescription")}</p>
         </div>
       ) : !loading && (
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full">
@@ -201,11 +204,11 @@ export default function ClinicApplicationsPage() {
             <table className="w-full text-left border-collapse min-w-[800px]">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50">
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Mã đơn</th>
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Phòng khám / Liên hệ</th>
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Ngày gửi</th>
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Trạng thái</th>
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Thao tác</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">{t("tableId")}</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">{t("tableClinic")}</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">{t("tableDate")}</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">{t("tableStatus")}</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">{t("tableActions")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
@@ -241,26 +244,26 @@ export default function ClinicApplicationsPage() {
                         {status === "PENDING" && (
                           <div className="flex items-center gap-1.5 text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full w-fit text-xs font-semibold border border-amber-200">
                             <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                            <span>Chờ duyệt</span>
+                            <span>{t("pending")}</span>
                           </div>
                         )}
                         {status === "APPROVED" && (
                           <div className="flex items-center gap-1.5 text-green-700 bg-green-50 px-2.5 py-1 rounded-full w-fit text-xs font-semibold border border-green-200">
                             <span className="w-1.5 h-1.5 rounded-full bg-green-600"></span>
-                            <span>Đã duyệt</span>
+                            <span>{t("approved")}</span>
                           </div>
                         )}
                         {status === "REJECTED" && (
                           <div className="flex items-center gap-1.5 text-red-700 bg-red-50 px-2.5 py-1 rounded-full w-fit text-xs font-semibold border border-red-200">
                             <span className="w-1.5 h-1.5 rounded-full bg-red-600"></span>
-                            <span>Từ chối</span>
+                            <span>{t("rejected")}</span>
                           </div>
                         )}
                       </td>
                       <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                         <button onClick={() => handleViewDetails(id)} className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-lg flex items-center gap-1 text-xs font-medium direct-btn cursor-pointer">
                           <Eye className="h-4 w-4" />
-                          <span>Xem chi tiết</span>
+                          <span>{tCommon("viewDetails")}</span>
                         </button>
                       </td>
                     </tr>
@@ -274,7 +277,7 @@ export default function ClinicApplicationsPage() {
           {pagination && (
             <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
               <span className="text-sm text-slate-500">
-                Hiển thị {pagination.page === 1 ? 1 : (pagination.page - 1) * pagination.size + 1} - {Math.min(pagination.page * pagination.size, pagination.total)} của {pagination.total} đơn đăng ký
+                {t("pagination", { from: pagination.page === 1 ? 1 : (pagination.page - 1) * pagination.size + 1, to: Math.min(pagination.page * pagination.size, pagination.total), total: pagination.total })}
               </span>
               <div className="flex items-center gap-1">
                 <button 

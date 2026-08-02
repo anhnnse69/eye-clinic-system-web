@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
     ArrowLeft,
     Save,
@@ -45,6 +46,8 @@ interface FormErrors {
 
 export default function CreatePatientPage() {
     const router = useRouter();
+    const t = useTranslations("receptionist.patient");
+    const tCommon = useTranslations("receptionist.common");
 
     // Trạng thái câu hỏi của Lễ tân
     const [hasAccount, setHasAccount] = useState<boolean | null>(null);
@@ -152,36 +155,36 @@ export default function CreatePatientPage() {
         const newErrors: FormErrors = {};
 
         if (!data.fullName.trim()) {
-            newErrors.fullName = "Họ và tên bệnh nhân không được để trống.";
+            newErrors.fullName = t("fullNameRequired");
         }
 
         if (!data.dob) {
-            newErrors.dob = "Ngày sinh không được để trống.";
+            newErrors.dob = t("dobRequired");
         } else {
             const selectedDate = new Date(data.dob);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             if (selectedDate > today) {
-                newErrors.dob = "Ngày sinh không được là một ngày trong tương lai.";
+                newErrors.dob = t("dobFuture");
             }
         }
 
         const phoneTrimmed = data.phoneNumber.trim();
         if (!phoneTrimmed) {
-            newErrors.phoneNumber = "Số điện thoại không được để trống.";
+            newErrors.phoneNumber = t("phoneRequired");
         } else if (!/^[0][0-9]{9}$/.test(phoneTrimmed)) {
-            newErrors.phoneNumber = "Số điện thoại không đúng định dạng (Yêu cầu 10 số bắt đầu bằng số 0).";
+            newErrors.phoneNumber = t("phoneInvalid");
         }
 
         if (hasAccount === false && !data.email.trim()) {
-            newErrors.email = "Địa chỉ email là bắt buộc để khởi tạo tài khoản đăng nhập cho bệnh nhân.";
+            newErrors.email = t("emailRequiredForAccount");
         } else if (data.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email.trim())) {
-            newErrors.email = "Địa chỉ email không đúng định dạng.";
+            newErrors.email = t("emailInvalid");
         }
 
         const identityTrimmed = data.identityNumber.trim();
         if (identityTrimmed && !/^[0-9]{9}$/.test(identityTrimmed) && !/^[0-9]{12}$/.test(identityTrimmed)) {
-            newErrors.identityNumber = "Số CCCD/CMND phải bao gồm 9 hoặc 12 ký tự số.";
+            newErrors.identityNumber = t("identityInvalid");
         }
 
         return newErrors;
@@ -210,7 +213,7 @@ export default function CreatePatientPage() {
         e.preventDefault();
         if (!validateForm()) return;
 
-        const confirmSave = window.confirm("Bạn có chắc chắn muốn tiến hành tạo hồ sơ bệnh nhân này?");
+        const confirmSave = window.confirm(t("confirmCreatePatient"));
         if (!confirmSave) return;
 
         setIsSubmitting(true);
@@ -237,7 +240,7 @@ export default function CreatePatientPage() {
                         pass: response.data.generatedPassword
                     });
                 } else {
-                    setToastMessage("Tạo mới hồ sơ bệnh nhân thành công!");
+                    setToastMessage(t("createSuccess"));
                     setTimeout(() => {
                         router.back();
                     }, 1500);
@@ -251,27 +254,27 @@ export default function CreatePatientPage() {
 
                 switch (systemErrorCode) {
                     case "EMAIL_REQUIRED_FOR_NEW_ACCOUNT":
-                        newErrors.email = "Vui lòng nhập Email. Luồng tạo tài khoản tự động bắt buộc phải có Email.";
+                        newErrors.email = t("emailRequiredForAccount");
                         setTimeout(() => scrollToFieldError("email"), 100);
                         break;
 
                     case "PATIENT_PHONE_EXISTS":
-                        newErrors.phoneNumber = "Số điện thoại này đã tồn tại trên một hồ sơ bệnh nhân khác.";
+                        newErrors.phoneNumber = t("phoneDuplicate");
                         setTimeout(() => scrollToFieldError("phoneNumber"), 100);
                         break;
 
                     case "USER_EMAIL_EXISTS":
-                        newErrors.email = "Địa chỉ email này đã được đăng ký bởi tài khoản khác.";
+                        newErrors.email = t("emailExists");
                         setTimeout(() => scrollToFieldError("email"), 100);
                         break;
 
                     case "APP_MESSAGE_4018":
-                        newErrors.identityNumber = "Số CCCD/CMND này đã tồn tại trên hệ thống.";
+                        newErrors.identityNumber = t("identityDuplicate");
                         setTimeout(() => scrollToFieldError("identityNumber"), 100);
                         break;
 
                     default:
-                        newErrors.apiError = `Hệ thống từ chối ghi nhận. Mã lỗi: ${systemErrorCode}`;
+                        newErrors.apiError = t("createFailedWithCode", { code: systemErrorCode });
                         break;
                 }
 
@@ -304,8 +307,8 @@ export default function CreatePatientPage() {
                             <ArrowLeft className="h-5 w-5" />
                         </button>
                         <div>
-                            <h1 className="text-xl font-bold text-slate-900 tracking-tight">Tạo mới hồ sơ bệnh nhân</h1>
-                            <p className="text-sm text-slate-500 mt-0.5">Tiếp đón, phân loại luồng tài khoản bệnh nhân tại quầy lễ tân</p>
+                            <h1 className="text-xl font-bold text-slate-900 tracking-tight">{t("createTitle")}</h1>
+                            <p className="text-sm text-slate-500 mt-0.5">{t("createSubtitle")}</p>
                         </div>
                     </div>
                 </div>
@@ -314,25 +317,25 @@ export default function CreatePatientPage() {
                 <div className="rounded-xl border border-blue-100 bg-blue-50/40 p-5 shadow-sm space-y-4">
                     <div className="flex items-center gap-2 font-semibold text-blue-900 text-base">
                         <HelpCircle className="h-5 w-5 text-blue-600" />
-                        <h2>Khảo sát nhanh luồng đăng ký của bệnh nhân</h2>
+                        <h2>{t("flowSurveyTitle")}</h2>
                     </div>
 
                     <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-xl shadow-slate-100 space-y-3">
-                        <p className="text-sm font-medium text-slate-700">1. Bệnh nhân đã có tài khoản (Account đăng nhập) trên hệ thống chưa?</p>
+                        <p className="text-sm font-medium text-slate-700">{t("accountSurveyQuestion")}</p>
                         <div className="flex gap-3">
                             <button
                                 type="button"
                                 onClick={() => { setHasAccount(true); setHasProfile(null); handleClearSelectedAccount(); }}
                                 className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all ${hasAccount === true ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"}`}
                             >
-                                Đã có Account
+                                {t("hasAccountYes")}
                             </button>
                             <button
                                 type="button"
                                 onClick={() => { setHasAccount(false); setHasProfile(false); handleClearSelectedAccount(); }}
                                 className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all ${hasAccount === false ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"}`}
                             >
-                                Chưa có Account
+                                {t("hasAccountNo")}
                             </button>
                         </div>
 
@@ -341,7 +344,7 @@ export default function CreatePatientPage() {
                             <div className="flex items-start gap-2 text-xs text-blue-700 bg-blue-50/70 p-3 rounded-lg border border-blue-100 mt-2 animate-fade-in">
                                 <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
                                 <p className="leading-relaxed">
-                                    <strong>Lưu ý hệ thống:</strong> Lựa chọn này sẽ kích hoạt luồng <strong>Tự động khởi tạo tài khoản mới</strong> đi kèm hồ sơ. Sau khi bấm lưu thành công, hệ thống sẽ hiển thị một cửa sổ chứa <strong>mật khẩu kích hoạt ban đầu</strong> ngay trên màn hình để lễ tân bàn giao trực tiếp cho bệnh nhân.
+                                    <strong>{t("accountWarningTitle")}</strong> {t("accountWarningBody")}
                                 </p>
                             </div>
                         )}
@@ -349,10 +352,10 @@ export default function CreatePatientPage() {
 
                     {hasAccount === true && (
                         <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-xl shadow-slate-100">
-                            <p className="text-sm font-medium text-slate-700 mb-3">2. Bệnh nhân đã từng tạo hồ sơ bệnh nhân (Patient Profile) đính kèm chưa?</p>
+                            <p className="text-sm font-medium text-slate-700 mb-3">{t("profileSurveyQuestion")}</p>
                             <div className="flex gap-3">
-                                <button type="button" onClick={() => setHasProfile(true)} className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all ${hasProfile === true ? "bg-emerald-600 text-white border-emerald-600" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"}`} > Đã tạo hồ sơ rồi </button>
-                                <button type="button" onClick={() => setHasProfile(false)} className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all ${hasProfile === false ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"}`} > Chưa từng tạo hồ sơ </button>
+                                <button type="button" onClick={() => setHasProfile(true)} className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all ${hasProfile === true ? "bg-emerald-600 text-white border-emerald-600" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"}`} >{t("hasProfileYes")}</button>
+                                <button type="button" onClick={() => setHasProfile(false)} className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all ${hasProfile === false ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"}`} >{t("hasProfileNo")}</button>
                             </div>
                         </div>
                     )}
@@ -362,17 +365,17 @@ export default function CreatePatientPage() {
                 {hasAccount === true && hasProfile === true && (
                     <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-center space-y-3 w-full">
                         <XCircle className="h-10 w-10 text-amber-500 mx-auto" />
-                        <h3 className="font-bold text-slate-800 text-base">Thông báo: Không sử dụng chức năng này</h3>
+                        <h3 className="font-bold text-slate-800 text-base">{t("unusedFlowTitle")}</h3>
                         {/* Thay đổi: Loại bỏ block/max-w ép dòng không cần thiết để văn bản tự động trải mượt theo chiều ngang */}
                         <p className="text-sm text-slate-600 leading-relaxed whitespace-normal px-4">
-                            Bệnh nhân đã có cả tài khoản và hồ sơ y tế trên hệ thống. Lễ tân không cần làm lại bước tạo mới hồ sơ bệnh nhân này để tránh trùng lặp dữ liệu.
+                            {t("unusedFlowDescription")}
                         </p>
                         <button
                             type="button"
                             onClick={() => router.back()}
                             className="mt-2 text-xs font-semibold px-4 py-2 bg-white text-slate-700 border border-slate-200 rounded-lg shadow-sm hover:bg-slate-50 transition-colors"
                         >
-                            Quay lại danh sách
+                            {t("backToList")}
                         </button>
                     </div>
                 )}
@@ -395,13 +398,13 @@ export default function CreatePatientPage() {
                                             <Search className="h-5 w-5" />
                                         </div>
                                         <div>
-                                            <h3 className="font-semibold text-slate-800 text-sm">Tìm kiếm liên kết tài khoản</h3>
-                                            <p className="text-xs text-slate-400">Nhập thông tin hành chính để tìm kiếm nhanh tài khoản gốc của bệnh nhân</p>
+                                            <h3 className="font-semibold text-slate-800 text-sm">{t("searchAccountTitle")}</h3>
+                                            <p className="text-xs text-slate-400">{t("searchAccountSubtitle")}</p>
                                         </div>
                                     </div>
                                     {selectedAccountName && (
                                         <button type="button" onClick={handleClearSelectedAccount} className="inline-flex items-center text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-md transition-colors">
-                                            Hủy chọn tài khoản
+                                            {t("clearSelectedAccount")}
                                         </button>
                                     )}
                                 </div>
@@ -409,14 +412,14 @@ export default function CreatePatientPage() {
                                 {selectedAccountName ? (
                                     <div className="p-3.5 bg-emerald-50 rounded-lg border border-emerald-200 text-emerald-800 text-sm flex items-center gap-2 font-medium">
                                         <UserCheck className="h-5 w-5 text-emerald-600" />
-                                        Đã chọn tài khoản: <span className="underline font-bold">{selectedAccountName}</span> (Hệ thống tự điền thông tin bên dưới)
+                                        {t("selectedAccountMessage", { account: selectedAccountName })}
                                     </div>
                                 ) : (
                                     <div className="space-y-4">
                                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                            <input type="text" placeholder="Tìm theo tên..." value={searchName} onChange={(e) => setSearchName(e.target.value)} className="w-full text-xs rounded-lg border border-slate-200 p-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-500" />
-                                            <input type="text" placeholder="Tìm theo số điện thoại..." value={searchPhone} onChange={(e) => setSearchPhone(e.target.value)} className="w-full text-xs rounded-lg border border-slate-200 p-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-500" />
-                                            <input type="text" placeholder="Tìm theo email..." value={searchEmail} onChange={(e) => setSearchEmail(e.target.value)} className="w-full text-xs rounded-lg border border-slate-200 p-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-500" />
+                                            <input type="text" placeholder={t("searchByNamePlaceholder")} value={searchName} onChange={(e) => setSearchName(e.target.value)} className="w-full text-xs rounded-lg border border-slate-200 p-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-500" />
+                                            <input type="text" placeholder={t("searchByPhonePlaceholder")} value={searchPhone} onChange={(e) => setSearchPhone(e.target.value)} className="w-full text-xs rounded-lg border border-slate-200 p-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-500" />
+                                            <input type="text" placeholder={t("searchByEmailPlaceholder")} value={searchEmail} onChange={(e) => setSearchEmail(e.target.value)} className="w-full text-xs rounded-lg border border-slate-200 p-2.5 bg-slate-50 focus:bg-white focus:outline-none focus:border-blue-500" />
                                         </div>
 
                                         {searchResults.length > 0 && (
@@ -426,8 +429,8 @@ export default function CreatePatientPage() {
                                                         <div className="space-y-0.5">
                                                             <div className="font-semibold text-slate-700 group-hover:text-blue-700">{account.fullName}</div>
                                                             <div className="text-slate-400 flex gap-4">
-                                                                <span>SĐT: {account.phone}</span>
-                                                                <span>Email: {account.email}</span>
+                                                                <span>{t("accountPhoneLabel", { phone: account.phone })}</span>
+                                                                <span>{t("accountEmailLabel", { email: account.email })}</span>
                                                             </div>
                                                         </div>
                                                         <UserPlus className="h-4 w-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
@@ -446,30 +449,30 @@ export default function CreatePatientPage() {
                                 <div className="rounded-lg bg-blue-50 p-2 text-blue-600 mr-3">
                                     <User className="h-5 w-5" />
                                 </div>
-                                <h2 className="text-lg font-semibold text-slate-800">Thông tin hành chính cá nhân</h2>
+                                <h2 className="text-lg font-semibold text-slate-800">{t("personalInfoTitle")}</h2>
                             </div>
 
                             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">Họ và tên bệnh nhân <span className="text-red-500">*</span></label>
+                                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">{t("fullNameLabel")} <span className="text-red-500">*</span></label>
                                     <div className="relative">
                                         <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                                        <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} className={`w-full rounded-lg border py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:outline-none focus:ring-2 transition-shadow ${errors.fullName ? "border-red-300 focus:border-red-500 focus:ring-red-500/10 bg-red-50/30" : "border-slate-200 focus:border-blue-500 focus:ring-blue-500/10"}`} placeholder="Nhập họ và tên đầy đủ" />
+                                        <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} className={`w-full rounded-lg border py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:outline-none focus:ring-2 transition-shadow ${errors.fullName ? "border-red-300 focus:border-red-500 focus:ring-red-500/10 bg-red-50/30" : "border-slate-200 focus:border-blue-500 focus:ring-blue-500/10"}`} placeholder={t("fullNamePlaceholder")} />
                                     </div>
                                     {errors.fullName && <p className="text-xs text-red-500 font-medium mt-1 pl-1">{errors.fullName}</p>}
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">Giới tính <span className="text-red-500">*</span></label>
+                                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">{t("genderLabel")} <span className="text-red-500">*</span></label>
                                     <select name="gender" value={formData.gender} onChange={handleChange} className="w-full rounded-lg border border-slate-200 py-2.5 px-3 text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/10 transition-shadow bg-white cursor-pointer" >
-                                        <option value="MALE">Nam</option>
-                                        <option value="FEMALE">Nữ</option>
-                                        <option value="OTHER">Khác</option>
+                                        <option value="MALE">{t("male")}</option>
+                                        <option value="FEMALE">{t("female")}</option>
+                                        <option value="OTHER">{t("other")}</option>
                                     </select>
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">Ngày sinh <span className="text-red-500">*</span></label>
+                                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">{t("dobLabel")} <span className="text-red-500">*</span></label>
                                     <div className="relative">
                                         <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                                         <input type="date" name="dob" value={formData.dob} onChange={handleChange} className={`w-full rounded-lg border py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:outline-none focus:ring-2 transition-shadow ${errors.dob ? "border-red-300 focus:border-red-500 focus:ring-red-500/10 bg-red-50/30" : "border-slate-200 focus:border-blue-500 focus:ring-blue-500/10"}`} />
@@ -478,47 +481,47 @@ export default function CreatePatientPage() {
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">Số điện thoại <span className="text-red-500">*</span></label>
+                                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">{t("phoneLabel")} <span className="text-red-500">*</span></label>
                                     <div className="relative">
                                         <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                                        <input type="tel" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} className={`w-full rounded-lg border py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:outline-none focus:ring-2 transition-shadow ${errors.phoneNumber ? "border-red-300 focus:border-red-500 focus:ring-red-500/10 bg-red-50/30" : "border-slate-200 focus:border-blue-500 focus:ring-blue-500/10"}`} placeholder="Nhập số điện thoại liên lạc" />
+                                        <input type="tel" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} className={`w-full rounded-lg border py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:outline-none focus:ring-2 transition-shadow ${errors.phoneNumber ? "border-red-300 focus:border-red-500 focus:ring-red-500/10 bg-red-50/30" : "border-slate-200 focus:border-blue-500 focus:ring-blue-500/10"}`} placeholder={t("phonePlaceholder")} />
                                     </div>
                                     {errors.phoneNumber && <p className="text-xs text-red-500 font-medium mt-1 pl-1">{errors.phoneNumber}</p>}
                                 </div>
 
                                 <div className="space-y-1.5 sm:col-span-2">
                                     <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">
-                                        Địa chỉ Email {hasAccount === false && <span className="text-red-500">*</span>}
+                                        {t("emailLabel")} {hasAccount === false && <span className="text-red-500">*</span>}
                                     </label>
                                     <div className="relative">
                                         <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                                        <input type="email" name="email" value={formData.email} onChange={handleChange} className={`w-full rounded-lg border py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:outline-none focus:ring-2 transition-shadow ${errors.email ? "border-red-300 focus:border-red-500 focus:ring-red-500/10 bg-red-50/30" : "border-slate-200 focus:border-blue-500 focus:ring-blue-500/10"}`} placeholder="example@gmail.com" />
+                                        <input type="email" name="email" value={formData.email} onChange={handleChange} className={`w-full rounded-lg border py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:outline-none focus:ring-2 transition-shadow ${errors.email ? "border-red-300 focus:border-red-500 focus:ring-red-500/10 bg-red-50/30" : "border-slate-200 focus:border-blue-500 focus:ring-blue-500/10"}`} placeholder={t("emailPlaceholder")} />
                                     </div>
                                     {errors.email && <p className="text-xs text-red-500 font-medium mt-1 pl-1">{errors.email}</p>}
                                 </div>
 
                                 <div className="space-y-1.5 sm:col-span-2">
-                                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">Địa chỉ thường trú</label>
+                                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">{t("addressLabel")}</label>
                                     <div className="relative">
                                         <MapPin className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                                        <textarea name="address" rows={2} value={formData.address} onChange={handleChange} className="w-full rounded-lg border border-slate-200 py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/10 transition-shadow resize-none" placeholder="Số nhà, tên đường, phường/xã, quận/huyện..." />
+                                        <textarea name="address" rows={2} value={formData.address} onChange={handleChange} className="w-full rounded-lg border border-slate-200 py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/10 transition-shadow resize-none" placeholder={t("addressPlaceholder")} />
                                     </div>
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">Số CCCD / CMND</label>
+                                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">{t("identityLabel")}</label>
                                     <div className="relative">
                                         <CreditCard className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                                        <input type="text" name="identityNumber" value={formData.identityNumber} onChange={handleChange} className={`w-full rounded-lg border py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:outline-none focus:ring-2 transition-shadow ${errors.identityNumber ? "border-red-300 focus:border-red-500 focus:ring-red-500/10 bg-red-50/30" : "border-slate-200 focus:border-blue-500 focus:ring-blue-500/10"}`} placeholder="9 hoặc 12 chữ số căn cước" />
+                                        <input type="text" name="identityNumber" value={formData.identityNumber} onChange={handleChange} className={`w-full rounded-lg border py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:outline-none focus:ring-2 transition-shadow ${errors.identityNumber ? "border-red-300 focus:border-red-500 focus:ring-red-500/10 bg-red-50/30" : "border-slate-200 focus:border-blue-500 focus:ring-blue-500/10"}`} placeholder={t("identityPlaceholder")} />
                                     </div>
                                     {errors.identityNumber && <p className="text-xs text-red-500 font-medium mt-1 pl-1">{errors.identityNumber}</p>}
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">Số bảo hiểm (BHYT)</label>
+                                    <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">{t("bhytLabel")}</label>
                                     <div className="relative">
                                         <CreditCard className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                                        <input type="text" name="bhytNumber" value={formData.bhytNumber} onChange={handleChange} className="w-full rounded-lg border border-slate-200 py-2.5 pl-10 pr-4 text-sm text-slate-800 uppercase focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/10 transition-shadow" placeholder="VD: GD479..." />
+                                        <input type="text" name="bhytNumber" value={formData.bhytNumber} onChange={handleChange} className="w-full rounded-lg border border-slate-200 py-2.5 pl-10 pr-4 text-sm text-slate-800 uppercase focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/10 transition-shadow" placeholder={t("bhytPlaceholder")} />
                                     </div>
                                 </div>
                             </div>
@@ -532,7 +535,7 @@ export default function CreatePatientPage() {
                                 onClick={() => router.back()}
                                 className="px-5 py-2.5 rounded-lg border border-slate-200 bg-white text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition-colors disabled:opacity-50"
                             >
-                                Hủy bỏ
+                                {tCommon("cancel")}
                             </button>
                             <button
                                 type="submit"
@@ -542,12 +545,12 @@ export default function CreatePatientPage() {
                                 {isSubmitting ? (
                                     <>
                                         <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                                        Đang tạo...
+                                        {t("creating")}
                                     </>
                                 ) : (
                                     <>
                                         <Save className="mr-2 h-4 w-4" />
-                                        Tạo hồ sơ bệnh nhân
+                                        {t("createPatientButton")}
                                     </>
                                 )}
                             </button>
@@ -565,9 +568,9 @@ export default function CreatePatientPage() {
                                 <CheckCircle className="h-8 w-8" />
                             </div>
                             <div className="space-y-1">
-                                <h3 className="text-xl font-bold text-slate-900">Tạo tài khoản thành công!</h3>
+                                <h3 className="text-xl font-bold text-slate-900">{t("accountCreatedSuccessTitle")}</h3>
                                 <p className="text-sm text-slate-500">
-                                    Vui lòng sao chép lại thông tin kích hoạt này và bàn giao trực tiếp cho bệnh nhân.
+                                    {t("accountCreatedSuccessBody")}
                                 </p>
                             </div>
                         </div>
@@ -576,7 +579,7 @@ export default function CreatePatientPage() {
                         <div className="rounded-xl bg-slate-50 p-4 border border-slate-200 space-y-3 block text-left">
                             <div className="space-y-1 block">
                                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-                                    Tài khoản đăng nhập (Email)
+                                    {t("loginAccountLabel")}
                                 </label>
                                 <span className="font-mono text-sm text-slate-800 font-bold bg-white border border-slate-200 px-3 py-2 rounded-xl block select-all break-all">
                                     {createdAccountInfo.email}
@@ -584,7 +587,7 @@ export default function CreatePatientPage() {
                             </div>
                             <div className="space-y-1 block">
                                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-                                    Mật khẩu kích hoạt ban đầu
+                                    {t("initialPasswordLabel")}
                                 </label>
                                 <span className="font-mono text-base text-emerald-700 font-bold tracking-wider bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-xl block select-all">
                                     {createdAccountInfo.pass}
@@ -602,7 +605,7 @@ export default function CreatePatientPage() {
                                 }}
                                 className="w-full py-3 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 transition-all shadow-md text-center block"
                             >
-                                Xác nhận & Quay lại danh sách
+                                {t("confirmAndBack")}
                             </button>
                         </div>
                     </div>

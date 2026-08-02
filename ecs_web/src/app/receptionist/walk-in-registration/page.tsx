@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { 
   ArrowLeft, CheckCircle2, User, Calendar, 
   Clock, Stethoscope, AlertCircle, Loader2,
@@ -12,6 +13,8 @@ import { handleApiError } from "@/lib/axios"
 
 export default function WalkInRegistrationPage() {
   const router = useRouter()
+  const t = useTranslations("receptionist.walkIn")
+  const tPatient = useTranslations("receptionist.patient")
   
   const [walkInFlow, setWalkInFlow] = useState<any>(null)
   const [symptoms, setSymptoms] = useState<string>("") 
@@ -60,7 +63,7 @@ export default function WalkInRegistrationPage() {
         // Xóa luồng tạm trong session, dữ liệu hiển thị đã có summaryInfo lo liệu
         sessionStorage.removeItem("pending_walkin_appointment")
       } else {
-        setErrorMsg(`Đăng ký không thành công. Mã phản hồi: ${response.codeMessage}`)
+        setErrorMsg(t("registrationFailedWithCode", { code: response.codeMessage }))
       }
     } catch (error: any) {
       const apiErrorCodeMessage = handleApiError(error)
@@ -107,27 +110,27 @@ export default function WalkInRegistrationPage() {
           {/* Khối tiêu đề - Ép text căn giữa độc lập */}
           <div className="w-full text-center space-y-2">
             <h1 className="text-xl font-bold text-slate-800 block w-full whitespace-normal">
-              Đăng Ký Khám Vãng Lai Thành Công!
+              {t("successTitle")}
             </h1>
             <p className="text-xs text-slate-500 block w-full whitespace-normal px-4">
-              Hệ thống đã xếp số thứ tự hàng chờ và khởi tạo hồ sơ lịch hẹn thành công.
+              {t("successSubtitle")}
             </p>
           </div>
 
           {/* Khối thông tin Mã và STT dạng Grid ổn định */}
           <div className="w-full p-5 bg-slate-50 rounded-xl border border-slate-200 grid grid-cols-2 gap-4 text-left">
             <div className="space-y-1">
-              <span className="text-[10px] text-slate-400 block uppercase font-bold tracking-wider">Mã lịch hẹn khám</span>
+              <span className="text-[10px] text-slate-400 block uppercase font-bold tracking-wider">{t("appointmentCodeLabel")}</span>
               <span className="text-slate-800 font-mono font-bold bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 inline-block text-xs select-all">
-                {successData.appointmentId || "N/A"}
+                {successData.appointmentId || tPatient("notAvailable")}
               </span>
             </div>
             
             <div className="space-y-1">
-              <span className="text-[10px] text-slate-400 block uppercase font-bold tracking-wider">Số thứ tự (STT)</span>
+              <span className="text-[10px] text-slate-400 block uppercase font-bold tracking-wider">{t("queueNumberLabel")}</span>
               <div>
                 <span className="text-emerald-700 text-sm font-extrabold bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-200 inline-block">
-                 #{successData.walkInQueue?.queueNumber !== undefined ? successData.walkInQueue.queueNumber : "---"}
+                 #{successData.walkInQueue?.queueNumber !== undefined ? successData.walkInQueue.queueNumber : tPatient("notAvailable")}
                 </span>
               </div>
             </div>
@@ -137,32 +140,32 @@ export default function WalkInRegistrationPage() {
           {summaryInfo && (
             <div className="w-full border border-slate-100 rounded-xl p-4 bg-white space-y-3 text-xs text-left">
               <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider pb-1.5 border-b border-slate-100">
-                Chi tiết thông tin tiếp đón
+                {t("summaryTitle")}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <span className="text-slate-400 block">Bệnh nhân:</span>
-                  <span className="font-bold text-slate-800">{summaryInfo.patientName || "---"}</span>
+                  <span className="text-slate-400 block">{t("patientLabel")}</span>
+                  <span className="font-bold text-slate-800">{summaryInfo.patientName || tPatient("notAvailable")}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block">Số điện thoại:</span>
-                  <span className="font-bold text-slate-700 font-mono">{summaryInfo.patientPhone || "---"}</span>
+                  <span className="text-slate-400 block">{tPatient("phone")}</span>
+                  <span className="font-bold text-slate-700 font-mono">{summaryInfo.patientPhone || tPatient("notAvailable")}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block">Bác sĩ phụ trách:</span>
-                  <span className="font-bold text-slate-800">BS. {summaryInfo.doctorName || "---"}</span>
+                  <span className="text-slate-400 block">{t("doctorLabel")}</span>
+                  <span className="font-bold text-slate-800">{t("doctorPrefix")} {summaryInfo.doctorName || tPatient("notAvailable")}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block">Phòng khám:</span>
-                  <span className="font-bold text-indigo-700">{summaryInfo.roomName || "Chờ xếp phòng"}</span>
+                  <span className="text-slate-400 block">{t("roomLabel")}</span>
+                  <span className="font-bold text-indigo-700">{summaryInfo.roomName || t("notAssignedRoom")}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block">Ngày khám:</span>
+                  <span className="text-slate-400 block">{t("appointmentDateLabel")}</span>
                   <span className="font-bold text-slate-700">{formatDateDisplay(summaryInfo.date)}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block">Khung giờ hẹn:</span>
-                  <span className="font-bold text-emerald-700">{summaryInfo.timeSlot || "---"}</span>
+                  <span className="text-slate-400 block">{t("timeSlotLabel")}</span>
+                  <span className="font-bold text-emerald-700">{summaryInfo.timeSlot || tPatient("notAvailable")}</span>
                 </div>
               </div>
             </div>
@@ -175,7 +178,7 @@ export default function WalkInRegistrationPage() {
               onClick={() => router.push("/receptionist/appointments")}
               className="w-full py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-blue-100"
             >
-              Đi đến danh sách điều phối lịch hẹn
+              {t("goToAppointments")}
             </button>
           </div>
 
@@ -188,7 +191,7 @@ export default function WalkInRegistrationPage() {
     return (
       <div className="w-full min-h-[300px] flex flex-col items-center justify-center text-slate-400 gap-2">
         <Loader2 className="h-7 w-7 animate-spin text-blue-600" />
-        <p className="text-xs">Đang đồng bộ luồng thông tin đăng ký...</p>
+        <p className="text-xs">{t("syncingFlow")}</p>
       </div>
     )
   }
@@ -204,15 +207,15 @@ export default function WalkInRegistrationPage() {
           className="flex items-center gap-2 text-xs text-slate-500 hover:text-slate-800 font-bold transition-colors w-fit"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span>Quay lại bước chọn bệnh nhân</span>
+          <span>{t("backToSelectPatient")}</span>
         </button>
         
         <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-          <span>1. Giờ trống</span>
+          <span>{t("step1")}</span>
           <span className="text-slate-300">/</span>
-          <span>2. Bệnh nhân</span>
+          <span>{t("step2")}</span>
           <span className="text-slate-300">/</span>
-          <span className="text-blue-600 font-extrabold">3. Xác nhận hoàn tất</span>
+          <span className="text-blue-600 font-extrabold">{t("step3")}</span>
         </div>
       </div>
 
@@ -222,8 +225,8 @@ export default function WalkInRegistrationPage() {
           <Armchair className="h-5 w-5" />
         </div>
         <div>
-          <h1 className="text-lg font-bold text-slate-800 tracking-tight">Xác nhận Đăng ký Khám Vãng lai</h1>
-          <p className="text-xs text-slate-400 mt-0.5">Kiểm tra thông tin chi tiết của người bệnh và khung giờ trước khi cấp số thứ tự</p>
+          <h1 className="text-lg font-bold text-slate-800 tracking-tight">{t("confirmTitle")}</h1>
+          <p className="text-xs text-slate-400 mt-0.5">{t("confirmSubtitle")}</p>
         </div>
       </div>
 
@@ -232,8 +235,8 @@ export default function WalkInRegistrationPage() {
         <div className="p-4 bg-rose-50 border border-rose-100 rounded-xl flex items-start gap-3 text-rose-700 shadow-sm animate-in fade-in duration-200">
           <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
           <div className="text-xs space-y-0.5">
-            <p className="font-bold">Đăng ký không thành công</p>
-            <p className="opacity-90">Hệ thống báo phản hồi: {errorMsg}</p>
+            <p className="font-bold">{t("registrationFailed")}</p>
+            <p className="opacity-90">{t("registrationFailedBody", { message: errorMsg })}</p>
           </div>
         </div>
       )}
@@ -245,28 +248,28 @@ export default function WalkInRegistrationPage() {
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
           <h2 className="text-xs font-bold text-slate-800 flex items-center gap-2 pb-2 border-b border-slate-100 uppercase tracking-wider">
             <User className="h-4 w-4 text-blue-500" />
-            Thông tin người bệnh đã chọn
+            {t("selectedPatientTitle")}
           </h2>
 
           <div className="space-y-3.5 text-xs">
             <div>
-              <span className="text-[11px] text-slate-400 block mb-0.5">Họ và tên bệnh nhân</span>
+              <span className="text-[11px] text-slate-400 block mb-0.5">{tPatient("fullName")}</span>
               <span className="font-extrabold text-slate-800 text-sm block">{walkInFlow.patientName}</span>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <span className="text-[11px] text-slate-400 block mb-0.5">Ngày sinh</span>
-                <span className="font-bold text-slate-700 block">{walkInFlow.patientDob || "---"}</span>
+                <span className="text-[11px] text-slate-400 block mb-0.5">{tPatient("dateOfBirth")}</span>
+                <span className="font-bold text-slate-700 block">{walkInFlow.patientDob || tPatient("notAvailable")}</span>
               </div>
               <div>
-                <span className="text-[11px] text-slate-400 block mb-0.5">Số điện thoại</span>
-                <span className="font-bold text-slate-700 font-mono block">{walkInFlow.patientPhone || "---"}</span>
+                <span className="text-[11px] text-slate-400 block mb-0.5">{tPatient("phone")}</span>
+                <span className="font-bold text-slate-700 font-mono block">{walkInFlow.patientPhone || tPatient("notAvailable")}</span>
               </div>
             </div>
 
             <div>
-              <span className="text-[11px] text-slate-400 block mb-1">Mã hồ sơ (ID)</span>
+              <span className="text-[11px] text-slate-400 block mb-1">{tPatient("profileIdLabel")}</span>
               <span className="font-mono text-[11px] text-slate-600 bg-slate-50 px-2 py-1 border border-slate-200 rounded-md inline-block select-all">
                 {walkInFlow.patientProfileId}
               </span>
@@ -278,26 +281,26 @@ export default function WalkInRegistrationPage() {
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
           <h2 className="text-xs font-bold text-slate-800 flex items-center gap-2 pb-2 border-b border-slate-100 uppercase tracking-wider">
             <Stethoscope className="h-4 w-4 text-purple-500" />
-            Lịch trình khám dự kiến
+            {t("appointmentPlanTitle")}
           </h2>
 
           <div className="space-y-3.5 text-xs">
             <div>
-              <span className="text-[11px] text-slate-400 block mb-0.5">Chuyên khoa đăng ký</span>
-              <span className="font-bold text-slate-800 block">{walkInFlow.specialtyName || "Khám chung"}</span>
+              <span className="text-[11px] text-slate-400 block mb-0.5">{t("specialtyLabel")}</span>
+              <span className="font-bold text-slate-800 block">{walkInFlow.specialtyName || t("generalConsultation")}</span>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <span className="text-[11px] text-slate-400 block mb-0.5">Bác sĩ phụ trách</span>
-                <span className="font-bold text-slate-700 block">BS. {walkInFlow.doctorName || "Chỉ định ngẫu nhiên"}</span>
+                <span className="text-[11px] text-slate-400 block mb-0.5">{t("doctorLabel")}</span>
+                <span className="font-bold text-slate-700 block">{t("doctorPrefix")} {walkInFlow.doctorName || t("randomAssignment")}</span>
               </div>
               <div>
                 <span className="text-[11px] text-slate-400 block flex items-center gap-1 mb-0.5">
-                  <DoorOpen className="h-3 w-3 text-slate-400" /> Phòng khám
+                  <DoorOpen className="h-3 w-3 text-slate-400" /> {t("roomLabel")}
                 </span>
                 <span className="font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 rounded text-[11px] inline-block">
-                  {walkInFlow.roomName || "Chờ xếp phòng"}
+                  {walkInFlow.roomName || t("notAssignedRoom")}
                 </span>
               </div>
             </div>
@@ -305,7 +308,7 @@ export default function WalkInRegistrationPage() {
             <div className="grid grid-cols-2 gap-2 bg-blue-50/40 p-2.5 rounded-lg border border-blue-100">
               <div className="space-y-0.5">
                 <span className="text-[10px] font-bold text-blue-500 uppercase flex items-center gap-1">
-                  <Calendar className="h-3 w-3" /> Ngày khám
+                  <Calendar className="h-3 w-3" /> {t("appointmentDateLabel")}
                 </span>
                 <span className="font-extrabold text-slate-800 text-xs block">
                   {formatDateDisplay(walkInFlow.date)}
@@ -313,10 +316,10 @@ export default function WalkInRegistrationPage() {
               </div>
               <div className="space-y-0.5">
                 <span className="text-[10px] font-bold text-blue-500 uppercase flex items-center gap-1">
-                  <Clock className="h-3 w-3" /> Giờ hẹn hờ
+                  <Clock className="h-3 w-3" /> {t("timeSlotLabel")}
                 </span>
                 <span className="font-extrabold text-emerald-700 text-xs block">
-                  {walkInFlow.timeSlot || "---"}
+                  {walkInFlow.timeSlot || tPatient("notAvailable")}
                 </span>
               </div>
             </div>
@@ -329,17 +332,17 @@ export default function WalkInRegistrationPage() {
       <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-2">
         <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5 uppercase tracking-wider">
           <FileText className="h-4 w-4 text-slate-500" /> 
-          Lý do khám bệnh / Triệu chứng lâm sàng <span className="text-slate-400 font-normal lowercase italic">(Không bắt buộc)</span>
+         {t("symptomsLabel")} <span className="text-slate-400 font-normal lowercase italic">{t("symptomsOptional")}</span>
         </label>
         <textarea
           rows={3}
           value={symptoms}
           onChange={(e) => setSymptoms(e.target.value)}
-          placeholder="Ví dụ: Bệnh nhân đau đầu sốt nhẹ, ho có đờm 2 ngày..."
+          placeholder={t("symptomsPlaceholder")}
           className="w-full text-xs p-3 border border-slate-200 rounded-xl bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-slate-800 leading-relaxed resize-none"
         />
         <p className="text-[11px] text-slate-400 italic">
-          * Nếu để trống, hệ thống sẽ tự động lưu nội dung: &quot;Khám vãng lai tại quầy (Đăng ký trực tiếp)&quot;.
+          {t("symptomsHelper")}
         </p>
       </div>
 
@@ -347,8 +350,8 @@ export default function WalkInRegistrationPage() {
       <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3 text-amber-900">
         <ShieldAlert className="h-4 w-4 mt-0.5 text-amber-600 shrink-0" />
         <div className="text-xs space-y-0.5">
-          <p className="font-bold">Lưu ý nghiệp vụ dành cho Lễ tân:</p>
-          <p className="opacity-90">Bằng việc bấm nút xác nhận, bệnh nhân sẽ được đưa vào hàng đợi chờ khám của bác sĩ ngay lập tức. Vui lòng nhắc nhở bệnh nhân di chuyển tới đúng phòng khám chuyên khoa.</p>
+          <p className="font-bold">{t("noticeTitle")}</p>
+          <p className="opacity-90">{t("noticeBody")}</p>
         </div>
       </div>
 
@@ -360,7 +363,7 @@ export default function WalkInRegistrationPage() {
           onClick={handleCancelRegistrationFlow}
           className="px-5 py-3 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50"
         >
-          Hủy bỏ & Quay lại chọn giờ trống
+          {t("cancelAndBack")}
         </button>
         <button
           type="button"
@@ -371,10 +374,10 @@ export default function WalkInRegistrationPage() {
           {loading ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Đang xử lý...</span>
+              <span>{t("processing")}</span>
             </>
           ) : (
-            <span>Xác nhận đăng ký khám</span>
+            <span>{t("confirmRegistration")}</span>
           )}
         </button>
       </div>

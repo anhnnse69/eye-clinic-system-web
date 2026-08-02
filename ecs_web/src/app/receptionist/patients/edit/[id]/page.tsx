@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
     ArrowLeft,
     Save,
@@ -46,6 +47,8 @@ export default function EditPatientPage() {
     const router = useRouter();
     const params = useParams();
     const patientId = params?.id as string;
+    const t = useTranslations("receptionist.patient");
+    const tCommon = useTranslations("receptionist.common");
 
     const [loading, setLoading] = useState<boolean>(true);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -95,7 +98,7 @@ export default function EditPatientPage() {
                     });
                 }
             } catch (error) {
-                alert("Không thể tải dữ liệu hồ sơ bệnh nhân từ máy chủ.");
+                alert(t("loadProfileFailed"));
             } finally {
                 setLoading(false);
             }
@@ -109,11 +112,11 @@ export default function EditPatientPage() {
         const newErrors: FormErrors = {};
 
         if (!data.fullName.trim()) {
-            newErrors.fullName = "Họ và tên bệnh nhân không được để trống.";
+            newErrors.fullName = t("fullNameRequired");
         }
 
         if (!data.dob) {
-            newErrors.dob = "Ngày sinh không được để trống.";
+            newErrors.dob = t("dobRequired");
         } else {
             const selectedDate = new Date(data.dob);
             const today = new Date();
@@ -121,24 +124,24 @@ export default function EditPatientPage() {
             today.setHours(0, 0, 0, 0);
 
             if (selectedDate > today) {
-                newErrors.dob = "Ngày sinh không được là một ngày trong tương lai.";
+                newErrors.dob = t("dobFuture");
             }
         }
 
         const phoneTrimmed = data.phoneNumber.trim();
         if (!phoneTrimmed) {
-            newErrors.phoneNumber = "Số điện thoại không được để trống.";
+            newErrors.phoneNumber = t("phoneRequired");
         } else if (!/^[0][0-9]{9}$/.test(phoneTrimmed)) {
-            newErrors.phoneNumber = "Số điện thoại không đúng định dạng (Yêu cầu 10 số bắt đầu bằng số 0).";
+            newErrors.phoneNumber = t("phoneInvalid");
         }
 
         if (data.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email.trim())) {
-            newErrors.email = "Địa chỉ email không đúng định dạng.";
+            newErrors.email = t("emailInvalid");
         }
 
         const identityTrimmed = data.identityNumber.trim();
         if (identityTrimmed && !/^[0-9]{12}$/.test(identityTrimmed) && !/^[0-9]{9}$/.test(identityTrimmed)) {
-            newErrors.identityNumber = "Số CCCD/CMND phải bao gồm 9 hoặc 12 ký tự số.";
+            newErrors.identityNumber = t("identityInvalid");
         }
 
         return newErrors;
@@ -158,7 +161,7 @@ export default function EditPatientPage() {
     };
 
     const handleCancel = () => {
-        const confirmCancel = window.confirm("Bạn có chắc chắn muốn hủy bỏ các thay đổi và quay lại hồ sơ?");
+        const confirmCancel = window.confirm(t("confirmCancelEdit"));
         if (confirmCancel) {
             router.back();
         }
@@ -187,7 +190,7 @@ export default function EditPatientPage() {
         }
 
         // Bước 2: Chỉ khi sạch lỗi validation mới hiển thị hộp thoại xác nhận lưu
-        const confirmSave = window.confirm("Bạn có chắc chắn muốn lưu các thay đổi này không?");
+        const confirmSave = window.confirm(t("confirmSaveEdit"));
         if (!confirmSave) return;
 
         setIsSubmitting(true);
@@ -206,7 +209,7 @@ export default function EditPatientPage() {
         try {
             await receptionistService.updatePatientProfile(patientId, payload);
 
-            setToastMessage("Cập nhật hồ sơ bệnh nhân thành công.");
+            setToastMessage(t("saveSuccess"));
             setTimeout(() => {
                 router.push(`/receptionist/patients/view/${patientId}`);
                 router.refresh();
@@ -216,19 +219,19 @@ export default function EditPatientPage() {
 
             // Khai báo ánh xạ mã lỗi từ tầng nghiệp vụ Backend đổ trực tiếp xuống Inline thông báo dưới các trường
             if (serverErrorCode === "APP_MESSAGE_4018") {
-                setErrors(prev => ({ ...prev, identityNumber: "Số CCCD/CMND này đã tồn tại trên một hồ sơ hệ thống khác." }));
+                setErrors(prev => ({ ...prev, identityNumber: t("identityDuplicate") }));
                 scrollToFieldError("identityNumber");
             } else if (serverErrorCode === "PATIENT_PHONE_EXISTS") {
                 // CẬP NHẬT: Bắt mã lỗi kiểm tra trùng số điện thoại từ Backend mới viết
-                setErrors(prev => ({ ...prev, phoneNumber: "Số điện thoại này đã được đăng ký bởi một bệnh nhân khác." }));
+                setErrors(prev => ({ ...prev, phoneNumber: t("phoneDuplicate") }));
                 scrollToFieldError("phoneNumber");
             } else if (serverErrorCode === "APP_MESSAGE_4001") {
-                setErrors(prev => ({ ...prev, phoneNumber: "Số điện thoại không đúng định dạng nghiệp vụ trên hệ thống." }));
+                setErrors(prev => ({ ...prev, phoneNumber: t("phoneBackendInvalid") }));
                 scrollToFieldError("phoneNumber");
             } else if (serverErrorCode === "APP_MESSAGE_4004") {
-                alert("Lỗi: Không tìm thấy hồ sơ bệnh nhân này trên hệ thống.");
+                alert(t("patientNotFound"));
             } else {
-                alert(`Cập nhật thất bại. Mã lỗi hệ thống: ${serverErrorCode}`);
+                alert(t("updateFailedWithCode", { code: serverErrorCode }));
             }
         } finally {
             setIsSubmitting(false);
@@ -240,7 +243,7 @@ export default function EditPatientPage() {
             <div className="flex min-h-screen items-center justify-center bg-slate-50">
                 <div className="text-center">
                     <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent mx-auto"></div>
-                    <p className="mt-4 text-sm font-medium text-slate-500">Đang tải thông tin hồ sơ từ máy chủ...</p>
+                    <p className="mt-4 text-sm font-medium text-slate-500">{t("loadingProfile")}</p>
                 </div>
             </div>
         );
@@ -271,11 +274,11 @@ export default function EditPatientPage() {
 
                         <div>
                             <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-                                Chỉnh sửa hồ sơ bệnh nhân
+                                {t("editHeaderTitle")}
                             </h1>
                             {/* ĐÃ BỎ PHẦN HIỂN THỊ MÃ HỒ SƠ TẠI ĐÂY */}
                             <p className="text-sm text-slate-500 mt-0.5 hidden sm:block">
-                                Quản lý thông tin hành chính cá nhân và bảo hiểm y tế
+                                {t("editHeaderSubtitle")}
                             </p>
                         </div>
                     </div>
@@ -289,14 +292,14 @@ export default function EditPatientPage() {
                             <div className="rounded-lg bg-blue-50 p-2 text-blue-600 mr-3">
                                 <User className="h-5 w-5" />
                             </div>
-                            <h2 className="text-lg font-semibold text-slate-800">Thông tin hành chính cá nhân</h2>
+                            <h2 className="text-lg font-semibold text-slate-800">{t("personalInfoTitle")}</h2>
                         </div>
 
                         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
 
                             {/* 1. Họ và tên bệnh nhân */}
                             <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">Họ và tên bệnh nhân <span className="text-red-500">*</span></label>
+                                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">{t("fullNameLabel")} <span className="text-red-500">*</span></label>
                                 <div className="relative">
                                     <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                                     <input
@@ -308,7 +311,7 @@ export default function EditPatientPage() {
                                             ? "border-red-300 focus:border-red-500 focus:ring-red-500/10 bg-red-50/30"
                                             : "border-slate-200 focus:border-blue-500 focus:ring-blue-500/10"
                                             }`}
-                                        placeholder="Nhập họ và tên đầy đủ"
+                                        placeholder={t("fullNamePlaceholder")}
                                     />
                                 </div>
                                 {errors.fullName && <p className="text-xs text-red-500 font-medium mt-1 pl-1">{errors.fullName}</p>}
@@ -316,7 +319,7 @@ export default function EditPatientPage() {
 
                             {/* 2. Giới tính */}
                             <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">Giới tính <span className="text-red-500">*</span></label>
+                                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">{t("genderLabel")} <span className="text-red-500">*</span></label>
                                 <select
                                     name="gender"
                                     value={formData.gender}
@@ -324,15 +327,15 @@ export default function EditPatientPage() {
                                     className="w-full rounded-lg border border-slate-200 py-2.5 px-3 text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/10 transition-shadow bg-white appearance-none cursor-pointer"
                                     style={{ backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', backgroundSize: '16px' }}
                                 >
-                                    <option value="MALE">Nam</option>
-                                    <option value="FEMALE">Nữ</option>
-                                    <option value="OTHER">Khác</option>
+                                    <option value="MALE">{t("male")}</option>
+                                    <option value="FEMALE">{t("female")}</option>
+                                    <option value="OTHER">{t("other")}</option>
                                 </select>
                             </div>
 
                             {/* 3. Ngày sinh */}
                             <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">Ngày sinh <span className="text-red-500">*</span></label>
+                                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">{t("dobLabel")} <span className="text-red-500">*</span></label>
                                 <div className="relative">
                                     <Calendar className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                                     <input
@@ -352,7 +355,7 @@ export default function EditPatientPage() {
 
                             {/* 4. Số điện thoại */}
                             <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">Số điện thoại <span className="text-red-500">*</span></label>
+                                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">{t("phoneLabel")} <span className="text-red-500">*</span></label>
                                 <div className="relative">
                                     <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                                     <input
@@ -364,7 +367,7 @@ export default function EditPatientPage() {
                                             ? "border-red-300 focus:border-red-500 focus:ring-red-500/10 bg-red-50/30"
                                             : "border-slate-200 focus:border-blue-500 focus:ring-blue-500/10"
                                             }`}
-                                        placeholder="Nhập số điện thoại liên lạc"
+                                        placeholder={t("phonePlaceholder")}
                                     />
                                 </div>
                                 {errors.phoneNumber && <p className="text-xs text-red-500 font-medium mt-1 pl-1">{errors.phoneNumber}</p>}
@@ -372,7 +375,7 @@ export default function EditPatientPage() {
 
                             {/* 5. Địa chỉ Email */}
                             <div className="space-y-1.5 sm:col-span-2">
-                                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">Địa chỉ Email</label>
+                                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">{t("emailLabel")}</label>
                                 <div className="relative">
                                     <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                                     <input
@@ -384,7 +387,7 @@ export default function EditPatientPage() {
                                             ? "border-red-300 focus:border-red-500 focus:ring-red-500/10 bg-red-50/30"
                                             : "border-slate-200 focus:border-blue-500 focus:ring-blue-500/10"
                                             }`}
-                                        placeholder="example@gmail.com"
+                                        placeholder={t("emailPlaceholder")}
                                     />
                                 </div>
                                 {errors.email && <p className="text-xs text-red-500 font-medium mt-1 pl-1">{errors.email}</p>}
@@ -392,7 +395,7 @@ export default function EditPatientPage() {
 
                             {/* 6. Địa chỉ thường trú */}
                             <div className="space-y-1.5 sm:col-span-2">
-                                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">Địa chỉ thường trú</label>
+                                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">{t("addressLabel")}</label>
                                 <div className="relative">
                                     <MapPin className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
                                     <textarea
@@ -401,14 +404,14 @@ export default function EditPatientPage() {
                                         value={formData.address}
                                         onChange={handleChange}
                                         className="w-full rounded-lg border border-slate-200 py-2.5 pl-10 pr-4 text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/10 transition-shadow resize-none"
-                                        placeholder="Số nhà, tên đường, phường/xã, quận/huyện..."
+                                        placeholder={t("addressPlaceholder")}
                                     />
                                 </div>
                             </div>
 
                             {/* 7. Số CCCD / CMND */}
                             <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">Số CCCD / CMND</label>
+                                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">{t("identityLabel")}</label>
                                 <div className="relative">
                                     <CreditCard className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                                     <input
@@ -420,7 +423,7 @@ export default function EditPatientPage() {
                                             ? "border-red-300 focus:border-red-500 focus:ring-red-500/10 bg-red-50/30"
                                             : "border-slate-200 focus:border-blue-500 focus:ring-blue-500/10"
                                             }`}
-                                        placeholder="12 chữ số căn cước công dân"
+                                        placeholder={t("identityPlaceholder")}
                                     />
                                 </div>
                                 {errors.identityNumber && <p className="text-xs text-red-500 font-medium mt-1 pl-1">{errors.identityNumber}</p>}
@@ -428,7 +431,7 @@ export default function EditPatientPage() {
 
                             {/* 8. Số bảo hiểm (BHYT) */}
                             <div className="space-y-1.5">
-                                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">Số bảo hiểm (BHYT)</label>
+                                <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider block">{t("bhytLabel")}</label>
                                 <div className="relative">
                                     <CreditCard className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                                     <input
@@ -437,7 +440,7 @@ export default function EditPatientPage() {
                                         value={formData.bhytNumber}
                                         onChange={handleChange}
                                         className="w-full rounded-lg border border-slate-200 py-2.5 pl-10 pr-4 text-sm text-slate-800 uppercase focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/10 transition-shadow"
-                                        placeholder="VD: GD479..."
+                                        placeholder={t("bhytPlaceholder")}
                                     />
                                 </div>
                             </div>
@@ -452,10 +455,10 @@ export default function EditPatientPage() {
                                 <Activity className="h-5 w-5" />
                             </div>
                             <div>
-                                <h2 className="text-lg font-semibold text-slate-800">Tiền sử bệnh lý & Lâm sàng chuyên khoa</h2>
+                                <h2 className="text-lg font-semibold text-slate-800">{t("clinicalHistoryTitle")}</h2>
                                 <p className="text-xs text-slate-400 flex items-center mt-0.5">
                                     <Info className="h-3 w-3 mr-1 text-amber-500" />
-                                    Thông tin chuyên khoa do Bác sĩ quản lý, Lễ tân chỉ được quyền đọc.
+                                    {t("clinicalHistoryDescription")}
                                 </p>
                             </div>
                         </div>
@@ -463,30 +466,30 @@ export default function EditPatientPage() {
                         <div className="space-y-4">
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center border-b border-slate-200/40 pb-3">
                                 <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-center">
-                                    <Activity className="h-3.5 w-3.5 mr-1.5 text-slate-400" /> Nhóm máu
+                                    <Activity className="h-3.5 w-3.5 mr-1.5 text-slate-400" /> {t("bloodTypeLabel")}
                                 </label>
                                 <div className="sm:col-span-2">
                                     <span className="inline-flex items-center rounded-md bg-red-50 px-2.5 py-1 text-sm font-bold text-red-700 border border-red-100">
-                                        {formData.bloodType || "Chưa xác định"}
+                                        {formData.bloodType || t("bloodTypeUnknown")}
                                     </span>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 border-b border-slate-200/40 pb-3">
                                 <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-start pt-1">
-                                    <AlertCircle className="h-3.5 w-3.5 mr-1.5 text-slate-400" /> Tiền sử dị ứng
+                                    <AlertCircle className="h-3.5 w-3.5 mr-1.5 text-slate-400" /> {t("allergiesLabel")}
                                 </label>
                                 <div className="sm:col-span-2 text-sm text-slate-600 bg-white/60 p-2.5 rounded-lg border border-slate-200/50 italic">
-                                    {formData.allergies || "Không có tiền sử dị ứng ghi nhận"}
+                                    {formData.allergies || t("noAllergies")}
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                                 <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider flex items-start pt-1">
-                                    <Eye className="h-3.5 w-3.5 mr-1.5 text-slate-400" /> Tiền sử bệnh lý mắt
+                                    <Eye className="h-3.5 w-3.5 mr-1.5 text-slate-400" /> {t("medicalHistoryLabel")}
                                 </label>
                                 <div className="sm:col-span-2 text-sm text-slate-600 bg-white/60 p-2.5 rounded-lg border border-slate-200/50 whitespace-pre-line leading-relaxed">
-                                    {formData.medicalHistory || "Chưa có dữ liệu tiền sử bệnh lý chuyên khoa"}
+                                    {formData.medicalHistory || t("noMedicalHistory")}
                                 </div>
                             </div>
                         </div>
@@ -500,7 +503,7 @@ export default function EditPatientPage() {
                             onClick={handleCancel}
                             className="px-5 py-2.5 rounded-lg border border-slate-200 bg-white text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition-colors disabled:opacity-50"
                         >
-                            Hủy thay đổi
+                            {tCommon("cancel")}
                         </button>
                         <button
                             type="submit"
@@ -510,12 +513,12 @@ export default function EditPatientPage() {
                             {isSubmitting ? (
                                 <>
                                     <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                                    Đang lưu...
+                                    {t("saving")}
                                 </>
                             ) : (
                                 <>
                                     <Save className="mr-2 h-4 w-4" />
-                                    Lưu thay đổi
+                                    {t("saveChanges")}
                                 </>
                             )}
                         </button>

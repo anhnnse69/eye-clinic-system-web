@@ -3,18 +3,21 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, AlertCircle, Loader2, Clock, FileText } from "lucide-react" // Đã xóa DollarSign khỏi đây
+import { ArrowLeft, AlertCircle, Loader2, Clock, FileText } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { serviceService } from "@/services/service.service"
 import type { CreateServiceRequest } from "@/services/service.service"
 
 export default function CreateClinicServicePage() {
+    const t = useTranslations("clinicAdmin.service")
+    const tCommon = useTranslations("clinicAdmin.common")
     const router = useRouter()
     const [submitting, setSubmitting] = useState<boolean>(false)
     const [error, setError] = useState<string | null>(null)
     const [formData, setFormData] = useState<CreateServiceRequest>({
         serviceName: "",
         price: 0,
-        durationMinutes: 15, 
+        durationMinutes: 15,
     })
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,15 +33,15 @@ export default function CreateClinicServicePage() {
         e.preventDefault()
         setError(null)
         if (!formData.serviceName.trim()) {
-            setError("Tên dịch vụ y tế không được để trống.")
+            setError(t("create.validation.serviceNameRequired"))
             return
         }
         if (formData.price < 0) {
-            setError("Đơn giá dịch vụ không được phép là số âm.")
+            setError(t("create.validation.priceNegative"))
             return
         }
         if (formData.durationMinutes <= 0) {
-            setError("Thời gian thực hiện dịch vụ phải lớn hơn 0 phút.")
+            setError(t("create.validation.durationNonPositive"))
             return
         }
 
@@ -50,21 +53,21 @@ export default function CreateClinicServicePage() {
             }
         } catch (err: any) {
             console.error("[Create Service Error Debug - Toàn bộ Object]:", err);
-            const errCode = 
-                err?.response?.data?.codeMessage || 
-                err?.data?.codeMessage || 
+            const errCode =
+                err?.response?.data?.codeMessage ||
+                err?.data?.codeMessage ||
                 err?.codeMessage ||
                 err?.response?.data?.code ||
                 err?.code;
             const errorString = err ? JSON.stringify(err) : "";
             if (errCode === "APP_MESSAGE_4041" || errCode === "4041" || errorString.includes("APP_MESSAGE_4041")) {
-                setError("Tên dịch vụ y tế này đã tồn tại trong hệ thống phòng khám của bạn.");
+                setError(t("create.errors.duplicateService"));
             } else if (errCode === "APP_MESSAGE_4001" || errCode === "4001" || errorString.includes("APP_MESSAGE_4001")) {
-                setError("Phiên đăng nhập không hợp lệ hoặc tài khoản không có quyền Admin.");
+                setError(t("create.errors.sessionExpired"));
             } else if (errCode === "APP_MESSAGE_4020" || errCode === "4020" || errorString.includes("APP_MESSAGE_4020")) {
-                setError("Hệ thống không tìm thấy hồ sơ phòng khám gắn liền với tài khoản quản trị này.");
+                setError(t("create.errors.clinicUnavailable"));
             } else {
-                const serverMessage = err?.response?.data?.message || err?.message || "Đã xảy ra lỗi hệ thống trong quá trình khởi tạo dịch vụ.";
+                const serverMessage = err?.response?.data?.message || err?.message || t("create.errors.generic");
                 setError(serverMessage);
             }
         } finally {
@@ -78,15 +81,16 @@ export default function CreateClinicServicePage() {
                 <Link
                     href="/clinic-admin/clinic-services"
                     className="p-2 hover:bg-surface-container-low rounded-xl text-on-surface-variant transition-colors shrink-0 mt-1 bg-surface-container-low/50"
+                    aria-label={tCommon("back")}
                 >
                     <ArrowLeft className="h-5 w-5" />
                 </Link>
                 <div className="flex-1 min-w-0">
                     <h2 className="text-headline-md font-bold text-on-surface block w-full whitespace-normal break-words">
-                        Thêm mới dịch vụ khám bệnh
+                        {t("createTitle")}
                     </h2>
                     <p className="text-body-md text-on-surface-variant">
-                        Đăng ký thêm một dòng dịch vụ hoặc danh mục kỹ thuật y tế mới cho cơ sở phòng khám
+                        {t("createSubtitle")}
                     </p>
                 </div>
             </div>
@@ -103,7 +107,7 @@ export default function CreateClinicServicePage() {
 
                     <div className="block w-full">
                         <label className="block text-label-md font-medium text-on-surface mb-2">
-                            Tên dịch vụ y tế *
+                            {t("fields.serviceNameRequired")}
                         </label>
                         <div className="relative w-full">
                             <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-on-surface-variant" />
@@ -111,7 +115,7 @@ export default function CreateClinicServicePage() {
                                 type="text"
                                 name="serviceName"
                                 required
-                                placeholder="Ví dụ: Khám nội tổng quát, Siêu âm tim Doppler..."
+                                placeholder={t("placeholders.serviceName")}
                                 value={formData.serviceName}
                                 onChange={handleChange}
                                 disabled={submitting}
@@ -123,10 +127,9 @@ export default function CreateClinicServicePage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                         <div>
                             <label className="block text-label-md font-medium text-on-surface mb-2">
-                                Giá dịch vụ (VNĐ) *
+                                {t("fields.priceRequired")}
                             </label>
                             <div className="relative w-full">
-                                {/* ĐÃ XÓA ICON VÀ THAY pl-10 THÀNH px-4 ĐỂ CHỮ SÁT RA LỀ */}
                                 <input
                                     type="number"
                                     name="price"
@@ -144,7 +147,7 @@ export default function CreateClinicServicePage() {
 
                         <div>
                             <label className="block text-label-md font-medium text-on-surface mb-2">
-                                Thời lượng thực hiện (Phút) *
+                                {t("fields.durationRequired")}
                             </label>
                             <div className="relative w-full">
                                 <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-on-surface-variant" />
@@ -168,7 +171,7 @@ export default function CreateClinicServicePage() {
                             href="/clinic-admin/clinic-services"
                             className="px-5 py-2.5 border border-outline rounded-xl text-label-md text-on-surface hover:bg-surface-container-low transition-colors"
                         >
-                            Hủy bỏ
+                            {tCommon("cancel")}
                         </Link>
                         <button
                             type="submit"
@@ -178,7 +181,7 @@ export default function CreateClinicServicePage() {
                             {submitting ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
                             ) : (
-                                "Khởi tạo dịch vụ"
+                                t("createBtn")
                             )}
                         </button>
                     </div>

@@ -62,6 +62,43 @@
     "status": {
       "draft": "Bản nháp",
       "finalized": "Đã chốt"
+    },
+    "edit": {
+      "loadingTitle": "Đang tải dữ liệu",
+      "loadingHint": "Vui lòng chờ trong giây lát...",
+      "errorTitle": "Oops! Đã xảy ra lỗi",
+      "errorBack": "Quay lại",
+      "loadErrorNotFound": "Không tìm thấy hồ sơ bệnh án",
+      "loadErrorLocked": "Hồ sơ bệnh án đã qua ngày tạo hoặc bị khóa, không được phép chỉnh sửa nữa.",
+      "loadErrorLegacy": "Hồ sơ bệnh án không có dữ liệu form (phiên bản cũ)",
+      "loadErrorGeneric": "Không thể tải hồ sơ bệnh án để chỉnh sửa",
+      "saveErrorGeneric": "Cập nhật bệnh án thất bại",
+      "saveErrorSystem": "Đã có lỗi hệ thống xảy ra khi lưu bệnh án. Vui lòng kiểm tra lại kết nối hoặc thử lại sau.",
+      "validationError": "Một số trường dữ liệu không hợp lệ. Đã điền sẵn dữ liệu mẫu để bạn thử lại.",
+      "successTitle": "Đã cập nhật bệnh án thành công",
+      "recordIdLabel": "Medical Record ID:",
+      "recordTypeUnknown": "Không xác định được loại bệnh án",
+      "editLabel": "Chỉnh sửa bệnh án",
+      "printTooltip": "In bệnh án ra PDF/A4",
+      "tocLabel": "Mục lục bệnh án",
+      "tocSections": {
+        "hanhChinh": "Hành chính",
+        "benhAn": "Bệnh Án",
+        "khamBenh": "Khám bệnh",
+        "chanDoan": "Chẩn đoán",
+        "tongKet": "Tổng kết"
+      },
+      "footer": {
+        "patient": "Người bệnh / Thân nhân",
+        "signHint": "(Ký và ghi rõ họ tên)",
+        "date": "Ngày ..... tháng ..... năm 20...",
+        "doctor": "Bác sĩ khám bệnh",
+        "system": "Eye Clinic Support System",
+        "systemSubtitle": "Bệnh án nhãn khoa — In từ phần mềm y tế"
+      },
+      "cancel": "Huỷ",
+      "saving": "Đang lưu...",
+      "saveChanges": "Lưu thay đổi"
     }
   },
   "preliminary": {

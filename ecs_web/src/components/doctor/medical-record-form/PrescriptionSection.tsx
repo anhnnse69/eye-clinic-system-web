@@ -121,7 +121,7 @@ function PrescriptionItem({ index, remove }: PrescriptionItemProps) {
           onClick={() => remove(index)}
           className="rounded-md p-2 text-red-600 hover:bg-red-50 transition-colors"
           title="Xóa thuốc"
-          aria-label={`Xóa thuốc ${index + 1}`}
+          aria-label={t(`deleteDrugLabel`, { num: index + 1 })}
         >
           <Trash2 className="h-4 w-4" />
         </button>
@@ -281,7 +281,7 @@ export default function PrescriptionSection() {
           />
         </div>
         <div>
-          <label className={labelClass}>Địa chỉ</label>
+          <label className={labelClass}>{t("address")}</label>
           <input
             {...register("benhAn.prescription.benhNhanDiaChi" as any)}
             className={inputClass}

@@ -112,6 +112,7 @@ export default function CreateMedicalRecordClient({
   const t = useTranslations("medicalRecord")
   const tForm = useTranslations("form")
   const tCommon = useTranslations("common")
+  const tParaclinical = useTranslations("doctor.paraclinical")
 
   const initialType = useMemo<MedicalRecordType | undefined>(() => {
     if (initialRecordType && (MEDICAL_RECORD_TYPES as readonly string[]).includes(initialRecordType)) {
@@ -374,7 +375,7 @@ export default function CreateMedicalRecordClient({
                 type="button"
                 onClick={() => setShowLabRequestForm(false)}
                 className="absolute right-3 top-3 rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
-                aria-label="Đóng"
+                aria-label={tParaclinical("closeModal")}
               >
                 <X className="h-5 w-5" />
               </button>
@@ -384,6 +385,7 @@ export default function CreateMedicalRecordClient({
                   setShowLabRequestForm(false)
                   setRefreshKey((k) => k + 1)
                 }}
+                t={tParaclinical}
               />
             </div>
           </div>

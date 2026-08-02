@@ -87,10 +87,20 @@ export default function BatchCreateScheduleModal({
       setLoadingShifts(true);
       try {
         const res = await doctorScheduleService.getShiftRanges();
-        const options = (res.data ?? []).map((r: ShiftRangeItem) => ({
-          value: r.shiftType,
-          label: `${t(`morning`) || t(`afternoon`) || t(`evening`)} (${formatHm(r.startTime)} - ${formatHm(r.endTime)})`,
-        }));
+        const options = (res.data ?? []).map((r: ShiftRangeItem) => {
+          let shiftKey = '';
+          if (r.shiftType === ShiftType.MORNING) {
+            shiftKey = 'morning';
+          } else if (r.shiftType === ShiftType.AFTERNOON) {
+            shiftKey = 'afternoon';
+          } else if (r.shiftType === ShiftType.EVENING) {
+            shiftKey = 'evening';
+          }
+          return {
+            value: r.shiftType,
+            label: `${t(shiftKey)} (${formatHm(r.startTime)} - ${formatHm(r.endTime)})`,
+          };
+        });
         setShiftOptions(options);
       } catch {
         setError(t("submitError"));

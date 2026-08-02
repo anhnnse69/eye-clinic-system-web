@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useTranslations, useLocale } from "next-intl"
 import {
   ArrowLeft,
   User,
@@ -26,7 +27,6 @@ import {
 import { medicalRecordsService } from "@/services"
 import type { GetMedicalRecordDetailResponse } from "@/types"
 import { RECORD_TYPE_LABELS, type RecordType } from "@/types"
-import ParaclinicalPanel from "@/components/doctor/ParaclinicalPanel"
 import OfficialMedicalRecordA4Print from "./medical-record-form/OfficialMedicalRecordA4Print"
 
 interface MedicalRecordDetailClientProps {
@@ -48,6 +48,12 @@ function hasObjectData(obj: any): boolean {
     if (typeof val === "object") return hasObjectData(val)
     return true
   })
+}
+
+/** Helper to format a date string in the active locale (vi-VN or en-US). */
+function formatDateForLocale(d: string | Date, locale: string): string {
+  const tag = locale === "vi" ? "vi-VN" : "en-US"
+  return new Date(d).toLocaleDateString(tag)
 }
 
 // ─── Collapsible Section Wrapper ───
@@ -87,7 +93,7 @@ function DetailSection({
         {title}
       </div>
 
-      {(isOpen || typeof window !== "undefined") && <div className="p-5 print:p-2.5">{children}</div>}
+      {isOpen && <div className="p-5 print:p-2.5">{children}</div>}
     </div>
   )
 }
@@ -95,8 +101,12 @@ function DetailSection({
 // ─── Key-Value Grid ───
 function InfoGrid({
   items,
+  tYes,
+  tNo,
 }: {
   items: { label: string; value?: string | null | number | boolean; span?: number }[]
+  tYes: string
+  tNo: string
 }) {
   const filteredItems = items.filter((item) => item.value != null && item.value !== "" && item.value !== false)
 
@@ -110,7 +120,7 @@ function InfoGrid({
         <div key={i} className={`bg-gray-50/50 p-2.5 rounded-lg border border-gray-100 ${item.span ? `sm:col-span-${item.span}` : ""}`}>
           <p className="text-[11px] font-medium text-gray-500 mb-0.5">{item.label}</p>
           <p className="text-xs font-semibold text-gray-900 break-words">
-            {typeof item.value === "boolean" ? (item.value ? "Có" : "Không") : String(item.value)}
+            {typeof item.value === "boolean" ? (item.value ? tYes : tNo) : String(item.value)}
           </p>
         </div>
       ))}
@@ -123,10 +133,20 @@ function EyeSideGrid({
   title,
   odData,
   osData,
+  odLabel,
+  osLabel,
+  normalLabel,
+  tYes,
+  tNo,
 }: {
   title: string
   odData: { label: string; value?: any }[]
   osData: { label: string; value?: any }[]
+  odLabel: string
+  osLabel: string
+  normalLabel: string
+  tYes: string
+  tNo: string
 }) {
   const odFiltered = odData.filter((d) => d.value != null && d.value !== "" && d.value !== false)
   const osFiltered = osData.filter((d) => d.value != null && d.value !== "" && d.value !== false)
@@ -141,18 +161,18 @@ function EyeSideGrid({
         <div className="rounded-xl bg-blue-50/40 p-3.5 border border-blue-100 text-xs space-y-2">
           <div className="flex items-center justify-between border-b border-blue-100 pb-1.5 font-bold text-blue-900">
             <span className="flex items-center gap-1.5">
-              <Eye className="w-3.5 h-3.5 text-blue-600" /> Mắt Phải (OD - Oculus Dexter)
+              <Eye className="w-3.5 h-3.5 text-blue-600" /> {odLabel}
             </span>
           </div>
           {odFiltered.length === 0 ? (
-            <p className="text-gray-400 italic">Bình thường</p>
+            <p className="text-gray-400 italic">{normalLabel}</p>
           ) : (
             <div className="grid grid-cols-2 gap-2">
               {odFiltered.map((item, idx) => (
                 <div key={idx} className="bg-white p-2 rounded border border-blue-100">
                   <span className="block text-[10px] text-gray-500">{item.label}</span>
                   <span className="font-semibold text-gray-900">
-                    {typeof item.value === "boolean" ? (item.value ? "Có" : "Không") : String(item.value)}
+                    {typeof item.value === "boolean" ? (item.value ? tYes : tNo) : String(item.value)}
                   </span>
                 </div>
               ))}
@@ -164,18 +184,18 @@ function EyeSideGrid({
         <div className="rounded-xl bg-purple-50/40 p-3.5 border border-purple-100 text-xs space-y-2">
           <div className="flex items-center justify-between border-b border-purple-100 pb-1.5 font-bold text-purple-900">
             <span className="flex items-center gap-1.5">
-              <Eye className="w-3.5 h-3.5 text-purple-600" /> Mắt Trái (OS - Oculus Sinister)
+              <Eye className="w-3.5 h-3.5 text-purple-600" /> {osLabel}
             </span>
           </div>
           {osFiltered.length === 0 ? (
-            <p className="text-gray-400 italic">Bình thường</p>
+            <p className="text-gray-400 italic">{normalLabel}</p>
           ) : (
             <div className="grid grid-cols-2 gap-2">
               {osFiltered.map((item, idx) => (
                 <div key={idx} className="bg-white p-2 rounded border border-purple-100">
                   <span className="block text-[10px] text-gray-500">{item.label}</span>
                   <span className="font-semibold text-gray-900">
-                    {typeof item.value === "boolean" ? (item.value ? "Có" : "Không") : String(item.value)}
+                    {typeof item.value === "boolean" ? (item.value ? tYes : tNo) : String(item.value)}
                   </span>
                 </div>
               ))}
@@ -191,9 +211,13 @@ function EyeSideGrid({
 function PrescriptionTable({
   prescriptions,
   formData,
+  t,
+  locale,
 }: {
   prescriptions?: GetMedicalRecordDetailResponse["prescriptions"]
   formData?: any
+  t: (key: string) => string
+  locale: string
 }) {
   if (prescriptions && prescriptions.length > 0) {
     return (
@@ -202,24 +226,24 @@ function PrescriptionTable({
           <div key={rx.id} className="border border-gray-100 rounded-lg overflow-hidden">
             <div className="px-4 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
               <div>
-                <p className="text-xs font-semibold text-gray-700">BS. {rx.doctorName}</p>
+                <p className="text-xs font-semibold text-gray-700">{t("prescription.doctorPrefix")}{rx.doctorName}</p>
                 <p className="text-xs text-gray-400">
-                  {new Date(rx.createdAt).toLocaleDateString("vi-VN")}
+                  {formatDateForLocale(rx.createdAt, locale)}
                 </p>
               </div>
               {rx.notes && (
-                <p className="text-xs text-gray-500 italic">Ghi chú: {rx.notes}</p>
+                <p className="text-xs text-gray-500 italic">{t("prescription.notesLabel")} {rx.notes}</p>
               )}
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-2 text-left font-semibold text-gray-600">Thuốc</th>
-                    <th className="px-4 py-2 text-left font-semibold text-gray-600">Liều dùng</th>
-                    <th className="px-4 py-2 text-left font-semibold text-gray-600">Tần suất</th>
-                    <th className="px-4 py-2 text-left font-semibold text-gray-600">Số lượng</th>
-                    <th className="px-4 py-2 text-left font-semibold text-gray-600">Hướng dẫn</th>
+                    <th className="px-4 py-2 text-left font-semibold text-gray-600">{t("prescription.thMedicineName")}</th>
+                    <th className="px-4 py-2 text-left font-semibold text-gray-600">{t("prescription.thDosage")}</th>
+                    <th className="px-4 py-2 text-left font-semibold text-gray-600">{t("prescription.thFrequency")}</th>
+                    <th className="px-4 py-2 text-left font-semibold text-gray-600">{t("prescription.thQuantity")}</th>
+                    <th className="px-4 py-2 text-left font-semibold text-gray-600">{t("prescription.thInstruction")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
@@ -251,23 +275,23 @@ function PrescriptionTable({
         <div className="border border-emerald-100 rounded-xl overflow-hidden shadow-2xs">
           <div className="px-4 py-3 bg-emerald-50/80 border-b border-emerald-100 flex items-center justify-between">
             <div>
-              <p className="text-xs font-bold text-emerald-950">BS. {formRx.bacSiKeDon || "Bác sĩ kê đơn"}</p>
-              {formRx.ngayKeDon && <p className="text-[11px] text-gray-500">Ngày kê: {formRx.ngayKeDon}</p>}
+              <p className="text-xs font-bold text-emerald-950">{t("prescription.doctorPrefix")}{formRx.bacSiKeDon || t("prescription.doctorDefault")}</p>
+              {formRx.ngayKeDon && <p className="text-[11px] text-gray-500">{t("prescription.prescribedDate")} {formRx.ngayKeDon}</p>}
             </div>
             {formRx.chanDoan && (
-              <p className="text-xs text-emerald-800 font-medium italic">Chẩn đoán: {formRx.chanDoan}</p>
+              <p className="text-xs text-emerald-800 font-medium italic">{t("prescription.diagnosisLabel")} {formRx.chanDoan}</p>
             )}
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead className="bg-gray-50 text-gray-700">
                 <tr>
-                  <th className="px-4 py-2 text-left font-bold">STT</th>
-                  <th className="px-4 py-2 text-left font-bold">Tên thuốc</th>
-                  <th className="px-4 py-2 text-left font-bold">Hàm lượng</th>
-                  <th className="px-4 py-2 text-left font-bold">Số lượng</th>
-                  <th className="px-4 py-2 text-left font-bold">Cách dùng</th>
-                  <th className="px-4 py-2 text-left font-bold">Đơn vị</th>
+                  <th className="px-4 py-2 text-left font-bold">{t("prescription.thNo")}</th>
+                  <th className="px-4 py-2 text-left font-bold">{t("prescription.thMedicineName")}</th>
+                  <th className="px-4 py-2 text-left font-bold">{t("prescription.thDosageStrength")}</th>
+                  <th className="px-4 py-2 text-left font-bold">{t("prescription.thAmount")}</th>
+                  <th className="px-4 py-2 text-left font-bold">{t("prescription.thUsage")}</th>
+                  <th className="px-4 py-2 text-left font-bold">{t("prescription.thUnit")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white">
@@ -286,7 +310,7 @@ function PrescriptionTable({
           </div>
           {formRx.loiDan && (
             <div className="p-3 bg-amber-50/60 text-xs text-amber-900 border-t border-amber-100">
-              <span className="font-bold">Lời dặn bác sĩ:</span> {formRx.loiDan}
+              <span className="font-bold">{t("prescription.adviceLabel")}</span> {formRx.loiDan}
             </div>
           )}
         </div>
@@ -294,7 +318,7 @@ function PrescriptionTable({
     )
   }
 
-  return <p className="text-sm text-gray-400 italic">Chưa kê đơn thuốc</p>
+  return <p className="text-sm text-gray-400 italic">{t("prescription.empty")}</p>
 }
 
 export default function MedicalRecordDetailClient({
@@ -302,6 +326,13 @@ export default function MedicalRecordDetailClient({
   appointmentId,
 }: MedicalRecordDetailClientProps) {
   const router = useRouter()
+  const t = useTranslations("doctor.medicalRecord.detail")
+  const locale = useLocale()
+  const tYes = t("boolYes")
+  const tNo = t("boolNo")
+  const localeTag = locale === "vi" ? "vi-VN" : "en-US"
+  const formatDate = (d: string | Date) => new Date(d).toLocaleDateString(localeTag)
+  const formatDateTime = (d: string | Date) => new Date(d).toLocaleString(localeTag)
   const [record, setRecord] = useState<GetMedicalRecordDetailResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -315,17 +346,18 @@ export default function MedicalRecordDetailClient({
         if (res.data) {
           setRecord(res.data)
         } else {
-          setError("Không tìm thấy dữ liệu hồ sơ bệnh án")
+          setError(t("errorNotFound"))
         }
       } catch (err) {
         console.error("Error fetching record:", err)
-        setError("Không thể tải chi tiết hồ sơ bệnh án")
+        setError(t("errorLoadFailed"))
       } finally {
         setLoading(false)
       }
     }
 
     fetchRecord()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recordId])
 
   if (loading) {
@@ -339,8 +371,8 @@ export default function MedicalRecordDetailClient({
               <FileText className="w-6 h-6 text-blue-600 animate-pulse" />
             </div>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">Đang tải dữ liệu</h3>
-          <p className="text-sm text-gray-500">Vui lòng chờ trong giây lát...</p>
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">{t("loadingTitle")}</h3>
+          <p className="text-sm text-gray-500">{t("loadingHint")}</p>
         </div>
       </div>
     )
@@ -353,22 +385,22 @@ export default function MedicalRecordDetailClient({
           <div className="w-20 h-20 bg-linear-to-br from-red-50 to-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <AlertCircle className="w-10 h-10 text-red-500" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Oops! Đã xảy ra lỗi</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">{t("errorTitle")}</h2>
           <p className="text-gray-500 mb-8 leading-relaxed">
-            {error || "Không thể tải chi tiết hồ sơ bệnh án. Vui lòng thử lại sau."}
+            {error || t("errorDefault")}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               onClick={() => window.location.reload()}
               className="px-6 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors shadow-xs"
             >
-              Thử lại
+              {t("retry")}
             </button>
             <Link
               href="/doctor/records"
               className="px-6 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
             >
-              Về danh sách bệnh án
+              {t("backToList")}
             </Link>
           </div>
         </div>
@@ -473,11 +505,30 @@ export default function MedicalRecordDetailClient({
   const formatGender = (g?: string | null) => {
     if (!g) return "—"
     const upper = String(g).trim().toUpperCase()
-    if (upper === "MALE" || upper === "NAM" || upper === "1") return "Nam"
-    if (upper === "FEMALE" || upper === "NỮ" || upper === "NU" || upper === "0") return "Nữ"
-    if (upper === "OTHER" || upper === "KHÁC" || upper === "KHAC" || upper === "2") return "Khác"
+    if (upper === "MALE" || upper === "NAM" || upper === "1") return t("patientFields.genderMale")
+    if (upper === "FEMALE" || upper === "NỮ" || upper === "NU" || upper === "0") return t("patientFields.genderFemale")
+    if (upper === "OTHER" || upper === "KHÁC" || upper === "KHAC" || upper === "2") return t("patientFields.genderOther")
     return g
   }
+
+  // Pre-compute translation strings used in many places
+  const sections = {
+    patientInfo: t("sections.patientInfo"),
+    appointmentInfo: t("sections.appointmentInfo"),
+    complaintHistory: t("sections.complaintHistory"),
+    vitals: t("sections.vitals"),
+    eyeExam: t("sections.eyeExam"),
+    trauma: t("sections.trauma"),
+    glaucoma: t("sections.glaucoma"),
+    strabismus: t("sections.strabismus"),
+    pediatric: t("sections.pediatric"),
+    diagnosis: t("sections.diagnosis"),
+    prescription: t("sections.prescription"),
+    paraclinical: t("sections.paraclinical"),
+  }
+  const odLabel = t("eyeSides.od")
+  const osLabel = t("eyeSides.os")
+  const normalLabel = t("eyeSides.normal")
 
   return (
     <div className="min-h-screen bg-gray-50/50 p-4 sm:p-6 lg:p-8">
@@ -492,7 +543,7 @@ export default function MedicalRecordDetailClient({
         address={record.patientAddress}
         recordCode={(record as any).code || record.id.slice(0, 8)}
         doctorName={record.doctorFullName}
-        createdAt={new Date(record.createdAt).toLocaleDateString("vi-VN")}
+        createdAt={formatDate(record.createdAt)}
       />
 
       <div className="max-w-6xl mx-auto space-y-6">
@@ -503,17 +554,17 @@ export default function MedicalRecordDetailClient({
               href="/doctor/records"
               className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-800 mb-3 transition-colors text-xs font-semibold"
             >
-              <ArrowLeft className="w-4 h-4" /> Quay lại danh sách hồ sơ
+              <ArrowLeft className="w-4 h-4" /> {t("backToListShort")}
             </Link>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-              Chi tiết hồ sơ bệnh án
+              {t("pageTitle")}
             </h1>
             <p className="text-xs text-gray-500 mt-1">
-              Loại: <span className="font-bold text-gray-800">{recordTypeLabel}</span> · Ngày tạo: {new Date(record.createdAt).toLocaleDateString("vi-VN")}
+              {t("headerRecordType")} <span className="font-bold text-gray-800">{recordTypeLabel}</span> · {t("headerCreatedDate")} {formatDate(record.createdAt)}
             </p>
             {benhAn?.hanhChinh && (
               <p className="text-xs text-gray-400 mt-0.5">
-                Khoa: <span className="font-medium text-gray-700">{benhAn.hanhChinh.khoa}</span> {benhAn.hanhChinh.soLuuTru ? `· Số lưu trữ: ${benhAn.hanhChinh.soLuuTru}` : ""}
+                {t("headerDepartment")} <span className="font-medium text-gray-700">{benhAn.hanhChinh.khoa}</span> {benhAn.hanhChinh.soLuuTru ? `· ${t("headerArchiveNo")} ${benhAn.hanhChinh.soLuuTru}` : ""}
               </p>
             )}
           </div>
@@ -523,9 +574,9 @@ export default function MedicalRecordDetailClient({
               type="button"
               onClick={() => window.print()}
               className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-xl shadow-xs transition-all active:scale-95 cursor-pointer"
-              title="In bệnh án ra bản A4 chuẩn Bộ Y tế"
+              title={t("printTitle")}
             >
-              <Printer className="w-4 h-4 text-gray-600" /> In bệnh án (A4)
+              <Printer className="w-4 h-4 text-gray-600" /> {t("printBtn")}
             </button>
 
             {record.canEdit && !record.isLocked && (
@@ -533,20 +584,20 @@ export default function MedicalRecordDetailClient({
                 href={`/doctor/records/${record.id}/edit${appointmentId ? `?appointmentId=${appointmentId}` : ""}`}
                 className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-xl shadow-xs transition-all active:scale-95"
               >
-                <Edit3 className="w-4 h-4" /> Chỉnh sửa bệnh án
+                <Edit3 className="w-4 h-4" /> {t("editBtn")}
               </Link>
             )}
             {record.isLocked ? (
               <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
-                <XCircle className="w-3.5 h-3.5" /> Đã khóa
+                <XCircle className="w-3.5 h-3.5" /> {t("statusLocked")}
               </span>
             ) : record.canEdit ? (
               <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Có thể chỉnh sửa (Trong ngày)
+                <CheckCircle2 className="w-3.5 h-3.5" /> {t("statusEditable")}
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100">
-                <Eye className="w-3.5 h-3.5" /> Chỉ xem
+                <Eye className="w-3.5 h-3.5" /> {t("statusViewOnly")}
               </span>
             )}
             {record.editRestrictionReason && (
@@ -557,36 +608,40 @@ export default function MedicalRecordDetailClient({
 
         {/* SECTION 1: Patient Information */}
         <DetailSection
-          title="Thông tin bệnh nhân"
+          title={sections.patientInfo}
           icon={<User className="w-4 h-4" />}
           defaultOpen={true}
         >
           <InfoGrid
+            tYes={tYes}
+            tNo={tNo}
             items={[
-              { label: "Họ tên", value: record.patientFullName },
-              { label: "Ngày sinh", value: record.patientDob },
-              { label: "Giới tính", value: formatGender(record.patientGender) },
-              { label: "Điện thoại", value: record.patientPhone },
-              { label: "Email", value: record.patientEmail },
-              { label: "Địa chỉ", value: record.patientAddress },
-              { label: "Số CMND/CCCD", value: record.patientIdentityNumber },
+              { label: t("patientFields.fullName"), value: record.patientFullName },
+              { label: t("patientFields.dob"), value: record.patientDob },
+              { label: t("patientFields.gender"), value: formatGender(record.patientGender) },
+              { label: t("patientFields.phone"), value: record.patientPhone },
+              { label: t("patientFields.email"), value: record.patientEmail },
+              { label: t("patientFields.address"), value: record.patientAddress },
+              { label: t("patientFields.identityNumber"), value: record.patientIdentityNumber },
             ]}
           />
         </DetailSection>
 
         {/* SECTION 2: Appointment Information */}
         <DetailSection
-          title="Thông tin cuộc hẹn & Bác sĩ"
+          title={sections.appointmentInfo}
           icon={<Calendar className="w-4 h-4" />}
           defaultOpen={true}
         >
           <InfoGrid
+            tYes={tYes}
+            tNo={tNo}
             items={[
-              { label: "Mã cuộc hẹn", value: record.appointmentId },
-              { label: "Ngày khám", value: new Date(record.appointmentDate).toLocaleDateString("vi-VN") },
-              { label: "Bác sĩ khám", value: `${record.doctorFullName}${record.doctorTitle ? `, ${record.doctorTitle}` : ""}` },
-              { label: "Chuyên khoa", value: record.doctorSpecialty },
-              { label: "Ghi chú hẹn", value: record.appointmentNotes },
+              { label: t("appointmentFields.appointmentId"), value: record.appointmentId },
+              { label: t("appointmentFields.appointmentDate"), value: formatDate(record.appointmentDate) },
+              { label: t("appointmentFields.doctor"), value: `${record.doctorFullName}${record.doctorTitle ? `, ${record.doctorTitle}` : ""}` },
+              { label: t("appointmentFields.specialty"), value: record.doctorSpecialty },
+              { label: t("appointmentFields.notes"), value: record.appointmentNotes },
             ]}
           />
         </DetailSection>
@@ -594,14 +649,14 @@ export default function MedicalRecordDetailClient({
         {/* SECTION 3: Chief Complaint & Medical History (Only if data exists) */}
         {hasComplaintSection && (
           <DetailSection
-            title="Lý do vào viện & Tiền sử bệnh (Bệnh Án)"
+            title={sections.complaintHistory}
             icon={<Stethoscope className="w-4 h-4" />}
             defaultOpen={true}
           >
             <div className="space-y-4 text-xs">
               {lyDoVaoVien && (
                 <div>
-                  <p className="font-bold text-gray-700 mb-1">Lý do vào viện / Lý do khám:</p>
+                  <p className="font-bold text-gray-700 mb-1">{t("complaintFields.chiefComplaint")}</p>
                   <p className="text-gray-900 font-semibold bg-gray-50 p-3 rounded-lg border border-gray-200">
                     {lyDoVaoVien}
                   </p>
@@ -609,21 +664,23 @@ export default function MedicalRecordDetailClient({
               )}
               {benhSu && (
                 <div>
-                  <p className="font-bold text-gray-700 mb-1">Bệnh sử chi tiết:</p>
+                  <p className="font-bold text-gray-700 mb-1">{t("complaintFields.history")}</p>
                   <p className="text-gray-900 font-medium bg-gray-50 p-3 rounded-lg border border-gray-200 leading-relaxed">
                     {benhSu}
                   </p>
                 </div>
               )}
               <InfoGrid
+                tYes={tYes}
+                tNo={tNo}
                 items={[
-                  { label: "Tiền sử mắt", value: tienSuMat },
-                  { label: "Tiền sử toàn thân", value: tienSuToanThan },
-                  { label: "Tiền sử gia đình", value: tienSuGiaDinh },
-                  { label: "Nguyên nhân chấn thương", value: benhAn?.chanThuongNguyenNhan },
-                  { label: "Thời gian chấn thương", value: benhAn?.chanThuongThoiGian },
-                  { label: "Đã điều trị trước đó", value: benhAn?.chanThuongDaDieuTri },
-                  { label: "Quá trình sau điều trị", value: benhAn?.chanThuongQuaTrinhSauDT },
+                  { label: t("complaintFields.eyeHistory"), value: tienSuMat },
+                  { label: t("complaintFields.systemicHistory"), value: tienSuToanThan },
+                  { label: t("complaintFields.familyHistory"), value: tienSuGiaDinh },
+                  { label: t("complaintFields.traumaCause"), value: benhAn?.chanThuongNguyenNhan },
+                  { label: t("complaintFields.traumaTime"), value: benhAn?.chanThuongThoiGian },
+                  { label: t("complaintFields.traumaPriorTreatment"), value: benhAn?.chanThuongDaDieuTri },
+                  { label: t("complaintFields.traumaPostCourse"), value: benhAn?.chanThuongQuaTrinhSauDT },
                 ]}
               />
             </div>
@@ -633,39 +690,39 @@ export default function MedicalRecordDetailClient({
         {/* SECTION 4: Systemic Examination (Only if hasObjectData is true) */}
         {hasObjectData(khamToanThan) && (
           <DetailSection
-            title="Sinh hiệu & Khám toàn thân"
+            title={sections.vitals}
             icon={<Heart className="w-4 h-4 text-red-600" />}
             defaultOpen={true}
           >
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
               {khamToanThan.huyetAp && (
                 <div className="bg-red-50 p-2.5 rounded-lg border border-red-100">
-                  <span className="block text-[10px] text-gray-500">Huyết áp</span>
-                  <span className="font-bold text-red-800 text-xs">{khamToanThan.huyetAp} mmHg</span>
+                  <span className="block text-[10px] text-gray-500">{t("vitals.bloodPressure")}</span>
+                  <span className="font-bold text-red-800 text-xs">{khamToanThan.huyetAp} {t("vitals.mmHg")}</span>
                 </div>
               )}
               {khamToanThan.nhietDo && (
                 <div className="bg-red-50 p-2.5 rounded-lg border border-red-100">
-                  <span className="block text-[10px] text-gray-500">Nhiệt độ</span>
-                  <span className="font-bold text-red-800 text-xs">{khamToanThan.nhietDo} °C</span>
+                  <span className="block text-[10px] text-gray-500">{t("vitals.temperature")}</span>
+                  <span className="font-bold text-red-800 text-xs">{khamToanThan.nhietDo} {t("vitals.celsius")}</span>
                 </div>
               )}
               {khamToanThan.mach && (
                 <div className="bg-red-50 p-2.5 rounded-lg border border-red-100">
-                  <span className="block text-[10px] text-gray-500">Mạch</span>
-                  <span className="font-bold text-red-800 text-xs">{khamToanThan.mach} bpm</span>
+                  <span className="block text-[10px] text-gray-500">{t("vitals.pulse")}</span>
+                  <span className="font-bold text-red-800 text-xs">{khamToanThan.mach} {t("vitals.bpm")}</span>
                 </div>
               )}
               {khamToanThan.nhipTho && (
                 <div className="bg-red-50 p-2.5 rounded-lg border border-red-100">
-                  <span className="block text-[10px] text-gray-500">Nhịp thở</span>
-                  <span className="font-bold text-red-800 text-xs">{khamToanThan.nhipTho} /phút</span>
+                  <span className="block text-[10px] text-gray-500">{t("vitals.respiratoryRate")}</span>
+                  <span className="font-bold text-red-800 text-xs">{khamToanThan.nhipTho} {t("vitals.perMinute")}</span>
                 </div>
               )}
               {khamToanThan.canNang && (
                 <div className="bg-red-50 p-2.5 rounded-lg border border-red-100">
-                  <span className="block text-[10px] text-gray-500">Cân nặng</span>
-                  <span className="font-bold text-red-800 text-xs">{khamToanThan.canNang} kg</span>
+                  <span className="block text-[10px] text-gray-500">{t("vitals.weight")}</span>
+                  <span className="font-bold text-red-800 text-xs">{khamToanThan.canNang} {t("vitals.kg")}</span>
                 </div>
               )}
             </div>
@@ -675,273 +732,328 @@ export default function MedicalRecordDetailClient({
         {/* SECTION 5: Eye Examination (Only if hasEyeExamData is true) */}
         {hasEyeExamData && (
           <DetailSection
-            title="Khám mắt lâm sàng chuyên khoa (Khám bệnh)"
+            title={sections.eyeExam}
             icon={<Eye className="w-4 h-4" />}
             defaultOpen={true}
           >
             <div className="space-y-6">
               {/* Vision & Tonometry */}
               <EyeSideGrid
-                title="1. Thị lực & Nhãn áp vào viện"
+                title={t("eyeExamSections.visionIop")}
+                odLabel={odLabel}
+                osLabel={osLabel}
+                normalLabel={normalLabel}
+                tYes={tYes}
+                tNo={tNo}
                 odData={[
-                  { label: "Thị lực không kính", value: odThiLuc?.thiLucKhongKinh },
-                  { label: "Thị lực có kính", value: odThiLuc?.thiLucCoKinh },
-                  { label: "Thị lực nhìn gần", value: odThiLuc?.thiLucNhinGan },
-                  { label: "Thị lực qua lỗ", value: odThiLuc?.thiLucQuaLo },
-                  { label: "Nhãn áp", value: odThiLuc?.nhanAp ? `${odThiLuc.nhanAp} mmHg` : null },
-                  { label: "Phương pháp đo nhãn áp", value: odThiLuc?.phuongPhapNhanAp },
-                  { label: "Khúc xạ máy", value: odThiLuc?.khucXaMay },
-                  { label: "Soi bóng đồng tử", value: odThiLuc?.soiBongDongTu },
-                  { label: "Khúc xạ chủ quan", value: odThiLuc?.khucXaChuQuan },
-                  { label: "Thị trường", value: odThiLuc?.thiTruong },
+                  { label: t("visionFields.withoutGlasses"), value: odThiLuc?.thiLucKhongKinh },
+                  { label: t("visionFields.withGlasses"), value: odThiLuc?.thiLucCoKinh },
+                  { label: t("visionFields.nearVision"), value: odThiLuc?.thiLucNhinGan },
+                  { label: t("visionFields.pinHole"), value: odThiLuc?.thiLucQuaLo },
+                  { label: t("visionFields.iop"), value: odThiLuc?.nhanAp ? t("visionFields.iopWithUnit", { value: odThiLuc.nhanAp }) : null },
+                  { label: t("visionFields.iopMethod"), value: odThiLuc?.phuongPhapNhanAp },
+                  { label: t("visionFields.refractionAuto"), value: odThiLuc?.khucXaMay },
+                  { label: t("visionFields.retinoscopy"), value: odThiLuc?.soiBongDongTu },
+                  { label: t("visionFields.refractionSubj"), value: odThiLuc?.khucXaChuQuan },
+                  { label: t("visionFields.visualField"), value: odThiLuc?.thiTruong },
                 ]}
                 osData={[
-                  { label: "Thị lực không kính", value: osThiLuc?.thiLucKhongKinh },
-                  { label: "Thị lực có kính", value: osThiLuc?.thiLucCoKinh },
-                  { label: "Thị lực nhìn gần", value: osThiLuc?.thiLucNhinGan },
-                  { label: "Thị lực qua lỗ", value: osThiLuc?.thiLucQuaLo },
-                  { label: "Nhãn áp", value: osThiLuc?.nhanAp ? `${osThiLuc.nhanAp} mmHg` : null },
-                  { label: "Phương pháp đo nhãn áp", value: osThiLuc?.phuongPhapNhanAp },
-                  { label: "Khúc xạ máy", value: osThiLuc?.khucXaMay },
-                  { label: "Soi bóng đồng tử", value: osThiLuc?.soiBongDongTu },
-                  { label: "Khúc xạ chủ quan", value: osThiLuc?.khucXaChuQuan },
-                  { label: "Thị trường", value: osThiLuc?.thiTruong },
+                  { label: t("visionFields.withoutGlasses"), value: osThiLuc?.thiLucKhongKinh },
+                  { label: t("visionFields.withGlasses"), value: osThiLuc?.thiLucCoKinh },
+                  { label: t("visionFields.nearVision"), value: osThiLuc?.thiLucNhinGan },
+                  { label: t("visionFields.pinHole"), value: osThiLuc?.thiLucQuaLo },
+                  { label: t("visionFields.iop"), value: osThiLuc?.nhanAp ? t("visionFields.iopWithUnit", { value: osThiLuc.nhanAp }) : null },
+                  { label: t("visionFields.iopMethod"), value: osThiLuc?.phuongPhapNhanAp },
+                  { label: t("visionFields.refractionAuto"), value: osThiLuc?.khucXaMay },
+                  { label: t("visionFields.retinoscopy"), value: osThiLuc?.soiBongDongTu },
+                  { label: t("visionFields.refractionSubj"), value: osThiLuc?.khucXaChuQuan },
+                  { label: t("visionFields.visualField"), value: osThiLuc?.thiTruong },
                 ]}
               />
 
               {/* Eyelid */}
               <EyeSideGrid
-                title="2. Mi mắt"
+                title={t("eyeExamSections.eyelid")}
+                odLabel={odLabel}
+                osLabel={osLabel}
+                normalLabel={normalLabel}
+                tYes={tYes}
+                tNo={tNo}
                 odData={[
-                  { label: "Tình trạng mi", value: odEyelid?.tinhTrang },
-                  { label: "Sụp mi", value: odEyelid?.supMi },
-                  { label: "Độ sụp mi", value: odEyelid?.doSupMi },
-                  { label: "Rách mi", value: odEyelid?.rachMi },
-                  { label: "Mức độ rách", value: odEyelid?.mucDoRach },
-                  { label: "Vị trí rách", value: odEyelid?.viTriRach },
-                  { label: "Đã khâu", value: odEyelid?.daKhau },
-                  { label: "Chưa khâu", value: odEyelid?.chuaKhau },
-                  { label: "Lệ quản", value: odEyelid?.leQuan },
-                  { label: "Vị trí lệ quản", value: odEyelid?.leQuanViTri },
-                  { label: "Sẹo mi", value: odEyelid?.seoMi },
-                  { label: "Mô tả sẹo", value: odEyelid?.moTaSeo },
-                  { label: "Tổn thương khác", value: odEyelid?.chuaKhac || odEyelid?.tomThuongKhac },
+                  { label: t("eyelidFields.status"), value: odEyelid?.tinhTrang },
+                  { label: t("eyelidFields.ptosis"), value: odEyelid?.supMi },
+                  { label: t("eyelidFields.ptosisDegree"), value: odEyelid?.doSupMi },
+                  { label: t("eyelidFields.tear"), value: odEyelid?.rachMi },
+                  { label: t("eyelidFields.tearDegree"), value: odEyelid?.mucDoRach },
+                  { label: t("eyelidFields.tearLocation"), value: odEyelid?.viTriRach },
+                  { label: t("eyelidFields.sutured"), value: odEyelid?.daKhau },
+                  { label: t("eyelidFields.unsutured"), value: odEyelid?.chuaKhau },
+                  { label: t("eyelidFields.lacrimal"), value: odEyelid?.leQuan },
+                  { label: t("eyelidFields.lacrimalLocation"), value: odEyelid?.leQuanViTri },
+                  { label: t("eyelidFields.scar"), value: odEyelid?.seoMi },
+                  { label: t("eyelidFields.scarDesc"), value: odEyelid?.moTaSeo },
+                  { label: t("eyelidFields.other"), value: odEyelid?.chuaKhac || odEyelid?.tomThuongKhac },
                 ]}
                 osData={[
-                  { label: "Tình trạng mi", value: osEyelid?.tinhTrang },
-                  { label: "Sụp mi", value: osEyelid?.supMi },
-                  { label: "Độ sụp mi", value: osEyelid?.doSupMi },
-                  { label: "Rách mi", value: osEyelid?.rachMi },
-                  { label: "Mức độ rách", value: osEyelid?.mucDoRach },
-                  { label: "Vị trí rách", value: osEyelid?.viTriRach },
-                  { label: "Đã khâu", value: osEyelid?.daKhau },
-                  { label: "Chưa khâu", value: osEyelid?.chuaKhau },
-                  { label: "Lệ quản", value: osEyelid?.leQuan },
-                  { label: "Vị trí lệ quản", value: osEyelid?.leQuanViTri },
-                  { label: "Sẹo mi", value: osEyelid?.seoMi },
-                  { label: "Mô tả sẹo", value: osEyelid?.moTaSeo },
-                  { label: "Tổn thương khác", value: osEyelid?.chuaKhac || osEyelid?.tomThuongKhac },
+                  { label: t("eyelidFields.status"), value: osEyelid?.tinhTrang },
+                  { label: t("eyelidFields.ptosis"), value: osEyelid?.supMi },
+                  { label: t("eyelidFields.ptosisDegree"), value: osEyelid?.doSupMi },
+                  { label: t("eyelidFields.tear"), value: osEyelid?.rachMi },
+                  { label: t("eyelidFields.tearDegree"), value: osEyelid?.mucDoRach },
+                  { label: t("eyelidFields.tearLocation"), value: osEyelid?.viTriRach },
+                  { label: t("eyelidFields.sutured"), value: osEyelid?.daKhau },
+                  { label: t("eyelidFields.unsutured"), value: osEyelid?.chuaKhau },
+                  { label: t("eyelidFields.lacrimal"), value: osEyelid?.leQuan },
+                  { label: t("eyelidFields.lacrimalLocation"), value: osEyelid?.leQuanViTri },
+                  { label: t("eyelidFields.scar"), value: osEyelid?.seoMi },
+                  { label: t("eyelidFields.scarDesc"), value: osEyelid?.moTaSeo },
+                  { label: t("eyelidFields.other"), value: osEyelid?.chuaKhac || osEyelid?.tomThuongKhac },
                 ]}
               />
 
               {/* Conjunctiva */}
               <EyeSideGrid
-                title="3. Kết mạc"
+                title={t("eyeExamSections.conjunctiva")}
+                odLabel={odLabel}
+                osLabel={osLabel}
+                normalLabel={normalLabel}
+                tYes={tYes}
+                tNo={tNo}
                 odData={[
-                  { label: "Tình trạng kết mạc", value: odConjunctiva?.tinhTrang },
-                  { label: "Cương tụ", value: odConjunctiva?.cuongTu },
-                  { label: "Vị trí cương tụ", value: odConjunctiva?.cuongTuViTri },
-                  { label: "Xuất huyết", value: odConjunctiva?.xuatHuyet },
-                  { label: "Mô tả xuất huyết", value: odConjunctiva?.moTaXuatHuyet },
-                  { label: "Phù nề", value: odConjunctiva?.phuNe },
-                  { label: "Rách kết mạc", value: odConjunctiva?.rachKM },
-                  { label: "Tiết tố", value: odConjunctiva?.tietTo },
-                  { label: "Cùng đồ", value: odConjunctiva?.cungDo },
-                  { label: "Tổn thương khác", value: odConjunctiva?.tomThuongKhac },
+                  { label: t("conjunctivaFields.status"), value: odConjunctiva?.tinhTrang },
+                  { label: t("conjunctivaFields.injection"), value: odConjunctiva?.cuongTu },
+                  { label: t("conjunctivaFields.injectionLocation"), value: odConjunctiva?.cuongTuViTri },
+                  { label: t("conjunctivaFields.hemorrhage"), value: odConjunctiva?.xuatHuyet },
+                  { label: t("conjunctivaFields.hemorrhageDesc"), value: odConjunctiva?.moTaXuatHuyet },
+                  { label: t("conjunctivaFields.edema"), value: odConjunctiva?.phuNe },
+                  { label: t("conjunctivaFields.tear"), value: odConjunctiva?.rachKM },
+                  { label: t("conjunctivaFields.secretion"), value: odConjunctiva?.tietTo },
+                  { label: t("conjunctivaFields.fornix"), value: odConjunctiva?.cungDo },
+                  { label: t("conjunctivaFields.other"), value: odConjunctiva?.tomThuongKhac },
                 ]}
                 osData={[
-                  { label: "Tình trạng kết mạc", value: osConjunctiva?.tinhTrang },
-                  { label: "Cương tụ", value: osConjunctiva?.cuongTu },
-                  { label: "Vị trí cương tụ", value: osConjunctiva?.cuongTuViTri },
-                  { label: "Xuất huyết", value: osConjunctiva?.xuatHuyet },
-                  { label: "Mô tả xuất huyết", value: osConjunctiva?.moTaXuatHuyet },
-                  { label: "Phù nề", value: osConjunctiva?.phuNe },
-                  { label: "Rách kết mạc", value: osConjunctiva?.rachKM },
-                  { label: "Tiết tố", value: osConjunctiva?.tietTo },
-                  { label: "Cùng đồ", value: osConjunctiva?.cungDo },
-                  { label: "Tổn thương khác", value: osConjunctiva?.tomThuongKhac },
+                  { label: t("conjunctivaFields.status"), value: osConjunctiva?.tinhTrang },
+                  { label: t("conjunctivaFields.injection"), value: osConjunctiva?.cuongTu },
+                  { label: t("conjunctivaFields.injectionLocation"), value: osConjunctiva?.cuongTuViTri },
+                  { label: t("conjunctivaFields.hemorrhage"), value: osConjunctiva?.xuatHuyet },
+                  { label: t("conjunctivaFields.hemorrhageDesc"), value: osConjunctiva?.moTaXuatHuyet },
+                  { label: t("conjunctivaFields.edema"), value: osConjunctiva?.phuNe },
+                  { label: t("conjunctivaFields.tear"), value: osConjunctiva?.rachKM },
+                  { label: t("conjunctivaFields.secretion"), value: osConjunctiva?.tietTo },
+                  { label: t("conjunctivaFields.fornix"), value: osConjunctiva?.cungDo },
+                  { label: t("conjunctivaFields.other"), value: osConjunctiva?.tomThuongKhac },
                 ]}
               />
 
               {/* Cornea */}
               <EyeSideGrid
-                title="4. Giác mạc"
+                title={t("eyeExamSections.cornea")}
+                odLabel={odLabel}
+                osLabel={osLabel}
+                normalLabel={normalLabel}
+                tYes={tYes}
+                tNo={tNo}
                 odData={[
-                  { label: "Độ trong suốt", value: odCornea?.trongSuot },
-                  { label: "Hình dáng", value: odCornea?.hinhDang },
-                  { label: "Đường kính (mm)", value: odCornea?.duongKinhMm },
-                  { label: "Biểu mô", value: odCornea?.bieuMo },
-                  { label: "Biểu mô chấm", value: odCornea?.bieuMoCham },
-                  { label: "Bắt màu Fluorescein", value: odCornea?.bieuMoBong },
-                  { label: "Mất biểu mô", value: odCornea?.bieuMoMat },
-                  { label: "Tủa mặt sau", value: odCornea?.tuaMatSau },
-                  { label: "Seidel test", value: odCornea?.seidel },
-                  { label: "Cảm giác giác mạc", value: odCornea?.camGiacGM },
-                  { label: "Loét giác mạc", value: odCornea?.loet },
-                  { label: "Tân mạch", value: odCornea?.tanMach },
+                  { label: t("corneaFields.clarity"), value: odCornea?.trongSuot },
+                  { label: t("corneaFields.shape"), value: odCornea?.hinhDang },
+                  { label: t("corneaFields.diameter"), value: odCornea?.duongKinhMm },
+                  { label: t("corneaFields.epithelium"), value: odCornea?.bieuMo },
+                  { label: t("corneaFields.epitheliumPunctate"), value: odCornea?.bieuMoCham },
+                  { label: t("corneaFields.fluorescein"), value: odCornea?.bieuMoBong },
+                  { label: t("corneaFields.epitheliumLoss"), value: odCornea?.bieuMoMat },
+                  { label: t("corneaFields.kp"), value: odCornea?.tuaMatSau },
+                  { label: t("corneaFields.seidel"), value: odCornea?.seidel },
+                  { label: t("corneaFields.sensation"), value: odCornea?.camGiacGM },
+                  { label: t("corneaFields.ulcer"), value: odCornea?.loet },
+                  { label: t("corneaFields.neovascular"), value: odCornea?.tanMach },
                 ]}
                 osData={[
-                  { label: "Độ trong suốt", value: osCornea?.trongSuot },
-                  { label: "Hình dáng", value: osCornea?.hinhDang },
-                  { label: "Đường kính (mm)", value: osCornea?.duongKinhMm },
-                  { label: "Biểu mô", value: osCornea?.bieuMo },
-                  { label: "Biểu mô chấm", value: osCornea?.bieuMoCham },
-                  { label: "Bắt màu Fluorescein", value: osCornea?.bieuMoBong },
-                  { label: "Mất biểu mô", value: osCornea?.bieuMoMat },
-                  { label: "Tủa mặt sau", value: osCornea?.tuaMatSau },
-                  { label: "Seidel test", value: osCornea?.seidel },
-                  { label: "Cảm giác giác mạc", value: osCornea?.camGiacGM },
-                  { label: "Loét giác mạc", value: osCornea?.loet },
-                  { label: "Tân mạch", value: osCornea?.tanMach },
+                  { label: t("corneaFields.clarity"), value: osCornea?.trongSuot },
+                  { label: t("corneaFields.shape"), value: osCornea?.hinhDang },
+                  { label: t("corneaFields.diameter"), value: osCornea?.duongKinhMm },
+                  { label: t("corneaFields.epithelium"), value: osCornea?.bieuMo },
+                  { label: t("corneaFields.epitheliumPunctate"), value: osCornea?.bieuMoCham },
+                  { label: t("corneaFields.fluorescein"), value: osCornea?.bieuMoBong },
+                  { label: t("corneaFields.epitheliumLoss"), value: osCornea?.bieuMoMat },
+                  { label: t("corneaFields.kp"), value: osCornea?.tuaMatSau },
+                  { label: t("corneaFields.seidel"), value: osCornea?.seidel },
+                  { label: t("corneaFields.sensation"), value: osCornea?.camGiacGM },
+                  { label: t("corneaFields.ulcer"), value: osCornea?.loet },
+                  { label: t("corneaFields.neovascular"), value: osCornea?.tanMach },
                 ]}
               />
 
               {/* Sclera */}
               <EyeSideGrid
-                title="5. Củng mạc"
+                title={t("eyeExamSections.sclera")}
+                odLabel={odLabel}
+                osLabel={osLabel}
+                normalLabel={normalLabel}
+                tYes={tYes}
+                tNo={tNo}
                 odData={[
-                  { label: "Tình trạng củng mạc", value: odSclera?.tinhTrang },
-                  { label: "Giãn lồi", value: odSclera?.gianLoi },
-                  { label: "Rách củng mạc", value: odSclera?.rach },
-                  { label: "Hoại tử", value: odSclera?.hoaiTu },
+                  { label: t("scleraFields.status"), value: odSclera?.tinhTrang },
+                  { label: t("scleraFields.ectasia"), value: odSclera?.gianLoi },
+                  { label: t("scleraFields.tear"), value: odSclera?.rach },
+                  { label: t("scleraFields.necrosis"), value: odSclera?.hoaiTu },
                 ]}
                 osData={[
-                  { label: "Tình trạng củng mạc", value: osSclera?.tinhTrang },
-                  { label: "Giãn lồi", value: osSclera?.gianLoi },
-                  { label: "Rách củng mạc", value: osSclera?.rach },
-                  { label: "Hoại tử", value: osSclera?.hoaiTu },
+                  { label: t("scleraFields.status"), value: osSclera?.tinhTrang },
+                  { label: t("scleraFields.ectasia"), value: osSclera?.gianLoi },
+                  { label: t("scleraFields.tear"), value: osSclera?.rach },
+                  { label: t("scleraFields.necrosis"), value: osSclera?.hoaiTu },
                 ]}
               />
 
               {/* Anterior Chamber */}
               <EyeSideGrid
-                title="6. Tiền phòng"
+                title={t("eyeExamSections.anteriorChamber")}
+                odLabel={odLabel}
+                osLabel={osLabel}
+                normalLabel={normalLabel}
+                tYes={tYes}
+                tNo={tNo}
                 odData={[
-                  { label: "Độ sâu (mm)", value: odAc?.doSauMm },
-                  { label: "Xẹp tiền phòng", value: odAc?.xepTP },
-                  { label: "Tyndall", value: odAc?.tyndall },
-                  { label: "Mủ tiền phòng", value: odAc?.mu ? `Có (${odAc?.muMm || 0}mm)` : false },
-                  { label: "Máu tiền phòng", value: odAc?.xuatHuyet },
-                  { label: "Xuất tiết", value: odAc?.xuatTiet },
+                  { label: t("anteriorChamberFields.depth"), value: odAc?.doSauMm },
+                  { label: t("anteriorChamberFields.shallow"), value: odAc?.xepTP },
+                  { label: t("anteriorChamberFields.tyndall"), value: odAc?.tyndall },
+                  { label: t("anteriorChamberFields.hypopyon"), value: odAc?.mu ? t("anteriorChamberFields.hypopyonWithMm", { mm: odAc?.muMm || 0 }) : false },
+                  { label: t("anteriorChamberFields.hyphema"), value: odAc?.xuatHuyet },
+                  { label: t("anteriorChamberFields.exudate"), value: odAc?.xuatTiet },
                 ]}
                 osData={[
-                  { label: "Độ sâu (mm)", value: osAc?.doSauMm },
-                  { label: "Xẹp tiền phòng", value: osAc?.xepTP },
-                  { label: "Tyndall", value: osAc?.tyndall },
-                  { label: "Mủ tiền phòng", value: osAc?.mu ? `Có (${osAc?.muMm || 0}mm)` : false },
-                  { label: "Máu tiền phòng", value: osAc?.xuatHuyet },
-                  { label: "Xuất tiết", value: osAc?.xuatTiet },
+                  { label: t("anteriorChamberFields.depth"), value: osAc?.doSauMm },
+                  { label: t("anteriorChamberFields.shallow"), value: osAc?.xepTP },
+                  { label: t("anteriorChamberFields.tyndall"), value: osAc?.tyndall },
+                  { label: t("anteriorChamberFields.hypopyon"), value: osAc?.mu ? t("anteriorChamberFields.hypopyonWithMm", { mm: osAc?.muMm || 0 }) : false },
+                  { label: t("anteriorChamberFields.hyphema"), value: osAc?.xuatHuyet },
+                  { label: t("anteriorChamberFields.exudate"), value: osAc?.xuatTiet },
                 ]}
               />
 
               {/* Iris & Pupil */}
               <EyeSideGrid
-                title="7. Mống mắt & Đồng tử"
+                title={t("eyeExamSections.irisPupil")}
+                odLabel={odLabel}
+                osLabel={osLabel}
+                normalLabel={normalLabel}
+                tYes={tYes}
+                tNo={tNo}
                 odData={[
-                  { label: "Tình trạng mống mắt & đồng tử", value: odIris?.tinhTrang },
-                  { label: "Đường kính đồng tử", value: odIris?.duongKinh ? `${odIris.duongKinh} mm` : null },
-                  { label: "Hình dáng đồng tử", value: odIris?.hinhDang },
-                  { label: "Thoái hóa mống mắt", value: odIris?.thoaiHoa },
-                  { label: "Thủng mống mắt", value: odIris?.thungMM },
-                  { label: "Đứt chân mống mắt", value: odIris?.dutChanMM },
+                  { label: t("irisPupilFields.status"), value: odIris?.tinhTrang },
+                  { label: t("irisPupilFields.pupilDiameter"), value: odIris?.duongKinh ? t("irisPupilFields.pupilDiameterWithUnit", { value: odIris.duongKinh }) : null },
+                  { label: t("irisPupilFields.pupilShape"), value: odIris?.hinhDang },
+                  { label: t("irisPupilFields.atrophy"), value: odIris?.thoaiHoa },
+                  { label: t("irisPupilFields.perforation"), value: odIris?.thungMM },
+                  { label: t("irisPupilFields.tear"), value: odIris?.dutChanMM },
                 ]}
                 osData={[
-                  { label: "Tình trạng mống mắt & đồng tử", value: osIris?.tinhTrang },
-                  { label: "Đường kính đồng tử", value: osIris?.duongKinh ? `${osIris.duongKinh} mm` : null },
-                  { label: "Hình dáng đồng tử", value: osIris?.hinhDang },
-                  { label: "Thoái hóa mống mắt", value: osIris?.thoaiHoa },
-                  { label: "Thủng mống mắt", value: osIris?.thungMM },
-                  { label: "Đứt chân mống mắt", value: osIris?.dutChanMM },
+                  { label: t("irisPupilFields.status"), value: osIris?.tinhTrang },
+                  { label: t("irisPupilFields.pupilDiameter"), value: osIris?.duongKinh ? t("irisPupilFields.pupilDiameterWithUnit", { value: osIris.duongKinh }) : null },
+                  { label: t("irisPupilFields.pupilShape"), value: osIris?.hinhDang },
+                  { label: t("irisPupilFields.atrophy"), value: osIris?.thoaiHoa },
+                  { label: t("irisPupilFields.perforation"), value: osIris?.thungMM },
+                  { label: t("irisPupilFields.tear"), value: osIris?.dutChanMM },
                 ]}
               />
 
               {/* Lens & Vitreous */}
               <EyeSideGrid
-                title="8. Thủy tinh thể & Dịch kính"
+                title={t("eyeExamSections.lensVitreous")}
+                odLabel={odLabel}
+                osLabel={osLabel}
+                normalLabel={normalLabel}
+                tYes={tYes}
+                tNo={tNo}
                 odData={[
-                  { label: "Tình trạng TTT", value: odLens?.tinhTrang },
-                  { label: "Lệch TTT", value: odLens?.lech },
-                  { label: "Viêm mủ TTT", value: odLens?.viemMu },
-                  { label: "Kính nội nhãn (IOL)", value: odLens?.iol },
-                  { label: "Tình trạng dịch kính", value: odVitreous?.tinhTrang },
-                  { label: "Đục dịch kính", value: odVitreous?.duc },
-                  { label: "Xuất huyết dịch kính", value: odVitreous?.xuatHuyet },
+                  { label: t("lensVitreousFields.lensStatus"), value: odLens?.tinhTrang },
+                  { label: t("lensVitreousFields.lensDislocation"), value: odLens?.lech },
+                  { label: t("lensVitreousFields.lensAbscess"), value: odLens?.viemMu },
+                  { label: t("lensVitreousFields.iol"), value: odLens?.iol },
+                  { label: t("lensVitreousFields.vitreousStatus"), value: odVitreous?.tinhTrang },
+                  { label: t("lensVitreousFields.vitreousOpacity"), value: odVitreous?.duc },
+                  { label: t("lensVitreousFields.vitreousHemorrhage"), value: odVitreous?.xuatHuyet },
                 ]}
                 osData={[
-                  { label: "Tình trạng TTT", value: osLens?.tinhTrang },
-                  { label: "Lệch TTT", value: osLens?.lech },
-                  { label: "Viêm mủ TTT", value: osLens?.viemMu },
-                  { label: "Kính nội nhãn (IOL)", value: osLens?.iol },
-                  { label: "Tình trạng dịch kính", value: osVitreous?.tinhTrang },
-                  { label: "Đục dịch kính", value: osVitreous?.duc },
-                  { label: "Xuất huyết dịch kính", value: osVitreous?.xuatHuyet },
+                  { label: t("lensVitreousFields.lensStatus"), value: osLens?.tinhTrang },
+                  { label: t("lensVitreousFields.lensDislocation"), value: osLens?.lech },
+                  { label: t("lensVitreousFields.lensAbscess"), value: osLens?.viemMu },
+                  { label: t("lensVitreousFields.iol"), value: osLens?.iol },
+                  { label: t("lensVitreousFields.vitreousStatus"), value: osVitreous?.tinhTrang },
+                  { label: t("lensVitreousFields.vitreousOpacity"), value: osVitreous?.duc },
+                  { label: t("lensVitreousFields.vitreousHemorrhage"), value: osVitreous?.xuatHuyet },
                 ]}
               />
 
               {/* Optic Disc & Macula */}
               <EyeSideGrid
-                title="9. Đĩa thị (Gai thị) & Hoàng điểm"
+                title={t("eyeExamSections.opticDiscMacula")}
+                odLabel={odLabel}
+                osLabel={osLabel}
+                normalLabel={normalLabel}
+                tYes={tYes}
+                tNo={tNo}
                 odData={[
-                  { label: "Gai thị", value: odOpticDisc?.gaiThi },
-                  { label: "Xuất huyết gai", value: odOpticDisc?.xuatHuyetGai },
-                  { label: "Tân mạch gai", value: odOpticDisc?.tanMachGai },
-                  { label: "Hoàng điểm", value: odOpticDisc?.hoangDiem },
-                  { label: "Mất ánh phản xạ hoàng điểm", value: odOpticDisc?.matAnhHD },
-                  { label: "Xuất huyết hoàng điểm", value: odOpticDisc?.xuatHuyetHD },
+                  { label: t("opticDiscFields.disc"), value: odOpticDisc?.gaiThi },
+                  { label: t("opticDiscFields.discHemorrhage"), value: odOpticDisc?.xuatHuyetGai },
+                  { label: t("opticDiscFields.discNeovascular"), value: odOpticDisc?.tanMachGai },
+                  { label: t("opticDiscFields.macula"), value: odOpticDisc?.hoangDiem },
+                  { label: t("opticDiscFields.maculaReflexLoss"), value: odOpticDisc?.matAnhHD },
+                  { label: t("opticDiscFields.maculaHemorrhage"), value: odOpticDisc?.xuatHuyetHD },
                 ]}
                 osData={[
-                  { label: "Gai thị", value: osOpticDisc?.gaiThi },
-                  { label: "Xuất huyết gai", value: osOpticDisc?.xuatHuyetGai },
-                  { label: "Tân mạch gai", value: osOpticDisc?.tanMachGai },
-                  { label: "Hoàng điểm", value: osOpticDisc?.hoangDiem },
-                  { label: "Mất ánh phản xạ hoàng điểm", value: osOpticDisc?.matAnhHD },
-                  { label: "Xuất huyết hoàng điểm", value: osOpticDisc?.xuatHuyetHD },
+                  { label: t("opticDiscFields.disc"), value: osOpticDisc?.gaiThi },
+                  { label: t("opticDiscFields.discHemorrhage"), value: osOpticDisc?.xuatHuyetGai },
+                  { label: t("opticDiscFields.discNeovascular"), value: osOpticDisc?.tanMachGai },
+                  { label: t("opticDiscFields.macula"), value: osOpticDisc?.hoangDiem },
+                  { label: t("opticDiscFields.maculaReflexLoss"), value: osOpticDisc?.matAnhHD },
+                  { label: t("opticDiscFields.maculaHemorrhage"), value: osOpticDisc?.xuatHuyetHD },
                 ]}
               />
 
               {/* Retina & Vessels */}
               <EyeSideGrid
-                title="10. Võng mạc & Mạch máu"
+                title={t("eyeExamSections.retinaVessels")}
+                odLabel={odLabel}
+                osLabel={osLabel}
+                normalLabel={normalLabel}
+                tYes={tYes}
+                tNo={tNo}
                 odData={[
-                  { label: "Tình trạng võng mạc", value: odRetina?.vongMac },
-                  { label: "Võng mạc phù", value: odRetina?.vongMacPhu },
-                  { label: "Xuất huyết võng mạc", value: odRetina?.xuatHuyetVM },
-                  { label: "Bong võng mạc (RD)", value: odRetina?.bongVR },
-                  { label: "Rách võng mạc", value: odRetina?.rachVR ? `Có (${odRetina?.rachVRSoLuong || 0} vết)` : false },
+                  { label: t("retinaFields.status"), value: odRetina?.vongMac },
+                  { label: t("retinaFields.edema"), value: odRetina?.vongMacPhu },
+                  { label: t("retinaFields.hemorrhage"), value: odRetina?.xuatHuyetVM },
+                  { label: t("retinaFields.detachment"), value: odRetina?.bongVR },
+                  { label: t("retinaFields.tear"), value: odRetina?.rachVR ? t("retinaFields.tearWithCount", { count: odRetina?.rachVRSoLuong || 0 }) : false },
                 ]}
                 osData={[
-                  { label: "Tình trạng võng mạc", value: osRetina?.vongMac },
-                  { label: "Võng mạc phù", value: osRetina?.vongMacPhu },
-                  { label: "Xuất huyết võng mạc", value: osRetina?.xuatHuyetVM },
-                  { label: "Bong võng mạc (RD)", value: osRetina?.bongVR },
-                  { label: "Rách võng mạc", value: osRetina?.rachVR ? `Có (${osRetina?.rachVRSoLuong || 0} vết)` : false },
+                  { label: t("retinaFields.status"), value: osRetina?.vongMac },
+                  { label: t("retinaFields.edema"), value: osRetina?.vongMacPhu },
+                  { label: t("retinaFields.hemorrhage"), value: osRetina?.xuatHuyetVM },
+                  { label: t("retinaFields.detachment"), value: osRetina?.bongVR },
+                  { label: t("retinaFields.tear"), value: osRetina?.rachVR ? t("retinaFields.tearWithCount", { count: osRetina?.rachVRSoLuong || 0 }) : false },
                 ]}
               />
 
               {/* Orbit */}
               <EyeSideGrid
-                title="11. Hốc mắt & Nhãn cầu"
+                title={t("eyeExamSections.orbit")}
+                odLabel={odLabel}
+                osLabel={osLabel}
+                normalLabel={normalLabel}
+                tYes={tYes}
+                tNo={tNo}
                 odData={[
-                  { label: "Tình trạng hốc mắt", value: odOrbit?.tinhTrang },
-                  { label: "Dị vật hốc mắt", value: odOrbit?.diVat },
-                  { label: "Nhãn cầu lồi", value: odOrbit?.nhanCauLo },
-                  { label: "Nhãn cầu nhỏ", value: odOrbit?.nhanCauNho },
+                  { label: t("orbitFields.status"), value: odOrbit?.tinhTrang },
+                  { label: t("orbitFields.fb"), value: odOrbit?.diVat },
+                  { label: t("orbitFields.proptosis"), value: odOrbit?.nhanCauLo },
+                  { label: t("orbitFields.small"), value: odOrbit?.nhanCauNho },
                 ]}
                 osData={[
-                  { label: "Tình trạng hốc mắt", value: osOrbit?.tinhTrang },
-                  { label: "Dị vật hốc mắt", value: osOrbit?.diVat },
-                  { label: "Nhãn cầu lồi", value: osOrbit?.nhanCauLo },
-                  { label: "Nhãn cầu nhỏ", value: osOrbit?.nhanCauNho },
+                  { label: t("orbitFields.status"), value: osOrbit?.tinhTrang },
+                  { label: t("orbitFields.fb"), value: osOrbit?.diVat },
+                  { label: t("orbitFields.proptosis"), value: osOrbit?.nhanCauLo },
+                  { label: t("orbitFields.small"), value: osOrbit?.nhanCauNho },
                 ]}
               />
             </div>
@@ -951,38 +1063,40 @@ export default function MedicalRecordDetailClient({
         {/* SECTION 6: Subspecialty Extensions (Render ONLY if hasObjectData returns true) */}
         {hasObjectData(traumaRecord) && (
           <DetailSection
-            title="Bệnh án chuyên biệt: Chấn thương mắt (MS21_TRAUMA)"
+            title={sections.trauma}
             icon={<AlertCircle className="w-4 h-4 text-red-600" />}
             defaultOpen={true}
           >
             <div className="space-y-3 text-xs">
               <InfoGrid
+                tYes={tYes}
+                tNo={tNo}
                 items={[
-                  { label: "Nguyên nhân chấn thương", value: traumaRecord.injuryCause },
-                  { label: "Thời gian bị thương", value: traumaRecord.injuryTime },
+                  { label: t("subspecialty.injuryCause"), value: traumaRecord.injuryCause },
+                  { label: t("subspecialty.injuryTime"), value: traumaRecord.injuryTime },
                 ]}
               />
               {traumaRecord.odInjuries && (
                 <div className="bg-red-50/70 p-3 rounded-lg border border-red-100">
-                  <p className="font-bold text-red-900 mb-1">Tổn thương Mắt Phải (OD):</p>
+                  <p className="font-bold text-red-900 mb-1">{t("subspecialty.traumaInjuriesOD")}</p>
                   <p className="text-gray-800 font-medium">{traumaRecord.odInjuries}</p>
                 </div>
               )}
               {traumaRecord.osInjuries && (
                 <div className="bg-purple-50/70 p-3 rounded-lg border border-purple-100">
-                  <p className="font-bold text-purple-900 mb-1">Tổn thương Mắt Trái (OS):</p>
+                  <p className="font-bold text-purple-900 mb-1">{t("subspecialty.traumaInjuriesOS")}</p>
                   <p className="text-gray-800 font-medium">{traumaRecord.osInjuries}</p>
                 </div>
               )}
               {traumaRecord.injuryDetails && (
                 <div>
-                  <p className="font-bold text-gray-700 mb-1">Mô tả chi tiết chấn thương:</p>
+                  <p className="font-bold text-gray-700 mb-1">{t("subspecialty.traumaDetails")}</p>
                   <p className="text-gray-900 bg-gray-50 p-2.5 rounded-lg border border-gray-200">{traumaRecord.injuryDetails}</p>
                 </div>
               )}
               {traumaRecord.traumaConclusion && (
                 <div className="bg-amber-50 p-3 rounded-lg border border-amber-200 text-amber-950">
-                  <p className="font-bold mb-1">Kết luận chấn thương:</p>
+                  <p className="font-bold mb-1">{t("subspecialty.traumaConclusion")}</p>
                   <p className="font-semibold text-sm">{traumaRecord.traumaConclusion}</p>
                 </div>
               )}
@@ -992,19 +1106,21 @@ export default function MedicalRecordDetailClient({
 
         {hasObjectData(glaucomaRecord) && (
           <DetailSection
-            title="Bệnh án chuyên biệt: Glôcôm (MS24_GLAUCOMA)"
+            title={sections.glaucoma}
             icon={<Activity className="w-4 h-4 text-emerald-600" />}
             defaultOpen={true}
           >
             <InfoGrid
+              tYes={tYes}
+              tNo={tNo}
               items={[
-                { label: "Tiền sử gia đình Glôcôm", value: glaucomaRecord.tienSuGiaDinhGlaucoma },
-                { label: "Tiền căn dùng Corticoid", value: glaucomaRecord.corticoidHistory },
-                { label: "Độ mở góc tiền phòng OD", value: glaucomaRecord.gonioOd },
-                { label: "Độ mở góc tiền phòng OS", value: glaucomaRecord.gonioOs },
-                { label: "Tổn thương thị trường OD", value: glaucomaRecord.visualFieldDefectOd },
-                { label: "Tổn thương thị trường OS", value: glaucomaRecord.visualFieldDefectOs },
-                { label: "Chiều dày giác mạc trung tâm (CCT)", value: glaucomaRecord.cct },
+                { label: t("subspecialty.glaucomaFamily"), value: glaucomaRecord.tienSuGiaDinhGlaucoma },
+                { label: t("subspecialty.glaucomaCorticoid"), value: glaucomaRecord.corticoidHistory },
+                { label: t("subspecialty.glaucomaGonioOd"), value: glaucomaRecord.gonioOd },
+                { label: t("subspecialty.glaucomaGonioOs"), value: glaucomaRecord.gonioOs },
+                { label: t("subspecialty.glaucomaVfOd"), value: glaucomaRecord.visualFieldDefectOd },
+                { label: t("subspecialty.glaucomaVfOs"), value: glaucomaRecord.visualFieldDefectOs },
+                { label: t("subspecialty.glaucomaCct"), value: glaucomaRecord.cct },
               ]}
             />
           </DetailSection>
@@ -1012,19 +1128,21 @@ export default function MedicalRecordDetailClient({
 
         {hasObjectData(strabismusPtosisRecord) && (
           <DetailSection
-            title="Bệnh án chuyên biệt: Lác & Sụp mi (MS25_STRABISMUS_PTOSIS)"
+            title={sections.strabismus}
             icon={<Eye className="w-4 h-4 text-purple-600" />}
             defaultOpen={true}
           >
             <InfoGrid
+              tYes={tYes}
+              tNo={tNo}
               items={[
-                { label: "Góc lác Hirschberg", value: strabismusPtosisRecord.hirschbergAngle },
-                { label: "Test che mắt (Cover test)", value: strabismusPtosisRecord.coverTest },
-                { label: "Vận nhãn (EOM)", value: strabismusPtosisRecord.eomGaze },
-                { label: "Độ sụp mi OD", value: strabismusPtosisRecord.ptosisDegreeOd },
-                { label: "Độ sụp mi OS", value: strabismusPtosisRecord.ptosisDegreeOs },
-                { label: "Chức năng cơ nâng mi OD", value: strabismusPtosisRecord.levatorFunctionOd },
-                { label: "Chức năng cơ nâng mi OS", value: strabismusPtosisRecord.levatorFunctionOs },
+                { label: t("subspecialty.strabHirschberg"), value: strabismusPtosisRecord.hirschbergAngle },
+                { label: t("subspecialty.strabCover"), value: strabismusPtosisRecord.coverTest },
+                { label: t("subspecialty.strabEom"), value: strabismusPtosisRecord.eomGaze },
+                { label: t("subspecialty.strabPtosisOd"), value: strabismusPtosisRecord.ptosisDegreeOd },
+                { label: t("subspecialty.strabPtosisOs"), value: strabismusPtosisRecord.ptosisDegreeOs },
+                { label: t("subspecialty.strabLevatorOd"), value: strabismusPtosisRecord.levatorFunctionOd },
+                { label: t("subspecialty.strabLevatorOs"), value: strabismusPtosisRecord.levatorFunctionOs },
               ]}
             />
           </DetailSection>
@@ -1032,18 +1150,20 @@ export default function MedicalRecordDetailClient({
 
         {hasObjectData(pediatricRecord) && (
           <DetailSection
-            title="Bệnh án chuyên biệt: Mắt trẻ em (MS26_PEDIATRIC)"
+            title={sections.pediatric}
             icon={<Heart className="w-4 h-4 text-pink-600" />}
             defaultOpen={true}
           >
             <InfoGrid
+              tYes={tYes}
+              tNo={tNo}
               items={[
-                { label: "Tiền sử sản khoa", value: pediatricRecord.obstetricHistory },
-                { label: "Tuổi thai khi sinh", value: pediatricRecord.gestationalAge },
-                { label: "Cân nặng khi sinh", value: pediatricRecord.birthWeight },
-                { label: "Khám định kỳ ROP", value: pediatricRecord.ropScreening },
-                { label: "Cố định ưu tiên OD", value: pediatricRecord.fixationOd },
-                { label: "Cố định ưu tiên OS", value: pediatricRecord.fixationOs },
+                { label: t("subspecialty.pediatricObstetric"), value: pediatricRecord.obstetricHistory },
+                { label: t("subspecialty.pediatricGestational"), value: pediatricRecord.gestationalAge },
+                { label: t("subspecialty.pediatricBirthWeight"), value: pediatricRecord.birthWeight },
+                { label: t("subspecialty.pediatricRop"), value: pediatricRecord.ropScreening },
+                { label: t("subspecialty.pediatricFixationOd"), value: pediatricRecord.fixationOd },
+                { label: t("subspecialty.pediatricFixationOs"), value: pediatricRecord.fixationOs },
               ]}
             />
           </DetailSection>
@@ -1052,19 +1172,21 @@ export default function MedicalRecordDetailClient({
         {/* SECTION 7: Diagnosis & Treatment Plan (Only if hasDiagnosisData is true) */}
         {hasDiagnosisData && (
           <DetailSection
-            title="Chẩn đoán & Kế hoạch điều trị"
+            title={sections.diagnosis}
             icon={<Stethoscope className="w-4 h-4" />}
             defaultOpen={true}
           >
             <div className="space-y-3 text-xs">
               <InfoGrid
+                tYes={tYes}
+                tNo={tNo}
                 items={[
-                  { label: "Chẩn đoán chính", value: diagnosisMain },
-                  { label: "Chẩn đoán kèm theo", value: diagnosisComorbid },
-                  { label: "Chẩn đoán phân biệt", value: diagnosisDifferential },
-                  { label: "Tiên lượng", value: prognosis },
-                  { label: "Kế hoạch điều trị", value: treatmentPlan },
-                  { label: "Ghi chú điều trị", value: record.notes },
+                  { label: t("diagnosisFields.main"), value: diagnosisMain },
+                  { label: t("diagnosisFields.comorbid"), value: diagnosisComorbid },
+                  { label: t("diagnosisFields.differential"), value: diagnosisDifferential },
+                  { label: t("diagnosisFields.prognosis"), value: prognosis },
+                  { label: t("diagnosisFields.treatmentPlan"), value: treatmentPlan },
+                  { label: t("diagnosisFields.notes"), value: record.notes },
                 ]}
               />
             </div>
@@ -1073,27 +1195,20 @@ export default function MedicalRecordDetailClient({
 
         {/* SECTION 8: Prescriptions (ALWAYS RENDERED) */}
         <DetailSection
-          title="Đơn thuốc đã kê"
+          title={sections.prescription}
           icon={<Pill className="w-4 h-4" />}
           defaultOpen={true}
         >
-          <PrescriptionTable prescriptions={record.prescriptions} formData={record.formData} />
+          <PrescriptionTable prescriptions={record.prescriptions} formData={record.formData} t={t} locale={locale} />
         </DetailSection>
 
-        {/* SECTION 9: Paraclinical Panel & AI Diagnosis */}
-        <DetailSection
-          title="Hình ảnh & Kết quả Cận lâm sàng (OCT, Thị trường, Siêu âm, AI)"
-          icon={<Activity className="w-4 h-4 text-indigo-600" />}
-          defaultOpen={true}
-        >
-          <ParaclinicalPanel recordId={record.id} defaultOpen={true} />
-        </DetailSection>
+        {/* SECTION 9: Paraclinical Panel & AI Diagnosis — hidden per request */}
 
         {/* Footer */}
         <div className="flex items-center justify-between py-4 border-t border-gray-200">
           <div className="flex items-center gap-2 text-xs text-gray-400">
             <Clock className="w-3.5 h-3.5" />
-            <span>Cập nhật lần cuối: {new Date(record.updatedAt).toLocaleString("vi-VN")}</span>
+            <span>{t("lastUpdated", { time: formatDateTime(record.updatedAt) })}</span>
           </div>
           <div className="flex items-center gap-3">
             {record.canEdit && !record.isLocked && (
@@ -1101,7 +1216,7 @@ export default function MedicalRecordDetailClient({
                 href={`/doctor/records/${record.id}/edit${appointmentId ? `?appointmentId=${appointmentId}` : ""}`}
                 className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-amber-600 rounded-xl hover:bg-amber-700 active:scale-95 transition-all shadow-xs"
               >
-                <Edit3 className="w-4 h-4" /> Chỉnh sửa bệnh án
+                <Edit3 className="w-4 h-4" /> {t("editBtn")}
               </Link>
             )}
           </div>

@@ -15,7 +15,7 @@ import {
   ChevronRight,
   RefreshCw 
 } from "lucide-react"
-import { useTranslations } from "next-intl"
+import { useTranslations, useLocale } from "next-intl"
 import { staffService } from "@/services/staff.service"
 import type { StaffAccountResponse } from "@/services/staff.service"
 
@@ -31,6 +31,7 @@ interface MetaResponse {
 export default function StaffManagementPage() {
   const t = useTranslations("clinicAdmin.staff")
   const tCommon = useTranslations("clinicAdmin.common")
+  const locale = useLocale()
 
   const [staffList, setStaffList] = useState<StaffAccountResponse[]>([])
   const [loading, setLoading] = useState<boolean>(true)
@@ -116,7 +117,7 @@ export default function StaffManagementPage() {
             className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-100 active:scale-95 transition-all disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-            {t("refresh") || "Làm mới"}
+            {t("refresh")}
           </button>
           <Link 
             href="/clinic-admin/staff/create"
@@ -170,7 +171,7 @@ export default function StaffManagementPage() {
             onClick={loadStaffData}
             className="mt-4 px-5 py-2 bg-primary text-white font-medium rounded-xl hover:opacity-90 transition active:scale-95 shadow-sm"
           >
-            {t("retry") || "Thử lại"}
+            {t("retry")}
           </button>
         </div>
       ) : (
@@ -254,7 +255,7 @@ export default function StaffManagementPage() {
                       <td className="p-4 text-slate-600">
                         <div className="flex items-center gap-1.5">
                           <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <span className="font-medium">{new Date(staff.createdAt).toLocaleDateString("vi-VN")}</span>
+                          <span className="font-medium">{new Date(staff.createdAt).toLocaleDateString(locale)}</span>
                         </div>
                       </td>
 

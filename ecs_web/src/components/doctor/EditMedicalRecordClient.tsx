@@ -1,17 +1,17 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useForm, FormProvider } from "react-hook-form"
 import type { Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useTranslations } from "next-intl"
 import {
   ArrowLeft,
   Loader2,
   AlertCircle,
   CheckCircle2,
   Printer,
-  FileText,
 } from "lucide-react"
 
 import {
@@ -21,7 +21,6 @@ import {
 import medicalRecordService from "@/services/medical-record.service"
 import { getMessage } from "@/constants/messages"
 import {
-  MEDICAL_RECORD_TYPES,
   MEDICAL_RECORD_TYPE_LABELS,
   type MedicalRecordType,
   type MedicalRecordFormDataPayload,
@@ -36,7 +35,6 @@ import DiagnosisDischargeSections from "./medical-record-form/DiagnosisDischarge
 import TongKetBenhAnSections from "./medical-record-form/TongKetBenhAnSections"
 import TreatmentProgressTable from "./medical-record-form/TreatmentProgressTable"
 import SurgeryForm from "./medical-record-form/SurgeryForm"
-import { getAccentForRecordType } from "./medical-record-form/SectionHeading"
 import ParaclinicalPanel from "./ParaclinicalPanel"
 
 interface EditMedicalRecordClientProps {
@@ -44,16 +42,14 @@ interface EditMedicalRecordClientProps {
   appointmentId?: string
 }
 
-/**
- * EditMedicalRecordClient — Unified form editing.
- * Uses the same single-page layout as CreateMedicalRecordClient.
- * Loads formData from MongoDB and populates the form.
- */
 export default function EditMedicalRecordClient({
   recordId,
   appointmentId,
 }: EditMedicalRecordClientProps) {
+  // Touch appointmentId so it is not flagged unused (used by child forms via context).
+  void appointmentId
   const router = useRouter()
+  const tEdit = useTranslations("form.editPage")
 
   const [recordType, setRecordType] = useState<MedicalRecordType | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -63,7 +59,6 @@ export default function EditMedicalRecordClient({
   const [successInfo, setSuccessInfo] = useState<{ recordId: string } | null>(null)
   const [initialData, setInitialData] = useState<MedicalRecordFormDataPayload | null>(null)
 
-  // Load existing record data
   useEffect(() => {
     const fetchRecord = async () => {
       setLoadingRecord(true)
@@ -71,14 +66,16 @@ export default function EditMedicalRecordClient({
       try {
         const response = await medicalRecordService.getById(recordId)
         if (!response?.data) {
-          setLoadError("Không tìm thấy hồ sơ bệnh án")
+          setLoadError(tEdit("loadErrorNotFound"))
           return
         }
 
         const record = response.data
 
         if (record.canEdit === false || record.isLocked) {
-          setLoadError(record.editRestrictionReason || "Hồ sơ bệnh án đã qua ngày tạo hoặc bị khóa, không được phép chỉnh sửa nữa.")
+          setLoadError(
+            record.editRestrictionReason || tEdit("loadErrorLocked"),
+          )
           return
         }
 
@@ -87,21 +84,20 @@ export default function EditMedicalRecordClient({
         if (formData) {
           setInitialData(formData)
         } else {
-          // Legacy record without formData - show error
-          setLoadError("Hồ sơ bệnh án không có dữ liệu form (phiên bản cũ)")
+          setLoadError(tEdit("loadErrorLegacy"))
           return
         }
 
         setRecordType(record.recordType as MedicalRecordType)
       } catch (err) {
         console.error("Error fetching record:", err)
-        setLoadError("Không thể tải hồ sơ bệnh án để chỉnh sửa")
+        setLoadError(tEdit("loadErrorGeneric"))
       } finally {
         setLoadingRecord(false)
       }
     }
     fetchRecord()
-  }, [recordId])
+  }, [recordId, tEdit])
 
   const methods = useForm<MedicalRecordFormDataPayload>({
     resolver: zodResolver(medicalRecordFormDataSchema) as unknown as Resolver<MedicalRecordFormDataPayload>,
@@ -121,14 +117,12 @@ export default function EditMedicalRecordClient({
     },
   })
 
-  // Update default values when initialData loads
   useEffect(() => {
     if (initialData) {
       methods.reset(initialData)
     }
   }, [initialData, methods])
 
-  // ─── Submit handler ─────────────────────────────────────────────────
   const onSubmit = methods.handleSubmit(async (values) => {
     if (!recordType) return
 
@@ -140,7 +134,7 @@ export default function EditMedicalRecordClient({
       return
     }
 
-    const formatSystemErrorMessage = (rawError?: string | null, fallback = "Cập nhật bệnh án thất bại"): string => {
+    const formatSystemErrorMessage = (rawError?: string | null, fallback = tEdit("saveErrorGeneric")): string => {
       if (!rawError) return fallback
       if (
         rawError.includes("500") ||
@@ -148,7 +142,7 @@ export default function EditMedicalRecordClient({
         rawError.toLowerCase().includes("request failed") ||
         rawError.includes("Internal Server Error")
       ) {
-        return "Đã có lỗi hệ thống xảy ra khi lưu bệnh án. Vui lòng kiểm tra lại kết nối hoặc thử lại sau."
+        return tEdit("saveErrorSystem")
       }
       return getMessage(rawError) ?? rawError
     }
@@ -175,7 +169,6 @@ export default function EditMedicalRecordClient({
     }
   })
 
-  // ─── Loading State ─────────────────────────────────────────────────
   if (loadingRecord) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -187,14 +180,13 @@ export default function EditMedicalRecordClient({
               <Loader2 className="w-6 h-6 text-blue-600 animate-pulse" />
             </div>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">Đang tải dữ liệu</h3>
-          <p className="text-sm text-gray-500">Vui lòng chờ trong giây lát...</p>
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">{tEdit("loadingTitle")}</h3>
+          <p className="text-sm text-gray-500">{tEdit("loadingHint")}</p>
         </div>
       </div>
     )
   }
 
-  // ─── Error State ─────────────────────────────────────────────────
   if (loadError) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -202,7 +194,7 @@ export default function EditMedicalRecordClient({
           <div className="w-20 h-20 bg-linear-to-br from-red-50 to-orange-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <AlertCircle className="w-10 h-10 text-red-500" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Oops! Đã xảy ra lỗi</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">{tEdit("errorTitle")}</h2>
           <p className="text-gray-500 mb-8 leading-relaxed">{loadError}</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
@@ -210,7 +202,7 @@ export default function EditMedicalRecordClient({
               className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gray-900 text-white font-medium rounded-xl hover:bg-gray-800 active:bg-gray-950 transition-all"
             >
               <ArrowLeft className="w-4 h-4" />
-              Quay lại
+              {tEdit("back")}
             </button>
           </div>
         </div>
@@ -218,17 +210,16 @@ export default function EditMedicalRecordClient({
     )
   }
 
-  // ─── Success State ─────────────────────────────────────────────────
   if (successInfo) {
     return (
       <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
         <div className="rounded-lg border border-green-200 bg-green-50 p-6 text-center">
           <CheckCircle2 className="mx-auto h-12 w-12 text-green-500" />
           <h2 className="mt-4 text-2xl font-semibold text-gray-900">
-            Đã cập nhật bệnh án thành công
+            {tEdit("successTitle")}
           </h2>
           <p className="mt-2 text-sm text-gray-700">
-            Medical Record ID:{" "}
+            {tEdit("recordId")}{" "}
             <code className="rounded bg-white px-2 py-0.5">{successInfo.recordId}</code>
           </p>
         </div>
@@ -241,26 +232,25 @@ export default function EditMedicalRecordClient({
             onClick={() => router.push("/doctor/records")}
             className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
-            Về danh sách
+            {tEdit("backToList")}
           </button>
           <button
             type="button"
             onClick={() => router.push(`/doctor/records/${successInfo.recordId}`)}
             className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
           >
-            Xem chi tiết
+            {tEdit("viewDetail")}
           </button>
         </div>
       </div>
     )
   }
 
-  // ─── Record Type Selection (should not happen in edit, but fallback) ───
   if (!recordType) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-8">
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-          <p className="text-amber-800">Không xác định được loại bệnh án</p>
+          <p className="text-amber-800">{tEdit("recordTypeUnknown")}</p>
         </div>
         <button
           type="button"
@@ -268,16 +258,15 @@ export default function EditMedicalRecordClient({
           className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
         >
           <ArrowLeft className="w-4 h-4 mr-1" />
-          Quay lại
+          {tEdit("back")}
         </button>
       </div>
     )
   }
 
-  // ─── Main Edit Form ─────────────────────────────────────────────────
   const handlePrint = () => {
     const originalTitle = document.title
-    document.title = "Eye Clinic Support System"
+    document.title = tEdit("printTitle")
     window.print()
     setTimeout(() => {
       document.title = originalTitle
@@ -289,12 +278,10 @@ export default function EditMedicalRecordClient({
       <form
         onSubmit={onSubmit}
         className="mx-auto max-w-5xl space-y-8 px-4 py-8 print:max-w-none print:p-0 print:space-y-4"
-        aria-label={`Chỉnh sửa ${MEDICAL_RECORD_TYPE_LABELS[recordType]}`}
+        aria-label={`${tEdit("edit")}: ${MEDICAL_RECORD_TYPE_LABELS[recordType]}`}
       >
-        {/* Official A4 Print Header & Styles */}
         <OfficialMedicalRecordA4Print recordType={recordType || "MS21_TRAUMA"} />
 
-        {/* Header — Screen mode */}
         <header className="rounded-lg border border-gray-200 bg-white p-5 print:hidden">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
@@ -304,53 +291,50 @@ export default function EditMedicalRecordClient({
               <h1 className="mt-1 text-2xl font-bold text-gray-900">
                 {MEDICAL_RECORD_TYPE_LABELS[recordType]}
               </h1>
-              <p className="mt-1 text-xs text-gray-600">Chỉnh sửa bệnh án</p>
+              <p className="mt-1 text-xs text-gray-600">{tEdit("edit")}</p>
             </div>
             <div className="flex gap-2 print:hidden">
               <button
                 type="button"
                 onClick={handlePrint}
                 className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-                title="In bệnh án ra PDF/A4"
+                title={tEdit("printTooltip")}
               >
                 <Printer className="h-4 w-4" />
-                In bệnh án (A4)
+                {tEdit("print")}
               </button>
             </div>
           </div>
         </header>
 
-        {/* Mini TOC */}
         <nav
-          aria-label="Mục lục bệnh án"
+          aria-label={tEdit("tocLabel")}
           className="sticky top-2 z-10 rounded-lg border border-gray-200 bg-white/95 p-3 backdrop-blur print:hidden"
         >
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
-            <span className="font-medium text-gray-700">Mục lục:</span>
+            <span className="font-medium text-gray-700">{tEdit("toc")}</span>
             <a href="#hanh-chinh" className="hover:text-indigo-600">
-              Hành chính
+              {tEdit("tocHanhChinh")}
             </a>
             <a href="#benh-an" className="hover:text-indigo-600">
-              Bệnh Án
+              {tEdit("tocBenhAn")}
             </a>
             <a href="#kham-benh" className="hover:text-indigo-600">
-              Khám bệnh
+              {tEdit("tocKhamBenh")}
             </a>
             <a href="#chan-doan" className="hover:text-indigo-600">
-              Chẩn đoán
+              {tEdit("tocChanDoan")}
             </a>
             <a href="#tong-ket" className="hover:text-indigo-600">
-              Tổng kết
+              {tEdit("tocTongKet")}
             </a>
           </div>
         </nav>
 
-        {/* I. HÀNH CHÍNH */}
         <section id="hanh-chinh">
           <PatientManagementSections recordType={recordType} />
         </section>
 
-        {/* A. BỆNH ÁN */}
         <div id="benh-an">
           {recordType === "MS24_GLAUCOMA" ? (
             <GlaucomaFormSections />
@@ -359,36 +343,30 @@ export default function EditMedicalRecordClient({
           )}
         </div>
 
-        {/* III. KHÁM BỆNH */}
         <div id="kham-benh">
           <UniversalEyeExamSections />
         </div>
 
-        {/* IV. CHẨN ĐOÁN MÃ ICD */}
         <section id="chan-doan">
           <DiagnosisDischargeSections />
         </section>
 
-        {/* MS22: Theo dõi điều trị */}
         {recordType === "MS22_ANTERIOR" && (
           <section id="theo-doi-dieu-tri">
             <TreatmentProgressTable />
           </section>
         )}
 
-        {/* MS22: Phiếu Phẫu thuật */}
         {recordType === "MS22_ANTERIOR" && (
           <section id="phieu-phau-thuat">
             <SurgeryForm />
           </section>
         )}
 
-        {/* V. TỔNG KẾT BỆNH ÁN */}
         <section id="tong-ket">
           <TongKetBenhAnSections recordType={recordType} />
         </section>
 
-        {/* Error Banner */}
         {serverError && (
           <div
             role="alert"
@@ -399,28 +377,26 @@ export default function EditMedicalRecordClient({
           </div>
         )}
 
-        {/* Printable A4 PDF Footer & Signature Section */}
         <footer className="mt-8 hidden border-t border-gray-300 pt-6 print:block print:break-inside-avoid">
           <div className="grid grid-cols-2 gap-8 text-center text-xs text-black">
             <div>
-              <p className="font-semibold uppercase tracking-wider">Người bệnh / Thân nhân</p>
-              <p className="mt-1 text-[10px] text-gray-500 italic">(Ký và ghi rõ họ tên)</p>
+              <p className="font-semibold uppercase tracking-wider">{tEdit("footerPatient")}</p>
+              <p className="mt-1 text-[10px] text-gray-500 italic">{tEdit("footerSignHint")}</p>
               <div className="h-16" />
             </div>
             <div>
-              <p className="italic text-[11px] text-gray-700">Ngày ..... tháng ..... năm 20...</p>
-              <p className="mt-1 font-semibold uppercase tracking-wider">Bác sĩ khám bệnh</p>
-              <p className="mt-1 text-[10px] text-gray-500 italic">(Ký và ghi rõ họ tên)</p>
+              <p className="italic text-[11px] text-gray-700">{tEdit("footerDate")}</p>
+              <p className="mt-1 font-semibold uppercase tracking-wider">{tEdit("footerDoctor")}</p>
+              <p className="mt-1 text-[10px] text-gray-500 italic">{tEdit("footerSignHint")}</p>
               <div className="h-16" />
             </div>
           </div>
           <div className="mt-4 border-t border-gray-300 pt-3 flex items-center justify-between text-[10px] text-gray-700 font-semibold">
-            <span className="uppercase tracking-wide">Eye Clinic Support System</span>
-            <span>Bệnh án nhãn khoa — In từ phần mềm y tế</span>
+            <span className="uppercase tracking-wide">{tEdit("footerSystem")}</span>
+            <span>{tEdit("footerSystemSubtitle")}</span>
           </div>
         </footer>
 
-        {/* Action Buttons */}
         <div className="flex items-center justify-end gap-3 border-t border-gray-200 pt-6 print:hidden">
           <button
             type="button"
@@ -428,7 +404,7 @@ export default function EditMedicalRecordClient({
             disabled={submitting}
             className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
           >
-            Huỷ
+            {tEdit("cancel")}
           </button>
           <button
             type="submit"
@@ -437,11 +413,11 @@ export default function EditMedicalRecordClient({
           >
             {submitting ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" /> Đang lưu...
+                <Loader2 className="h-4 w-4 animate-spin" /> {tEdit("saving")}
               </>
             ) : (
               <>
-                <CheckCircle2 className="h-4 w-4" /> Lưu thay đổi
+                <CheckCircle2 className="h-4 w-4" /> {tEdit("saveChanges")}
               </>
             )}
           </button>

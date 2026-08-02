@@ -3,19 +3,21 @@
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
-import { 
-  ArrowLeft, 
-  Save, 
-  AlertCircle, 
-  Loader2, 
-  CheckCircle2, 
-  Layers 
+import {
+  ArrowLeft,
+  Save,
+  AlertCircle,
+  Loader2,
+  CheckCircle2,
+  Layers
 } from "lucide-react"
-// Import instance serviceService và Type đúng chuẩn từ file service
+import { useTranslations } from "next-intl"
 import { serviceService } from "@/services/service.service"
 import type { EditServiceRequest } from "@/services/service.service"
 
 export default function EditClinicServicePage() {
+  const t = useTranslations("clinicAdmin.service")
+  const tCommon = useTranslations("clinicAdmin.common")
   const params = useParams()
   const router = useRouter()
   const serviceId = params.id as string
@@ -41,7 +43,7 @@ export default function EditClinicServicePage() {
       try {
         setFetching(true)
         setErrorMessage(null)
-        
+
         // Gọi API lấy danh sách dịch vụ với kích thước lớn để quét tìm bản ghi cũ
         const response = await serviceService.getClinicServices({
           pageNumber: 1,
@@ -58,33 +60,33 @@ export default function EditClinicServicePage() {
             durationMinutes: currentService.durationMinutes
           })
         } else {
-          setErrorMessage("Không tìm thấy thông tin dịch vụ y tế được yêu cầu bên trong hệ thống.")
+          setErrorMessage(t("edit.loadErrors.notFound"))
         }
       } catch (err: any) {
-        setErrorMessage("Không thể tải thông tin chi tiết dịch vụ. Vui lòng thử lại sau!")
+        setErrorMessage(t("edit.loadErrors.syncFailed"))
       } finally {
         setFetching(false)
       }
     }
 
     fetchServiceDetail()
-  }, [serviceId])
+  }, [serviceId, t])
 
   // Hàm xử lý kiểm tra và đẩy dữ liệu biểu mẫu cập nhật lên Server
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     // Ràng buộc cục bộ kiểm tra dữ liệu đầu vào (Client Validation)
     if (!formData.serviceName.trim()) {
-      setErrorMessage("Tên dịch vụ khám bệnh không được phép để trống.")
+      setErrorMessage(t("edit.validation.serviceNameRequired"))
       return
     }
     if (formData.price !== undefined && formData.price < 0) {
-      setErrorMessage("Giá dịch vụ chuẩn không được phép nhỏ hơn 0 VND.")
+      setErrorMessage(t("edit.validation.priceNegative"))
       return
     }
     if (formData.durationMinutes <= 0) {
-      setErrorMessage("Thời lượng chuẩn thực hiện phải lớn hơn 0 phút.")
+      setErrorMessage(t("edit.validation.durationNonPositive"))
       return
     }
 
@@ -100,34 +102,34 @@ export default function EditClinicServicePage() {
         durationMinutes: formData.durationMinutes
       })
 
-      setSuccessMessage("Cập nhật thông tin dịch vụ khám bệnh thành công!")
-      
+      setSuccessMessage(t("edit.success"))
+
       setTimeout(() => {
         router.push("/clinic-admin/clinic-services")
       }, 1500)
 
    } catch (err: any) {
-      const errCode = 
-        err?.response?.data?.codeMessage || 
-        err?.data?.codeMessage || 
+      const errCode =
+        err?.response?.data?.codeMessage ||
+        err?.data?.codeMessage ||
         err?.response?.codeMessage ||
         err?.codeMessage;
       console.log("Mã lỗi ghi nhận từ Backend:", errCode);
       if (errCode === "APP_MESSAGE_4001") {
-        setErrorMessage("Phiên đăng nhập không hợp lệ hoặc đã hết hạn. Vui lòng đăng nhập lại.");
+        setErrorMessage(t("edit.errors.sessionExpired"));
       } else if (errCode === "APP_MESSAGE_4020") {
-        setErrorMessage("Không tìm thấy thông tin phòng khám gắn liền với tài khoản quản trị của bạn.");
+        setErrorMessage(t("edit.errors.clinicNotFound"));
       } else if (errCode === "APP_MESSAGE_4012") {
-        setErrorMessage("Dịch vụ y tế này hiện không tồn tại hoặc đã bị gỡ bỏ khỏi hệ thống dữ liệu.");
+        setErrorMessage(t("edit.errors.serviceNotFound"));
       } else if (errCode === "APP_MESSAGE_4014") {
-        setErrorMessage("Hành vi bị từ chối: Bạn không có quyền truy cập chỉnh sửa dịch vụ của phòng khám khác!");
+        setErrorMessage(t("edit.errors.noPermission"));
       } else if (errCode === "APP_MESSAGE_4015") {
-        setErrorMessage("Tên dịch vụ y tế này đã tồn tại trong danh mục phòng khám của bạn. Vui lòng chọn tên khác!");
+        setErrorMessage(t("edit.errors.duplicateService"));
       } else {
         setErrorMessage(
-          err?.response?.data?.message || 
-          err?.data?.message || 
-          "Hệ thống gặp lỗi trong quá trình lưu dữ liệu cập nhật."
+          err?.response?.data?.message ||
+          err?.data?.message ||
+          t("edit.errors.generic")
         );
       }
     } finally {
@@ -142,16 +144,17 @@ export default function EditClinicServicePage() {
         <Link
           href="/clinic-admin/clinic-services"
           className="p-2 border border-outline-variant hover:bg-surface-container-low text-on-surface-variant rounded-xl transition-colors"
-          title="Quay lại danh sách"
+          title={t("backToList")}
+          aria-label={t("backToList")}
         >
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <div>
           <h2 className="text-headline-sm font-bold text-on-surface flex items-center gap-2">
             <Layers className="h-5 w-5 text-primary" />
-            Chỉnh sửa dịch vụ khám bệnh
+            {t("editTitle")}
           </h2>
-          <p className="text-body-sm text-on-surface-variant">Thay đổi thông tin tên dịch vụ, bảng giá niêm yết và thời lượng chuẩn</p>
+          <p className="text-body-sm text-on-surface-variant">{t("editSubtitle")}</p>
         </div>
       </div>
 
@@ -159,14 +162,14 @@ export default function EditClinicServicePage() {
       {fetching && (
         <div className="flex flex-col justify-center items-center py-16 bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-sm space-y-3">
           <Loader2 className="h-8 w-8 text-primary animate-spin" />
-          <p className="text-body-md text-on-surface-variant">Đang tải cấu trúc dữ liệu dịch vụ phòng khám...</p>
+          <p className="text-body-md text-on-surface-variant">{t("loadingDetail")}</p>
         </div>
       )}
 
       {/* Biểu mẫu chỉnh sửa dữ liệu chính */}
       {!fetching && (
         <form onSubmit={handleSubmit} className="space-y-6 bg-surface-container-lowest border border-outline-variant p-6 rounded-2xl shadow-sm">
-          
+
           {/* Hộp thông báo lỗi biểu mẫu */}
           {errorMessage && (
             <div className="p-4 bg-error-container text-on-error-container border border-error/20 rounded-xl flex items-start gap-3 text-body-md font-medium">
@@ -187,7 +190,7 @@ export default function EditClinicServicePage() {
             {/* Trường nhập: Tên dịch vụ khám */}
             <div className="space-y-2">
               <label className="block text-label-md font-semibold text-on-surface">
-                Tên dịch vụ y tế <span className="text-error">*</span>
+                {t("fields.serviceNameRequired")}
               </label>
               <input
                 type="text"
@@ -204,7 +207,7 @@ export default function EditClinicServicePage() {
               {/* Trường nhập: Đơn giá */}
               <div className="space-y-2">
                 <label className="block text-label-md font-semibold text-on-surface">
-                  Giá dịch vụ niêm yết (VND) <span className="text-error">*</span>
+                  {t("fields.priceStandardRequired")}
                 </label>
                 <input
                   type="number"
@@ -221,7 +224,7 @@ export default function EditClinicServicePage() {
               {/* Trường nhập: Thời lượng thực hiện */}
               <div className="space-y-2">
                 <label className="block text-label-md font-semibold text-on-surface">
-                  Thời lượng chuẩn (Phút) <span className="text-error">*</span>
+                  {t("fields.durationStandardRequired")}
                 </label>
                 <input
                   type="number"
@@ -242,9 +245,9 @@ export default function EditClinicServicePage() {
               href="/clinic-admin/clinic-services"
               className={`px-5 py-2.5 border border-outline-variant text-on-surface-variant hover:bg-surface-container-low rounded-xl text-label-md font-medium transition-colors ${submitting ? "pointer-events-none opacity-50" : ""}`}
             >
-              Hủy bỏ
+              {tCommon("cancel")}
             </Link>
-            
+
             <button
               type="submit"
               disabled={submitting}
@@ -253,12 +256,12 @@ export default function EditClinicServicePage() {
               {submitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Đang lưu...
+                  {t("saving")}
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4" />
-                  Lưu thay đổi
+                  {t("saveChanges")}
                 </>
               )}
             </button>

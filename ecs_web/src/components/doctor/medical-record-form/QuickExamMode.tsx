@@ -4,16 +4,13 @@ import { useState } from "react"
 import { useForm, FormProvider } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
+import { useTranslations } from "next-intl"
 import {
   Clock,
-  Eye,
-  Activity,
-  FileText,
   ChevronRight,
   ChevronDown,
-  AlertTriangle,
+  FileText,
 } from "lucide-react"
-import { SectionHeading } from "./SectionHeading"
 
 const inputClass =
   "w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
@@ -23,11 +20,9 @@ const labelClass = "mb-0.5 block text-xs font-medium text-gray-700"
  * Simplified schema for Quick Exam Mode (tái khám)
  */
 const quickExamSchema = z.object({
-  // Visit info
   visitType: z.enum(["first", "followup"]),
   chiefComplaint: z.string().optional(),
-  
-  // Vision & IOP
+
   vaWithoutCorrectionOd: z.string().optional(),
   vaWithoutCorrectionOs: z.string().optional(),
   vaCorrectedOd: z.string().optional(),
@@ -35,8 +30,7 @@ const quickExamSchema = z.object({
   iopOd: z.string().optional(),
   iopOs: z.string().optional(),
   iopMethod: z.string().optional(),
-  
-  // Brief eye exam
+
   rightEyelid: z.string().optional(),
   leftEyelid: z.string().optional(),
   rightConjunctiva: z.string().optional(),
@@ -49,14 +43,12 @@ const quickExamSchema = z.object({
   leftLens: z.string().optional(),
   rightFundus: z.string().optional(),
   leftFundus: z.string().optional(),
-  
-  // Systemic vitals
+
   bloodPressure: z.string().optional(),
   pulse: z.string().optional(),
   temperature: z.string().optional(),
   spo2: z.string().optional(),
-  
-  // Diagnosis & Plan
+
   diagnosis: z.string().optional(),
   treatmentPlan: z.string().optional(),
   followUpDate: z.string().optional(),
@@ -64,29 +56,6 @@ const quickExamSchema = z.object({
 })
 
 type QuickExamFormData = z.infer<typeof quickExamSchema>
-
-interface EyeSideProps {
-  side: "right" | "left"
-  label: string
-}
-
-function EyeExamField({
-  side,
-  label,
-  field,
-}: EyeSideProps & { field: keyof QuickExamFormData }) {
-  return (
-    <div>
-      <label className={labelClass}>{label}</label>
-      <input
-        type="text"
-        {...({} as any)}
-        className={inputClass}
-        placeholder="..."
-      />
-    </div>
-  )
-}
 
 function CollapsibleSection({
   title,
@@ -135,6 +104,9 @@ export default function QuickExamMode({
   onComplete,
   onCancel,
 }: QuickExamModeProps) {
+  const t = useTranslations("form.quickExam")
+  const tCommon = useTranslations("common")
+
   const methods = useForm<QuickExamFormData>({
     resolver: zodResolver(quickExamSchema),
     defaultValues: {
@@ -142,8 +114,7 @@ export default function QuickExamMode({
     },
   })
 
-  const { register, handleSubmit, watch, formState: { errors } } = methods
-  const visitType = watch("visitType")
+  const { register, handleSubmit } = methods
 
   const calculateAge = (dob?: string | null) => {
     if (!dob) return null
@@ -160,6 +131,8 @@ export default function QuickExamMode({
     onComplete?.(data)
   }
 
+  const age = patientProfile?.dob ? calculateAge(patientProfile.dob) : null
+
   return (
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -170,17 +143,17 @@ export default function QuickExamMode({
               <Clock className="h-5 w-5 text-indigo-600" />
             </div>
             <div>
-              <h2 className="font-semibold text-gray-900">Khám nhanh (Tái khám)</h2>
+              <h2 className="font-semibold text-gray-900">{t("title")}</h2>
               <p className="text-sm text-gray-600">
-                {patientProfile?.fullName || "Bệnh nhân"} 
-                {patientProfile?.dob && ` - ${calculateAge(patientProfile.dob)} tuổi`}
+                {patientProfile?.fullName || tCommon("patient")}
+                {age != null ? t("ageSuffix", { age }) : ""}
               </p>
             </div>
           </div>
         </div>
 
         {/* Visit Type */}
-        <CollapsibleSection title="1. Loại hình khám" defaultOpen={true}>
+        <CollapsibleSection title={t("visitTypeTitle")} defaultOpen={true}>
           <div className="grid grid-cols-2 gap-4">
             <label className="flex items-center gap-2">
               <input
@@ -189,7 +162,7 @@ export default function QuickExamMode({
                 {...register("visitType")}
                 className="h-4 w-4 text-indigo-600"
               />
-              <span className="text-sm">Khám lần đầu</span>
+              <span className="text-sm">{t("firstVisit")}</span>
             </label>
             <label className="flex items-center gap-2">
               <input
@@ -198,60 +171,72 @@ export default function QuickExamMode({
                 {...register("visitType")}
                 className="h-4 w-4 text-indigo-600"
               />
-              <span className="text-sm">Tái khám</span>
+              <span className="text-sm">{t("followup")}</span>
             </label>
           </div>
         </CollapsibleSection>
 
         {/* Chief Complaint */}
-        <CollapsibleSection title="2. Lý do khám / Triệu chứng" defaultOpen={true}>
+        <CollapsibleSection title={t("chiefTitle")} defaultOpen={true}>
           <textarea
             {...register("chiefComplaint")}
             className={`${inputClass} min-h-[60px]`}
-            placeholder="Mô tả ngắn gọn lý do đến khám hôm nay..."
+            placeholder={t("chiefPh")}
           />
         </CollapsibleSection>
 
         {/* Vision & IOP */}
-        <CollapsibleSection title="3. Thị lực & Nhãn áp" defaultOpen={true}>
+        <CollapsibleSection title={t("visionTitle")} defaultOpen={true}>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">
-              <p className="mb-2 text-xs font-semibold text-gray-700">Mắt phải (MP)</p>
+              <p className="mb-2 text-xs font-semibold text-gray-700">
+                {t("matPhai")}
+              </p>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className={labelClass}>Không kính</label>
-                  <input {...register("vaWithoutCorrectionOd")} className={inputClass} placeholder="10/10" />
+                  <label className={labelClass}>{t("withoutGlasses")}</label>
+                  <input
+                    {...register("vaWithoutCorrectionOd")}
+                    className={inputClass}
+                    placeholder="10/10"
+                  />
                 </div>
                 <div>
-                  <label className={labelClass}>Có kính</label>
+                  <label className={labelClass}>{t("withGlasses")}</label>
                   <input {...register("vaCorrectedOd")} className={inputClass} />
                 </div>
                 <div>
-                  <label className={labelClass}>Nhãn áp (mmHg)</label>
+                  <label className={labelClass}>{t("iopUnit")}</label>
                   <input {...register("iopOd")} className={inputClass} />
                 </div>
               </div>
             </div>
             <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">
-              <p className="mb-2 text-xs font-semibold text-gray-700">Mắt trái (MT)</p>
+              <p className="mb-2 text-xs font-semibold text-gray-700">
+                {t("matTrai")}
+              </p>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className={labelClass}>Không kính</label>
-                  <input {...register("vaWithoutCorrectionOs")} className={inputClass} placeholder="10/10" />
+                  <label className={labelClass}>{t("withoutGlasses")}</label>
+                  <input
+                    {...register("vaWithoutCorrectionOs")}
+                    className={inputClass}
+                    placeholder="10/10"
+                  />
                 </div>
                 <div>
-                  <label className={labelClass}>Có kính</label>
+                  <label className={labelClass}>{t("withGlasses")}</label>
                   <input {...register("vaCorrectedOs")} className={inputClass} />
                 </div>
                 <div>
-                  <label className={labelClass}>Nhãn áp (mmHg)</label>
+                  <label className={labelClass}>{t("iopUnit")}</label>
                   <input {...register("iopOs")} className={inputClass} />
                 </div>
               </div>
             </div>
           </div>
           <div className="mt-3">
-            <label className={labelClass}>Phương pháp đo nhãn áp</label>
+            <label className={labelClass}>{t("iopMethod")}</label>
             <select {...register("iopMethod")} className={inputClass}>
               <option value="">—</option>
               <option value="Non-contact">Non-contact</option>
@@ -263,59 +248,59 @@ export default function QuickExamMode({
         </CollapsibleSection>
 
         {/* Eye Exam Summary */}
-        <CollapsibleSection title="4. Khám các cấu trúc mắt" defaultOpen={false}>
+        <CollapsibleSection title={t("examStructuresTitle")} defaultOpen={false}>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <p className="text-xs font-semibold text-gray-700">Mắt phải (MP)</p>
+              <p className="text-xs font-semibold text-gray-700">{t("matPhai")}</p>
               <div>
-                <label className={labelClass}>Mi mắt</label>
+                <label className={labelClass}>{t("eyelid")}</label>
                 <input {...register("rightEyelid")} className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Kết mạc</label>
+                <label className={labelClass}>{t("conjunctiva")}</label>
                 <input {...register("rightConjunctiva")} className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Giác mạc</label>
+                <label className={labelClass}>{t("cornea")}</label>
                 <input {...register("rightCornea")} className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Tiền phòng</label>
+                <label className={labelClass}>{t("anteriorChamber")}</label>
                 <input {...register("rightAnteriorChamber")} className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Thể thủy tinh</label>
+                <label className={labelClass}>{t("lens")}</label>
                 <input {...register("rightLens")} className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Đáy mắt</label>
+                <label className={labelClass}>{t("fundus")}</label>
                 <input {...register("rightFundus")} className={inputClass} />
               </div>
             </div>
             <div className="space-y-2">
-              <p className="text-xs font-semibold text-gray-700">Mắt trái (MT)</p>
+              <p className="text-xs font-semibold text-gray-700">{t("matTrai")}</p>
               <div>
-                <label className={labelClass}>Mi mắt</label>
+                <label className={labelClass}>{t("eyelid")}</label>
                 <input {...register("leftEyelid")} className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Kết mạc</label>
+                <label className={labelClass}>{t("conjunctiva")}</label>
                 <input {...register("leftConjunctiva")} className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Giác mạc</label>
+                <label className={labelClass}>{t("cornea")}</label>
                 <input {...register("leftCornea")} className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Tiền phòng</label>
+                <label className={labelClass}>{t("anteriorChamber")}</label>
                 <input {...register("leftAnteriorChamber")} className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Thể thủy tinh</label>
+                <label className={labelClass}>{t("lens")}</label>
                 <input {...register("leftLens")} className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Đáy mắt</label>
+                <label className={labelClass}>{t("fundus")}</label>
                 <input {...register("leftFundus")} className={inputClass} />
               </div>
             </div>
@@ -323,53 +308,57 @@ export default function QuickExamMode({
         </CollapsibleSection>
 
         {/* Vitals */}
-        <CollapsibleSection title="5. Sinh hiệu" defaultOpen={false}>
+        <CollapsibleSection title={t("vitalsTitle")} defaultOpen={false}>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             <div>
-              <label className={labelClass}>Huyết áp (mmHg)</label>
-              <input {...register("bloodPressure")} className={inputClass} placeholder="120/80" />
+              <label className={labelClass}>{t("bp")}</label>
+              <input
+                {...register("bloodPressure")}
+                className={inputClass}
+                placeholder="120/80"
+              />
             </div>
             <div>
-              <label className={labelClass}>Mạch (lần/phút)</label>
+              <label className={labelClass}>{t("pulse")}</label>
               <input {...register("pulse")} className={inputClass} />
             </div>
             <div>
-              <label className={labelClass}>Nhiệt độ (°C)</label>
+              <label className={labelClass}>{t("temperature")}</label>
               <input {...register("temperature")} className={inputClass} />
             </div>
             <div>
-              <label className={labelClass}>SpO2 (%)</label>
+              <label className={labelClass}>{t("spo2")}</label>
               <input {...register("spo2")} className={inputClass} />
             </div>
           </div>
         </CollapsibleSection>
 
         {/* Diagnosis & Plan */}
-        <CollapsibleSection title="6. Chẩn đoán & Hướng điều trị" defaultOpen={true}>
+        <CollapsibleSection title={t("diagnosisPlanTitle")} defaultOpen={true}>
           <div className="space-y-3">
             <div>
-              <label className={labelClass}>Chẩn đoán</label>
+              <label className={labelClass}>{t("diagnosis")}</label>
               <textarea
                 {...register("diagnosis")}
                 className={`${inputClass} min-h-[60px]`}
-                placeholder="Chẩn đoán ICD: ..."
+                placeholder={t("diagnosisPh")}
               />
             </div>
             <div>
-              <label className={labelClass}>Hướng điều trị / Kế hoạch</label>
+              <label className={labelClass}>{t("treatmentPlan")}</label>
               <textarea
                 {...register("treatmentPlan")}
                 className={`${inputClass} min-h-[60px]`}
-                placeholder="Điều trị, phẫu thuật, laser..."
+                placeholder={t("treatmentPlanPh")}
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelClass}>Ngày tái khám</label>
+                <label className={labelClass}>{t("followUpDate")}</label>
                 <input type="date" {...register("followUpDate")} className={inputClass} />
               </div>
               <div>
-                <label className={labelClass}>Ghi chú</label>
+                <label className={labelClass}>{t("notes")}</label>
                 <input {...register("notes")} className={inputClass} />
               </div>
             </div>
@@ -384,7 +373,7 @@ export default function QuickExamMode({
               onClick={onCancel}
               className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
-              Hủy
+              {tCommon("cancel")}
             </button>
           )}
           <button
@@ -392,7 +381,7 @@ export default function QuickExamMode({
             className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700"
           >
             <FileText className="h-4 w-4" />
-            Lưu & Hoàn tất
+            {t("save")}
           </button>
         </div>
       </form>

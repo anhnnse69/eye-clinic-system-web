@@ -85,9 +85,9 @@ export default function PatientPortalLayoutClient({
     },
     {
       id: "profiles",
-      label: locale === "en" ? "Prescriptions & Records" : "Đơn thuốc & Bệnh án",
+      label: locale === "en" ? "Profile Management" : "Quản lý hồ sơ",
       href: `/${locale}/patient/profiles`,
-      icon: Pill,
+      icon: FileText,
     },
     {
       id: "appointment-history",

@@ -348,61 +348,35 @@ export default function AppointmentDetailPage() {
                     </div>
                 )}
 
-                {/* Prescription Section */}
+                {/* Prescription Section Card */}
                 {appointment.prescription && (
-                    <div className="bg-white rounded-3xl border border-blue-100 shadow-sm p-6 space-y-4">
-                        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                            <h4 className="text-xs font-bold text-blue-700 uppercase tracking-widest flex items-center gap-2">
-                                <Pill className="w-4 h-4 text-blue-600" />
-                                {t("prescriptionTitle")}
-                            </h4>
-                            <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">
-                                {t("prescriptionCount", { count: appointment.prescription.items?.length || 0 })}
-                            </span>
-                        </div>
-
-                        {appointment.prescription.diagnosisMain && (
-                            <div className="bg-blue-50/50 p-3.5 rounded-xl border border-blue-100/60">
-                                <span className="text-[10px] uppercase font-bold text-blue-500 tracking-wider block">{t("diagnosis")}</span>
-                                <p className="text-sm font-bold text-blue-900 mt-0.5">{appointment.prescription.diagnosisMain}</p>
-                                {appointment.prescription.diagnosisComorbid && (
-                                    <p className="text-xs text-slate-500 mt-0.5">{t("comorbid")} {appointment.prescription.diagnosisComorbid}</p>
+                    <div className="bg-gradient-to-r from-blue-50/80 to-indigo-50/80 rounded-3xl border border-blue-100/80 shadow-sm p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                                <Pill className="w-6 h-6 stroke-[1.5]" />
+                            </div>
+                            <div className="space-y-1">
+                                <h4 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                                    {t("prescriptionTitle")}
+                                    <span className="text-xs font-bold text-blue-700 bg-blue-100 px-2.5 py-0.5 rounded-full">
+                                        {t("prescriptionCount", { count: appointment.prescription.items?.length || 0 })}
+                                    </span>
+                                </h4>
+                                {appointment.prescription.diagnosisMain && (
+                                    <p className="text-xs font-medium text-slate-600">
+                                        {t("diagnosis")}: <span className="font-bold text-blue-900">{appointment.prescription.diagnosisMain}</span>
+                                    </p>
                                 )}
                             </div>
-                        )}
+                        </div>
 
-                        {appointment.prescription.items && appointment.prescription.items.length > 0 ? (
-                            <div className="overflow-x-auto rounded-xl border border-slate-200">
-                                <table className="w-full text-left border-collapse text-xs">
-                                    <thead>
-                                        <tr className="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] border-b border-slate-200">
-                                            <th className="p-3">#</th>
-                                            <th className="p-3">{t("medicineName")}</th>
-                                            <th className="p-3">{t("dosage")}</th>
-                                            <th className="p-3">{t("frequency")}</th>
-                                            <th className="p-3">{t("duration")}</th>
-                                            <th className="p-3">{t("quantity")}</th>
-                                            <th className="p-3">{t("instructions")}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100">
-                                        {appointment.prescription.items.map((item, idx) => (
-                                            <tr key={idx} className="hover:bg-slate-50/50 font-medium">
-                                                <td className="p-3 text-slate-400 font-bold">{idx + 1}</td>
-                                                <td className="p-3 font-bold text-slate-900">{item.medicineName}</td>
-                                                <td className="p-3 text-slate-700">{item.dosage || "—"}</td>
-                                                <td className="p-3 text-slate-700">{item.frequency || "—"}</td>
-                                                <td className="p-3 text-slate-700">{item.durationDays ? `${item.durationDays} ngày` : "—"}</td>
-                                                <td className="p-3 font-bold text-blue-700">{item.quantity || "—"}</td>
-                                                <td className="p-3 text-slate-500 italic">{item.instruction || "—"}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        ) : (
-                            <p className="text-xs text-slate-400 italic text-center py-3">{t("noMedicationDetail")}</p>
-                        )}
+                        <button
+                            onClick={() => router.push(`/patient/prescription-detail?id=${appointment.id_appointment}`)}
+                            className="w-full sm:w-auto px-5 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap"
+                        >
+                            <Pill className="w-4 h-4" />
+                            Xem chi tiết đơn thuốc
+                        </button>
                     </div>
                 )}
 

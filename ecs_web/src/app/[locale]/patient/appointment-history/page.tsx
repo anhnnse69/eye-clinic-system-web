@@ -259,14 +259,69 @@ export default function AppointmentHistoryPage() {
         }
     }
 
-    const getCancelUnavailableText = (status: string) => {
-        switch (status.toUpperCase()) {
-            case "CANCELLED": return "Đã hủy"
-            case "COMPLETED": return "Đã hoàn thành"
-            case "IN_PROGRESS": return "Đang khám"
-            case "BOOKED": return "Đã xác nhận, không thể hủy"
-            default: return "Không thể hủy"
+    const renderStatusBadge = (item: GetAppointmentHistoryResponse) => {
+        const status = item.status.toUpperCase()
+        const canCancel = canCancelAppointment(item)
+
+        if (status === "PENDING") {
+            if (canCancel) {
+                return (
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200/80 whitespace-nowrap">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5 animate-pulse"></span>
+                        {t("Chờ khám", "Pending")}
+                    </span>
+                )
+            } else {
+                return (
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-50 text-orange-700 border border-orange-200/80 whitespace-nowrap">
+                        <span className="w-1.5 h-1.5 rounded-full bg-orange-500 mr-1.5"></span>
+                        {t("Không thể hủy (< 24h)", "Cannot cancel (< 24h)")}
+                    </span>
+                )
+            }
         }
+
+        if (status === "BOOKED") {
+            return (
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200/80 whitespace-nowrap">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mr-1.5"></span>
+                    {t("Đã xác nhận", "Confirmed")}
+                </span>
+            )
+        }
+
+        if (status === "IN_PROGRESS") {
+            return (
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200/80 whitespace-nowrap">
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mr-1.5 animate-pulse"></span>
+                    {t("Đang khám", "In progress")}
+                </span>
+            )
+        }
+
+        if (status === "COMPLETED") {
+            return (
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80 whitespace-nowrap">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span>
+                    {t("Đã hoàn thành", "Completed")}
+                </span>
+            )
+        }
+
+        if (status === "CANCELLED") {
+            return (
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200/80 whitespace-nowrap">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mr-1.5"></span>
+                    {t("Đã hủy", "Cancelled")}
+                </span>
+            )
+        }
+
+        return (
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-50 text-gray-600 border border-gray-200 whitespace-nowrap">
+                {status}
+            </span>
+        )
     }
 
     // Các appointment khác (IN_PROGRESS, PENDING, ...) sẽ không hiện nút
@@ -444,6 +499,7 @@ export default function AppointmentHistoryPage() {
                                 <th className="px-6 py-4 text-left font-semibold">{t("Bác sĩ phụ trách", "Attending Doctor")}</th>
                                 <th className="px-6 py-4 text-left font-semibold">{t("Dịch vụ", "Service")}</th>
                                 <th className="px-6 py-4 text-left font-semibold">{t("Thời gian khám", "Appointment Time")}</th>
+                                <th className="px-6 py-4 text-center font-semibold">{t("Trạng thái", "Status")}</th>
                                 <th className="px-6 py-4 text-center font-semibold">{t("Hành động", "Actions")}</th>
                             </tr>
                         </thead>
@@ -452,7 +508,7 @@ export default function AppointmentHistoryPage() {
                             {loading ? (
                                 Array.from({ length: 5 }).map((_, idx) => (
                                     <tr key={idx} className="animate-pulse">
-                                        <td colSpan={6} className="px-6 py-8 text-center">
+                                        <td colSpan={7} className="px-6 py-8 text-center">
                                             <div className="flex items-center justify-center gap-3">
                                                 <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
                                                 <span className="text-gray-400 font-medium">{t("Đang tải dữ liệu...", "Loading data...")}</span>
@@ -520,51 +576,55 @@ export default function AppointmentHistoryPage() {
                                                 </div>
                                             </td>
 
+                                            {/* Status Badge Column */}
                                             <td className="px-6 py-4 text-center">
-                                                <div className="inline-flex items-center justify-center gap-2 flex-wrap">
-                                                    {showDetail && (
-                                                        <button
-                                                            onClick={() => {
-                                                                router.push(`/${locale}/patient/appointment-detail?id=${item.id_appointment}`)
-                                                            }}
-                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-primary bg-primary/10 border border-primary/20 rounded-lg hover:bg-primary hover:text-white transition-all cursor-pointer whitespace-nowrap"
-                                                        >
-                                                            <Pill className="w-3.5 h-3.5" />
-                                                            {t("Xem đơn thuốc", "View Prescription")}
-                                                        </button>
-                                                    )}
+                                                {renderStatusBadge(item)}
+                                            </td>
+
+                                            {/* Actions Column */}
+                                            <td className="px-6 py-4 text-center">
+                                                <div className="flex items-center justify-center gap-1.5 flex-nowrap">
+                                                    {/* View Appointment Details */}
+                                                    <button
+                                                        onClick={() => {
+                                                            router.push(`/${locale}/patient/appointment-detail?id=${item.id_appointment}`)
+                                                        }}
+                                                        className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg transition-all cursor-pointer whitespace-nowrap shrink-0"
+                                                        title={t("Xem chi tiết", "View Details")}
+                                                    >
+                                                        <Eye className="w-3.5 h-3.5 text-slate-500" />
+                                                        <span className="hidden sm:inline">{t("Chi tiết", "Details")}</span>
+                                                    </button>
+
+                                                    {/* Submit Review / Feedback */}
                                                     {canRateAppointment(item) && (
                                                         <button
                                                             onClick={() => setShowFeedbackFor(item.id_appointment)}
-                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-amber-600 bg-amber-50/70 rounded-lg hover:bg-amber-100 hover:text-amber-700 transition-colors whitespace-nowrap"
+                                                            className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors cursor-pointer whitespace-nowrap shrink-0"
+                                                            title={t("Đánh giá", "Review")}
                                                         >
-                                                            <Star className="w-3.5 h-3.5" />
-                                                            {t("Đánh giá", "Review")}
+                                                            <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
+                                                            <span className="hidden sm:inline">{t("Đánh giá", "Review")}</span>
                                                         </button>
                                                     )}
-                                                    {!showDetail && !canRateAppointment(item) && canCancel && (
+
+                                                    {/* Cancel Appointment */}
+                                                    {canCancel && (
                                                         <button
                                                             onClick={() => openCancelModal(item.id_appointment)}
                                                             disabled={isCancelling}
-                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold text-rose-600 bg-rose-50/70 rounded-lg hover:bg-rose-100 hover:text-rose-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                                                            className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-600 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap cursor-pointer shrink-0"
+                                                            title={t("Hủy lịch", "Cancel")}
                                                         >
                                                             {isCancelling ? (
-                                                                <>
-                                                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                                                    {t("Đang hủy...", "Cancelling...")}
-                                                                </>
+                                                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
                                                             ) : (
-                                                                <>
-                                                                    <XCircle className="w-3.5 h-3.5" />
-                                                                    {t("Hủy lịch", "Cancel Appointment")}
-                                                                </>
+                                                                <XCircle className="w-3.5 h-3.5" />
                                                             )}
+                                                            <span className="hidden sm:inline">
+                                                                {isCancelling ? t("Đang hủy...", "Cancelling...") : t("Hủy lịch", "Cancel")}
+                                                            </span>
                                                         </button>
-                                                    )}
-                                                    {!showDetail && !canRateAppointment(item) && !canCancel && (
-                                                        <span className="text-xs text-gray-400 italic">
-                                                            {getCancelUnavailableText(item.status)}
-                                                        </span>
                                                     )}
                                                 </div>
                                             </td>

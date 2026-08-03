@@ -103,6 +103,45 @@ export interface SubmitFeedbackResponse {
     createdAt: string
 }
 
+export interface PrescriptionItemDto {
+    medicineName: string
+    dosage: string
+    frequency: string
+    durationDays: string
+    quantity: string
+    unit: string
+    instruction: string
+}
+
+export interface GetPrescriptionDetailResponse {
+    appointmentId: string
+    medicalRecordId?: string
+    createdAt: string
+
+    clinicName: string
+    clinicAddress: string
+    clinicPhone: string
+
+    doctorName: string
+    doctorTitle: string
+
+    patientName: string
+    patientPhone: string
+    patientEmail: string
+    patientDob: string
+    patientGender: string
+    patientAddress: string
+
+    prescribedDate: string
+    diagnosisMain: string
+    diagnosisComorbid?: string
+    doctorNotes?: string
+    followUpDate?: string
+    prescriptionValue?: number
+
+    items: PrescriptionItemDto[]
+}
+
 
 class AppointmentHistoryService {
     async getAll(
@@ -150,6 +189,15 @@ class AppointmentHistoryService {
             comment: params.comment,
             isPublic: params.isPublic ?? true
         })
+        return response.data
+    }
+
+    async getPrescriptionDetail(
+        appointmentId: string
+    ): Promise<ApiResponse<GetPrescriptionDetailResponse>> {
+        const response = await apiClient.get<
+            ApiResponse<GetPrescriptionDetailResponse>
+        >(`/patient/appointments/${appointmentId}/prescription`)
         return response.data
     }
 }

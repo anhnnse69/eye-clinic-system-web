@@ -14,8 +14,8 @@
       "profile": "Profile",
       "editProfile": "Edit Profile",
       "appointments": "Appointments",
-      "medicalRecords": "Prescriptions",
-      "prescriptions": "Prescriptions",
+      "medicalRecords": "Profile Management",
+      "prescriptions": "Profile Management",
       "feedback": "Feedback",
       "accountInfo": "Account Info"
     },

@@ -41,6 +41,7 @@ export interface GetAppointmentDetailRequest {
 
 export interface GetAppointmentDetailResponse {
     id_appointment: string
+    patientId?: string
     status: string
     createdAt: string
 

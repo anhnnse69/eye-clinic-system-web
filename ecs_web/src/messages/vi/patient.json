@@ -125,6 +125,8 @@
       "prescriptionsTitle": "Đơn thuốc đã kê bởi bác sĩ",
       "prescriptionsCount": "{count} đơn thuốc",
       "prescriptionsEmpty": "Bệnh nhân này chưa phát sinh đơn thuốc nào từ lịch hẹn khám completed.",
+      "prescriptionVisitLabel": "Lần khám #{index}",
+      "prescriptionViewAppointment": "Xem chi tiết lịch hẹn",
       "prescriptionTableNoDetail": "Không ghi nhận chi tiết danh mục thuốc.",
       "prescriptionDiagnosis": "Chẩn đoán: {diagnosis}",
       "prescriptionTableNumber": "#",

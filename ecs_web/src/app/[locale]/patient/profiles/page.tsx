@@ -276,7 +276,7 @@ export default function PatientProfilesPage() {
                                                     onClick={() => handleViewDetail(item.id_patientProfile)}
                                                     className="inline-flex items-center justify-center px-3.5 py-1.5 text-xs font-bold text-primary bg-primary/10 border border-primary/20 rounded-xl hover:bg-primary hover:text-white active:scale-95 shadow-sm transition-all cursor-pointer"
                                                 >
-                                                    {t("Xem đơn thuốc & Chi tiết", "View Prescriptions & Details")}
+                                                    {t("Xem chi tiết", "View Details")}
                                                 </button>
                                             </td>
                                         </tr>

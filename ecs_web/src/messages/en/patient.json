@@ -125,6 +125,8 @@
       "prescriptionsTitle": "Prescriptions issued by doctors",
       "prescriptionsCount": "{count} prescriptions",
       "prescriptionsEmpty": "This patient has no prescriptions from completed consultation appointments.",
+      "prescriptionVisitLabel": "Visit #{index}",
+      "prescriptionViewAppointment": "View appointment details",
       "prescriptionTableNoDetail": "No medication list details recorded.",
       "prescriptionDiagnosis": "Diagnosis: {diagnosis}",
       "prescriptionTableNumber": "#",

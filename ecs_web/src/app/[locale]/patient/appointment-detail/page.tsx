@@ -350,21 +350,21 @@ export default function AppointmentDetailPage() {
 
                 {/* Prescription Section Card */}
                 {appointment.prescription && (
-                    <div className="bg-gradient-to-r from-blue-50/80 to-indigo-50/80 rounded-3xl border border-blue-100/80 shadow-sm p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="bg-gradient-to-r from-[#00658D]/10 to-[#00658D]/5 rounded-3xl border border-[#00658D]/20 shadow-sm p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                            <div className="w-12 h-12 rounded-2xl bg-[#00658D] text-white flex items-center justify-center shrink-0 shadow-sm">
                                 <Pill className="w-6 h-6 stroke-[1.5]" />
                             </div>
                             <div className="space-y-1">
                                 <h4 className="text-base font-bold text-slate-900 flex items-center gap-2">
                                     {t("prescriptionTitle")}
-                                    <span className="text-xs font-bold text-blue-700 bg-blue-100 px-2.5 py-0.5 rounded-full">
+                                    <span className="text-xs font-bold text-[#00658D] bg-[#00658D]/10 px-2.5 py-0.5 rounded-full">
                                         {t("prescriptionCount", { count: appointment.prescription.items?.length || 0 })}
                                     </span>
                                 </h4>
                                 {appointment.prescription.diagnosisMain && (
                                     <p className="text-xs font-medium text-slate-600">
-                                        {t("diagnosis")}: <span className="font-bold text-blue-900">{appointment.prescription.diagnosisMain}</span>
+                                        {t("diagnosis")}: <span className="font-bold text-[#00658D]">{appointment.prescription.diagnosisMain}</span>
                                     </p>
                                 )}
                             </div>
@@ -372,7 +372,7 @@ export default function AppointmentDetailPage() {
 
                         <button
                             onClick={() => router.push(`/patient/prescription-detail?id=${appointment.id_appointment}`)}
-                            className="w-full sm:w-auto px-5 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap"
+                            className="w-full sm:w-auto px-5 py-2.5 text-xs font-bold text-white bg-[#00658D] hover:bg-[#005273] rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer whitespace-nowrap"
                         >
                             <Pill className="w-4 h-4" />
                             Xem chi tiết đơn thuốc

@@ -295,8 +295,8 @@ export default function ClinicProfilePage() {
             </div>
 
             {showPublishModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden">
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl w-[90vw] max-w-lg min-w-[300px] shadow-2xl border border-slate-100 overflow-hidden animate-in zoom-in-95 duration-200">
                         <div className="p-6 border-b border-slate-100">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 bg-blue-50 rounded-full">

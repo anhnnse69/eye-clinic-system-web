@@ -147,13 +147,13 @@ export default function AppointmentDetailPage() {
 
     if (error || !appointment) {
         return (
-            <div className="max-w-2xl mx-auto px-4 py-12">
+            <div className="max-w-3xl mx-auto px-4 py-12">
                 <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8 text-center flex flex-col items-center">
                     <div className="w-14 h-14 bg-rose-50 rounded-2xl flex items-center justify-center mb-5 border border-rose-100">
                         <AlertCircle className="w-7 h-7 text-rose-500" />
                     </div>
                     <h3 className="text-xl font-bold text-slate-900 mb-2">{t("errorTitle")}</h3>
-                    <p className="text-sm text-slate-500 max-w-sm mb-6 leading-relaxed">{error}</p>
+                    <p className="text-sm text-slate-500 max-w-3xl mb-6 leading-relaxed">{error}</p>
                     <button
                         onClick={() => router.back()}
                         className="px-6 py-2.5 text-sm font-semibold text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-all shadow-sm"
@@ -169,19 +169,19 @@ export default function AppointmentDetailPage() {
 
     if (!isCompleted) {
         return (
-            <div className="max-w-2xl mx-auto px-4 py-12">
+            <div className="max-w-3xl mx-auto px-4 py-12">
                 <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-8 text-center flex flex-col items-center">
                     <div className="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center mb-5 border border-amber-100">
                         <AlertCircle className="w-7 h-7 text-amber-500" />
                     </div>
                     <h3 className="text-xl font-bold text-slate-900 mb-2">{t("notCompletedTitle")}</h3>
-                    <p className="text-sm text-slate-500 max-w-sm mb-6 leading-relaxed">
+                    <p className="text-sm text-slate-500 max-w-3xl mb-6 leading-relaxed">
                         {t("notCompletedMessage")}
                         <span className="block mt-2 font-medium text-slate-700">
                             {t("currentStatus")} {getStatusText(appointment.status)}
                         </span>
                     </p>
-                    <div className="flex gap-3 w-full max-w-xs">
+                    <div className="flex gap-3 w-full max-w-3xl">
                         <button
                             onClick={() => router.back()}
                             className="flex-1 px-4 py-2.5 text-sm font-semibold text-slate-700 bg-slate-50 rounded-xl hover:bg-slate-100 border border-slate-200/60 transition-all"

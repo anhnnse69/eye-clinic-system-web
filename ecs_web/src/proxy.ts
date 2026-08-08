@@ -50,8 +50,8 @@ export default function proxy(request: NextRequest) {
   const locale = localeMatch
     ? localeMatch[1]
     : cookieLocale === "en" || cookieLocale === "vi"
-    ? cookieLocale
-    : "vi"
+      ? cookieLocale
+      : "vi"
 
   const hasLocalePrefix = Boolean(localeMatch)
   const pathnameWithoutLocale = hasLocalePrefix

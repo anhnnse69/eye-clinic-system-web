@@ -279,7 +279,7 @@ class AuthService {
       throw handleApiError(error)
     }
   }
-  
+
   async updatePersonalProfile(
     userId: string,
     request: UpdatePersonalProfileRequest
@@ -291,7 +291,7 @@ class AuthService {
       )
       return response.data
     } catch (error) {
-      throw handleApiError(error) 
+      throw handleApiError(error)
     }
   }
 

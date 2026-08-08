@@ -11,6 +11,8 @@ import {
   Pill,
   DoorOpen,
   Building2,
+  FileSpreadsheet,
+  Loader2,
 } from "lucide-react"
 
 import {
@@ -18,6 +20,7 @@ import {
   ClinicDashboardResponse,
 } from "@/services/clinic-dashboard.service"
 
+import { generateClinicReportExcel } from "@/lib/excel-export"
 import { formatCurrency } from "@/lib/utils"
 
 export default function ClinicAdminDashboard() {
@@ -27,6 +30,9 @@ export default function ClinicAdminDashboard() {
   const [dashboard, setDashboard] = useState<ClinicDashboardResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const [isExporting, setIsExporting] = useState(false)
+  const [exportSuccess, setExportSuccess] = useState<string | null>(null)
 
   useEffect(() => {
     loadDashboard()
@@ -51,6 +57,31 @@ export default function ClinicAdminDashboard() {
       )
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleExportExcel = async () => {
+    try {
+      setIsExporting(true)
+      setExportSuccess(null)
+      const response = await clinicDashboardService.getExportReport()
+
+      if (!response.data) {
+        alert("Không thể lấy dữ liệu báo cáo.")
+        return
+      }
+
+      generateClinicReportExcel(response.data)
+      setExportSuccess("Xuất báo cáo Excel thành công!")
+      setTimeout(() => setExportSuccess(null), 4000)
+    } catch (err: any) {
+      alert(
+        err?.response?.data?.message ||
+        err?.message ||
+        "Đã xảy ra lỗi khi xuất báo cáo Excel."
+      )
+    } finally {
+      setIsExporting(false)
     }
   }
 
@@ -92,6 +123,31 @@ export default function ClinicAdminDashboard() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{tDashboard("title")}</h1>
           <p className="text-gray-500 mt-1 text-sm sm:text-base">{tDashboard("subtitle")}</p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          {exportSuccess && (
+            <span className="text-sm font-medium text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 animate-fade-in">
+              {exportSuccess}
+            </span>
+          )}
+          <button
+            onClick={handleExportExcel}
+            disabled={isExporting}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white font-medium text-sm rounded-xl hover:bg-emerald-700 active:scale-95 disabled:opacity-50 transition shadow-sm cursor-pointer"
+          >
+            {isExporting ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Đang xuất báo cáo...</span>
+              </>
+            ) : (
+              <>
+                <FileSpreadsheet className="w-4 h-4" />
+                <span>Xuất báo cáo Excel</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
 

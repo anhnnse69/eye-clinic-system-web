@@ -3,7 +3,7 @@
     "brand": "Eye Clinic Support",
     "login": "Login",
     "logout": "Logout",
-    "requestDemo": "Request Demo",
+    "requestDemo": "Register",
     "getStarted": "Get Started",
     "learnMore": "Learn more",
     "viewMore": "View more",
@@ -21,7 +21,7 @@
       "forDoctors": "For Doctors",
       "forPatients": "For Patients",
       "login": "Login",
-      "requestDemo": "Request Demo"
+      "requestDemo": "Register"
     },
     "footer": {
       "tagline": "Precision in Vision. The world's most advanced operating system for ophthalmology networks.",

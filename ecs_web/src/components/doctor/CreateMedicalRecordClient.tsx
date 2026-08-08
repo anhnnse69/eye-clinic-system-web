@@ -141,7 +141,7 @@ export default function CreateMedicalRecordClient({
       setPatientProfile(null)
       return
     }
-    ;(async () => {
+    ; (async () => {
       // 1. Try Doctor Demographics endpoint first
       try {
         const res = await medicalRecordPatientDemographicsService.getPatientDemographicsDetail(patientProfileId)
@@ -370,7 +370,7 @@ export default function CreateMedicalRecordClient({
 
         {showLabRequestForm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
-            <div className="relative w-full max-w-2xl rounded-2xl bg-white shadow-2xl my-8">
+            <div className="relative w-full max-w-3xl rounded-2xl bg-white shadow-2xl my-8">
               <button
                 type="button"
                 onClick={() => setShowLabRequestForm(false)}

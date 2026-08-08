@@ -243,6 +243,7 @@
       "unpublished": "Chưa công bố",
       "pending": "Chờ duyệt",
       "noClinics": "Chưa có phòng khám nào",
+      "pagination": "Hiển thị từ {from} đến {to} trên tổng số {total} phòng khám",
       "editPage": {
         "backToList": "Quay lại danh sách phòng khám",
         "title": "Chỉnh sửa hồ sơ phòng khám",

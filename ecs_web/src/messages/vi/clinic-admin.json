@@ -15,7 +15,12 @@
       "weeklyStats": "Thống kê 7 ngày gần nhất",
       "appointments": "lịch hẹn",
       "revenue": "doanh thu",
-      "noWeeklyData": "Không có dữ liệu thống kê tuần"
+      "noWeeklyData": "Không có dữ liệu thống kê tuần",
+      "exportButton": "Xuất báo cáo Excel",
+      "exporting": "Đang xuất báo cáo...",
+      "exportSuccess": "Xuất báo cáo Excel thành công!",
+      "exportFailed": "Không thể lấy dữ liệu báo cáo.",
+      "exportError": "Đã xảy ra lỗi khi xuất báo cáo Excel."
     },
     "nav": {
       "dashboard": "Dashboard",

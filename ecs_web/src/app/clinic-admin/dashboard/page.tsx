@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useTranslations } from "next-intl"
+import { useTranslations, useLocale } from "next-intl"
 import {
   Calendar,
   TrendingUp,
@@ -27,6 +27,7 @@ export default function ClinicAdminDashboard() {
   const t = useTranslations("clinicAdmin")
   const tDashboard = useTranslations("clinicAdmin.dashboard")
   const tCommon = useTranslations("clinicAdmin.common")
+  const locale = useLocale()
   const [dashboard, setDashboard] = useState<ClinicDashboardResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -67,18 +68,18 @@ export default function ClinicAdminDashboard() {
       const response = await clinicDashboardService.getExportReport()
 
       if (!response.data) {
-        alert("Không thể lấy dữ liệu báo cáo.")
+        alert(tDashboard("exportFailed"))
         return
       }
 
-      generateClinicReportExcel(response.data)
-      setExportSuccess("Xuất báo cáo Excel thành công!")
+      generateClinicReportExcel(response.data, locale)
+      setExportSuccess(tDashboard("exportSuccess"))
       setTimeout(() => setExportSuccess(null), 4000)
     } catch (err: any) {
       alert(
         err?.response?.data?.message ||
         err?.message ||
-        "Đã xảy ra lỗi khi xuất báo cáo Excel."
+        tDashboard("exportError")
       )
     } finally {
       setIsExporting(false)
@@ -139,12 +140,12 @@ export default function ClinicAdminDashboard() {
             {isExporting ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Đang xuất báo cáo...</span>
+                <span>{tDashboard("exporting")}</span>
               </>
             ) : (
               <>
                 <FileSpreadsheet className="w-4 h-4" />
-                <span>Xuất báo cáo Excel</span>
+                <span>{tDashboard("exportButton")}</span>
               </>
             )}
           </button>

@@ -15,7 +15,12 @@
       "weeklyStats": "Last 7 Days Statistics",
       "appointments": "appointments",
       "revenue": "revenue",
-      "noWeeklyData": "No weekly statistics available"
+      "noWeeklyData": "No weekly statistics available",
+      "exportButton": "Export Excel Report",
+      "exporting": "Exporting report...",
+      "exportSuccess": "Excel report exported successfully!",
+      "exportFailed": "Failed to fetch report data.",
+      "exportError": "An error occurred while exporting the Excel report."
     },
     "nav": {
       "dashboard": "Dashboard",

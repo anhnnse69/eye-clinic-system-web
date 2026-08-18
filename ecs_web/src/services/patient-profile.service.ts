@@ -1,4 +1,4 @@
-import { apiClient } from "@/lib/axios"
+import { apiClient, ApiError } from "@/lib/axios"
 import type { ApiResponse } from "@/types"
 
 export interface GetPatientProfilesRequest {
@@ -79,6 +79,22 @@ export interface UpdatePatientProfileResponse {
     updatedAt: string
 }
 
+export interface SeparateProfileRequest {
+    childPatientProfileId: string
+    newEmail: string
+    newPhone: string
+}
+
+export interface SeparateProfileResponse {
+    newUserId: string
+    newPatientProfileId: string
+    message: string
+}
+
+export interface CheckSelfProfileResponse {
+    hasSelfProfile: boolean
+}
+
 class PatientProfileService {
     async getAll(
         params: GetPatientProfilesRequest
@@ -121,6 +137,49 @@ class PatientProfileService {
             `/patient-profiles/${patientProfileId}/edit`,
             data
         )
+
+        return response.data
+    }
+
+    async separate(
+        patientProfileId: string,
+        newEmail: string,
+        newPhone: string
+    ): Promise<ApiResponse<SeparateProfileResponse>> {
+        const routeCandidates = [
+            `/patient/profiles/${patientProfileId}/separate`,
+            `/patient-profiles/${patientProfileId}/separate`,
+        ]
+
+        let lastError: unknown = null
+
+        for (const url of routeCandidates) {
+            try {
+                const response = await apiClient.post<
+                    ApiResponse<SeparateProfileResponse>
+                >(url, {
+                    childPatientProfileId: patientProfileId,
+                    newEmail,
+                    newPhone,
+                })
+
+                return response.data
+            } catch (error) {
+                if (!(error instanceof ApiError) || error.statusCode !== 404) {
+                    throw error
+                }
+
+                lastError = error
+            }
+        }
+
+        throw lastError ?? new Error("Failed to separate patient profile")
+    }
+
+    async checkSelfProfile(): Promise<ApiResponse<CheckSelfProfileResponse>> {
+        const response = await apiClient.get<
+            ApiResponse<CheckSelfProfileResponse>
+        >("/patient/profiles/check-self-profile")
 
         return response.data
     }

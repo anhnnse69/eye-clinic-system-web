@@ -693,7 +693,7 @@ function ParaclinicalDetailModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
-      <div className="relative w-full max-w-2xl rounded-2xl bg-white shadow-2xl overflow-hidden my-8 max-h-[90vh] flex flex-col">
+      <div className="relative w-full max-w-3xl rounded-2xl bg-white shadow-2xl overflow-hidden my-8 max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-100 bg-linear-to-r from-indigo-50/80 via-white to-purple-50/50 px-6 py-4">
           <div className="flex items-center gap-2.5">
@@ -911,7 +911,7 @@ function UpdateLabResultModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
-      <div className="relative w-full max-w-xl rounded-2xl bg-white shadow-2xl overflow-hidden my-8">
+      <div className="relative w-full max-w-3xl rounded-2xl bg-white shadow-2xl overflow-hidden my-8">
         <div className="flex items-center justify-between border-b border-gray-100 bg-amber-50/60 px-6 py-4">
           <div className="flex items-center gap-2">
             <Edit3 className="h-5 w-5 text-amber-700" />
@@ -1325,7 +1325,7 @@ function AiSuggestionForm({
                 // Clear value upfront so selecting the same file twice still
                 // fires onChange. Otherwise the browser dedupes the event and
                 // the user sees stale "result" state on the UI.
-                ;(e.target as HTMLInputElement).value = ""
+                ; (e.target as HTMLInputElement).value = ""
               }}
               className="hidden"
             />
@@ -1592,11 +1592,10 @@ function AiSuggestionForm({
                     type="button"
                     onClick={applyToMedicalRecord}
                     disabled={applied}
-                    className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-bold transition shadow-sm ${
-                      applied
-                        ? "bg-emerald-100 text-emerald-700 border border-emerald-300 cursor-default"
-                        : "bg-linear-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 hover:shadow-md"
-                    }`}
+                    className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-bold transition shadow-sm ${applied
+                      ? "bg-emerald-100 text-emerald-700 border border-emerald-300 cursor-default"
+                      : "bg-linear-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 hover:shadow-md"
+                      }`}
                   >
                     {applied ? (
                       <>

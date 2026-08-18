@@ -296,7 +296,7 @@ export default function PatientProfilesPage() {
                         <h3 className="text-base font-bold text-slate-900 mb-1">
                             {t("Không tìm thấy hồ sơ bệnh nhân", "No patient profiles found")}
                         </h3>
-                        <p className="text-sm text-slate-400 max-w-xs mb-5">
+                        <p className="text-sm text-slate-400 max-w-3xl mb-5">
                             {t("Hệ thống chưa ghi nhận hồ sơ nào khớp với bộ lọc của bạn.", "No profiles match your search criteria.")}
                         </p>
                         <button

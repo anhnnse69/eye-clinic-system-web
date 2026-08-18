@@ -25,6 +25,8 @@ export default function PatientProfilesEditPage() {
     const [submitLoading, setSubmitLoading] = useState(false)
     const [submitError, setSubmitError] = useState<string | null>(null)
     const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({})
+    const [hasSelfProfile, setHasSelfProfile] = useState(false)
+    const [currentRelationship, setCurrentRelationship] = useState<string>("")
 
     const [formData, setFormData] = useState<UpdatePatientProfileRequest>({
         fullName: "",
@@ -61,12 +63,23 @@ export default function PatientProfilesEditPage() {
         const fetchProfileDetail = async () => {
             try {
                 setPageLoading(true)
-                const response = await patientProfileService.getById(profileId)
+
+                // Fetch profile detail and self-profile check in parallel
+                const [response, selfCheckResponse] = await Promise.all([
+                    patientProfileService.getById(profileId),
+                    patientProfileService.checkSelfProfile().catch(() => null)
+                ])
+
+                if (selfCheckResponse?.data?.hasSelfProfile) {
+                    setHasSelfProfile(true)
+                }
 
                 if (response && response.data) {
                     const detail = response.data
                     const formattedDob = detail.dob ? detail.dob.split('T')[0] : ""
+                    const rel = detail.relationship || "Bản thân"
 
+                    setCurrentRelationship(rel)
                     setFormData({
                         fullName: detail.fullName || "",
                         gender: detail.gender ?? 0,
@@ -78,7 +91,7 @@ export default function PatientProfilesEditPage() {
                         bloodType: detail.bloodType || "",
                         allergies: detail.allergies || "",
                         medicalHistory: detail.medicalHistory || "",
-                        relationship: detail.relationship || "Bản thân",
+                        relationship: rel,
                     })
                 } else {
                     setSubmitError(t("profileNotFound"))
@@ -290,9 +303,16 @@ export default function PatientProfilesEditPage() {
                                 onChange={handleInputChange}
                                 className="w-full px-3.5 py-2.5 text-sm bg-slate-50/50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-slate-700"
                             >
-                                {relationshipOptions.map((option) => (
-                                    <option key={option.value} value={option.value}>{option.label}</option>
-                                ))}
+                                {relationshipOptions
+                                    .filter(option =>
+                                        // Hide "Bản thân" only when user already has a self profile elsewhere (not the current profile being edited)
+                                        !hasSelfProfile ||
+                                        option.value !== "Bản thân" ||
+                                        currentRelationship === "Bản thân"
+                                    )
+                                    .map((option) => (
+                                        <option key={option.value} value={option.value}>{option.label}</option>
+                                    ))}
                             </select>
                         </div>
 

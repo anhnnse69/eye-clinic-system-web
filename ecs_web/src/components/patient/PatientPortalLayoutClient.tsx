@@ -144,7 +144,7 @@ export default function PatientPortalLayoutClient({
           ───────────────────────────────────────────────────────────── */}
       <header className="bg-surface-container-lowest border-b border-outline-variant sticky top-0 z-50 shadow-sm w-full">
         <nav className="flex items-center justify-between w-full px-4 md:px-8 max-w-7xl mx-auto h-20 gap-4">
-          
+
           {/* Logo & Tên thương hiệu lấy chuẩn từ trang chủ */}
           <Link href={`/${locale}/home`} className="flex items-center gap-3 shrink-0 group">
             <img
@@ -163,34 +163,13 @@ export default function PatientPortalLayoutClient({
           </Link>
 
           {/* Menu Điều hướng Khách hàng đồng bộ trang chủ */}
-          <div className="hidden lg:flex items-center gap-6">
+          <div className="hidden lg:flex items-center gap-6 ">
             <Link
               href={`/${locale}/home`}
               className="flex items-center gap-1.5 text-sm font-bold text-slate-700 hover:text-primary transition-colors"
             >
               <Home className="w-4 h-4 text-primary" />
               <span>{locale === "en" ? "Home" : "Trang chủ"}</span>
-            </Link>
-
-            <Link
-              href={`/${locale}/home`}
-              className="text-sm font-medium text-slate-600 hover:text-primary transition-colors"
-            >
-              {locale === "en" ? "Clinics" : "Phòng khám"}
-            </Link>
-
-            <Link
-              href={`/${locale}/home`}
-              className="text-sm font-medium text-slate-600 hover:text-primary transition-colors"
-            >
-              {locale === "en" ? "Doctors" : "Bác sĩ"}
-            </Link>
-
-            <Link
-              href={`/${locale}/register-clinic-application`}
-              className="text-sm font-medium text-slate-600 hover:text-primary transition-colors"
-            >
-              {locale === "en" ? "Partners" : "Đối tác"}
             </Link>
           </div>
 
@@ -219,7 +198,7 @@ export default function PatientPortalLayoutClient({
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            
+
             {/* Thẻ Bệnh nhân */}
             <div className="flex items-center gap-4 sm:gap-5">
               {account?.avatarUrl ? (
@@ -266,11 +245,10 @@ export default function PatientPortalLayoutClient({
                   <Link
                     key={tab.id}
                     href={tab.href}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-extrabold transition-all duration-200 ${
-                      isActive
-                        ? "bg-white text-primary shadow-md scale-102 font-black"
-                        : "text-slate-200 hover:text-white hover:bg-white/10 font-bold"
-                    }`}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-extrabold transition-all duration-200 ${isActive
+                      ? "bg-white text-primary shadow-md scale-102 font-black"
+                      : "text-slate-200 hover:text-white hover:bg-white/10 font-bold"
+                      }`}
                   >
                     <Icon className={`w-4 h-4 ${isActive ? "text-primary" : "text-slate-300"}`} />
                     <span>{tab.label}</span>

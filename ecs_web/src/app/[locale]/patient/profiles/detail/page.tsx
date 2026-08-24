@@ -18,13 +18,15 @@ import {
     Activity,
     Sparkles,
     Users,
-    Fingerprint
+    Fingerprint,
+    LogOut
 } from "lucide-react"
 
 import {
     patientProfileService,
     type GetPatientProfileDetailResponse,
 } from "@/services/patient-profile.service"
+import SeparateProfileModal from "@/components/patient/SeparateProfileModal"
 
 export default function PatientProfileDetailPage() {
     const router = useRouter()
@@ -35,6 +37,7 @@ export default function PatientProfileDetailPage() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [profile, setProfile] = useState<GetPatientProfileDetailResponse | null>(null)
+    const [isModalOpen, setIsModalOpen] = useState(false)
 
     const profileId = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("id") : null
 
@@ -76,6 +79,14 @@ export default function PatientProfileDetailPage() {
         if (!profileId) return
         if (locale) router.push(`/${locale}/patient/profiles/edit?id=${profileId}`)
         else router.push(`/patient/profiles/edit?id=${profileId}`)
+    }
+
+    const handleSeparateSuccess = () => {
+        setIsModalOpen(false)
+        // Redirect back to profile list after successful separation
+        setTimeout(() => {
+            handleBackToList()
+        }, 500)
     }
 
     const getGenderBadge = (gender: any) => {
@@ -132,14 +143,26 @@ export default function PatientProfileDetailPage() {
                     {t("backToList")}
                 </button>
 
-                <button
-                    type="button"
-                    onClick={handleGoToEditPage}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-1.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-xl shadow-sm transition-all active:scale-[0.98]"
-                >
-                    <Pencil className="w-4 h-4 text-slate-500" />
-                    {t("editProfile")}
-                </button>
+                <div className="flex items-center gap-2">
+                    {profile.relationship && profile.relationship.toLowerCase() !== "self" && profile.relationship.toLowerCase() !== "bản thân" && (
+                        <button
+                            type="button"
+                            onClick={() => setIsModalOpen(true)}
+                            className="inline-flex items-center justify-center gap-2 px-4 py-1.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-700 text-sm font-bold rounded-xl shadow-sm transition-all active:scale-[0.98]"
+                        >
+                            <LogOut className="w-4 h-4" />
+                            {t("separateAccount") || "Tách Tài Khoản"}
+                        </button>
+                    )}
+                    <button
+                        type="button"
+                        onClick={handleGoToEditPage}
+                        className="inline-flex items-center justify-center gap-2 px-4 py-1.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-xl shadow-sm transition-all active:scale-[0.98]"
+                    >
+                        <Pencil className="w-4 h-4 text-slate-500" />
+                        {t("editProfile")}
+                    </button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -147,12 +170,6 @@ export default function PatientProfileDetailPage() {
                     <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5 relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-blue-50/50 to-transparent rounded-bl-full pointer-events-none" />
                         <div className="space-y-2 border-b border-slate-100 pb-4">
-                            <div className="flex flex-wrap items-center gap-2">
-                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100">
-                                    <Users className="w-3 h-3" />
-                                    {profile.relationship || t("relationshipSelf")}
-                                </span>
-                            </div>
                             <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight sm:text-3xl">
                                 {profile.fullName}
                             </h1>
@@ -261,6 +278,17 @@ export default function PatientProfileDetailPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Separate Profile Modal */}
+            {profileId && profile && (
+                <SeparateProfileModal
+                    isOpen={isModalOpen}
+                    profileId={profileId}
+                    childName={profile.fullName}
+                    onClose={() => setIsModalOpen(false)}
+                    onSuccess={handleSeparateSuccess}
+                />
+            )}
         </div>
     )
 }

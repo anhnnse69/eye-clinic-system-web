@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { useTranslations } from "next-intl"
 import {
@@ -21,6 +21,8 @@ export default function PatientProfilesCreatePage() {
     const [submitLoading, setSubmitLoading] = useState(false)
     const [submitError, setSubmitError] = useState<string | null>(null)
     const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({})
+    const [hasSelfProfile, setHasSelfProfile] = useState(false)
+    const [loadingCheck, setLoadingCheck] = useState(true)
 
     const [formData, setFormData] = useState<CreatePatientProfileRequest>({
         fullName: "",
@@ -46,6 +48,24 @@ export default function PatientProfilesCreatePage() {
         { value: "Cháu", label: t("relationshipGrandchild") },
         { value: "Người thân khác", label: t("relationshipOther") },
     ]
+
+    useEffect(() => {
+        const checkSelfProfile = async () => {
+            try {
+                const response = await patientProfileService.checkSelfProfile()
+                if (response.data && response.data.hasSelfProfile) {
+                    setHasSelfProfile(true)
+                    setFormData(prev => ({ ...prev, relationship: "Cha" }))
+                }
+            } catch (error) {
+                console.error("Failed to check self profile:", error)
+            } finally {
+                setLoadingCheck(false)
+            }
+        }
+
+        checkSelfProfile()
+    }, [])
 
     const handleCloseCreatePage = () => {
         if (locale) router.push(`/${locale}/patient/profiles`)
@@ -110,6 +130,9 @@ export default function PatientProfilesCreatePage() {
 
     const handleSubmitProfile = async (e: React.FormEvent) => {
         e.preventDefault()
+        if (loadingCheck) {
+            return
+        }
         if (!validateForm()) {
             setSubmitError(t("checkFormAgain"))
             return
@@ -212,10 +235,18 @@ export default function PatientProfilesCreatePage() {
                                 <label className="text-xs font-semibold text-slate-700">{t("relationship")} *</label>
                                 <div className="relative">
                                     <HeartPulse className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                                    <select name="relationship" value={formData.relationship} onChange={handleInputChange} className="w-full pl-10 pr-3.5 py-2.5 text-sm bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50 transition-all duration-200 appearance-none">
-                                        {relationshipOptions.map((option) => (
-                                            <option key={option.value} value={option.value}>{option.label}</option>
-                                        ))}
+                                    <select
+                                        name="relationship"
+                                        value={formData.relationship}
+                                        onChange={handleInputChange}
+                                        disabled={loadingCheck}
+                                        className="w-full pl-10 pr-3.5 py-2.5 text-sm bg-slate-50/50 hover:bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50 transition-all duration-200 appearance-none disabled:opacity-50"
+                                    >
+                                        {relationshipOptions
+                                            .filter(option => !hasSelfProfile || option.value !== "Bản thân")
+                                            .map((option) => (
+                                                <option key={option.value} value={option.value}>{option.label}</option>
+                                            ))}
                                     </select>
                                     <div className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-500 w-0 h-0"></div>
                                 </div>
@@ -292,7 +323,7 @@ export default function PatientProfilesCreatePage() {
                 <div className="flex flex-col sm:flex-row items-center justify-end gap-3 p-6 border-t border-slate-100 bg-slate-50/50">
                     <button
                         type="button"
-                        disabled={submitLoading}
+                        disabled={submitLoading || loadingCheck}
                         onClick={handleCloseCreatePage}
                         className="w-full sm:w-auto px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 active:bg-slate-200 rounded-xl transition-colors border border-slate-200 bg-white disabled:opacity-50"
                     >
@@ -300,10 +331,10 @@ export default function PatientProfilesCreatePage() {
                     </button>
                     <button
                         type="submit"
-                        disabled={submitLoading}
+                        disabled={submitLoading || loadingCheck}
                         className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold rounded-xl shadow-md shadow-blue-500/10 hover:shadow-blue-500/20 active:scale-[0.98] transition-all disabled:opacity-50 min-w-[140px]"
                     >
-                        {submitLoading ? (
+                        {submitLoading || loadingCheck ? (
                             <>
                                 <Loader2 className="w-4 h-4 animate-spin" />
                                 {tCommon("loading")}

@@ -49,6 +49,7 @@ export default async function ClinicAdminLayout({ children }: { children: React.
         { label: tNav("appointments"), href: "/clinic-admin/appointment", icon: "Calendar" },
         { label: tNav("rooms"), href: "/clinic-admin/rooms", icon: "DoorOpen" },
         { label: tNav("recordTransfers"), href: "/clinic-admin/record-transfers", icon: "FileText" },
+        { label: tNav("recordApprovals") || "Phê duyệt hồ sơ", href: "/clinic-admin/record-approvals", icon: "FileCheck" },
       ],
     },
     {

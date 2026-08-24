@@ -41,6 +41,43 @@
     "printA4": "In bệnh án (A4)",
     "formTemplate": "BỆNH ÁN MẮT",
     "toc": "Mục lục:",
+    "workflow": {
+      "title": "QUY TRÌNH 6 BƯỚC KHÁM BỆNH EMR",
+      "subtitle": "Bắt buộc hoàn thành tuần tự — hệ thống sẽ tự động đưa bác sĩ về đúng bước đang dở khi quay lại",
+      "currentBadge": "Đang khám · Bước {current}/{total}",
+      "stepLabelPrefix": "Bước",
+      "step1": {
+        "label": "AI chẩn đoán sơ bộ",
+        "hint": "AI phân tích triệu chứng & gợi ý chẩn đoán"
+      },
+      "step2": {
+        "label": "Chọn mẫu bệnh án",
+        "hint": "Chọn mẫu phù hợp (đã được AI gợi ý)"
+      },
+      "step3": {
+        "label": "Khám lâm sàng & Lưu hồ sơ",
+        "hint": "Điền các mục khám và lưu lại"
+      },
+      "step4": {
+        "label": "Cận lâm sàng",
+        "hint": "OCT / Thị trường / Siêu âm (tùy chọn)"
+      },
+      "step5": {
+        "label": "Tổng kết bệnh án",
+        "hint": "Chẩn đoán cuối + ICD-10"
+      },
+      "step6": {
+        "label": "Kê đơn thuốc / kính",
+        "hint": "Đơn thuốc hoặc đơn kính"
+      },
+      "done": "Đã hoàn thành",
+      "pending": "Chưa làm",
+      "inProgress": "Đang thực hiện",
+      "optional": "Tùy chọn",
+      "mandatory": "Bắt buộc",
+      "nextStep": "Bước tiếp theo",
+      "viewAiSuggestion": "Xem gợi ý AI"
+    },
     "sections": {
       "patientInfo": "Thông tin bệnh nhân",
       "patientManagement": "Quản lý bệnh nhân",
@@ -143,5 +180,23 @@
       "MS25_STRABISMUS_PTOSIS": "Lác & Sụp mi",
       "MS26_PEDIATRIC": "Nhi khoa"
     }
+  },
+  "medicalRecordEdit": {
+    "title": "Chỉnh sửa hồ sơ bệnh án EMR",
+    "loadingTitle": "Đang tải dữ liệu hồ sơ bệnh án...",
+    "loadingHint": "Vui lòng chờ trong giây lát...",
+    "errorTitle": "Không thể tải hồ sơ bệnh án",
+    "loadErrorNotFound": "Không tìm thấy hồ sơ bệnh án yêu cầu.",
+    "loadErrorLocked": "Hồ sơ bệnh án đã bị chốt hoặc không có quyền chỉnh sửa.",
+    "loadErrorLegacy": "Hồ sơ bệnh án không đúng định dạng dữ liệu EMR.",
+    "loadErrorGeneric": "Đã xảy ra lỗi khi tải hồ sơ bệnh án.",
+    "saveErrorGeneric": "Đã xảy ra lỗi khi lưu hồ sơ bệnh án.",
+    "saveErrorSystem": "Lỗi hệ thống khi lưu dữ liệu EMR.",
+    "back": "Quay lại",
+    "backToList": "Quay về danh sách",
+    "viewDetail": "Xem chi tiết hồ sơ",
+    "recordTypeMissing": "Thiếu thông tin loại hồ sơ bệnh án.",
+    "saving": "Đang lưu thay đổi...",
+    "save": "Lưu thay đổi hồ sơ bệnh án"
   }
 }

@@ -3,30 +3,36 @@
 /**
  * CreateMedicalRecordClient — MongoDB-backed JSON envelope form.
  *
- * Renders 6 ophthalmic templates (MS21-26) cho khám ngoại trú.
+ * Renders 6 ophthalmic templates (MS21-26) for outpatient examination.
  *
- * Lưu ý: Theo yêu cầu người dùng (2026-07-20):
- *  - Lược bỏ hoàn toàn phần "Quản lý bệnh nhân nội trú" (admission, bed,
- *    department transfer, total treatment days, discharge, tử vong).
- *  - Lược bỏ phần "ICD Diagnosis Codes" của Bộ Y tế (chẩn đoán sơ bộ đã có
- *    UC 35/36, chẩn đoán xác định sẽ nhập trực tiếp trong subspecialty section).
- *  - Không render "Tổng kết bệnh án" nội trú; chỉ giữ phần "Tổng kết" rút gọn
- *    (chẩn đoán cuối + hướng điều trị tiếp + đơn thuốc).
- *  - Toàn bộ label sử dụng i18n (vi/en) qua namespace `medicalRecord` + `form`.
+ * Notes (per user request, 2026-07-20):
+ *  - The "Inpatient management" section (admission, bed, department transfer,
+ *    total treatment days, discharge, death) has been removed entirely.
+ *  - The Ministry-of-Health "ICD Diagnosis Codes" section has been removed
+ *    (preliminary diagnosis is already handled by UC 35/36; final diagnosis
+ *    is entered directly inside the subspecialty section).
+ *  - The inpatient "Medical record summary" section is no longer
+ *    rendered here; only a condensed "Summary" remains (final diagnosis,
+ *    next-step treatment plan, prescription).
+ *  - All labels use i18n (vi/en) via the `medicalRecord` + `form` namespaces.
  */
-import { useMemo, useState, useEffect } from "react"
+import { useMemo, useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useForm, FormProvider } from "react-hook-form"
 import type { Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useTranslations } from "next-intl"
-import { Loader2, AlertCircle, CheckCircle2, Printer, Sparkles, Plus, X, Microscope } from "lucide-react"
+import { useTranslations, useLocale } from "next-intl"
+import { Loader2, AlertCircle, CheckCircle2, Printer, Sparkles, Plus, X, Microscope, History, Zap, Stethoscope, Eye, Globe, HeartPulse, Pill, FileText, ClipboardCheck, ListChecks, ArrowRight, Glasses } from "lucide-react"
+import SummaryDiagnosisModal from "./medical-record-form/SummaryDiagnosisModal"
+import CompletionCheckModal from "./CompletionCheckModal"
+import CreatePrescriptionModal from "./medical-record-form/CreatePrescriptionModal"
 
 import {
   medicalRecordFormDataSchema,
   validateFormDataForRecordType,
 } from "@/schemas/medical-record.schema"
 import medicalRecordService from "@/services/medical-record.service"
+import medicalRecordsService from "@/services/medical-records.service"
 import { patientProfileService } from "@/services/patient-profile.service"
 import { medicalRecordPatientDemographicsService } from "@/services"
 import { getMessage } from "@/constants/messages"
@@ -35,17 +41,14 @@ import {
   MEDICAL_RECORD_TYPE_LABELS,
   type MedicalRecordType,
   type MedicalRecordFormDataPayload,
+  type AITriageSymptomInput,
+  type AITriageResponse,
 } from "@/types"
 
 import UniversalEyeExamSections from "./medical-record-form/UniversalEyeExamSections"
 import OfficialMedicalRecordA4Print from "./medical-record-form/OfficialMedicalRecordA4Print"
-import SubspecialtySections from "./medical-record-form/SubspecialtySections"
-import GlaucomaFormSections from "./medical-record-form/GlaucomaFormSections"
-import PatientManagementSections from "./medical-record-form/PatientManagementSections"
-import DiagnosisDischargeSections from "./medical-record-form/DiagnosisDischargeSections"
 import TreatmentProgressTable from "./medical-record-form/TreatmentProgressTable"
 import SurgeryForm from "./medical-record-form/SurgeryForm"
-import PrescriptionSection from "./medical-record-form/PrescriptionSection"
 import PreliminaryExamination, {
   type PreliminaryData,
 } from "./medical-record-form/PreliminaryExamination"
@@ -56,12 +59,30 @@ interface CreateMedicalRecordClientProps {
   appointmentId: string
   patientProfileId?: string
   initialRecordType?: string
+  /** Skip preliminary step if already done via AI Triage */
+  skipPreliminary?: boolean
+  /** AI Triage data to pre-populate form */
+  aiTriageData?: {
+    symptoms: AITriageSymptomInput
+    result: AITriageResponse
+  } | null
+  existingRecordId?: string | null
 }
 
 /** Subset of patient profile fields surfaced inside the form header. */
-type PropsForSections = NonNullable<
-  React.ComponentProps<typeof PatientManagementSections>["patientProfile"]
->
+type PropsForSections = {
+  fullName?: string | null
+  gender?: string | null
+  dob?: string | null
+  phoneNumber?: string | null
+  address?: string | null
+  identityNumber?: string | null
+  bhytNumber?: string | null
+  bhytExpiryDate?: string | null
+  bloodType?: string | null
+  allergies?: string | null
+  medicalHistory?: string | null
+}
 
 function accentButtonClass(recordType: string | undefined): string {
   switch (recordType) {
@@ -107,9 +128,13 @@ export default function CreateMedicalRecordClient({
   appointmentId,
   patientProfileId,
   initialRecordType,
+  skipPreliminary = false,
+  aiTriageData = null,
+  existingRecordId = null,
 }: CreateMedicalRecordClientProps) {
   const router = useRouter()
   const t = useTranslations("medicalRecord")
+  const tWorkflow = useTranslations("medicalRecord.workflow")
   const tForm = useTranslations("form")
   const tCommon = useTranslations("common")
   const tParaclinical = useTranslations("doctor.paraclinical")
@@ -124,13 +149,294 @@ export default function CreateMedicalRecordClient({
   const [recordType, setRecordType] = useState<MedicalRecordType | undefined>(initialType)
   const [submitting, setSubmitting] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)
-  const [successInfo, setSuccessInfo] = useState<{ recordId: string; mongoDocumentId?: string } | null>(null)
+  const [successInfo, setSuccessInfo] = useState<{
+    recordId: string
+    mongoDocumentId?: string
+    /**
+     * Snapshot of the AI pre-diagnosis result that was used to choose the
+     * record template. Persisted in the successInfo so the post-save stepper
+     * can render Step 1 as "done" without a second fetch. Also embedded into
+     * the formData.aiSuggestion envelope on save so it survives full reloads.
+     */
+    aiTriage?: AITriageResponse
+  } | null>(existingRecordId ? { recordId: existingRecordId } : null)
   const [refreshKey, setRefreshKey] = useState(0)
   const [showLabRequestForm, setShowLabRequestForm] = useState(false)
+  const [showSummaryModal, setShowSummaryModal] = useState(false)
+  const [showCompletionCheckModal, setShowCompletionCheckModal] = useState(false)
+  const [showPrescriptionModal, setShowPrescriptionModal] = useState(false)
+  const [recordDetail, setRecordDetail] = useState<any | null>(null)
   const [pendingLabRequest, setPendingLabRequest] = useState(false)
+  // Once-only flag so the persisted-record prefill does NOT clobber later
+  // user edits when refreshKey bumps (e.g. after paraclinical / summary modal
+  // saves). Set after the first successful reset() of methods.
+  const prefillDoneRef = useRef(false)
 
-  // ── Step flow: preliminary → template → form ───────────────────────
-  const [step, setStep] = useState<"preliminary" | "template">(initialType ? "template" : "preliminary")
+  // Auto-check if existing record exists for appointmentId
+  useEffect(() => {
+    if (existingRecordId) {
+      setSuccessInfo({ recordId: existingRecordId })
+      return
+    }
+    if (!appointmentId || successInfo) return
+    let cancelled = false
+    medicalRecordsService
+      .getMedicalRecords({ searchTerm: appointmentId, pageSize: 1 })
+      .then((res) => {
+        if (cancelled) return
+        const items = res?.data ?? []
+        if (items.length > 0) {
+          setSuccessInfo({ recordId: items[0].id })
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not check existing record for appointment:", appointmentId, err)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [appointmentId, existingRecordId])
+
+  // Fetch detail of saved record to evaluate stepper completion in real time
+  useEffect(() => {
+    if (!successInfo?.recordId) {
+      setRecordDetail(null)
+      return
+    }
+    let isMounted = true
+    medicalRecordsService
+      .getMedicalRecordById(successInfo.recordId)
+      .then((res) => {
+        if (isMounted && res.data) {
+          setRecordDetail(res.data)
+          // Sync the local recordType state from the persisted record so the
+          // main form can render (the success banner uses MEDICAL_RECORD_TYPE_LABELS
+          // which needs a real recordType). Without this sync, the resume path
+          // (entering via existingRecordId) would early-return at `if (!recordType)`
+          // and re-show the template selector even though a record already exists.
+          const detailType = (res.data as { recordType?: string }).recordType
+          if (detailType && MEDICAL_RECORD_TYPES.includes(detailType as MedicalRecordType)) {
+            setRecordType(detailType as MedicalRecordType)
+          }
+          // Prefill the form from the persisted MongoDB formData ONCE on initial
+          // load, so the resume view shows exactly what the doctor saved. We
+          // only prefill when the local form is still empty (defaultValues) —
+          // otherwise we'd clobber in-progress edits after a Save or after the
+          // paraclinical / summary modals refresh the detail.
+          const persistedFormData = (res.data as { formData?: MedicalRecordFormDataPayload })
+            .formData
+          if (
+            persistedFormData &&
+            typeof persistedFormData === "object" &&
+            !prefillDoneRef.current
+          ) {
+            methods.reset(persistedFormData as MedicalRecordFormDataPayload)
+            prefillDoneRef.current = true
+          }
+        }
+      })
+      .catch((err) => {
+        console.warn("Could not load record detail for stepper badges:", err)
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [successInfo?.recordId, refreshKey])
+
+  // Auto-scroll to the current stepper step on initial load so the doctor
+  // always lands exactly where they left off — even after a refresh / session
+  // expiry / navigation. Only fires once per recordId.
+  useEffect(() => {
+    if (!successInfo?.recordId) return
+    const t = setTimeout(() => {
+      const detail = recordDetail
+      if (!detail) return
+      const isStep1Done = Boolean(
+        successInfo?.aiTriage || (detail?.formData?.aiSuggestion && detail.formData.aiSuggestion.suggestedDisease)
+      )
+      const isStep2Done = Boolean(detail?.recordType && String(detail.recordType).trim() !== "")
+      const isStep3Done = Boolean(successInfo?.recordId)
+      const isStep4Done = Boolean(
+        (detail?.octResults && detail.octResults.length > 0) ||
+          (detail?.visualFieldTests && detail.visualFieldTests.length > 0) ||
+          (detail?.ultrasoundEyes && detail.ultrasoundEyes.length > 0)
+      )
+      const isStep5Done = Boolean(
+        detail?.diagnosisMain?.trim() ||
+          detail?.formData?.chanDoanVaRaVien?.chanDoanChinh?.trim() ||
+          detail?.formData?.benhAn?.chanDoanMaICD?.raVienBenhChinhTonThuong?.trim()
+      )
+      const isStep6Done = Boolean(
+        (detail?.prescriptions && detail.prescriptions.length > 0) ||
+          (detail?.glassesPrescriptions && detail.glassesPrescriptions.length > 0) ||
+          (detail?.formData?.prescription?.drugs && detail.formData.prescription.drugs.length > 0) ||
+          (detail?.formData?.keDonThuoc?.danhSachThuoc && detail.formData.keDonThuoc.danhSachThuoc.length > 0) ||
+          (detail?.formData?.glassesPrescription && Object.values(detail.formData.glassesPrescription).some((v: any) => v !== null && v !== undefined && String(v).trim() !== ""))
+      )
+      const completion = [isStep1Done, isStep2Done, isStep3Done, isStep4Done, isStep5Done, isStep6Done]
+      const mandatory = [true, true, true, false, true, true]
+      const firstPending = completion.findIndex((d, i) => !d && mandatory[i])
+      const stepNumber = firstPending === -1 ? 7 : firstPending + 1
+      // Map the "current step" to the action-card the doctor should resume on:
+      //   step 5 → summary card (#summary), step 6 → prescription card (#prescription)
+      const targetId = stepNumber === 5 ? "emr-step-5" : stepNumber === 6 ? "emr-step-6" : `emr-step-${stepNumber}`
+      const el = document.getElementById(targetId)
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" })
+      }
+    }, 350)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [successInfo?.recordId, refreshKey])
+
+  // ── Smart History Prefill States ───────────────────────────────────
+  const [historyRecord, setHistoryRecord] = useState<{
+    id: string
+    date: string
+    doctorName: string
+    formData: MedicalRecordFormDataPayload
+  } | null>(null)
+  const [checkingHistory, setCheckingHistory] = useState(false)
+  const [historyStatus, setHistoryStatus] = useState<"none" | "found" | "first-visit" | "applied">("none")
+
+  // Auto-check patient history filtering strictly by (patientProfileId AND recordType)
+  useEffect(() => {
+    if (!patientProfileId || !recordType) return
+    let cancelled = false
+    setCheckingHistory(true)
+    setHistoryStatus("none")
+    setHistoryRecord(null)
+
+    async function checkHistory() {
+      try {
+        const listRes = await medicalRecordsService.getMedicalRecords({
+          patientId: patientProfileId,
+          recordType: recordType,
+          pageSize: 1,
+        })
+        if (cancelled) return
+        const items = listRes?.data
+        if (items && items.length > 0) {
+          const latest = items[0]
+          const detailRes = await medicalRecordService.getById(latest.id)
+          if (cancelled) return
+          if (detailRes?.data?.formData) {
+            setHistoryRecord({
+              id: latest.id,
+              date: latest.createdAt ? new Date(latest.createdAt).toLocaleDateString("vi-VN") : "Gần đây",
+              doctorName: latest.doctorFullName || "Bác sĩ",
+              formData: detailRes.data.formData as MedicalRecordFormDataPayload,
+            })
+            setHistoryStatus("found")
+            return
+          }
+        }
+        setHistoryStatus("first-visit")
+      } catch (err) {
+        console.warn("Could not check patient history for recordType:", recordType, err)
+        if (!cancelled) setHistoryStatus("first-visit")
+      } finally {
+        if (!cancelled) setCheckingHistory(false)
+      }
+    }
+
+    checkHistory()
+    return () => {
+      cancelled = true
+    }
+  }, [patientProfileId, recordType])
+
+  const handleApplyHistoryPrefill = () => {
+    if (!historyRecord?.formData) return
+    const currentValues = methods.getValues()
+    const mergedData = {
+      ...historyRecord.formData,
+      benhAn: {
+        ...historyRecord.formData.benhAn,
+        lyDoVaoVien: currentValues.benhAn?.lyDoVaoVien || historyRecord.formData.benhAn?.lyDoVaoVien || "",
+        benhSu: currentValues.benhAn?.benhSu || historyRecord.formData.benhAn?.benhSu || "",
+      },
+    }
+    methods.reset(mergedData as MedicalRecordFormDataPayload)
+    setHistoryStatus("applied")
+  }
+
+  const locale = useLocale()
+  const isEn = locale === "en"
+
+  const handleApplyStandardDefaults = () => {
+    const currentValues = methods.getValues()
+    const standardData: any = {
+      schemaVersion: "1.2",
+      benhAn: {
+        lyDoVaoVien: currentValues.benhAn?.lyDoVaoVien || (isEn ? "Routine eye examination" : "Khám mắt định kỳ"),
+        benhSu: currentValues.benhAn?.benhSu || (isEn ? "Routine ophthalmic check-up, no acute ocular symptoms." : "Bệnh nhân khám kiểm tra mắt định kỳ, không ghi nhận diễn biến bất thường cấp tính."),
+        tienSuBanThanMat: isEn ? "No prior eye disease recorded" : "Chưa ghi nhận bệnh lý mắt trước đây",
+        tienSuBanThanToanThan: isEn ? "Normal, no systemic diseases recorded" : "Bình thường, chưa ghi nhận bệnh lý toàn thân",
+        tienSuGiaDinh: isEn ? "No family history of congenital eye diseases" : "Không ghi nhận ai mắc bệnh mắt bẩm sinh/di truyền",
+      },
+      khamBenh: {
+        thiLucNhanApVaoVien: {
+          matPhai: { thiLucKhongKinh: "10/10", thiLucCoKinh: "10/10", thiLucNhinGan: "P1.0", thiLucQuaLo: "10/10", nhanAp: "15", phuongPhapNhanAp: "Goldmann" },
+          matTrai: { thiLucKhongKinh: "10/10", thiLucCoKinh: "10/10", thiLucNhinGan: "P1.0", thiLucQuaLo: "10/10", nhanAp: "15", phuongPhapNhanAp: "Goldmann" },
+        },
+        miMat: {
+          matPhai: { tinhTrang: isEn ? "Normal" : "Bình thường", chuaKhac: isEn ? "Normal" : "Bình thường" },
+          matTrai: { tinhTrang: isEn ? "Normal" : "Bình thường", chuaKhac: isEn ? "Normal" : "Bình thường" },
+        },
+        ketMac: {
+          matPhai: { tinhTrang: isEn ? "Normal" : "Bình thường", cuongTu: isEn ? "None" : "Không", tietTo: isEn ? "Clear" : "Trong" },
+          matTrai: { tinhTrang: isEn ? "Normal" : "Bình thường", cuongTu: isEn ? "None" : "Không", tietTo: isEn ? "Clear" : "Trong" },
+        },
+        giacMac: {
+          matPhai: { trongSuot: isEn ? "Clear" : "Trong suốt", seo: isEn ? "None" : "Không", bieuMo: isEn ? "Intact" : "Nguyên vẹn", tuaMatSau: isEn ? "Negative (-)" : "Âm tính", nhuMo: isEn ? "Clear" : "Trong suốt" },
+          matTrai: { trongSuot: isEn ? "Clear" : "Trong suốt", seo: isEn ? "None" : "Không", bieuMo: isEn ? "Intact" : "Nguyên vẹn", tuaMatSau: isEn ? "Negative (-)" : "Âm tính", nhuMo: isEn ? "Clear" : "Trong suốt" },
+        },
+        tienPhong: {
+          matPhai: { tinhTrang: isEn ? "Clear, depth 3mm" : "Sạch, độ sâu 3mm", doSauMm: 3.0, doDuc: isEn ? "Clear" : "Trong", tyndall: isEn ? "Negative (-)" : "Âm tính (-)", gocTienPhong: isEn ? "Wide (Grade IV)" : "Rộng độ IV" },
+          matTrai: { tinhTrang: isEn ? "Clear, depth 3mm" : "Sạch, độ sâu 3mm", doSauMm: 3.0, doDuc: isEn ? "Clear" : "Trong", tyndall: isEn ? "Negative (-)" : "Âm tính (-)", gocTienPhong: isEn ? "Wide (Grade IV)" : "Rộng độ IV" },
+        },
+        mongMatDongTu: {
+          matPhai: { tinhTrang: isEn ? "Round, 3mm diameter, prompt (+)" : "Tròn, đường kính 3mm, phản xạ (+)", duongKinh: 3.0, hinhDang: isEn ? "Round, regular" : "Tròn đều", phanXaDongTu: isEn ? "Prompt (+)" : "Dương tính (+)" },
+          matTrai: { tinhTrang: isEn ? "Round, 3mm diameter, prompt (+)" : "Tròn, đường kính 3mm, phản xạ (+)", duongKinh: 3.0, hinhDang: isEn ? "Round, regular" : "Tròn đều", phanXaDongTu: isEn ? "Prompt (+)" : "Dương tính (+)" },
+        },
+        theThuyTinh: {
+          matPhai: { tinhTrang: isEn ? "Clear" : "Trong suốt" },
+          matTrai: { tinhTrang: isEn ? "Clear" : "Trong suốt" },
+        },
+        dichKinh: {
+          matPhai: { tinhTrang: isEn ? "Clear" : "Trong" },
+          matTrai: { tinhTrang: isEn ? "Clear" : "Trong" },
+        },
+        dayMatDiaThiHoangDiem: {
+          matPhai: { gaiThi: isEn ? "Pink, sharp margin, C/D 0.3" : "Hồng, bờ rõ, C/D 0.3", tyLeCD: "0.3", boGaiThi: isEn ? "Sharp" : "Rõ", hoangDiem: isEn ? "Normal reflex (+)" : "Ánh trung tâm (+)" },
+          matTrai: { gaiThi: isEn ? "Normal, C/D 0.3" : "Bình thường, C/D 0.3", tyLeCD: "0.3", boGaiThi: isEn ? "Sharp" : "Rõ", hoangDiem: isEn ? "Normal reflex (+)" : "Ánh trung tâm (+)" },
+        },
+        dayMatVongMacMachMau: {
+          matPhai: { vongMac: isEn ? "Flat, attached" : "Áp phẳng, bình thường" },
+          matTrai: { vongMac: isEn ? "Flat, attached" : "Áp phẳng, bình thường" },
+        },
+        hocMat: {
+          matPhai: { tinhTrang: isEn ? "Normal" : "Bình thường" },
+          matTrai: { tinhTrang: isEn ? "Normal" : "Bình thường" },
+        },
+        khamToanThan: { mach: "75", nhietDo: "36.8", huyetAp: "120/80", nhipTho: "18", canNang: "58" },
+        traumaRecord: recordType === "MS21_TRAUMA" ? { injuryCause: isEn ? "None" : "Không", odInjuries: isEn ? "Normal" : "Bình thường", osInjuries: isEn ? "Normal" : "Bình thường" } : {},
+        anteriorSegmentRecord: recordType === "MS22_ANTERIOR" ? { viTriTonThuong: isEn ? "Normal anterior segment" : "Bán phần trước bình thường", mucDoTonThuong: isEn ? "Normal" : "Bình thường" } : {},
+        fundusRecord: recordType === "MS23_FUNDUS" ? { viTriVongMac: isEn ? "Normal macula" : "Hoàng điểm bình thường", tinhTrangMachMau: isEn ? "Normal" : "Bình thường" } : {},
+        glaucomaRecord: recordType === "MS24_GLAUCOMA" ? { loaiGlaucoma: isEn ? "Glaucoma suspect" : "Theo dõi Glôcôm", gocTienPhong: isEn ? "Wide (Grade IV)" : "Rộng độ IV" } : {},
+        strabismusPtosisRecord: recordType === "MS25_STRABISMUS_PTOSIS" ? { doSupMi: "0mm", gocLacKhongKinh: isEn ? "0 deg" : "0 độ" } : {},
+        pediatricRecord: recordType === "MS26_PEDIATRIC" ? { tinhTrangThiLuc: isEn ? "Normal" : "Bình thường" } : {},
+      },
+    }
+    methods.reset(standardData as MedicalRecordFormDataPayload)
+    setHistoryStatus("applied")
+  }
+
+  // ── Step flow: template → form (preliminary step handled by AI Triage) ────
+  const initialStep = "template"
+  const [step, setStep] = useState<"preliminary" | "template">(initialStep)
   const [preliminary, setPreliminary] = useState<PreliminaryData | null>(null)
 
   // ── Patient profile (fetched lazily so header info is real) ─────────
@@ -232,6 +538,51 @@ export default function CreateMedicalRecordClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [preliminary])
 
+  // ── AI Triage data feeds into form defaults ────────────────────────
+  useEffect(() => {
+    if (!aiTriageData) return
+    
+    const { symptoms, result } = aiTriageData
+    
+    // Build chief complaint from main symptom
+    const chiefComplaint = `${symptoms.symptom} - ${symptoms.duration}`
+    
+    // Build disease history from symptoms
+    const symptomParts: string[] = []
+    if (symptoms.eye_redness === "yes") symptomParts.push("Đỏ mắt")
+    if (symptoms.blurred_vision === "yes") symptomParts.push("Mờ mắt")
+    if (symptoms.light_sensitivity === "yes") symptomParts.push("Sợ ánh sáng")
+    if (symptoms.discharge === "yes") symptomParts.push("Chảy dịch")
+    if (symptoms.swelling === "yes") symptomParts.push("Sưng mắt")
+    if (symptoms.floaters === "yes") symptomParts.push("Ruồi bay")
+    if (symptoms.headache === "yes") symptomParts.push("Đau đầu")
+    
+    const benhSu = symptomParts.length > 0 
+      ? `Triệu chứng: ${symptomParts.join(", ")}.\nMức độ đau: ${symptoms.pain_level}.\nAI Prediction: ${result.predictedDisease} (${((result.confidence || 0) * 100).toFixed(1)}%)`
+      : `AI Prediction: ${result.predictedDisease} (${((result.confidence || 0) * 100).toFixed(1)}%)`
+    
+    methods.reset({
+      schemaVersion: "1.2",
+      benhAn: {
+        lyDoVaoVien: chiefComplaint,
+        benhSu: benhSu,
+        tienSuBanThanMat: "",
+        tienSuBanThanToanThan: `Tiểu đường: ${symptoms.diabetes}. Cao huyết áp: ${symptoms.hypertension}.`,
+        tienSuGiaDinh: symptoms.family_history === "yes" ? "Có tiền sử gia đình bệnh mắt" : "",
+      },
+      khamBenh: {
+        khamToanThan: {},
+        traumaRecord: {},
+        glaucomaRecord: {},
+        strabismusPtosisRecord: {},
+        pediatricRecord: {},
+      },
+    } as MedicalRecordFormDataPayload)
+    
+    // Mark AI data as processed to prevent re-run
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aiTriageData])
+
   const handlePreliminaryComplete = (data: PreliminaryData) => {
     setPreliminary(data)
     if (data.suspectedCategory) {
@@ -273,8 +624,13 @@ export default function CreateMedicalRecordClient({
     )
   }
 
-  // ─── Chọn loại bệnh án ─────────────────────────────────────────────
-  if (!recordType) {
+  // ─── Choose medical record type ─────────────────────────────────────────────
+  // Skip the template selector when resuming an existing record. The doctor
+  // already committed to a recordType when they first saved the medical record
+  // (Step 2). Forcing them through the template picker again would reset the
+  // form, drop the success hub banner, and require them to re-pick the same
+  // template. We just wait for the detail fetch (above) to hydrate recordType.
+  if (!recordType && !successInfo?.recordId) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-8">
         <header className="mb-6">
@@ -324,50 +680,304 @@ export default function CreateMedicalRecordClient({
     )
   }
 
-  // ─── Success banner + Paraclinical Panel ──────────────────────────
-  if (successInfo) {
-    return (
-      <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
-        <div className="rounded-lg border border-green-200 bg-green-50 p-6 text-center">
-          <CheckCircle2 className="mx-auto h-12 w-12 text-green-500" />
-          <h2 className="mt-4 text-2xl font-semibold text-gray-900">
-            {t("savedSuccess")}
-          </h2>
-          <p className="mt-2 text-sm text-gray-700">
-            Medical Record ID:{" "}
-            <code className="rounded bg-white px-2 py-0.5">{successInfo.recordId}</code>
-          </p>
-          {successInfo.mongoDocumentId && (
-            <p className="mt-1 text-xs text-gray-600">
-              MongoDB Document ID:{" "}
-              <code className="rounded bg-white px-2 py-0.5">{successInfo.mongoDocumentId}</code>
-            </p>
-          )}
-        </div>
+  const handlePrint = () => {
+    const originalTitle = document.title
+    document.title = "Eye Clinic Support System"
+    window.print()
+    setTimeout(() => {
+      document.title = originalTitle
+    }, 1000)
+  }
 
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-indigo-200 bg-indigo-50/50 p-4">
-          <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-md bg-indigo-100 text-indigo-700">
-              <Microscope className="h-4 w-4" />
+  // ─── Success banner + Professional EMR Workflow Stepper & Hub ──────────
+  if (successInfo) {
+    const targetPatientId = patientProfileId || "c9000000-0000-0000-0000-000000000002"
+    // ── Derive 6-step completion flags deterministically from persisted data ──
+    // Step 1: AI pre-diagnosis
+    //   Done when EITHER (a) successInfo already carries an AI snapshot, OR
+    //   (b) the persisted formData contains an aiSuggestion envelope (added at
+    //   submit time so it survives reloads).
+    const persistedAiSuggestion = recordDetail?.formData?.aiSuggestion
+    const isStep1Done = Boolean(
+      successInfo?.aiTriage || (persistedAiSuggestion && persistedAiSuggestion.suggestedDisease)
+    )
+    // Step 2: Record type chosen
+    //   Done when the saved record has a non-empty recordType (recordType is
+    //   persisted on MedicalRecord.RecordType in SQL).
+    const isStep2Done = Boolean(
+      recordDetail?.recordType && String(recordDetail.recordType).trim() !== ""
+    )
+    // Step 3: EMR saved
+    //   Done when we have a recordId (i.e. the form was submitted).
+    const isStep3Done = Boolean(successInfo?.recordId)
+    // Step 4: Paraclinical (optional) — done when any lab result has been recorded.
+    const isStep4Done = Boolean(
+      (recordDetail?.octResults && recordDetail.octResults.length > 0) ||
+        (recordDetail?.visualFieldTests && recordDetail.visualFieldTests.length > 0) ||
+        (recordDetail?.ultrasoundEyes && recordDetail.ultrasoundEyes.length > 0)
+    )
+    // Step 5: medical record summary (final diagnosis + ICD-10).
+    const isStep5Done = Boolean(
+      recordDetail?.diagnosisMain?.trim() ||
+        recordDetail?.formData?.chanDoanVaRaVien?.chanDoanChinh?.trim() ||
+        recordDetail?.formData?.benhAn?.chanDoanMaICD?.raVienBenhChinhTonThuong?.trim()
+    )
+    // Step 6: prescription / glasses Rx.
+    const isStep6Done = Boolean(
+      (recordDetail?.prescriptions && recordDetail.prescriptions.length > 0) ||
+        (recordDetail?.glassesPrescriptions && recordDetail.glassesPrescriptions.length > 0) ||
+        (recordDetail?.formData?.prescription?.drugs && recordDetail.formData.prescription.drugs.length > 0) ||
+        (recordDetail?.formData?.keDonThuoc?.danhSachThuoc && recordDetail.formData.keDonThuoc.danhSachThuoc.length > 0) ||
+        (recordDetail?.formData?.glassesPrescription && Object.values(recordDetail.formData.glassesPrescription).some((v: any) => v !== null && v !== undefined && String(v).trim() !== ""))
+    )
+
+    // Current step = first non-done mandatory step. The EMR workflow mandates
+    // that steps 1, 2, 3, 5, 6 must be completed in order; step 4 is optional.
+    // Doctors must always pick up where they left off.
+    const stepCompletion = [isStep1Done, isStep2Done, isStep3Done, isStep4Done, isStep5Done, isStep6Done]
+    const mandatorySteps = [true, true, true, false, true, true] // step 4 is optional
+    // The "current" step is the smallest N where stepN is mandatory and not done.
+    const currentStepNumber = (() => {
+      // Skip optional step 4 when computing the "current" mandatory step — that
+      // way doctors don't feel stuck on an optional step.
+      let firstPending = stepCompletion.findIndex((done, i) => !done && mandatorySteps[i])
+      if (firstPending === -1) return 7 // all mandatory done
+      return firstPending + 1
+    })()
+
+    return (
+      <div className="mx-auto max-w-4xl space-y-6 px-4 py-8 print:max-w-none print:p-0">
+        {/* Success Banner */}
+        <div className="rounded-2xl border border-amber-200 bg-linear-to-r from-amber-50 via-orange-50 to-yellow-50 p-6 shadow-xs">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-amber-500 text-white shadow-md">
+              <ClipboardCheck className="h-7 w-7" />
             </div>
-            <div>
-              <p className="text-sm font-bold text-indigo-900">
-                Tạo yêu cầu cận lâm sàng
-              </p>
-              <p className="text-xs text-indigo-700 mt-0.5">
-                Chỉ định OCT, Thị trường, Siêu âm hoặc Xét nghiệm chung cho bệnh nhân này.
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold text-amber-950">
+                {tWorkflow("title", { defaultValue: "QUY TRÌNH 6 BƯỚC KHÁM BỆNH EMR" })}
+              </h2>
+              <p className="mt-1 text-sm text-amber-900 leading-relaxed">
+                <strong className="font-bold">
+                  {MEDICAL_RECORD_TYPE_LABELS[recordType ?? (recordDetail?.recordType as MedicalRecordType) ?? "MS21_TRAUMA"]}
+                </strong>{" "}
+                {successInfo?.aiTriage
+                  ? `(AI gợi ý: ${successInfo.aiTriage.predictedDisease})`
+                  : ""}{" "}
+                đã lưu thành công. <strong>Ca khám chưa kết thúc</strong> — theo quy trình EMR,
+                bác sĩ <u>cần hoàn thành thêm 2 bước bắt buộc</u>:
+                <strong> Tổng kết bệnh án (chẩn đoán cuối + ICD-10)</strong> và <strong>Kê đơn thuốc/kính</strong>,
+                trước khi có thể xác nhận hoàn thành ca khám.
               </p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => setShowLabRequestForm(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
-          >
-            <Plus className="h-4 w-4" /> Tạo yêu cầu cận lâm sàng
-          </button>
         </div>
 
+        {/* EMR Professional Stepper Indicator — 6 STEPS (AI → Template → Save → Paraclinical → Summary → Prescription) */}
+        <div className="rounded-2xl border-2 border-indigo-200 bg-white p-5 shadow-md space-y-4">
+          <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+            <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+              <ListChecks className="h-4 w-4 text-indigo-600" />
+              {tWorkflow("title")}
+            </h3>
+            <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
+              {tWorkflow("currentBadge", { current: Math.min(currentStepNumber, 6), total: 6 })}
+            </span>
+          </div>
+
+          {/* 6-step horizontal stepper */}
+          <ol className="grid grid-cols-1 gap-3 sm:grid-cols-6">
+            {[
+              { n: 1, done: isStep1Done, mandatory: true,  enKey: "step1" },
+              { n: 2, done: isStep2Done, mandatory: true,  enKey: "step2" },
+              { n: 3, done: isStep3Done, mandatory: true,  enKey: "step3" },
+              { n: 4, done: isStep4Done, mandatory: false, enKey: "step4" },
+              { n: 5, done: isStep5Done, mandatory: true,  enKey: "step5" },
+              { n: 6, done: isStep6Done, mandatory: true,  enKey: "step6" },
+            ].map((s) => {
+              const isCurrent = s.n === currentStepNumber
+              const baseColor = isCurrent
+                ? "border-amber-400 bg-amber-50 shadow-md ring-2 ring-amber-200"
+                : s.done
+                  ? "border-green-300 bg-green-50/80"
+                  : s.mandatory
+                    ? "border-amber-300 bg-amber-50/80"
+                    : "border-indigo-200 bg-indigo-50/60"
+              const badgeColor = s.done ? "bg-green-600" : isCurrent ? "bg-amber-500" : s.mandatory ? "bg-amber-500" : "bg-indigo-500"
+              const subColor = s.done ? "text-green-700" : isCurrent || s.mandatory ? "text-amber-800" : "text-indigo-700"
+              const tagColor = s.done ? "bg-green-100 text-green-700" : s.mandatory ? "bg-amber-100 text-amber-800" : "bg-indigo-100 text-indigo-700"
+              const tagText = s.done ? tWorkflow("done") : s.mandatory ? tWorkflow("mandatory") : tWorkflow("optional")
+              return (
+                <li
+                  key={s.n}
+                  id={`emr-step-${s.n}`}
+                  className={`flex items-center gap-3 rounded-xl border-2 p-3 ${baseColor}`}
+                >
+                  <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${badgeColor}`}>
+                    {s.done ? "✓" : s.n}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">
+                      {tWorkflow("stepLabelPrefix", { defaultValue: "Bước" })} {s.n}
+                    </p>
+                    <p className="text-xs font-bold text-gray-900 truncate">
+                      {tWorkflow(`${s.enKey}.label`)}
+                    </p>
+                    <p className={`text-[10px] truncate font-semibold ${subColor}`}>
+                      {s.done ? `${tWorkflow("done")} ✅` : tWorkflow(`${s.enKey}.hint`)}
+                    </p>
+                    <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[9px] font-bold ${tagColor}`}>
+                      {tagText}
+                    </span>
+                  </div>
+                </li>
+              )
+            })}
+          </ol>
+
+          {/* Hint pointing doctor to current step (auto-derived) */}
+          {currentStepNumber === 5 && (
+            <div className="flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
+              <ArrowRight className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
+              <div>
+                <strong className="font-bold">{tWorkflow("nextStep")}:</strong> Bấm nút <strong>"Tổng kết bệnh án & ICD-10"</strong> bên dưới
+                để điền chẩn đoán cuối, mã ICD-10, hướng điều trị tiếp theo. Đây là bước bắt buộc trước khi kê đơn.
+              </div>
+            </div>
+          )}
+          {currentStepNumber === 6 && (
+            <div className="flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
+              <ArrowRight className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
+              <div>
+                <strong className="font-bold">{tWorkflow("nextStep")}:</strong> Bấm nút <strong>"Kê đơn thuốc/kính"</strong> bên dưới
+                để hoàn tất đơn thuốc hoặc đơn kính cho bệnh nhân. Sau đó bạn có thể xác nhận hoàn thành ca khám.
+              </div>
+            </div>
+          )}
+          {currentStepNumber === 7 && (
+            <div className="flex items-start gap-2 rounded-xl border border-green-300 bg-green-50 p-3 text-xs text-green-900">
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600 mt-0.5" />
+              <div>
+                <strong className="font-bold">Đủ điều kiện hoàn thành ca khám!</strong> Tất cả các bước bắt buộc đã hoàn tất.
+                Bác sĩ có thể bấm nút <strong>"✅ Hoàn thành ca khám"</strong> ở dưới cùng trang để kết thúc và chuyển bệnh nhân ra viện.
+              </div>
+            </div>
+          )}
+          {currentStepNumber <= 4 && (
+            <div className="flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
+              <ArrowRight className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
+              <div>
+                <strong className="font-bold">{tWorkflow("nextStep")}:</strong>{" "}
+                {currentStepNumber === 1 && "Tiếp tục chạy AI chẩn đoán sơ bộ nếu chưa xong."}
+                {currentStepNumber === 2 && "Chọn mẫu bệnh án phù hợp với chẩn đoán sơ bộ."}
+                {currentStepNumber === 3 && "Bổ sung các mục khám rồi bấm \"Hoàn tất & lưu bệnh án\" ở cuối form."}
+                {currentStepNumber === 4 && "Cận lâm sàng là bước tùy chọn — có thể bỏ qua nếu không cần thiết."}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* EMR Interactive Action Hub */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          {/* Card 1: Paraclinical (Optional) — Step 4 */}
+          <div className="rounded-2xl border-2 border-indigo-200 bg-white p-5 shadow-xs flex flex-col justify-between space-y-3">
+            <div>
+              <div className="flex items-center gap-2 text-indigo-700 font-bold text-sm">
+                <Microscope className="h-5 w-5" />
+                <span>Bước 4 · Cận lâm sàng</span>
+                <span className="ml-auto rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-bold text-indigo-700">Tùy chọn</span>
+              </div>
+              <p className="mt-2 text-xs text-gray-600 leading-relaxed">
+                Tạo phiếu chỉ định OCT võng mạc, Thị trường, Siêu âm hoặc xét nghiệm cho bệnh nhân này.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowLabRequestForm(true)}
+              className="w-full inline-flex items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-indigo-700 transition-colors"
+            >
+              <Plus className="h-4 w-4" /> {isStep4Done ? "Xem / Thêm cận lâm sàng" : "Tạo phiếu cận lâm sàng"}
+            </button>
+          </div>
+
+          {/* Card 2: Medical Record Summary (MANDATORY) — Step 5 */}
+          <div className={`rounded-2xl border-2 ${isStep5Done ? "border-green-300 bg-green-50/30" : "border-amber-300 bg-amber-50/30"} p-5 shadow-xs flex flex-col justify-between space-y-3`}>
+            <div>
+              <div className="flex items-center gap-2 text-amber-800 font-bold text-sm">
+                <FileText className="h-5 w-5" />
+                <span>Bước 5 · Tổng kết bệnh án</span>
+                <span className="ml-auto rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">BẮT BUỘC</span>
+              </div>
+              <p className="mt-2 text-xs text-gray-700 leading-relaxed">
+                Điền <strong>Chẩn đoán chính</strong>, gắn <strong>Mã ICD-10</strong>, <strong>Hướng điều trị tiếp theo</strong> & tình trạng ra viện.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowSummaryModal(true)}
+              className={`w-full inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-bold text-white shadow-xs transition-colors ${isStep5Done ? "bg-green-600 hover:bg-green-700" : "bg-amber-600 hover:bg-amber-700 ring-2 ring-amber-300"}`}
+            >
+              <Sparkles className="h-4 w-4 text-amber-200" />
+              {isStep5Done ? "Sửa tổng kết bệnh án ✅" : "Tổng kết bệnh án & ICD-10 (Cần làm)"}
+            </button>
+          </div>
+
+          {/* Card 3: Prescription / Glasses Rx (MANDATORY) — Step 6 */}
+          <div className={`rounded-2xl border-2 ${isStep6Done ? "border-green-300 bg-green-50/30" : "border-blue-300 bg-blue-50/30"} p-5 shadow-xs flex flex-col justify-between space-y-3`}>
+            <div>
+              <div className="flex items-center gap-2 text-blue-800 font-bold text-sm">
+                <Pill className="h-5 w-5" />
+                <span>Bước 6 · Kê đơn thuốc/kính</span>
+                <span className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold ${isStep6Done ? "bg-green-100 text-green-800" : "bg-blue-100 text-blue-800"}`}>
+                  {isStep6Done ? "ĐÃ HOÀN THÀNH" : "BẮT BUỘC"}
+                </span>
+              </div>
+              <p className="mt-2 text-xs text-gray-700 leading-relaxed">
+                Mở cửa sổ kê <strong>đơn thuốc điện tử</strong> hoặc <strong>đơn kính khúc xạ</strong> EMR. Hoàn tất bước này để có thể kết thúc ca khám.
+              </p>
+
+              {/* Summary Chip when done */}
+              {isStep6Done && (
+                <div className="mt-2 rounded-xl bg-white p-2.5 border border-green-200 text-xs text-green-900 space-y-1 shadow-2xs">
+                  {recordDetail?.formData?.glassesPrescription?.sphOd && (
+                    <p className="font-semibold text-[11px] text-indigo-800 flex items-center gap-1">
+                      <Glasses className="h-3.5 w-3.5" /> Đơn kính: OD {recordDetail.formData.glassesPrescription.sphOd}D / OS {recordDetail.formData.glassesPrescription.sphOs || "—"}D
+                    </p>
+                  )}
+                  {(recordDetail?.formData?.prescription?.drugs?.length > 0 || recordDetail?.formData?.keDonThuoc?.danhSachThuoc?.length > 0) && (
+                    <p className="font-semibold text-[11px] text-emerald-800 flex items-center gap-1">
+                      <Pill className="h-3.5 w-3.5" /> Đơn thuốc: {recordDetail?.formData?.prescription?.drugs?.length || recordDetail?.formData?.keDonThuoc?.danhSachThuoc?.length} loại thuốc
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowPrescriptionModal(true)}
+              className={`w-full inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-bold text-white shadow-xs transition-colors ${isStep6Done ? "bg-green-600 hover:bg-green-700" : "bg-blue-600 hover:bg-blue-700 ring-2 ring-blue-300"}`}
+            >
+              <Pill className="h-4 w-4" />
+              {isStep6Done ? "Xem / Sửa đơn thuốc & kính ✅" : "Kê đơn thuốc/kính (Cần làm)"}
+            </button>
+          </div>
+        </div>
+
+        {/* Modal: Prescription / Glasses Rx */}
+        {showPrescriptionModal && (
+          <CreatePrescriptionModal
+            recordId={successInfo.recordId}
+            patientName={recordDetail?.patientFullName || patientProfile?.fullName || undefined}
+            initialFormData={recordDetail?.formData}
+            onClose={() => setShowPrescriptionModal(false)}
+            onSuccess={() => {
+              setShowPrescriptionModal(false)
+              setRefreshKey((k) => k + 1)
+            }}
+          />
+        )}
+
+        {/* Modal: Paraclinical Order */}
         {showLabRequestForm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
             <div className="relative w-full max-w-3xl rounded-2xl bg-white shadow-2xl my-8">
@@ -391,23 +1001,75 @@ export default function CreateMedicalRecordClient({
           </div>
         )}
 
+        {/* Modal: Summary Diagnosis & Discharge */}
+        {showSummaryModal && (
+          <SummaryDiagnosisModal
+            recordId={successInfo.recordId}
+            initialData={methods.getValues() as any}
+            onClose={() => setShowSummaryModal(false)}
+            onSuccess={() => {
+              setRefreshKey((k) => k + 1)
+            }}
+            onNavigateToPrescription={() => {
+              router.push(`/doctor/prescriptions?recordId=${successInfo.recordId}&patientId=${targetPatientId}&appointmentId=${appointmentId}`)
+            }}
+          />
+        )}
+
+        {/* Modal Validation Completing Examination */}
+        {showCompletionCheckModal && (
+          <CompletionCheckModal
+            isOpen={showCompletionCheckModal}
+            onClose={() => setShowCompletionCheckModal(false)}
+            recordId={successInfo.recordId}
+            appointmentId={appointmentId}
+            patientId={targetPatientId}
+            patientName={recordDetail?.patientFullName || patientProfile?.fullName || undefined}
+            onOpenSummaryModal={() => setShowSummaryModal(true)}
+          />
+        )}
+
+        {/* Paraclinical Panel */}
         <ParaclinicalPanel key={refreshKey} recordId={successInfo.recordId} />
 
-        <div className="flex justify-center gap-3">
+        {/* Navigation & Print Actions Footer */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 pt-6 print:hidden">
           <button
             type="button"
-            onClick={() => router.push("/doctor/records")}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            onClick={() => router.push("/doctor/queue")}
+            className="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-xs"
           >
-            {t("backToList")}
+            ← Quay lại Hàng chờ bác sĩ
           </button>
-          <button
-            type="button"
-            onClick={() => router.push(`/doctor/records/${successInfo.recordId}`)}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-          >
-            {t("viewDetail")}
-          </button>
+
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handlePrint}
+              className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-sm font-semibold text-indigo-700 hover:bg-indigo-100 transition-colors"
+            >
+              <Printer className="h-4 w-4" /> In bệnh án nhãn khoa (A4)
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push(`/doctor/records/${successInfo.recordId}`)}
+              className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-black transition-colors shadow-xs"
+            >
+              {t("viewDetail")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowCompletionCheckModal(true)}
+              disabled={!isStep5Done || !isStep6Done}
+              className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-colors shadow-md hover:shadow-lg ${(!isStep5Done || !isStep6Done) ? "bg-gray-400 cursor-not-allowed" : "bg-emerald-600 hover:bg-emerald-700"}`}
+              title={(!isStep5Done || !isStep6Done)
+                ? "Vui lòng hoàn thành Tổng kết bệnh án (Bước 5) và Kê đơn thuốc/kính (Bước 6) trước khi kết thúc ca khám."
+                : "Xác nhận hoàn thành các bước bắt buộc và kết thúc ca khám"}
+            >
+              <CheckCircle2 className="h-4 w-4 text-emerald-200" />
+              {(!isStep5Done || !isStep6Done) ? "🔒 Hoàn thành ca khám (chưa đủ điều kiện)" : "✅ Hoàn thành ca khám"}
+            </button>
+          </div>
         </div>
       </div>
     )
@@ -800,12 +1462,29 @@ export default function CreateMedicalRecordClient({
       try {
         const targetPatientId = patientProfileId || "c9000000-0000-0000-0000-000000000002"
 
+        // Persist the AI pre-diagnosis snapshot inside the formData envelope so
+        // it survives MongoDB round-trips. The post-save stepper uses this to
+        // detect "Step 1 done" on page reload (when React state is gone).
+        const formDataWithAi = aiTriageData
+          ? ({
+              ...(values as unknown as Record<string, unknown>),
+              aiSuggestion: {
+                suggestedRecordType: recordType || "MS21_TRAUMA",
+                suggestedDisease: aiTriageData.result.predictedDisease,
+                confidence: aiTriageData.result.confidence,
+                riskLevel: aiTriageData.result.riskLevel,
+                topDifferentials: aiTriageData.result.differentials ?? [],
+                capturedAt: new Date().toISOString(),
+              },
+            } as unknown as MedicalRecordFormDataPayload)
+          : values
+
         const response = await medicalRecordService.create({
           appointmentId,
           patientId: targetPatientId,
           recordType: recordType || "MS21_TRAUMA",
           notes: (values as any).chanDoanVaRaVien?.chanDoanChinh || values.benhAn?.lyDoVaoVien || "",
-          formData: values,
+          formData: formDataWithAi,
         })
 
         if (!response?.data?.isSuccess) {
@@ -817,6 +1496,7 @@ export default function CreateMedicalRecordClient({
         setSuccessInfo({
           recordId: response.data.medicalRecordId,
           mongoDocumentId: response.data.mongoDocumentId,
+          aiTriage: aiTriageData?.result,
         })
 
         if (pendingLabRequest) {
@@ -833,39 +1513,18 @@ export default function CreateMedicalRecordClient({
     },
     (formErrors) => {
       console.warn("Form validation errors:", formErrors)
-      setServerError("Một số trường dữ liệu không hợp lệ. Đã điền sẵn dữ liệu mẫu để bạn thử lại.")
+      const firstKey = Object.keys(formErrors)[0]
+      const firstErr: any = (formErrors as any)[firstKey]
+      const detailedMessage = firstErr?.message || firstErr?.root?.message
+      setServerError(
+        detailedMessage
+          ? `Lỗi dữ liệu: ${detailedMessage}`
+          : "Một số trường dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin."
+      )
     }
   )
 
   const accent = getAccentForRecordType(recordType)
-
-  const handlePrint = () => {
-    const originalTitle = document.title
-    document.title = "Eye Clinic Support System"
-    window.print()
-    setTimeout(() => {
-      document.title = originalTitle
-    }, 1000)
-  }
-
-  /**
-   * Save the medical record first, then open the Paraclinical create-form
-   * modal. The Paraclinical API requires a real MedicalRecord in SQL Server,
-   * so we cannot open the modal before the record exists. This handler
-   * sets a flag that the submit success branch reads to auto-open the modal.
-   */
-  const handleSaveAndCreateLab = methods.handleSubmit(
-    async () => {
-      setPendingLabRequest(true)
-      // Delegate to the main onSubmit handler so validation + save logic
-      // stays in one place.
-      await onSubmit()
-    },
-    (formErrors) => {
-      console.warn("Form validation errors:", formErrors)
-      setServerError("Một số trường dữ liệu không hợp lệ. Đã điền sẵn dữ liệu mẫu để bạn thử lại.")
-    }
-  )
 
   return (
     <FormProvider {...methods}>
@@ -911,76 +1570,158 @@ export default function CreateMedicalRecordClient({
           </div>
         </header>
 
-        {/* Mini TOC */}
+        {/* Smart Fast-Fill & History Prefill Banner */}
+        <div className="print:hidden">
+          {checkingHistory ? (
+            <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-3.5 text-xs text-blue-700 flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+              <span>Đang kiểm tra lịch sử khám mẫu <strong>{recordType ? MEDICAL_RECORD_TYPE_LABELS[recordType] : ""}</strong> cho bệnh nhân này...</span>
+            </div>
+          ) : historyStatus === "found" && historyRecord ? (
+            <div className="rounded-xl border border-indigo-200 bg-linear-to-r from-indigo-50/90 via-white to-blue-50/90 p-4 shadow-xs">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-xs">
+                    <History className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-indigo-950 text-sm">
+                        Phát hiện lịch sử khám mẫu {recordType ? MEDICAL_RECORD_TYPE_LABELS[recordType] : ""} ngày {historyRecord.date}
+                      </span>
+                      <span className="rounded-full bg-indigo-100 px-2.5 py-0.5 text-[11px] font-semibold text-indigo-800">
+                        Lần khám trước
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      Bác sĩ thực hiện: <strong className="text-slate-800">{historyRecord.doctorName}</strong>. Bạn có muốn sao chép lại chỉ số khám để điền nhanh không?
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleApplyHistoryPrefill}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 transition-colors"
+                  >
+                    <Sparkles className="h-4 w-4 text-amber-300" />
+                    Sao chép khám gần nhất
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHistoryStatus("none")}
+                    className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    Bỏ qua (Điền mới)
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : historyStatus === "first-visit" ? (
+            <div className="rounded-xl border border-amber-200 bg-linear-to-r from-amber-50/80 via-white to-orange-50/80 p-4 shadow-xs">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-amber-500 text-white shadow-xs">
+                    <Zap className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-amber-950 text-sm">
+                      Lần đầu khám bằng mẫu {recordType ? MEDICAL_RECORD_TYPE_LABELS[recordType] : ""} cho bệnh nhân này
+                    </span>
+                    <p className="text-xs text-amber-800 mt-0.5">
+                      Hệ thống có thể hỗ trợ bác sĩ tự động điền các chỉ số khám mắt bình thường (10/10, nhãn áp 15mmHg, mắt trong) chỉ với 1 click.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleApplyStandardDefaults}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-amber-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-amber-700 transition-colors"
+                  >
+                    <Zap className="h-4 w-4 text-amber-200" />
+                    ⚡ Điền mẫu khám chuẩn (Bình thường)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setHistoryStatus("none")}
+                    className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    Bỏ qua
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : historyStatus === "applied" ? (
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-800 flex items-center justify-between shadow-xs">
+              <span className="flex items-center gap-2 font-medium">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                Đã hỗ trợ điền nhanh dữ liệu khám thành công. Bác sĩ có thể kiểm tra và tùy chỉnh thêm.
+              </span>
+              <button
+                type="button"
+                onClick={() => setHistoryStatus("none")}
+                className="text-emerald-700 hover:underline font-semibold text-[11px]"
+              >
+                Ẩn thông báo
+              </button>
+            </div>
+          ) : null}
+        </div>
+
+        {/* Mini TOC — Clinical Navigation */}
         <nav
-          aria-label="Mục lục bệnh án"
-          className="sticky top-2 z-10 rounded-lg border border-gray-200 bg-white/95 p-3 backdrop-blur print:hidden"
+          aria-label={isEn ? "Clinical examination TOC" : "Mục lục khám mắt lâm sàng"}
+          className="sticky top-2 z-10 rounded-xl border border-gray-200 bg-white/95 p-3 backdrop-blur print:hidden shadow-xs"
         >
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-600">
-            <span className="font-medium text-gray-700">{t("toc")}</span>
-            <a href="#patient-info" className="hover:text-indigo-600">
-              {t("sections.patientInfo")}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-gray-600">
+            <span className="font-bold text-gray-800 flex items-center gap-1">
+              <Stethoscope className="h-3.5 w-3.5 text-indigo-600" />
+              {isEn ? "EMR Clinical Examination:" : "Khám mắt lâm sàng EMR:"}
+            </span>
+            <a href="#sec-thi-luc" className="hover:text-indigo-600 font-semibold text-indigo-700 flex items-center gap-1">
+              <Eye className="h-3.5 w-3.5" />
+              {isEn ? "Visual Acuity & IOP" : "Thị lực & Nhãn áp"}
             </a>
-            <a href="#benh-an" className="hover:text-indigo-600">
-              {t("sections.reason")}
+            <a href="#sec-ban-phan-truoc" className="hover:text-teal-600 font-semibold text-teal-700 flex items-center gap-1">
+              <Microscope className="h-3.5 w-3.5" />
+              {isEn ? "Anterior Segment" : "Bán phần trước"}
             </a>
-            <a href="#kham-benh" className="hover:text-indigo-600">
-              {t("sections.exam")}
+            <a href="#sec-ban-phan-sau" className="hover:text-amber-600 font-semibold text-amber-700 flex items-center gap-1">
+              <Globe className="h-3.5 w-3.5" />
+              {isEn ? "Posterior Segment" : "Bán phần sau"}
             </a>
-            <a href="#diagnosis" className="hover:text-indigo-600">
-              {t("sections.diagnosis")}
-            </a>
-            <a href="#tong-ket" className="hover:text-indigo-600">
-              {t("sections.summary")}
-            </a>
-            <a href="#don-thuoc" className="hover:text-indigo-600">
-              {t("sections.treatment")}
+            {recordType && (
+              <a href="#sec-chuyen-khoa" className="hover:text-purple-600 font-semibold text-purple-700 flex items-center gap-1">
+                <Stethoscope className="h-3.5 w-3.5" />
+                {isEn ? "Specialty Examination" : "Khám Chuyên Khoa"}
+              </a>
+            )}
+            <a href="#sec-toan-than" className="hover:text-emerald-600 font-semibold text-emerald-700 flex items-center gap-1">
+              <HeartPulse className="h-3.5 w-3.5" />
+              {isEn ? "Systemic Examination" : "Khám Toàn Thân"}
             </a>
           </div>
         </nav>
 
-        {/* I. ADMINISTRATION (Hành chính tối giản cho ngoại trú) */}
-        <section id="patient-info">
-          <PatientManagementSections recordType={recordType} patientProfile={patientProfile ?? undefined} />
-        </section>
-
-        {/* A. BỆNH ÁN — Lý do / Bệnh sử / Tiền sử (theo SubspecialtySections) */}
-        <div id="benh-an">
-          {recordType === "MS24_GLAUCOMA" ? (
-            <GlaucomaFormSections />
-          ) : (
-            <SubspecialtySections recordType={recordType} />
-          )}
-        </div>
-
-        {/* III. KHÁM BỆNH — shared universal layout for all recordTypes */}
+        {/* Clinical Examination — detailed clinical eye exam (including specialty-specific sub-sections) */}
         <div id="kham-benh">
-          <UniversalEyeExamSections />
+          <UniversalEyeExamSections recordType={recordType} />
         </div>
 
-        {/* IV. CHẨN ĐOÁN (rút gọn cho ngoại trú) */}
-        <section id="diagnosis">
-          <DiagnosisDischargeSections />
-        </section>
-
-        {/* MS22 Bán phần trước — bảng "Theo dõi điều trị" */}
+        {/* MS22 Anterior Segment — "Treatment Follow-up" table */}
         {recordType === "MS22_ANTERIOR" && (
           <section id="theo-doi-dieu-tri">
             <TreatmentProgressTable />
           </section>
         )}
 
-        {/* MS22 Bán phần trước — Phiếu Phẫu thuật / Thủ thuật */}
+        {/* MS22 Anterior Segment — Surgery / Procedure Form */}
         {recordType === "MS22_ANTERIOR" && (
           <section id="phieu-phau-thuat">
             <SurgeryForm />
           </section>
         )}
-
-        {/* V. ĐƠN THUỐC */}
-        <section id="don-thuoc">
-          <PrescriptionSection />
-        </section>
 
         {serverError && (
           <div
@@ -1031,18 +1772,9 @@ export default function CreateMedicalRecordClient({
             {tCommon("cancel")}
           </button>
           <button
-            type="button"
-            onClick={handleSaveAndCreateLab}
-            disabled={submitting}
-            className="inline-flex items-center gap-2 rounded-lg border border-indigo-300 bg-white px-5 py-2 text-sm font-bold text-indigo-700 shadow-sm hover:bg-indigo-50 disabled:opacity-50 transition-colors"
-            title="Lưu bệnh án và mở phiếu tạo yêu cầu cận lâm sàng"
-          >
-            <Microscope className="h-4 w-4" /> Lưu & tạo yêu cầu cận lâm sàng
-          </button>
-          <button
             type="submit"
             disabled={submitting}
-            className={`inline-flex items-center gap-2 rounded-lg ${accentButtonClass(recordType)} px-5 py-2 text-sm font-medium text-white shadow-sm disabled:opacity-50`}
+            className={`inline-flex items-center gap-2 rounded-lg ${accentButtonClass(recordType)} px-6 py-2.5 text-sm font-semibold text-white shadow-md disabled:opacity-50 transition-all hover:shadow-lg`}
           >
             {submitting ? (
               <>
@@ -1050,7 +1782,7 @@ export default function CreateMedicalRecordClient({
               </>
             ) : (
               <>
-                <CheckCircle2 className="h-4 w-4" /> {t("completeAndSave")}
+                <CheckCircle2 className="h-4 w-4" /> Lưu hồ sơ khám bệnh
               </>
             )}
           </button>

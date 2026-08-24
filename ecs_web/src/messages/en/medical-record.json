@@ -90,6 +90,43 @@
     "printA4": "Print record (A4)",
     "formTemplate": "EYE MEDICAL RECORD",
     "toc": "Table of contents:",
+    "workflow": {
+      "title": "6-STEP EMR EXAMINATION WORKFLOW",
+      "subtitle": "Must be completed in order — the system will automatically bring the doctor back to the in-progress step when they return",
+      "currentBadge": "In progress · Step {current}/{total}",
+      "stepLabelPrefix": "Step",
+      "step1": {
+        "label": "AI pre-diagnosis",
+        "hint": "AI analyzes symptoms & suggests diagnosis"
+      },
+      "step2": {
+        "label": "Choose record template",
+        "hint": "Pick the matching template (AI suggested)"
+      },
+      "step3": {
+        "label": "Clinical exam & Save record",
+        "hint": "Fill in exam sections and save"
+      },
+      "step4": {
+        "label": "Paraclinical",
+        "hint": "OCT / Visual field / Ultrasound (optional)"
+      },
+      "step5": {
+        "label": "Medical record summary",
+        "hint": "Final diagnosis + ICD-10"
+      },
+      "step6": {
+        "label": "Prescription / Glasses",
+        "hint": "Medication or glasses prescription"
+      },
+      "done": "Completed",
+      "pending": "Not done",
+      "inProgress": "In progress",
+      "optional": "Optional",
+      "mandatory": "Mandatory",
+      "nextStep": "Next step",
+      "viewAiSuggestion": "View AI suggestion"
+    },
     "sections": {
       "patientInfo": "Patient info",
       "patientManagement": "Patient management",
@@ -143,5 +180,23 @@
       "MS25_STRABISMUS_PTOSIS": "Strabismus & Ptosis",
       "MS26_PEDIATRIC": "Pediatric"
     }
+  },
+  "medicalRecordEdit": {
+    "title": "Edit EMR Medical Record",
+    "loadingTitle": "Loading record data...",
+    "loadingHint": "Please wait a moment...",
+    "errorTitle": "Unable to load medical record",
+    "loadErrorNotFound": "Requested medical record not found.",
+    "loadErrorLocked": "Medical record is locked or missing edit permissions.",
+    "loadErrorLegacy": "Medical record format is invalid for EMR data.",
+    "loadErrorGeneric": "An error occurred while loading medical record.",
+    "saveErrorGeneric": "An error occurred while saving medical record.",
+    "saveErrorSystem": "System error while saving EMR data.",
+    "back": "Back",
+    "backToList": "Back to list",
+    "viewDetail": "View record details",
+    "recordTypeMissing": "Missing record type information.",
+    "saving": "Saving changes...",
+    "save": "Save record changes"
   }
 }

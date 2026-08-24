@@ -55,7 +55,12 @@ class MedicalRecordService {
   /** PUT /api/v1/doctor-appointment/medical-record/{id} - Update record */
   async update(
     id: string,
-    payload: { formData: MedicalRecordFormDataPayload }
+    payload: {
+      formData: MedicalRecordFormDataPayload
+      notes?: string
+      editReason?: string
+      editPermissionDocument?: string
+    }
   ): Promise<ApiResponse<UpdateMedicalRecordResponse>> {
     const response = await apiClient.put<
       ApiResponse<UpdateMedicalRecordResponse>

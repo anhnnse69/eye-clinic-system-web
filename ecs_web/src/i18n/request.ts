@@ -20,7 +20,8 @@ export default getRequestConfig(async ({ requestLocale }) => {
     appointments,
     queue,
     medicalRecord,
-    feedback
+    feedback,
+    aiTriage,
   ] = await Promise.all([
     import(`@/messages/${validLocale}/common.json`),
     import(`@/messages/${validLocale}/home.json`),
@@ -36,6 +37,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
     import(`@/messages/${validLocale}/queue.json`),
     import(`@/messages/${validLocale}/medical-record.json`),
     import(`@/messages/${validLocale}/feedback.json`),
+    import(`@/messages/${validLocale}/ai-triage.json`),
   ])
 
   // Merge all messages into a single object
@@ -54,6 +56,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
     ...queue.default,
     ...medicalRecord.default,
     ...feedback.default,
+    ...aiTriage.default,
   }
 
   return {

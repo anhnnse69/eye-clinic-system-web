@@ -428,7 +428,7 @@ const traumaSurgerySchema = z.object({
 })
 
 const lacrimalRecordSchema = z.object({
-  side: z.enum(["OD", "OS", "BOTH"]),
+  side: optionalString,
   irrigationFree: optionalBool,
   irrigationRegurgitationSame: optionalBool,
   irrigationRegurgitationOpposite: optionalBool,
@@ -572,7 +572,7 @@ const glaucomaSurgeriesTableSchema = z.object({
 // MS24 PDF — bảng thuốc hạ nhãn áp 5 cột:
 // Mắt | Tên thuốc | Liều dùng | Thời gian đã dùng | Ghi chú (lý do thay/cắt)
 const glaucomaMedicationSchema = z.object({
-  mat: z.enum(["matPhai", "matTrai", "both"]).optional(),
+  mat: optionalString,
   tenThuoc: optionalString,
   lieuDung: optionalString,
   thoiGianDaDung: optionalString,
@@ -1072,7 +1072,7 @@ export const benhAnSchema = z.object({
     .object({
       ngayGioPT: optionalString,
       phuongPhapPT: optionalString,
-      voCam: z.enum(["Gây mê", "Gây tê", "Tê tại chỗ", "Không", ""]).optional(),
+      voCam: optionalString,
       bacSiGayMe: optionalString,
       phauThuatVienChinh: optionalString,
       phauThuatVienPhu: optionalString,

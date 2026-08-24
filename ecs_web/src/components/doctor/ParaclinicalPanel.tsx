@@ -59,6 +59,7 @@ import paraclinicalService, {
   type LabResultSummary,
 } from "@/services/paraclinical.service"
 import aiSuggestionService, { type AiSuggestResponse } from "@/services/ai-suggestion.service"
+import { uploadService } from "@/services/upload.service"
 
 const inputClass =
   "w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
@@ -693,7 +694,7 @@ function ParaclinicalDetailModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
-      <div className="relative w-full max-w-2xl rounded-2xl bg-white shadow-2xl overflow-hidden my-8 max-h-[90vh] flex flex-col">
+      <div className="relative w-full max-w-3xl rounded-2xl bg-white shadow-2xl overflow-hidden my-8 max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-100 bg-linear-to-r from-indigo-50/80 via-white to-purple-50/50 px-6 py-4">
           <div className="flex items-center gap-2.5">
@@ -843,6 +844,364 @@ function ParaclinicalDetailModal({
 }
 
 // ─────────────────────────────────────────────────────────────────
+// PARACLINICAL IMAGE UPLOADER COMPONENT (Upload image to backend & convert to URL)
+// ─────────────────────────────────────────────────────────────────
+function ParaclinicalImageUploader({
+  imageUrl,
+  setImageUrl,
+  label = "Hình ảnh kết quả cận lâm sàng (OCT, Thị trường, Siêu âm...)",
+}: {
+  imageUrl: string
+  setImageUrl: (url: string) => void
+  label?: string
+}) {
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    await processUpload(file)
+  }
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault()
+    const file = e.dataTransfer.files?.[0]
+    if (!file) return
+    await processUpload(file)
+  }
+
+  const processUpload = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      setUploadError("Vui lòng chọn tệp định dạng hình ảnh (PNG, JPG, JPEG, WebP...)")
+      return
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError("Kích thước tệp quá lớn (tối đa 10MB)")
+      return
+    }
+
+    setUploading(true)
+    setUploadError(null)
+
+    try {
+      const response = await uploadService.uploadImage(file)
+      if (response.data?.url) {
+        setImageUrl(response.data.url)
+      } else {
+        setUploadError("Không thể lấy URL hình ảnh sau khi tải lên.")
+      }
+    } catch (err) {
+      console.error("Upload error:", err)
+      setUploadError("Lỗi kết nối khi tải ảnh lên server API. Vui lòng thử lại.")
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  return (
+    <div className="space-y-2">
+      <label className="block text-xs font-bold text-gray-700">{label}</label>
+
+      {imageUrl ? (
+        <div className="relative rounded-xl border border-indigo-200 bg-indigo-50/50 p-3 flex flex-col sm:flex-row items-center gap-4">
+          <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-black/5 shadow-xs group">
+            <img src={imageUrl} alt="Kết quả cận lâm sàng" className="h-full w-full object-cover" />
+            <a
+              href={imageUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[11px] font-bold"
+            >
+              Xem ảnh ↗
+            </a>
+          </div>
+          <div className="min-w-0 flex-1 space-y-1.5 w-full">
+            <div className="flex items-center justify-between">
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800">
+                <CheckCircle2 className="h-3 w-3" /> Đã tải lên CSDL thành công
+              </span>
+              <button
+                type="button"
+                onClick={() => setImageUrl("")}
+                className="text-xs font-semibold text-red-600 hover:text-red-800 flex items-center gap-1"
+              >
+                <X className="h-3.5 w-3.5" /> Gỡ ảnh
+              </button>
+            </div>
+            <input
+              type="text"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-[11px] font-mono text-gray-800 focus:border-indigo-500 focus:outline-none"
+              title="URL hình ảnh"
+            />
+            <p className="text-[11px] text-gray-500">
+              Hệ thống đã tự động convert ảnh sang URL. Bạn có thể nhấn "Gỡ ảnh" để chọn tệp mới.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={handleDrop}
+          onClick={() => fileInputRef.current?.click()}
+          className="group relative cursor-pointer rounded-xl border-2 border-dashed border-indigo-300 bg-linear-to-b from-indigo-50/50 via-purple-50/30 to-white p-5 text-center transition-all hover:border-indigo-600 hover:bg-indigo-50/90 shadow-2xs"
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+
+          {uploading ? (
+            <div className="flex flex-col items-center justify-center py-2 text-xs font-semibold text-indigo-700 gap-2">
+              <Loader2 className="h-6 w-6 animate-spin text-indigo-600" />
+              <span>Đang tải tệp ảnh lên CSDL và tự động convert sang URL...</span>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center space-y-1.5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 group-hover:scale-110 transition-transform shadow-xs">
+                <Upload className="h-5 w-5" />
+              </div>
+              <p className="text-xs font-bold text-indigo-950">
+                Bấm vào đây để chọn tệp ảnh hoặc Kéo & Thả ảnh kết quả vào đây
+              </p>
+              <p className="text-[11px] text-gray-500">
+                Tự động sử dụng API Upload Backend để chuyển đổi ảnh chụp (OCT, Thị trường, SA...) thành đường dẫn URL an toàn.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {uploadError && <p className="text-xs font-semibold text-red-600 mt-1">{uploadError}</p>}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────
+// PARACLINICAL MEASUREMENTS BUILDER (Medical Non-Tech Key-Value Table)
+// ─────────────────────────────────────────────────────────────────
+interface MeasurementPair {
+  id: string
+  key: string
+  value: string
+}
+
+function ParaclinicalMeasurementsBuilder({
+  initialJson,
+  onChangeJson,
+  labType = "OCT",
+}: {
+  initialJson: string
+  onChangeJson: (jsonStr: string) => void
+  labType?: LabType
+}) {
+  const [pairs, setPairs] = useState<MeasurementPair[]>(() => {
+    try {
+      const obj = initialJson.trim() ? JSON.parse(initialJson) : {}
+      if (typeof obj === "object" && obj !== null && !Array.isArray(obj)) {
+        const entries = Object.entries(obj)
+        if (entries.length > 0) {
+          return entries.map(([k, v], idx) => ({
+            id: `init-${idx}`,
+            key: k,
+            value: String(v ?? ""),
+          }))
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return [
+      { id: "1", key: "Độ dày trung tâm hoàng điểm (CFT)", value: "250 µm" },
+      { id: "2", key: "Thể tích võng mạc (Macular Volume)", value: "8.5 mm³" },
+    ]
+  })
+
+  const [rawMode, setRawMode] = useState(false)
+  const [rawText, setRawText] = useState(initialJson)
+
+  const updateJsonFromPairs = (currentPairs: MeasurementPair[]) => {
+    const obj: Record<string, string> = {}
+    currentPairs.forEach((p) => {
+      if (p.key.trim()) {
+        obj[p.key.trim()] = p.value
+      }
+    })
+    const jsonStr = JSON.stringify(obj, null, 2)
+    setRawText(jsonStr)
+    onChangeJson(jsonStr)
+  }
+
+  const handlePairChange = (id: string, field: "key" | "value", val: string) => {
+    const updated = pairs.map((p) => (p.id === id ? { ...p, [field]: val } : p))
+    setPairs(updated)
+    updateJsonFromPairs(updated)
+  }
+
+  const handleAddPair = () => {
+    const newPair = { id: String(Date.now()), key: "", value: "" }
+    const updated = [...pairs, newPair]
+    setPairs(updated)
+    updateJsonFromPairs(updated)
+  }
+
+  const handleRemovePair = (id: string) => {
+    const updated = pairs.filter((p) => p.id !== id)
+    setPairs(updated)
+    updateJsonFromPairs(updated)
+  }
+
+  const applyPreset = (presetType: "OCT" | "VISUAL_FIELD" | "ULTRASOUND" | "IOP") => {
+    let presetPairs: MeasurementPair[] = []
+    if (presetType === "OCT") {
+      presetPairs = [
+        { id: "1", key: "Độ dày trung tâm hoàng điểm (CFT)", value: "250 µm" },
+        { id: "2", key: "Thể tích võng mạc (Macular Volume)", value: "8.5 mm³" },
+        { id: "3", key: "Độ dày lớp RNFL", value: "98 µm" },
+      ]
+    } else if (presetType === "VISUAL_FIELD") {
+      presetPairs = [
+        { id: "1", key: "Chỉ số độ lệch trung bình (MD)", value: "-2.5 dB" },
+        { id: "2", key: "Độ lệch chuẩn mẫu (PSD)", value: "1.8 dB" },
+        { id: "3", key: "Chỉ số thị trường (VFI)", value: "96%" },
+      ]
+    } else if (presetType === "ULTRASOUND") {
+      presetPairs = [
+        { id: "1", key: "Trục nhãn cầu (Axial Length)", value: "23.5 mm" },
+        { id: "2", key: "Độ sâu tiền phòng (ACD)", value: "3.2 mm" },
+        { id: "3", key: "Độ dày thể thủy tinh (Lens Thickness)", value: "4.1 mm" },
+      ]
+    } else {
+      presetPairs = [
+        { id: "1", key: "Nhãn áp Mắt Phải (IOP OD)", value: "16 mmHg" },
+        { id: "2", key: "Nhãn áp Mắt Trái (IOP OS)", value: "15 mmHg" },
+      ]
+    }
+    setPairs(presetPairs)
+    updateJsonFromPairs(presetPairs)
+  }
+
+  return (
+    <div className="space-y-3 rounded-xl border border-indigo-200 bg-indigo-50/30 p-4 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-indigo-100 pb-2.5">
+        <div>
+          <label className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
+            <BarChart3 className="h-4 w-4 text-indigo-600" /> Bảng Chỉ Số & Thông Số Đo Đạc Y Tế
+          </label>
+          <p className="text-[11px] text-gray-500 mt-0.5">
+            Nhập trực tiếp các chỉ số kỹ thuật (Độ dày hoàng điểm, Nhãn áp...) không cần dùng mã JSON.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setRawMode(!rawMode)}
+          className="text-[11px] font-semibold text-indigo-700 hover:text-indigo-900 underline self-start sm:self-auto"
+        >
+          {rawMode ? "📋 Chuyển sang Bảng nhập bác sĩ" : "⚙️ Chế độ nâng cao (JSON)"}
+        </button>
+      </div>
+
+      {!rawMode ? (
+        <div className="space-y-2.5">
+          {/* Preset Buttons */}
+          <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+            <span className="font-semibold text-gray-500 mr-1 flex items-center gap-1">
+              <Sparkles className="h-3 w-3 text-amber-500" /> Mẫu chỉ số nhanh:
+            </span>
+            <button
+              type="button"
+              onClick={() => applyPreset("OCT")}
+              className="rounded-md bg-white px-2.5 py-1 font-semibold text-indigo-700 border border-indigo-200 hover:bg-indigo-50 shadow-2xs"
+            >
+              OCT Võng Mạc
+            </button>
+            <button
+              type="button"
+              onClick={() => applyPreset("VISUAL_FIELD")}
+              className="rounded-md bg-white px-2.5 py-1 font-semibold text-purple-700 border border-purple-200 hover:bg-purple-50 shadow-2xs"
+            >
+              Đo Thị Trường
+            </button>
+            <button
+              type="button"
+              onClick={() => applyPreset("ULTRASOUND")}
+              className="rounded-md bg-white px-2.5 py-1 font-semibold text-teal-700 border border-teal-200 hover:bg-teal-50 shadow-2xs"
+            >
+              Siêu Âm Mắt
+            </button>
+            <button
+              type="button"
+              onClick={() => applyPreset("IOP")}
+              className="rounded-md bg-white px-2.5 py-1 font-semibold text-blue-700 border border-blue-200 hover:bg-blue-50 shadow-2xs"
+            >
+              Nhãn Áp (IOP)
+            </button>
+          </div>
+
+          {/* Key-Value Pair Grid */}
+          <div className="space-y-2">
+            {pairs.map((p, index) => (
+              <div key={p.id} className="flex items-center gap-2">
+                <span className="text-[11px] font-bold text-gray-400 w-4 text-center">{index + 1}.</span>
+                <input
+                  type="text"
+                  value={p.key}
+                  onChange={(e) => handlePairChange(p.id, "key", e.target.value)}
+                  placeholder="Tên chỉ số (VD: Độ dày CFT, Nhãn áp...)"
+                  className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-900 focus:border-indigo-500 focus:outline-none shadow-2xs"
+                />
+                <input
+                  type="text"
+                  value={p.value}
+                  onChange={(e) => handlePairChange(p.id, "value", e.target.value)}
+                  placeholder="Giá trị (VD: 250 µm, 16 mmHg...)"
+                  className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-900 focus:border-indigo-500 focus:outline-none shadow-2xs"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemovePair(p.id)}
+                  className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                  title="Xóa chỉ số này"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={handleAddPair}
+            className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900 bg-white border border-indigo-200 rounded-lg px-3 py-1.5 hover:bg-indigo-50 transition-colors shadow-2xs"
+          >
+            <Plus className="h-3.5 w-3.5" /> Thêm chỉ số đo đạc mới
+          </button>
+        </div>
+      ) : (
+        <div>
+          <textarea
+            rows={4}
+            value={rawText}
+            onChange={(e) => {
+              setRawText(e.target.value)
+              onChangeJson(e.target.value)
+            }}
+            className="w-full rounded-lg border border-gray-300 bg-white p-3 font-mono text-[11px] text-gray-900 focus:border-indigo-500 focus:outline-none"
+            placeholder='{ "centralFovealThickness": "250 µm" }'
+          />
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────
 // UPDATE LAB RESULT MODAL (Edit paraclinical result)
 // ─────────────────────────────────────────────────────────────────
 function UpdateLabResultModal({
@@ -911,7 +1270,7 @@ function UpdateLabResultModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
-      <div className="relative w-full max-w-xl rounded-2xl bg-white shadow-2xl overflow-hidden my-8">
+      <div className="relative w-full max-w-3xl rounded-2xl bg-white shadow-2xl overflow-hidden my-8">
         <div className="flex items-center justify-between border-b border-gray-100 bg-amber-50/60 px-6 py-4">
           <div className="flex items-center gap-2">
             <Edit3 className="h-5 w-5 text-amber-700" />
@@ -955,16 +1314,11 @@ function UpdateLabResultModal({
             />
           </div>
 
-          <div>
-            <label className={labelClass}>{t("update.imageUrlLabel")}</label>
-            <input
-              type="text"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              className={inputClass}
-              placeholder="https://res.cloudinary.com/..."
-            />
-          </div>
+          <ParaclinicalImageUploader
+            imageUrl={imageUrl}
+            setImageUrl={setImageUrl}
+            label={t("update.imageUrlLabel")}
+          />
 
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -987,15 +1341,10 @@ function UpdateLabResultModal({
             </div>
           </div>
 
-          <div>
-            <label className={labelClass}>{t("update.measurementsLabel")}</label>
-            <textarea
-              rows={4}
-              value={measurementsJson}
-              onChange={(e) => setMeasurementsJson(e.target.value)}
-              className={`${inputClass} font-mono text-[11px]`}
-            />
-          </div>
+          <ParaclinicalMeasurementsBuilder
+            initialJson={measurementsJson}
+            onChangeJson={setMeasurementsJson}
+          />
 
           {error && <p className="text-xs font-semibold text-red-600">{error}</p>}
         </div>
@@ -1157,6 +1506,22 @@ export function CreateLabRequestForm({
             onChange={(e) => setScanPattern(e.target.value)}
             className={inputClass}
             placeholder={t("create.scanPatternPlaceholder")}
+          />
+        </div>
+
+        <div className="sm:col-span-2">
+          <ParaclinicalImageUploader
+            imageUrl={imageUrl}
+            setImageUrl={setImageUrl}
+            label="Tải ảnh kết quả cận lâm sàng (Tự động chuyển đổi sang URL):"
+          />
+        </div>
+
+        <div className="sm:col-span-2">
+          <ParaclinicalMeasurementsBuilder
+            initialJson={measurements}
+            onChangeJson={setMeasurements}
+            labType={labType}
           />
         </div>
       </div>
@@ -1325,7 +1690,7 @@ function AiSuggestionForm({
                 // Clear value upfront so selecting the same file twice still
                 // fires onChange. Otherwise the browser dedupes the event and
                 // the user sees stale "result" state on the UI.
-                ;(e.target as HTMLInputElement).value = ""
+                ; (e.target as HTMLInputElement).value = ""
               }}
               className="hidden"
             />
@@ -1592,11 +1957,10 @@ function AiSuggestionForm({
                     type="button"
                     onClick={applyToMedicalRecord}
                     disabled={applied}
-                    className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-bold transition shadow-sm ${
-                      applied
-                        ? "bg-emerald-100 text-emerald-700 border border-emerald-300 cursor-default"
-                        : "bg-linear-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 hover:shadow-md"
-                    }`}
+                    className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-bold transition shadow-sm ${applied
+                      ? "bg-emerald-100 text-emerald-700 border border-emerald-300 cursor-default"
+                      : "bg-linear-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 hover:shadow-md"
+                      }`}
                   >
                     {applied ? (
                       <>

@@ -144,7 +144,8 @@ body {
     color: black !important;
     font-size: 9.5pt !important;
     line-height: 1.35 !important;
-    padding: 10mm 12mm !important;
+    padding: 0 !important;
+    margin: 0 !important;
     font-family: "Times New Roman", Times, serif, "Inter", sans-serif !important;
   }
 

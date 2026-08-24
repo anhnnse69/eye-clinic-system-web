@@ -253,6 +253,9 @@
       "randomAssignment": "Chỉ định ngẫu nhiên"
     },
     "appointment": {
+      "errors": {
+        "loadFailed": "Không thể tải danh sách lịch hẹn"
+      },
       "title": "Lịch hẹn",
       "subtitle": "Quản lý lịch hẹn phòng khám",
       "refresh": "Làm mới",
@@ -500,6 +503,10 @@
       "invalidEmail": "Email không hợp lệ",
       "invalidPhone": "Số điện thoại không hợp lệ",
       "serverError": "Lỗi server"
+    },
+    "error": {
+      "loadFailed": "Không thể tải dữ liệu. Vui lòng thử lại sau.",
+      "connectionError": "Mất kết nối tới máy chủ. Vui lòng kiểm tra mạng và thử lại."
     },
     "success": {
       "saved": "Lưu thành công",

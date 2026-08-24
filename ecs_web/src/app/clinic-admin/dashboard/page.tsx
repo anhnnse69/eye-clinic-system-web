@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useTranslations, useLocale } from "next-intl"
+import Link from "next/link"
 import {
   Calendar,
   TrendingUp,
@@ -13,12 +14,20 @@ import {
   Building2,
   FileSpreadsheet,
   Loader2,
+  FileCheck,
+  Check,
+  X,
+  ShieldAlert,
+  Clock,
+  ExternalLink,
+  FileText,
 } from "lucide-react"
 
 import {
   clinicDashboardService,
   ClinicDashboardResponse,
 } from "@/services/clinic-dashboard.service"
+import { recordApprovalService } from "@/services/record-approval.service"
 
 import { generateClinicReportExcel } from "@/lib/excel-export"
 import { formatCurrency } from "@/lib/utils"
@@ -35,9 +44,59 @@ export default function ClinicAdminDashboard() {
   const [isExporting, setIsExporting] = useState(false)
   const [exportSuccess, setExportSuccess] = useState<string | null>(null)
 
+  // Medical Record Edit Requests State for Clinic Admin
+  const [editRequests, setEditRequests] = useState<Array<{
+    recordId: string
+    patientName: string
+    doctorName: string
+    reason: string
+    permissionDoc: string
+    attachedFileName?: string | null
+    requestedAt: string
+    status: "PENDING" | "APPROVED" | "REJECTED"
+  }>>([])
+
   useEffect(() => {
     loadDashboard()
+    loadEditRequests()
   }, [])
+
+  const loadEditRequests = async () => {
+    try {
+      const res = await recordApprovalService.getRequests("PENDING")
+      if (res.data) {
+        setEditRequests(res.data)
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  const handleApproveEditRequest = async (recordId: string) => {
+    try {
+      const res = await recordApprovalService.approveRequest(recordId)
+      if (res.data) {
+        setEditRequests((prev) =>
+          prev.map((r) => (r.recordId === recordId ? { ...r, status: "APPROVED" } : r))
+        )
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  const handleRejectEditRequest = async (recordId: string) => {
+    try {
+      const res = await recordApprovalService.rejectRequest(recordId)
+      if (res.data) {
+        setEditRequests((prev) =>
+          prev.map((r) => (r.recordId === recordId ? { ...r, status: "REJECTED" } : r))
+        )
+      }
+    } catch {
+      // ignore
+    }
+  }
 
   const loadDashboard = async () => {
     try {

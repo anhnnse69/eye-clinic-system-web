@@ -20,12 +20,17 @@ import {
   Users,
   Activity,
   CalendarDays,
+  Pill,
+  Sparkles,
+  Microscope,
 } from "lucide-react"
 import { queueService } from "@/services/queue.service"
 import { queueCompleteService } from "@/services/queue-complete.service"
+import { medicalRecordsService } from "@/services/medical-records.service"
 import type { QueueListResponse, QueueItem } from "@/types"
 import { QueueStatus } from "@/types"
 import { getMessage } from "@/constants/messages"
+import CompletionCheckModal from "./CompletionCheckModal"
 
 interface QueueClientProps {
   doctorId: string
@@ -135,6 +140,9 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
       if (!isSilent) {
         setLoading(false)
       }
+      // Drop any cached per-row EMR step status when the queue is refreshed
+      // so newly-completed steps are re-detected on the next poll.
+      setStepStatusByRecord({})
     }
   }, [selectedDate, tErrors])
 
@@ -148,6 +156,89 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
 
     return () => clearInterval(intervalId)
   }, [fetchQueueData])
+
+  // ─── Per-row EMR step detection ────────────────────────────────────
+  // For each queue item that already has a medical record, fetch the full
+  // detail so we can show which 6-step EMR phases are actually completed
+  // (instead of falsely showing everything green as soon as a record exists).
+  const [stepStatusByRecord, setStepStatusByRecord] = useState<
+    Record<
+      string,
+      {
+        isStep1Done: boolean // AI pre-diagnosis
+        isStep3Done: boolean // EMR saved (always true when record exists)
+        isStep4Done: boolean // Paraclinical (optional)
+        isStep5Done: boolean // Medical record summary (final diagnosis + ICD-10)
+        isStep6Done: boolean // Prescription / Glasses Rx
+      }
+    >
+  >({})
+
+  useEffect(() => {
+    const items = queueData?.items ?? []
+    const candidates = items.filter(
+      (it) => it.hasMedicalRecord && it.medicalRecordId && !stepStatusByRecord[it.medicalRecordId],
+    )
+    if (candidates.length === 0) return
+    let cancelled = false
+    Promise.all(
+      candidates.map(async (it) => {
+        try {
+          const res = await medicalRecordsService.getMedicalRecordById(it.medicalRecordId!)
+          const detail = res?.data
+          if (!detail) return null
+          const isStep1Done = Boolean(detail?.formData?.aiSuggestion?.suggestedDisease)
+          const isStep3Done = true
+          const isStep4Done = Boolean(
+            (detail?.octResults && detail.octResults.length > 0) ||
+              (detail?.visualFieldTests && detail.visualFieldTests.length > 0) ||
+              (detail?.ultrasoundEyes && detail.ultrasoundEyes.length > 0),
+          )
+          const isStep5Done = Boolean(
+            detail?.diagnosisMain?.trim() ||
+              detail?.formData?.chanDoanVaRaVien?.chanDoanChinh?.trim() ||
+              detail?.formData?.benhAn?.chanDoanMaICD?.raVienBenhChinhTonThuong?.trim(),
+          )
+          const isStep6Done = Boolean(
+            (detail?.prescriptions && detail.prescriptions.length > 0) ||
+              (detail?.glassesPrescriptions && detail.glassesPrescriptions.length > 0) ||
+              (detail?.formData?.prescription?.drugs && detail.formData.prescription.drugs.length > 0) ||
+              (detail?.formData?.keDonThuoc?.danhSachThuoc && detail.formData.keDonThuoc.danhSachThuoc.length > 0) ||
+              (detail?.formData?.glassesPrescription && Object.values(detail.formData.glassesPrescription).some((v: any) => v !== null && v !== undefined && String(v).trim() !== "")),
+          )
+          return {
+            recordId: it.medicalRecordId!,
+            status: { isStep1Done, isStep3Done, isStep4Done, isStep5Done, isStep6Done },
+          }
+        } catch {
+          // If fetch fails, fall back to all-false so the badges stay neutral.
+          return {
+            recordId: it.medicalRecordId!,
+            status: {
+              isStep1Done: false,
+              isStep3Done: true,
+              isStep4Done: false,
+              isStep5Done: false,
+              isStep6Done: false,
+            },
+          }
+        }
+      }),
+    ).then((entries) => {
+      if (cancelled) return
+      setStepStatusByRecord((prev) => {
+        const next = { ...prev }
+        for (const e of entries) {
+          if (e) next[e.recordId] = e.status
+        }
+        return next
+      })
+    })
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queueData?.items])
 
   const handlePreviousDay = () => {
     const newDate = new Date(selectedDate)
@@ -184,29 +275,53 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
   }
 
   const handleStartExamination = (item: QueueItem) => {
-    if (item.hasMedicalRecord) {
-      router.push(`/doctor/records/${item.medicalRecordId || item.appointmentId}`)
-    } else {
-      router.push(
-        `/doctor/records/create?appointmentId=${item.appointmentId}&patientId=${item.patientId}`
-      )
-    }
+    // Step 1 of the 6-step EMR workflow: AI pre-diagnosis (Triage).
+    // After the AI result is reviewed and a record template is chosen, the
+    // flow continues into CreateMedicalRecordClient which handles Steps 2–6.
+    router.push(
+      `/doctor/examination/${item.appointmentId}?patientId=${item.patientId}`
+    )
   }
 
+  const [activeCompletionModal, setActiveCompletionModal] = useState<{
+    recordId: string
+    appointmentId: string
+    patientId: string
+    patientName: string
+    queueId: string
+  } | null>(null)
+
   const handleContinueExamination = (item: QueueItem) => {
+    // Resume the 6-step EMR workflow where the doctor left off.
+    // ExaminationClient detects that the appointment already has a MedicalRecord
+    // (saved via Step 3) and forwards straight to CreateMedicalRecordClient in
+    // "success hub" mode — i.e. the doctor lands on the same screen they were
+    // on right after saving the medical record (showing the post-save banner
+    // and the Step 4 / 5 / 6 action cards) instead of being asked to save a
+    // duplicate record.
     router.push(
-      `/doctor/records/create?appointmentId=${item.appointmentId}&patientId=${item.patientId}&continue=true`
+      `/doctor/examination/${item.appointmentId}?patientId=${item.patientId}`
     )
   }
 
   const handleCompleteQueue = async (item: QueueItem, e: React.MouseEvent) => {
     e.stopPropagation()
-    if (!confirm(tQueue("confirmComplete", { name: item.patientName }))) return
-    try {
-      await queueCompleteService.completeQueue({ queueId: item.queueId })
-      fetchQueueData()
-    } catch {
-      alert(tQueue("errorOccurred"))
+    if (item.hasMedicalRecord && item.medicalRecordId) {
+      setActiveCompletionModal({
+        recordId: item.medicalRecordId,
+        appointmentId: item.appointmentId,
+        patientId: item.patientId,
+        patientName: item.patientName,
+        queueId: item.queueId,
+      })
+    } else {
+      if (!confirm(tQueue("confirmComplete", { name: item.patientName }))) return
+      try {
+        await queueCompleteService.completeQueue({ queueId: item.queueId })
+        fetchQueueData()
+      } catch {
+        alert(tQueue("errorOccurred"))
+      }
     }
   }
 
@@ -521,15 +636,109 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                         </p>
                       )}
 
+                      {/* Step status badges — each badge reflects the ACTUAL completed
+                          state of the 6-step EMR workflow, derived from the persisted
+                          medical record. Steps not yet done are shown in amber/blue
+                          (pending) rather than green (done), so doctors don't mistakenly
+                          think the examination is complete after only saving the record. */}
+                      {item.hasMedicalRecord && (() => {
+                        const status = stepStatusByRecord[item.medicalRecordId || ""]
+                        // Until the detail is fetched we treat all post-step-3 steps
+                        // as pending to avoid the "everything green" mistake.
+                        const isStep1Done = status?.isStep1Done ?? false
+                        const isStep3Done = status?.isStep3Done ?? true
+                        const isStep4Done = status?.isStep4Done ?? false
+                        const isStep5Done = status?.isStep5Done ?? false
+                        const isStep6Done = status?.isStep6Done ?? false
+                        const allMandatoryDone =
+                          isStep1Done && isStep3Done && isStep5Done && isStep6Done
+
+                        const renderBadge = (
+                          num: number,
+                          done: boolean,
+                          doneClass: string,
+                          pendingClass: string,
+                          Icon: typeof Sparkles,
+                          label: string,
+                          titleDone: string,
+                          titlePending: string,
+                        ) => (
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold border ${done ? doneClass : pendingClass}`}
+                            title={done ? titleDone : titlePending}
+                          >
+                            <Icon className="w-3 h-3" /> Bước {num}: {label}
+                          </span>
+                        )
+
+                        return (
+                          <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+                            {renderBadge(
+                              1, isStep1Done,
+                              "bg-green-50 text-green-700 border border-green-200",
+                              "bg-gray-50 text-gray-500 border border-gray-200",
+                              Sparkles,
+                              "AI sơ bộ",
+                              "Bước 1: AI chẩn đoán sơ bộ — đã hoàn thành",
+                              "Bước 1: AI chẩn đoán sơ bộ — CHƯA chạy",
+                            )}
+                            {renderBadge(
+                              3, isStep3Done,
+                              "bg-green-50 text-green-700 border border-green-200",
+                              "bg-gray-50 text-gray-500 border border-gray-200",
+                              CheckCircle,
+                              "HS khám bệnh",
+                              "Bước 3: Hồ sơ khám bệnh đã được lưu",
+                              "Bước 3: Hồ sơ khám bệnh chưa lưu",
+                            )}
+                            {renderBadge(
+                              4, isStep4Done,
+                              "bg-green-50 text-green-700 border border-green-200",
+                              "bg-indigo-50 text-indigo-700 border border-indigo-200",
+                              Microscope,
+                              "Cận lâm sàng",
+                              "Bước 4: Cận lâm sàng (OCT / Thị trường / Siêu âm) — đã có kết quả",
+                              "Bước 4: Cận lâm sàng — tùy chọn, chưa có kết quả",
+                            )}
+                            {renderBadge(
+                              5, isStep5Done,
+                              "bg-green-50 text-green-700 border border-green-200",
+                              "bg-amber-50 text-amber-800 border border-amber-200",
+                              FileText,
+                              "Tổng kết",
+                              "Bước 5: Tổng kết bệnh án (Chẩn đoán + ICD-10) — đã hoàn thành",
+                              "Bước 5: Tổng kết bệnh án (Chẩn đoán + ICD-10) — BẮT BUỘC, chưa làm",
+                            )}
+                            {renderBadge(
+                              6, isStep6Done,
+                              "bg-green-50 text-green-700 border border-green-200",
+                              "bg-blue-50 text-blue-800 border border-blue-200",
+                              Pill,
+                              "Kê đơn",
+                              "Bước 6: Kê đơn thuốc/kính — đã hoàn thành",
+                              "Bước 6: Kê đơn thuốc/kính — BẮT BUỘC, chưa làm",
+                            )}
+                            <span
+                              className={`text-[10px] italic ${allMandatoryDone ? "text-emerald-600 font-semibold" : "text-gray-500"}`}
+                            >
+                              {allMandatoryDone
+                                ? "— Đủ điều kiện hoàn thành ca khám ✅"
+                                : "— Ca khám chưa hoàn thành, bác sĩ cần làm tiếp các bước chưa xong"}
+                            </span>
+                          </div>
+                        )
+                      })()}
                       <div className="mt-3 flex flex-wrap gap-2">
                         {item.hasMedicalRecord && (
-                          <button
-                            onClick={() => handleViewRecord(item)}
-                            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
-                          >
-                            <FileText className="w-4 h-4" />
-                            {tQueue("viewRecord")}
-                          </button>
+                          <>
+                            <button
+                              onClick={() => handleViewRecord(item)}
+                              className="flex items-center gap-1 px-3 py-1.5 text-sm bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors font-medium"
+                            >
+                              <FileText className="w-4 h-4" />
+                              {tQueue("viewRecord")}
+                            </button>
+                          </>
                         )}
 
                         {item.status === QueueStatus.WAITING || item.status === QueueStatus.CALLING ? (
@@ -552,25 +761,23 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                               {tQueue("continueExam")}
                             </button>
                             {item.hasMedicalRecord && (
-                              <button
-                                onClick={(e) => handleCompleteQueue(item, e)}
-                                className="flex items-center gap-1 px-3 py-1.5 text-sm bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
-                              >
-                                <ClipboardCheck className="w-4 h-4" />
-                                {tQueue("completeExam")}
-                              </button>
+                              <CompletionCheckButton
+                                item={item}
+                                stepStatusByRecord={stepStatusByRecord}
+                                tQueue={tQueue}
+                                onComplete={handleCompleteQueue}
+                              />
                             )}
                           </>
                         ) : null}
 
                         {item.status === QueueStatus.WAITING && item.hasMedicalRecord && (
-                          <button
-                            onClick={(e) => handleCompleteQueue(item, e)}
-                            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
-                          >
-                            <ClipboardCheck className="w-4 h-4" />
-                            {tQueue("completeExam")}
-                          </button>
+                          <CompletionCheckButton
+                            item={item}
+                            stepStatusByRecord={stepStatusByRecord}
+                            tQueue={tQueue}
+                            onComplete={handleCompleteQueue}
+                          />
                         )}
 
                         {item.status === QueueStatus.CALLING && (
@@ -591,6 +798,89 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
           </div>
         )}
       </div>
+
+      {activeCompletionModal && (
+        <CompletionCheckModal
+          isOpen={Boolean(activeCompletionModal)}
+          onClose={() => setActiveCompletionModal(null)}
+          recordId={activeCompletionModal.recordId}
+          appointmentId={activeCompletionModal.appointmentId}
+          patientId={activeCompletionModal.patientId}
+          patientName={activeCompletionModal.patientName}
+          queueId={activeCompletionModal.queueId}
+          onCompleted={() => fetchQueueData()}
+        />
+      )}
     </div>
+  )
+}
+
+/**
+ * CompletionCheckButton
+ *
+ * Wraps the "Complete Exam" button on each queue row. The button is enabled
+ * ONLY when the medical record has both:
+ *   - Step 5 done: Medical record summary (final diagnosis + ICD-10)
+ *   - Step 6 done: Prescription / Glasses Rx
+ *
+ * Until both are done, the button is disabled and shows a tooltip explaining
+ * why. Defense-in-depth: even if the disabled state is bypassed, the actual
+ * completion flow is blocked by CompleteQueueService on the backend, which
+ * re-validates the form JSON envelope.
+ *
+ * While the record detail is still being fetched (stepStatusByRecord entry
+ * is missing), the button is treated as disabled to avoid a premature
+ * green state during the loading window.
+ */
+interface CompletionCheckButtonProps {
+  item: QueueItem
+  stepStatusByRecord: Record<
+    string,
+    {
+      isStep1Done: boolean
+      isStep3Done: boolean
+      isStep4Done: boolean
+      isStep5Done: boolean
+      isStep6Done: boolean
+    }
+  >
+  tQueue: (key: string) => string
+  onComplete: (item: QueueItem, e: React.MouseEvent) => void
+}
+
+function CompletionCheckButton({
+  item,
+  stepStatusByRecord,
+  tQueue,
+  onComplete,
+}: CompletionCheckButtonProps) {
+  const stepStatus = item.medicalRecordId
+    ? stepStatusByRecord[item.medicalRecordId]
+    : undefined
+  const isReady = Boolean(stepStatus?.isStep5Done && stepStatus?.isStep6Done)
+  const isLoading = item.hasMedicalRecord && !stepStatus
+  const isLocked = !isReady
+  const tooltip = tQueue("completeExamLockedTooltip")
+
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        if (isLocked) return
+        onComplete(item, e)
+      }}
+      disabled={isLocked}
+      title={isLocked ? tooltip : tQueue("completeExam")}
+      aria-disabled={isLocked}
+      data-loading={isLoading || undefined}
+      className={`flex items-center gap-1 px-3 py-1.5 text-sm rounded-lg transition-colors ${
+        isLocked
+          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+          : "bg-emerald-500 text-white hover:bg-emerald-600"
+      }`}
+    >
+      <ClipboardCheck className="w-4 h-4" />
+      {tQueue("completeExam")}
+    </button>
   )
 }

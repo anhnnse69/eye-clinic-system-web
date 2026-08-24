@@ -24,6 +24,7 @@ import {
   Briefcase,
   Star,
   UserPlus,
+  FileCheck,
 } from "lucide-react"
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -48,6 +49,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Briefcase,
   Star,
   UserPlus,
+  FileCheck,
 }
 
 export interface NavItem {

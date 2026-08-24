@@ -253,6 +253,9 @@
       "randomAssignment": "Random assignment"
     },
     "appointment": {
+      "errors": {
+        "loadFailed": "Failed to load appointment list"
+      },
       "title": "Appointments",
       "subtitle": "Clinic Appointment Management",
       "refresh": "Refresh",
@@ -500,6 +503,10 @@
       "invalidEmail": "Invalid email",
       "invalidPhone": "Invalid phone number",
       "serverError": "Server error"
+    },
+    "error": {
+      "loadFailed": "Failed to load data. Please try again later.",
+      "connectionError": "Lost connection to the server. Please check your network and try again."
     },
     "success": {
       "saved": "Saved successfully",

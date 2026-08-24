@@ -233,9 +233,9 @@ export default function EditClinicProfilePage() {
         name: form.name,
         address: form.address,
         phone: form.phone,
-        email: form.email || null,
-        logoUrl: finalLogoUrl || null,
-        description: form.description || null,
+        email: form.email || undefined,
+        logoUrl: finalLogoUrl || undefined,
+        description: form.description || undefined,
         openTime: form.openTime,
         closeTime: form.closeTime,
       }

@@ -128,8 +128,8 @@ export default function MedicalRecordsListClient() {
     return RECORD_TYPE_LABELS[type as RecordType] || type
   }
 
-  const totalPages = meta?.totalPages || 1
-  const totalRecords = meta?.total || 0
+  const totalRecords = meta?.total ?? items.length
+  const totalPages = meta?.totalPages || Math.ceil(totalRecords / PAGE_SIZE) || 1
 
   return (
     <div className="space-y-6 p-6 max-w-7xl mx-auto antialiased">
@@ -303,16 +303,13 @@ export default function MedicalRecordsListClient() {
           {/* Table */}
           <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden">
             <div className="overflow-x-auto scrollbar-thin">
-              <table className="w-full text-sm text-gray-600 min-w-[1100px]">
+              <table className="w-full text-sm text-gray-600 min-w-[900px]">
                 <thead>
                   <tr className="bg-gray-50/75 border-b border-gray-200 text-gray-700">
                     <th className="px-5 py-4 text-left font-semibold">{tList("patient")}</th>
-                    <th className="px-5 py-4 text-left font-semibold">{tList("appointmentCode")}</th>
                     <th className="px-5 py-4 text-left font-semibold">{tList("type")}</th>
                     <th className="px-5 py-4 text-left font-semibold">{tList("examDate")}</th>
-                    <th className="px-5 py-4 text-left font-semibold">{tList("symptoms")}</th>
                     <th className="px-5 py-4 text-left font-semibold">{tList("diagnosis")}</th>
-                    <th className="px-5 py-4 text-left font-semibold">{tList("status")}</th>
                     <th className="px-5 py-4 text-left font-semibold">{tList("actions")}</th>
                   </tr>
                 </thead>
@@ -346,12 +343,6 @@ export default function MedicalRecordsListClient() {
                         </div>
                       </td>
 
-                      <td className="px-5 py-4 font-mono text-xs text-gray-600">
-                        <div className="max-w-[120px] truncate" title={record.appointmentId}>
-                          {record.appointmentId.slice(0, 8)}...
-                        </div>
-                      </td>
-
                       <td className="px-5 py-4">
                         <span className="inline-block px-2.5 py-1 text-xs font-medium bg-blue-50 text-blue-700 rounded-lg">
                           {getRecordTypeLabel(record.recordType)}
@@ -366,41 +357,14 @@ export default function MedicalRecordsListClient() {
                       </td>
 
                       <td className="px-5 py-4">
-                        <div className="max-w-[180px]">
+                        <div className="max-w-[280px]">
                           <span
-                            className="text-gray-700 text-xs"
-                            title={record.chiefComplaint || undefined}
+                            className="text-gray-800 text-xs font-medium"
+                            title={record.diagnosisMain || record.chiefComplaint || undefined}
                           >
-                            {record.chiefComplaint || "—"}
+                            {record.diagnosisMain || record.chiefComplaint || "—"}
                           </span>
                         </div>
-                      </td>
-
-                      <td className="px-5 py-4">
-                        <div className="max-w-[200px]">
-                          <span
-                            className="text-gray-700 text-xs"
-                            title={record.diagnosisMain || undefined}
-                          >
-                            {record.diagnosisMain || "—"}
-                          </span>
-                        </div>
-                      </td>
-
-                      <td className="px-5 py-4">
-                        {record.isLocked ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-600">
-                            {tList("locked")}
-                          </span>
-                        ) : record.canEdit ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
-                            {tList("canEdit")}
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100">
-                            {tList("viewOnly")}
-                          </span>
-                        )}
                       </td>
 
                       <td className="px-5 py-4">
@@ -421,7 +385,7 @@ export default function MedicalRecordsListClient() {
             </div>
 
             {/* Pagination */}
-            {totalPages > 1 && (
+            {items.length > 0 && (
               <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-gray-50/50">
                 <div className="text-sm text-gray-500 font-medium">
                   {tList("page")} <span className="text-gray-900 font-semibold">{pageNumber}</span> {tList("of")}{" "}

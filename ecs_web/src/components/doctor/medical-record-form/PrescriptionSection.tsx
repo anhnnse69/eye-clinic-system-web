@@ -2,9 +2,11 @@
 
 import { useState } from "react"
 import { useFormContext, useFieldArray } from "react-hook-form"
-import { Plus, Trash2, Printer, Pill } from "lucide-react"
+import { Plus, Trash2, Printer, Pill, Sparkles } from "lucide-react"
 import { useTranslations } from "next-intl"
 import type { MedicalRecordFormDataPayload } from "@/types"
+import PrescriptionTemplatePicker from "../PrescriptionTemplatePicker"
+import type { PrescriptionTemplate } from "@/services/prescription-template.service"
 
 const inputClass =
   "w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
@@ -186,6 +188,7 @@ export default function PrescriptionSection() {
   })
 
   const [showQuickAdd, setShowQuickAdd] = useState(false)
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false)
 
   const handleQuickAdd = (med: typeof COMMON_MEDICATIONS[0]) => {
     append({
@@ -197,6 +200,32 @@ export default function PrescriptionSection() {
       donViTinh: "Chai",
       ghiChu: "",
     })
+  }
+
+  /**
+   * Apply a full prescription template (multiple medicines + notes).
+   * Replaces existing items to avoid duplicates.
+   */
+  const handleApplyTemplate = (template: PrescriptionTemplate) => {
+    // Remove all existing items
+    while (fields.length > 0) {
+      remove(fields.length - 1)
+    }
+    
+    // Add all medicines from template
+    template.medicines.forEach((med) => {
+      append({
+        tenThuoc: med.name,
+        hamLuong: med.dosage,
+        cachDung: `${med.frequency}${med.eye ? ` (${med.eye})` : ""} - ${med.duration}${med.notes ? ` (${med.notes})` : ""}`,
+        soLuong: "1",
+        soLuongMua: "1",
+        donViTinh: "Chai/Lọ",
+        ghiChu: med.notes || "",
+      })
+    })
+    
+    setShowTemplatePicker(false)
   }
 
   const handleAddItem = () => {
@@ -215,7 +244,15 @@ export default function PrescriptionSection() {
     <div className={sectionBoxClass}>
       <div className="flex items-center justify-between">
         <h3 className={titleClass}>{t("title")}</h3>
-        <div className="flex gap-2">
+        <div className="flex gap-2 print:hidden">
+          <button
+            type="button"
+            onClick={() => setShowTemplatePicker(true)}
+            className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100 transition-colors border border-blue-200"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            Đơn mẫu
+          </button>
           <button
             type="button"
             onClick={() => setShowQuickAdd(true)}
@@ -227,7 +264,7 @@ export default function PrescriptionSection() {
           <button
             type="button"
             onClick={() => window.print()}
-            className="inline-flex items-center gap-1 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-200 transition-colors print:hidden"
+            className="inline-flex items-center gap-1 rounded-md bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-200 transition-colors"
           >
             <Printer className="h-3.5 w-3.5" />
             {t("printPrescription")}
@@ -381,6 +418,18 @@ export default function PrescriptionSection() {
         onClose={() => setShowQuickAdd(false)}
         onSelect={handleQuickAdd}
       />
+
+      {/* Template Picker Modal */}
+      {showTemplatePicker && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto">
+          <div className="w-full max-w-3xl my-8">
+            <PrescriptionTemplatePicker
+              onSelect={handleApplyTemplate}
+              onClose={() => setShowTemplatePicker(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

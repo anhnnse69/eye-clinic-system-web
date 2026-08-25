@@ -14,6 +14,7 @@ import {
   AlertTriangle,
   FileText,
   Loader2,
+  HeartPulse,
 } from "lucide-react";
 
 import { medicalRecordPatientDemographicsService } from "@/services";
@@ -169,7 +170,7 @@ export default function PatientDemographicsDetailModal({
                         value={data.bhytNumber || "—"}
                       />
                       <InfoItem
-                        icon={<span className="text-xs font-bold text-gray-400">🅰</span>}
+                        icon={<HeartPulse className="w-4 h-4 text-gray-400" />}
                         label="Nhóm máu"
                         value={data.bloodType || "—"}
                       />

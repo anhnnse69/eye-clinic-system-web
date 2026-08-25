@@ -141,14 +141,14 @@ export default function SummaryDiagnosisModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
       <div className="relative w-full max-w-3xl rounded-3xl bg-white shadow-2xl my-8 overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 bg-linear-to-r from-indigo-50 via-white to-blue-50 px-6 py-4">
+        <div className="flex items-center justify-between border-b border-gray-200 bg-linear-to-r from-sky-50 via-white to-slate-50 px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-xs">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#00658D] text-white shadow-xs">
               <FileText className="h-5 w-5" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-gray-900">
-                Chẩn Đoán Tổng Kết & Ra Viện (EMR Step 3)
+                Chẩn Đoán Tổng Kết & Ra Viện
               </h2>
               <p className="text-xs text-gray-600">
                 Tổng hợp lâm sàng, mã ICD-10 và định hướng kê đơn thuốc
@@ -174,14 +174,14 @@ export default function SummaryDiagnosisModal({
                   Đã cập nhật Chẩn đoán tổng kết thành công!
                 </h3>
                 <p className="text-sm text-gray-600 mt-1">
-                  Chẩn đoán chính: <strong className="text-indigo-900">{chanDoanChinh}</strong> (Mã ICD: {maIcdChinh || "Chưa chọn"})
+                  Chẩn đoán chính: <strong className="text-slate-900">{chanDoanChinh}</strong> (Mã ICD: {maIcdChinh || "Chưa chọn"})
                 </p>
               </div>
               <div className="pt-2 flex items-center justify-center gap-3">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer"
                 >
                   Đóng cửa sổ
                 </button>
@@ -192,7 +192,7 @@ export default function SummaryDiagnosisModal({
                       onClose()
                       onNavigateToPrescription()
                     }}
-                    className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700 shadow-xs"
+                    className="inline-flex items-center gap-2 rounded-lg bg-[#00658D] px-5 py-2 text-sm font-semibold text-white hover:bg-[#005273] shadow-xs cursor-pointer"
                   >
                     <Pill className="h-4 w-4" /> Kê đơn thuốc ngay
                     <ArrowRight className="h-4 w-4" />
@@ -220,12 +220,12 @@ export default function SummaryDiagnosisModal({
                       key={item.code}
                       type="button"
                       onClick={() => handleSelectICD(item.code, item.label)}
-                      className={`rounded-md border px-2 py-1 text-left transition-colors ${maIcdChinh === item.code
-                        ? "border-indigo-500 bg-indigo-100 font-semibold text-indigo-900"
-                        : "border-gray-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/50 text-gray-700"
+                      className={`rounded-md border px-2 py-1 text-left transition-colors cursor-pointer ${maIcdChinh === item.code
+                        ? "border-[#00658D] bg-sky-100 font-semibold text-[#00658D]"
+                        : "border-gray-200 bg-white hover:border-[#00658D] hover:bg-sky-50/50 text-gray-700"
                         }`}
                     >
-                      <strong className="text-indigo-600">{item.code}</strong> — {item.label.split(" (")[0]}
+                      <strong className="text-[#00658D]">{item.code}</strong> — {item.label.split(" (")[0]}
                     </button>
                   ))}
                 </div>
@@ -243,7 +243,7 @@ export default function SummaryDiagnosisModal({
                     value={chanDoanChinh}
                     onChange={(e) => setChanDoanChinh(e.target.value)}
                     placeholder="vd: Viêm kết mạc cấp tính hai mắt / Trầy xước giác mạc nông OD..."
-                    className="w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:border-[#00658D] focus:ring-1 focus:ring-[#00658D]"
                   />
                 </div>
                 <div>
@@ -255,7 +255,7 @@ export default function SummaryDiagnosisModal({
                     value={maIcdChinh}
                     onChange={(e) => setMaIcdChinh(e.target.value)}
                     placeholder="vd: H10.1"
-                    className="w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 font-mono"
+                    className="w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:border-[#00658D] focus:ring-1 focus:ring-[#00658D] font-mono"
                   />
                 </div>
               </div>
@@ -271,7 +271,7 @@ export default function SummaryDiagnosisModal({
                     value={chanDoanKemTheo}
                     onChange={(e) => setChanDoanKemTheo(e.target.value)}
                     placeholder="vd: Cận thị nhẹ hai mắt, Tăng huyết áp..."
-                    className="w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:border-[#00658D] focus:ring-1 focus:ring-[#00658D]"
                   />
                 </div>
                 <div>
@@ -283,7 +283,7 @@ export default function SummaryDiagnosisModal({
                     value={maIcdKemTheo}
                     onChange={(e) => setMaIcdKemTheo(e.target.value)}
                     placeholder="vd: H52.1"
-                    className="w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 font-mono"
+                    className="w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:border-[#00658D] focus:ring-1 focus:ring-[#00658D] font-mono"
                   />
                 </div>
               </div>
@@ -299,7 +299,7 @@ export default function SummaryDiagnosisModal({
                     value={huongDieuTri}
                     onChange={(e) => setHuongDieuTri(e.target.value)}
                     placeholder="vd: Nhỏ kháng sinh Tobradex + Nước mắt nhân tạo + Tái khám sau 7 ngày"
-                    className="w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:border-[#00658D] focus:ring-1 focus:ring-[#00658D]"
                   />
                 </div>
                 <div>
@@ -309,7 +309,7 @@ export default function SummaryDiagnosisModal({
                   <select
                     value={ketQuaDieuTri}
                     onChange={(e) => setKetQuaDieuTri(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 p-2.5 text-sm focus:border-[#00658D] focus:ring-1 focus:ring-[#00658D]"
                   >
                     <option value="Khỏi">Khỏi bệnh</option>
                     <option value="Đỡ">Đỡ / Giảm triệu chứng</option>
@@ -325,14 +325,14 @@ export default function SummaryDiagnosisModal({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer"
                 >
                   Hủy bỏ
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                  className="inline-flex items-center gap-2 rounded-lg bg-[#00658D] px-5 py-2 text-sm font-semibold text-white shadow-xs hover:bg-[#005273] disabled:opacity-50 transition-colors cursor-pointer"
                 >
                   {submitting ? (
                     <>

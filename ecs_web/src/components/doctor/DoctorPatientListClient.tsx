@@ -26,25 +26,30 @@ const PAGE_SIZE = 10;
 function getStatusBadgeClass(status: string): string {
   switch (status) {
     case "SCHEDULED":
-      return "bg-blue-50 text-blue-700 border-blue-100";
+    case "BOOKED":
+      return "bg-[#00658D]/10 text-[#00658D] border-[#00658D]/20";
     case "CHECKED_IN":
-      return "bg-indigo-50 text-indigo-700 border-indigo-100";
+    case "ARRIVED":
+    case "WAITING":
+      return "bg-sky-50 text-sky-700 border-sky-200/80";
+    case "CALLING":
     case "IN_PROGRESS":
-      return "bg-purple-50 text-purple-700 border-purple-100";
+      return "bg-amber-50 text-amber-700 border-amber-200/80";
     case "COMPLETED":
-      return "bg-emerald-50 text-emerald-700 border-emerald-100";
+      return "bg-emerald-50 text-emerald-700 border-emerald-200/80";
     case "CANCELLED":
-      return "bg-rose-50 text-rose-700 border-rose-100";
+      return "bg-rose-50 text-rose-700 border-rose-200/80";
     case "NO_SHOW":
-      return "bg-gray-50 text-gray-600 border-gray-100";
+    case "NOSHOW":
+      return "bg-slate-100 text-slate-600 border-slate-200";
     default:
-      return "bg-gray-50 text-gray-700 border-gray-100";
+      return "bg-slate-100 text-slate-700 border-slate-200";
   }
 }
 
 function Avatar({ name, url }: { name: string; url?: string }) {
   return (
-    <div className="w-8 h-8 rounded-full bg-blue-100 shrink-0 overflow-hidden flex items-center justify-center font-bold text-blue-600 text-sm">
+    <div className="w-8 h-8 rounded-full bg-[#00658D]/10 shrink-0 overflow-hidden flex items-center justify-center font-bold text-[#00658D] text-sm border border-[#00658D]/20">
       {url ? (
         <img src={url} alt={name} className="w-full h-full object-cover" />
       ) : (
@@ -65,6 +70,8 @@ export default function DoctorPatientListClient() {
 
   const STATUS_OPTIONS = [
     { value: "", label: t("allStatuses") },
+    { value: "ARRIVED", label: t("statusOptions.arrived") },
+    { value: "BOOKED", label: t("statusOptions.booked") },
     { value: "SCHEDULED", label: t("statusOptions.scheduled") },
     { value: "CHECKED_IN", label: t("statusOptions.checkedIn") },
     { value: "IN_PROGRESS", label: t("statusOptions.inProgress") },
@@ -75,11 +82,18 @@ export default function DoctorPatientListClient() {
 
   const STATUS_LABELS: Record<string, string> = {
     SCHEDULED: t("statusOptions.scheduled"),
+    BOOKED: t("statusOptions.booked"),
+    ARRIVED: t("statusOptions.arrived"),
+    WAITING: t("statusOptions.waiting"),
+    CALLING: t("statusOptions.calling"),
+    PENDING: t("statusOptions.pending"),
+    DEPOSIT_PAID: t("statusOptions.depositPaid"),
     CHECKED_IN: t("statusOptions.checkedIn"),
     IN_PROGRESS: t("statusOptions.inProgress"),
     COMPLETED: t("statusOptions.completed"),
     CANCELLED: t("statusOptions.cancelled"),
     NO_SHOW: t("statusOptions.noShow"),
+    NOSHOW: t("statusOptions.noShow"),
   };
 
   const loadPatients = useCallback(async () => {
@@ -114,12 +128,12 @@ export default function DoctorPatientListClient() {
   return (
     <div className="space-y-6 p-6 max-w-7xl mx-auto antialiased">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-gray-100">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-100">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
             {t("listTitle")}
           </h1>
-          <p className="text-gray-500 mt-1 text-sm">
+          <p className="text-slate-500 mt-1 text-sm">
             {t("listSubtitle")}
           </p>
         </div>
@@ -127,16 +141,16 @@ export default function DoctorPatientListClient() {
           <button
             onClick={loadPatients}
             disabled={loading}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-100 active:scale-95 transition-all disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 active:scale-95 transition-all shadow-2xs disabled:opacity-50"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`w-4 h-4 text-slate-500 ${loading ? "animate-spin" : ""}`} />
             {t("refresh") || "Refresh"}
           </button>
         </div>
       </div>
 
       {/* Filter bar */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs">
         {/* Status */}
         <div className="relative md:col-span-2">
           <select
@@ -145,7 +159,7 @@ export default function DoctorPatientListClient() {
               setStatusFilter(e.target.value);
               setPage(1);
             }}
-            className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-900 appearance-none cursor-pointer"
+            className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#00658D]/20 focus:border-[#00658D] transition-all text-slate-900 appearance-none cursor-pointer"
           >
             {STATUS_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -158,22 +172,22 @@ export default function DoctorPatientListClient() {
 
       {/* Table */}
       {error ? (
-        <div className="p-8 text-center min-h-[300px] bg-white rounded-3xl border border-gray-100 flex flex-col items-center justify-center gap-4">
-          <Users className="w-12 h-12 text-gray-300" />
-          <p className="text-red-500 font-medium">{error}</p>
+        <div className="p-8 text-center min-h-[300px] bg-white rounded-3xl border border-slate-200 flex flex-col items-center justify-center gap-4">
+          <Users className="w-12 h-12 text-slate-300" />
+          <p className="text-rose-600 font-medium">{error}</p>
           <button
             onClick={loadPatients}
-            className="px-5 py-2 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition active:scale-95 shadow-sm"
+            className="px-5 py-2 bg-[#00658D] text-white font-medium rounded-xl hover:bg-[#005273] transition active:scale-95 shadow-2xs"
           >
             {t("retry")}
           </button>
         </div>
       ) : (
-        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-2xs overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-gray-50/70 border-b border-gray-100 text-gray-500 text-xs font-bold uppercase tracking-wider">
+                <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 text-xs font-bold uppercase tracking-wider">
                   <th className="p-4 pl-6">{t("patient")}</th>
                   <th className="p-4">{t("phoneNumber")}</th>
                   <th className="p-4">{t("appointmentDate")}</th>
@@ -198,9 +212,9 @@ export default function DoctorPatientListClient() {
                     </tr>
                   ))
                 ) : data && data.patients.length > 0 ? (
-                  data.patients.map((p) => (
+                  data.patients.map((p, idx) => (
                     <PatientRow 
-                      key={p.appointmentId} 
+                      key={`${p.patientId}-${p.appointmentId || idx}`} 
                       patient={p} 
                       t={t}
                       statusLabels={STATUS_LABELS}
@@ -266,7 +280,7 @@ function PatientRow({
   statusLabels: Record<string, string>;
 }) {
   return (
-    <tr className="hover:bg-gray-50/50 transition-colors">
+    <tr className="hover:bg-slate-50/60 transition-colors">
       <td className="p-4 pl-6">
         <div className="flex items-center gap-3">
           <Avatar name={patient.patientName} url={patient.patientAvatarUrl} />
@@ -278,18 +292,18 @@ function PatientRow({
 
       <td className="p-4">
         {patient.patientPhone ? (
-          <div className="flex items-center gap-1.5 text-gray-700">
-            <Phone className="w-3.5 h-3.5 text-gray-400" />
+          <div className="flex items-center gap-1.5 text-slate-700">
+            <Phone className="w-3.5 h-3.5 text-slate-400" />
             {patient.patientPhone}
           </div>
         ) : (
-          <span className="text-gray-300">—</span>
+          <span className="text-slate-300">—</span>
         )}
       </td>
 
       <td className="p-4">
-        <div className="flex items-center gap-1.5 font-medium text-gray-900">
-          <CalendarDays className="w-3.5 h-3.5 text-gray-400" />
+        <div className="flex items-center gap-1.5 font-medium text-slate-800">
+          <CalendarDays className="w-3.5 h-3.5 text-slate-400" />
           {new Date(patient.appointmentDate).toLocaleString(undefined, {
             dateStyle: "medium",
             timeStyle: "short",
@@ -308,7 +322,7 @@ function PatientRow({
       <td className="p-4">
         <Link
           href={`/doctor/patients/${patient.patientId}`}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-lg transition-colors"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#00658D] bg-[#00658D]/10 hover:bg-[#00658D]/20 border border-[#00658D]/20 rounded-lg transition-colors"
         >
           <Eye className="w-3.5 h-3.5" />
           {t("viewDetails")}

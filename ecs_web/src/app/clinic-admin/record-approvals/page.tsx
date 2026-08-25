@@ -62,40 +62,40 @@ export default function ClinicAdminRecordApprovalsPage() {
   const rejectedCount = requests.filter((r) => r.status === "REJECTED").length
 
   return (
-    <div className="space-y-6 p-6 max-w-7xl mx-auto">
+    <div className="space-y-6 p-6 max-w-7xl mx-auto bg-background min-h-screen">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-outline-variant/30 pb-5">
         <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 mb-1">
-            <Building2 className="w-4 h-4 text-blue-600" /> Quản Lý Phòng Khám
+          <div className="flex items-center gap-2 text-xs font-bold text-primary mb-1 uppercase tracking-wider">
+            <Building2 className="w-4 h-4 text-primary" /> Quản Lý Phòng Khám
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight flex items-center gap-3">
+          <h1 className="text-2xl sm:text-3xl font-bold text-on-surface tracking-tight flex items-center gap-3">
             Phê Duyệt Hồ Sơ Bệnh Án
           </h1>
-          <p className="text-gray-500 mt-1 text-sm">
+          <p className="text-on-surface-variant mt-1 text-sm">
             Danh sách và thẩm định đơn đề nghị cấp quyền chỉnh sửa bệnh án từ bác sĩ chuyên khoa
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="bg-amber-50 border border-amber-200 px-4 py-2 rounded-2xl text-xs font-bold text-amber-900 flex items-center gap-2">
-            <Clock className="w-4 h-4 text-amber-600 animate-pulse" />
+          <div className="bg-amber-50 border border-amber-200/70 px-4 py-2 rounded-2xl text-xs font-bold text-amber-800 flex items-center gap-2 shadow-xs">
+            <Clock className="w-4 h-4 text-amber-700 animate-pulse" />
             <span>{pendingCount} đơn chờ phê duyệt</span>
           </div>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/40 p-4 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Search */}
         <div className="relative w-full md:w-96">
-          <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-on-surface-variant absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Tìm theo Bệnh nhân, Bác sĩ, Mã giấy phép..."
-            className="w-full text-xs pl-10 pr-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white outline-hidden transition-all text-gray-900"
+            className="w-full text-xs pl-10 pr-4 py-2.5 bg-surface-container-lowest border border-outline-variant/60 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-hidden transition-all text-on-surface font-medium"
           />
         </div>
 
@@ -105,8 +105,8 @@ export default function ClinicAdminRecordApprovalsPage() {
             onClick={() => setStatusFilter("ALL")}
             className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer shrink-0 ${
               statusFilter === "ALL"
-                ? "bg-slate-900 text-white shadow-2xs"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                ? "bg-on-surface text-surface-container-lowest shadow-xs"
+                : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container border border-outline-variant/40"
             }`}
           >
             Tất cả ({requests.length})
@@ -115,8 +115,8 @@ export default function ClinicAdminRecordApprovalsPage() {
             onClick={() => setStatusFilter("PENDING")}
             className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer shrink-0 ${
               statusFilter === "PENDING"
-                ? "bg-amber-600 text-white shadow-2xs"
-                : "bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200/60"
+                ? "bg-amber-700 text-white shadow-xs"
+                : "bg-amber-50 text-amber-800 hover:bg-amber-100/70 border border-amber-200/70"
             }`}
           >
             Chờ duyệt ({pendingCount})
@@ -125,8 +125,8 @@ export default function ClinicAdminRecordApprovalsPage() {
             onClick={() => setStatusFilter("APPROVED")}
             className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer shrink-0 ${
               statusFilter === "APPROVED"
-                ? "bg-emerald-600 text-white shadow-2xs"
-                : "bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200/60"
+                ? "bg-[#006c49] text-white shadow-xs"
+                : "bg-emerald-50 text-emerald-800 hover:bg-emerald-100/70 border border-emerald-200/70"
             }`}
           >
             Đã duyệt ({approvedCount})
@@ -135,8 +135,8 @@ export default function ClinicAdminRecordApprovalsPage() {
             onClick={() => setStatusFilter("REJECTED")}
             className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer shrink-0 ${
               statusFilter === "REJECTED"
-                ? "bg-red-600 text-white shadow-2xs"
-                : "bg-red-50 text-red-800 hover:bg-red-100 border border-red-200/60"
+                ? "bg-error text-on-error shadow-xs"
+                : "bg-rose-50 text-rose-800 hover:bg-rose-100/70 border border-rose-200/70"
             }`}
           >
             Đã từ chối ({rejectedCount})
@@ -145,52 +145,52 @@ export default function ClinicAdminRecordApprovalsPage() {
       </div>
 
       {/* Request Table / List */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-xs overflow-hidden">
+      <div className="bg-surface-container-lowest rounded-3xl border border-outline-variant/40 shadow-xs overflow-hidden">
         {filteredRequests.length === 0 ? (
-          <div className="p-12 text-center text-gray-400 text-sm">
-            <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-            <p className="font-semibold text-gray-600">Không tìm thấy yêu cầu phê duyệt phù hợp</p>
-            <p className="text-xs text-gray-400 mt-1">Vui lòng thay đổi từ khóa hoặc bộ lọc trạng thái</p>
+          <div className="p-12 text-center text-on-surface-variant/60 text-sm">
+            <FileText className="w-12 h-12 mx-auto mb-3 text-on-surface-variant/40" />
+            <p className="font-bold text-on-surface">Không tìm thấy yêu cầu phê duyệt phù hợp</p>
+            <p className="text-xs text-on-surface-variant mt-1">Vui lòng thay đổi từ khóa hoặc bộ lọc trạng thái</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-outline-variant/30">
             {filteredRequests.map((req) => (
               <div
                 key={req.recordId}
-                className="p-6 hover:bg-gray-50/80 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 group"
+                className="p-6 hover:bg-surface-container-low/80 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 group"
               >
                 <div className="space-y-2 flex-1">
                   <div className="flex flex-wrap items-center gap-3">
-                    <span className="font-mono bg-blue-50 text-blue-800 px-2.5 py-1 rounded-lg text-xs font-bold border border-blue-200">
+                    <span className="font-mono bg-[#c6e7ff]/40 text-primary border border-[#81cfff]/40 px-2.5 py-1 rounded-lg text-xs font-bold">
                       Mã GP: {req.permissionDoc}
                     </span>
                     {req.status === "PENDING" && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200">
-                        <Clock className="w-3.5 h-3.5 text-amber-600 animate-pulse" /> Chờ phê duyệt
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200/70">
+                        <Clock className="w-3.5 h-3.5 text-amber-700 animate-pulse" /> Chờ phê duyệt
                       </span>
                     )}
                     {req.status === "APPROVED" && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Đã phê duyệt
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/70">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" /> Đã phê duyệt
                       </span>
                     )}
                     {req.status === "REJECTED" && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-50 text-red-800 border border-red-200">
-                        <XCircle className="w-3.5 h-3.5 text-red-600" /> Đã từ chối
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-800 border border-rose-200/70">
+                        <XCircle className="w-3.5 h-3.5 text-rose-700" /> Đã từ chối
                       </span>
                     )}
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs text-gray-600">
+                  <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs text-on-surface-variant font-medium">
                     <span className="flex items-center gap-1.5">
-                      <User className="w-3.5 h-3.5 text-gray-400" /> Bệnh nhân: <strong className="text-gray-900">{req.patientName}</strong>
+                      <User className="w-3.5 h-3.5 text-on-surface-variant" /> Bệnh nhân: <strong className="text-on-surface">{req.patientName}</strong>
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <Stethoscope className="w-3.5 h-3.5 text-gray-400" /> Bác sĩ yêu cầu: <strong className="text-gray-900">{req.doctorName}</strong>
+                      <Stethoscope className="w-3.5 h-3.5 text-on-surface-variant" /> Bác sĩ yêu cầu: <strong className="text-on-surface">{req.doctorName}</strong>
                     </span>
                   </div>
 
-                  <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 text-xs text-gray-700 italic">
+                  <div className="p-3 bg-surface-container-low rounded-xl border border-outline-variant/40 text-xs text-on-surface italic font-medium">
                     "{req.reason}"
                   </div>
                 </div>
@@ -198,7 +198,7 @@ export default function ClinicAdminRecordApprovalsPage() {
                 <div className="flex items-center gap-3 shrink-0 self-start md:self-center pt-2 md:pt-0">
                   <Link
                     href={`/clinic-admin/record-approvals/${req.recordId}`}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white font-bold text-xs rounded-xl hover:bg-blue-700 active:scale-95 transition-all shadow-xs"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl hover:opacity-90 active:scale-95 transition-all shadow-xs cursor-pointer"
                   >
                     <span>Xem Chi Tiết & Phê Duyệt</span>
                     <ChevronRight className="w-4 h-4" />

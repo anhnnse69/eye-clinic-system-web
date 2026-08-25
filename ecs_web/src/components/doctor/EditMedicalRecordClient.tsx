@@ -209,9 +209,9 @@ export default function EditMedicalRecordClient({
         <div className="text-center">
           <div className="relative w-20 h-20 mx-auto mb-6">
             <div className="absolute inset-0 rounded-full border-4 border-gray-100" />
-            <div className="absolute inset-0 rounded-full border-4 border-blue-600 border-t-transparent animate-spin" />
-            <div className="absolute inset-3 rounded-full bg-blue-50 flex items-center justify-center">
-              <Loader2 className="w-6 h-6 text-blue-600 animate-pulse" />
+            <div className="absolute inset-0 rounded-full border-4 border-[#00658D] border-t-transparent animate-spin" />
+            <div className="absolute inset-3 rounded-full bg-[#00658D]/10 flex items-center justify-center">
+              <Loader2 className="w-6 h-6 text-[#00658D] animate-pulse" />
             </div>
           </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-1">{tEdit("loadingTitle")}</h3>
@@ -275,7 +275,7 @@ export default function EditMedicalRecordClient({
           <button
             type="button"
             onClick={() => router.push(`/doctor/records/${successInfo.recordId}`)}
-            className="rounded-xl bg-blue-600 px-6 py-3 text-xs font-bold text-white hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-md cursor-pointer"
+            className="rounded-xl bg-[#00658D] px-6 py-3 text-xs font-bold text-white hover:bg-[#005273] active:bg-[#003d54] transition-colors shadow-2xs cursor-pointer"
           >
             {tEdit("viewDetail")}
           </button>
@@ -320,7 +320,7 @@ export default function EditMedicalRecordClient({
             </button>
             <div>
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-[#00658D]/10 text-[#00658D] border border-[#00658D]/20">
                   <FileEdit className="w-3.5 h-3.5" /> Chỉnh sửa hồ sơ lâm sàng
                 </span>
               </div>

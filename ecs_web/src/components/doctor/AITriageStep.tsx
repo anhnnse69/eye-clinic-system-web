@@ -245,18 +245,18 @@ export default function AITriageStep({
           className={`
             flex items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer select-none
             ${isYes
-              ? "border-blue-500 bg-blue-50/70 text-slate-900 shadow-xs ring-1 ring-blue-500/20"
-              : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300"
+              ? "border-2 border-primary bg-[#c6e7ff]/30 text-on-surface shadow-xs ring-1 ring-primary/20"
+              : "border border-outline-variant/60 bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-low hover:border-primary/40"
             }
           `}
         >
-          <span className="text-sm font-medium text-slate-800">{getFieldLabel(field.key)}</span>
+          <span className="text-sm font-semibold text-on-surface">{getFieldLabel(field.key)}</span>
           <div
             className={`
               inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all shrink-0
               ${isYes
-                ? "bg-blue-600 text-white shadow-xs"
-                : "bg-slate-100 text-slate-500 border border-slate-200"
+                ? "bg-primary text-on-primary shadow-xs"
+                : "bg-surface-container-low text-on-surface-variant border border-outline-variant/40"
               }
             `}
           >
@@ -276,13 +276,13 @@ export default function AITriageStep({
     if (field.type === "select") {
       return (
         <div key={field.key} className="space-y-1.5">
-          <label className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
+          <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">
             {getFieldLabel(field.key)}
           </label>
           <select
             value={value as string}
             onChange={(e) => updateSymptom(field.key as keyof AITriageSymptomInput, e.target.value)}
-            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white text-sm font-medium text-slate-800 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20 focus:outline-none transition-all cursor-pointer"
+            className="w-full px-3.5 py-2.5 rounded-xl border border-outline-variant/60 bg-surface-container-lowest text-sm font-semibold text-on-surface focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all cursor-pointer"
           >
             {field.options?.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -309,33 +309,33 @@ export default function AITriageStep({
     return (
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
         {/* Primary Prediction Card */}
-        <div className={`rounded-2xl border-2 ${riskConfig.borderColor} ${riskConfig.bgColor} p-6 shadow-sm`}>
+        <div className={`rounded-2xl border-2 ${riskConfig.borderColor} ${riskConfig.bgColor} p-6 shadow-xs`}>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-start gap-4">
-              <div className="p-3 rounded-2xl bg-white shadow-xs border border-slate-100 shrink-0">
-                <Brain className="h-8 w-8 text-blue-600" />
+              <div className="p-3 rounded-2xl bg-surface-container-lowest shadow-xs border border-outline-variant/40 shrink-0">
+                <Brain className="h-8 w-8 text-primary" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">
                     {t("aiPrediction")}
                   </span>
-                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-[#c6e7ff]/40 text-primary border border-[#81cfff]/40 px-2 py-0.5 rounded-full">
                     <Sparkles className="w-3 h-3" /> ML 19-Class
                   </span>
                 </div>
-                <h2 className="text-2xl font-extrabold text-slate-900 mt-1">
+                <h2 className="text-2xl font-extrabold text-on-surface mt-1">
                   {primaryDiseaseName}
                 </h2>
                 {/* Confidence Bar */}
                 <div className="mt-2.5 flex items-center gap-3">
-                  <div className="w-36 sm:w-48 bg-slate-200 h-2.5 rounded-full overflow-hidden">
+                  <div className="w-36 sm:w-48 bg-surface-container h-2.5 rounded-full overflow-hidden">
                     <div
-                      className="bg-linear-to-r from-blue-600 to-indigo-600 h-full rounded-full transition-all duration-500"
+                      className="bg-primary h-full rounded-full transition-all duration-500"
                       style={{ width: `${Math.max(5, confidencePct)}%` }}
                     />
                   </div>
-                  <span className="text-sm font-bold text-slate-700">
+                  <span className="text-sm font-bold text-on-surface">
                     {confidencePct.toFixed(1)}% {t("confidence")}
                   </span>
                 </div>
@@ -351,9 +351,9 @@ export default function AITriageStep({
 
         {/* Differential Diagnoses */}
         {result.differentials.length > 0 && (
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-            <h3 className="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
-              <Activity className="w-4 h-4 text-blue-600" />
+          <div className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-xs">
+            <h3 className="text-sm font-bold text-on-surface mb-3 flex items-center gap-2">
+              <Activity className="w-4 h-4 text-primary" />
               {t("differentialDiagnoses")}
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -363,22 +363,22 @@ export default function AITriageStep({
                 return (
                   <div
                     key={diff.disease}
-                    className="p-3.5 rounded-xl border border-slate-100 bg-slate-50/70 flex flex-col justify-between"
+                    className="p-3.5 rounded-xl border border-outline-variant/40 bg-surface-container-low/70 flex flex-col justify-between"
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-700 font-bold text-[11px] flex items-center justify-center">
+                      <span className="w-5 h-5 rounded-full bg-surface-container text-on-surface-variant font-bold text-[11px] flex items-center justify-center">
                         #{index + 2}
                       </span>
-                      <span className="text-xs font-bold text-slate-600">
+                      <span className="text-xs font-bold text-on-surface-variant">
                         {diffPct.toFixed(1)}%
                       </span>
                     </div>
-                    <p className="text-sm font-semibold text-slate-800 line-clamp-2">
+                    <p className="text-sm font-semibold text-on-surface line-clamp-2">
                       {diffName}
                     </p>
-                    <div className="mt-2.5 w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                    <div className="mt-2.5 w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
                       <div
-                        className="bg-blue-500 h-full rounded-full"
+                        className="bg-primary h-full rounded-full"
                         style={{ width: `${Math.max(4, diffPct)}%` }}
                       />
                     </div>
@@ -390,9 +390,9 @@ export default function AITriageStep({
         )}
 
         {/* Disclaimer */}
-        <div className="rounded-xl bg-amber-50/90 border border-amber-200 p-4 flex items-start gap-3 text-amber-900">
-          <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-          <p className="text-xs leading-relaxed">
+        <div className="rounded-xl bg-amber-50/90 border border-amber-200/80 p-4 flex items-start gap-3 text-amber-900">
+          <Info className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+          <p className="text-xs leading-relaxed font-medium">
             <strong>{t("note")}</strong>{" "}
             {result.disclaimer &&
             result.disclaimer !==
@@ -407,15 +407,15 @@ export default function AITriageStep({
           <button
             type="button"
             onClick={() => setResult(null)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 transition-colors shadow-2xs"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-outline-variant/60 text-sm font-bold text-on-surface bg-surface-container-lowest hover:bg-surface-container-low transition-colors shadow-xs cursor-pointer"
           >
-            <RotateCcw className="w-4 h-4 text-slate-500" />
+            <RotateCcw className="w-4 h-4 text-on-surface-variant" />
             {t("adjustSymptoms")}
           </button>
           <button
             type="button"
             onClick={handleConfirm}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-md shadow-blue-600/25"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-on-primary font-bold hover:opacity-90 active:scale-95 transition-all shadow-xs cursor-pointer"
           >
             <Stethoscope className="h-5 w-5" />
             {t("proceedToExam")}
@@ -426,19 +426,19 @@ export default function AITriageStep({
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
+    <div className="mx-auto max-w-4xl px-4 py-8 bg-background min-h-screen">
       {/* Header */}
-      <header className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+      <header className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-outline-variant/30 pb-5">
         <div className="flex items-center gap-3.5">
-          <div className="p-3 rounded-2xl bg-blue-600 text-white shadow-md shadow-blue-600/20 shrink-0">
+          <div className="p-3 rounded-2xl bg-[#c6e7ff]/40 text-primary border border-[#81cfff]/40 shadow-xs shrink-0">
             <Brain className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-900">{t("title")}</h1>
-            <p className="text-sm text-slate-600 mt-0.5">
+            <h1 className="text-xl font-bold text-on-surface">{t("title")}</h1>
+            <p className="text-sm text-on-surface-variant mt-0.5">
               {t("subtitle")}
               {patientName && (
-                <span className="ml-1.5 font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
+                <span className="ml-1.5 font-semibold text-primary bg-[#c6e7ff]/40 px-2 py-0.5 rounded-md border border-[#81cfff]/40">
                   {patientName}
                 </span>
               )}
@@ -448,11 +448,11 @@ export default function AITriageStep({
 
         {/* Progress Step Indicator */}
         <div className="flex items-center gap-2 text-xs font-semibold shrink-0">
-          <span className="px-3 py-1 rounded-full bg-blue-600 text-white shadow-xs">
+          <span className="px-3 py-1 rounded-full bg-primary text-on-primary font-bold shadow-xs">
             1. {t("title")}
           </span>
-          <ChevronRight className="w-4 h-4 text-slate-400" />
-          <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-500">
+          <ChevronRight className="w-4 h-4 text-on-surface-variant/60" />
+          <span className="px-3 py-1 rounded-full bg-surface-container-low text-on-surface-variant border border-outline-variant/40 font-medium">
             2. {t("proceedToExam")}
           </span>
         </div>
@@ -476,35 +476,35 @@ export default function AITriageStep({
               return (
                 <div
                   key={category.id}
-                  className="rounded-2xl border border-slate-200 bg-white shadow-2xs overflow-hidden transition-all"
+                  className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest shadow-xs overflow-hidden transition-all"
                 >
                   {/* Category Header */}
                   <button
                     type="button"
                     onClick={() => setExpandedCategory(isExpanded ? "" : category.id)}
-                    className="w-full flex items-center justify-between p-4 sm:p-5 hover:bg-slate-50/80 transition-colors"
+                    className="w-full flex items-center justify-between p-4 sm:p-5 hover:bg-surface-container-low/80 transition-colors cursor-pointer"
                   >
                     <div className="flex items-center gap-3.5">
-                      <div className={`p-2.5 rounded-xl ${isExpanded ? "bg-blue-100 text-blue-700" : "bg-slate-100 text-slate-600"}`}>
+                      <div className={`p-2.5 rounded-xl border transition-all ${isExpanded ? "bg-[#c6e7ff]/40 text-primary border-[#81cfff]/40" : "bg-surface-container-low text-on-surface-variant border-outline-variant/30"}`}>
                         <Icon className="h-5 w-5" />
                       </div>
-                      <span className="font-bold text-slate-800 text-base">{categoryTitle}</span>
+                      <span className="font-bold text-on-surface text-base">{categoryTitle}</span>
                       {activeCount > 0 && (
-                        <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">
+                        <span className="px-2.5 py-0.5 rounded-full bg-[#c6e7ff]/40 text-primary border border-[#81cfff]/40 text-xs font-bold">
                           {t("reportedCount", { count: activeCount })}
                         </span>
                       )}
                     </div>
                     <div className="flex items-center gap-2">
                       <ChevronRight
-                        className={`h-5 w-5 text-slate-400 transition-transform duration-200 ${isExpanded ? "rotate-90 text-blue-600" : ""}`}
+                        className={`h-5 w-5 text-on-surface-variant transition-transform duration-200 ${isExpanded ? "rotate-90 text-primary" : ""}`}
                       />
                     </div>
                   </button>
 
                   {/* Category Content */}
                   {isExpanded && (
-                    <div className="px-4 pb-5 sm:px-5 space-y-4 border-t border-slate-100 pt-4 bg-slate-50/30">
+                    <div className="px-4 pb-5 sm:px-5 space-y-4 border-t border-outline-variant/30 pt-4 bg-surface-container-low/30">
                       {/* Select Dropdowns */}
                       {selectFields.length > 0 && (
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -516,7 +516,7 @@ export default function AITriageStep({
                       {boolFields.length > 0 && (
                         <div>
                           {selectFields.length > 0 && (
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
+                            <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-3">
                               Triệu chứng chi tiết
                             </p>
                           )}
@@ -534,18 +534,18 @@ export default function AITriageStep({
 
           {/* Error Message */}
           {error && (
-            <div className="mt-5 rounded-xl bg-rose-50 border border-rose-200 p-4 flex items-center gap-3">
-              <AlertTriangle className="h-5 w-5 text-rose-600 shrink-0" />
-              <p className="text-sm font-medium text-rose-800">{error}</p>
+            <div className="mt-5 rounded-xl bg-rose-50 border border-rose-200/80 p-4 flex items-center gap-3">
+              <AlertTriangle className="h-5 w-5 text-rose-700 shrink-0" />
+              <p className="text-sm font-bold text-rose-900">{error}</p>
             </div>
           )}
 
           {/* Action Buttons */}
-          <div className="mt-8 flex items-center justify-between border-t border-slate-200 pt-5">
+          <div className="mt-8 flex items-center justify-between border-t border-outline-variant/30 pt-5">
             <button
               type="button"
               onClick={onBack}
-              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer"
             >
               <ChevronLeft className="h-4 w-4" />
               {t("back")}
@@ -554,7 +554,7 @@ export default function AITriageStep({
               type="button"
               onClick={handlePredict}
               disabled={loading}
-              className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-blue-600 text-sm font-semibold text-white hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md shadow-blue-600/20"
+              className="inline-flex items-center gap-2.5 px-6 py-3 rounded-xl bg-primary text-sm font-bold text-on-primary hover:opacity-90 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xs cursor-pointer"
             >
               {loading ? (
                 <>

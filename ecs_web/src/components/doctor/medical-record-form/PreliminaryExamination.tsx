@@ -51,12 +51,12 @@ const CATEGORY_OPTIONS: Array<{
   color: string
   border: string
 }> = [
-  { id: "MS21_TRAUMA",            icon: AlertTriangle, color: "text-rose-700 bg-rose-50",   border: "border-rose-300" },
-  { id: "MS22_ANTERIOR",          icon: Eye,           color: "text-teal-700 bg-teal-50",    border: "border-teal-300" },
-  { id: "MS23_FUNDUS",            icon: Eye,           color: "text-amber-700 bg-amber-50",  border: "border-amber-300" },
-  { id: "MS24_GLAUCOMA",          icon: Activity,      color: "text-indigo-700 bg-indigo-50", border: "border-indigo-300" },
-  { id: "MS25_STRABISMUS_PTOSIS", icon: Eye,           color: "text-sky-700 bg-sky-50",      border: "border-sky-300" },
-  { id: "MS26_PEDIATRIC",         icon: Eye,           color: "text-violet-700 bg-violet-50", border: "border-violet-300" },
+  { id: "MS21_TRAUMA",            icon: AlertTriangle, color: "text-primary bg-[#c6e7ff]/30", border: "border-outline-variant/40" },
+  { id: "MS22_ANTERIOR",          icon: Eye,           color: "text-primary bg-[#c6e7ff]/30", border: "border-outline-variant/40" },
+  { id: "MS23_FUNDUS",            icon: Eye,           color: "text-primary bg-[#c6e7ff]/30", border: "border-outline-variant/40" },
+  { id: "MS24_GLAUCOMA",          icon: Activity,      color: "text-primary bg-[#c6e7ff]/30", border: "border-outline-variant/40" },
+  { id: "MS25_STRABISMUS_PTOSIS", icon: Eye,           color: "text-primary bg-[#c6e7ff]/30", border: "border-outline-variant/40" },
+  { id: "MS26_PEDIATRIC",         icon: Eye,           color: "text-primary bg-[#c6e7ff]/30", border: "border-outline-variant/40" },
 ]
 
 export default function PreliminaryExamination({ patientName, onComplete, onBack }: Props) {

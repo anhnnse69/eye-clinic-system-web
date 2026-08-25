@@ -161,7 +161,7 @@ export default function ClinicProfilePage() {
 
     if (loading) {
         return (
-            <div className="max-w-4xl mx-auto p-12 text-center text-slate-500 font-medium text-lg flex flex-col items-center justify-center gap-3">
+            <div className="max-w-4xl mx-auto p-12 text-center text-on-surface-variant font-medium text-lg flex flex-col items-center justify-center gap-3 bg-background min-h-screen">
                 <div className="w-8 h-8 border-3 border-primary/20 border-t-primary rounded-full animate-spin" />
                 {t("loadingData")}
             </div>
@@ -170,7 +170,7 @@ export default function ClinicProfilePage() {
 
     if (error) {
         return (
-            <div className="max-w-4xl mx-auto my-8 p-6 border border-error bg-error-container/10 text-error rounded-2xl font-semibold text-center flex items-center justify-center gap-2">
+            <div className="max-w-4xl mx-auto my-8 p-6 border border-error-container bg-error-container/20 text-error rounded-2xl font-semibold text-center flex items-center justify-center gap-2">
                 <AlertCircle className="w-5 h-5 shrink-0" />
                 <span>{error}</span>
             </div>
@@ -179,24 +179,24 @@ export default function ClinicProfilePage() {
 
     if (!clinic) {
         return (
-            <div className="max-w-4xl mx-auto my-8 p-12 text-center text-slate-400 border border-dashed border-slate-300 rounded-2xl">
+            <div className="max-w-4xl mx-auto my-8 p-12 text-center text-on-surface-variant border border-dashed border-outline-variant/60 rounded-2xl bg-background">
                 {t("loadFailed")}
             </div>
         )
     }
 
     return (
-        <div className="max-w-4xl mx-auto p-4 md:p-8">
+        <div className="max-w-4xl mx-auto p-4 md:p-8 bg-background min-h-screen space-y-6">
 
             {/* Header section */}
-            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-2">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{t("title")}</h1>
-                    <p className="text-sm text-slate-500 mt-0.5">{t("manageSubtitle")}</p>
+                    <h1 className="text-2xl font-bold text-on-surface tracking-tight">{t("title")}</h1>
+                    <p className="text-sm text-on-surface-variant mt-0.5">{t("manageSubtitle")}</p>
                 </div>
                 <Link
                     href="/clinic-admin/edit-profile"
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white text-sm font-semibold shadow-sm hover:opacity-90 transition active:scale-95"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-on-primary text-sm font-semibold shadow-xs hover:opacity-90 transition active:scale-95 cursor-pointer"
                 >
                     <Pencil className="w-4 h-4" />
                     {tEdit("title")}
@@ -205,44 +205,44 @@ export default function ClinicProfilePage() {
 
             {/* Success notification */}
             {publishSuccess && (
-                <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-700 font-medium flex items-center gap-3">
-                    <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600" />
+                <div className="p-4 bg-[#6ffbbe]/25 border border-[#4edea3]/60 rounded-2xl text-[#003925] font-medium flex items-center gap-3 animate-fade-in">
+                    <CheckCircle2 className="w-5 h-5 shrink-0 text-[#006c49]" />
                     <span>{publishSuccess}</span>
                 </div>
             )}
 
             {/* General publish error notification (if modal closed) */}
             {publishError && !showPublishModal && (
-                <div className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-700 font-medium flex items-start gap-3">
-                    <AlertCircle className="w-5 h-5 shrink-0 text-rose-600 mt-0.5" />
+                <div className="p-4 bg-error-container/30 border border-error-container rounded-2xl text-error font-medium flex items-start gap-3 animate-fade-in">
+                    <AlertCircle className="w-5 h-5 shrink-0 text-error mt-0.5" />
                     <span>{publishError}</span>
                 </div>
             )}
 
             {/* Main profile card */}
-            <div className="bg-white border border-slate-200 shadow-sm rounded-2xl overflow-hidden">
+            <div className="bg-surface-container-lowest border border-outline-variant/40 shadow-xs rounded-2xl overflow-hidden">
 
                 {/* Banner & Header Info */}
-                <div className="p-6 md:p-8 bg-slate-50/50 border-b border-slate-100 flex flex-col md:flex-row items-center md:items-start gap-6">
-                    <div className="w-24 h-24 bg-white border border-slate-200 rounded-2xl p-1.5 shadow-inner shrink-0 flex items-center justify-center overflow-hidden">
+                <div className="p-6 md:p-8 bg-surface-container-low border-b border-outline-variant/30 flex flex-col md:flex-row items-center md:items-start gap-6">
+                    <div className="w-24 h-24 bg-surface-container-lowest border border-outline-variant/60 rounded-2xl p-1.5 shadow-xs shrink-0 flex items-center justify-center overflow-hidden">
                         {clinic.logo ? (
                             <img src={clinic.logo} alt={clinic.name} className="w-full h-full object-cover rounded-xl" />
                         ) : (
-                            <div className="w-full h-full bg-primary/5 text-primary text-2xl font-black rounded-xl flex items-center justify-center">
+                            <div className="w-full h-full bg-[#c6e7ff]/40 text-primary text-2xl font-black rounded-xl flex items-center justify-center border border-[#81cfff]/40">
                                 {clinic.name.charAt(0).toUpperCase()}
                             </div>
                         )}
                     </div>
 
                     <div className="flex-1 text-center md:text-left space-y-3 w-full">
-                        <h2 className="text-xl md:text-2xl font-extrabold text-slate-900 leading-snug">{clinic.name}</h2>
-                        <div className="flex items-center justify-center md:justify-start gap-2 text-sm text-slate-500">
+                        <h2 className="text-xl md:text-2xl font-extrabold text-on-surface leading-snug">{clinic.name}</h2>
+                        <div className="flex items-center justify-center md:justify-start gap-2 text-sm text-on-surface-variant">
                             <div className="flex items-center text-amber-500">
                                 <Star className="w-5 h-5 fill-current" />
-                                <span className="font-bold text-slate-900 ml-1 text-base">{clinic.ratingAvg ? clinic.ratingAvg.toFixed(1) : "0.0"}</span>
+                                <span className="font-bold text-on-surface ml-1 text-base">{clinic.ratingAvg ? clinic.ratingAvg.toFixed(1) : "0.0"}</span>
                             </div>
-                            <span className="text-slate-300">•</span>
-                            <span className="font-medium text-slate-600">{clinic.reviewCount ?? 0} {t("reviewsFromCustomers")}</span>
+                            <span className="text-outline-variant">•</span>
+                            <span className="font-medium text-on-surface-variant">{clinic.reviewCount ?? 0} {t("reviewsFromCustomers")}</span>
                         </div>
                     </div>
                 </div>
@@ -252,81 +252,82 @@ export default function ClinicProfilePage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                         {/* Address */}
-                        <div className="flex gap-3.5 items-start p-4 rounded-xl border border-slate-100 hover:bg-slate-50/40 transition md:col-span-2">
-                            <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl shrink-0">
+                        <div className="flex gap-3.5 items-start p-4 rounded-xl border border-outline-variant/30 bg-surface-container-low hover:bg-surface-container-low/80 transition md:col-span-2">
+                            <div className="p-2.5 bg-[#c6e7ff]/40 text-primary border border-[#81cfff]/40 rounded-xl shrink-0">
                                 <MapPin className="w-5 h-5" />
                             </div>
                             <div className="space-y-0.5">
-                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">{t("operatingAddress")}</span>
-                                <p className="text-slate-800 font-semibold leading-relaxed text-base">{clinic.address}</p>
+                                <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider block">{t("operatingAddress")}</span>
+                                <p className="text-on-surface font-semibold leading-relaxed text-base">{clinic.address}</p>
                             </div>
                         </div>
 
                         {/* Phone */}
-                        <div className="flex gap-3.5 items-start p-4 rounded-xl border border-slate-100 hover:bg-slate-50/40 transition">
-                            <div className="p-2.5 bg-purple-50 text-purple-600 rounded-xl shrink-0">
+                        <div className="flex gap-3.5 items-start p-4 rounded-xl border border-outline-variant/30 bg-surface-container-low hover:bg-surface-container-low/80 transition">
+                            <div className="p-2.5 bg-[#c6e7ff]/40 text-primary border border-[#81cfff]/40 rounded-xl shrink-0">
                                 <Phone className="w-5 h-5" />
                             </div>
                             <div className="space-y-0.5">
-                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">{t("contactPhone")}</span>
-                                <p className="text-slate-800 font-bold text-base tracking-wide">{clinic.phone}</p>
+                                <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider block">{t("contactPhone")}</span>
+                                <p className="text-on-surface font-bold text-base tracking-wide">{clinic.phone}</p>
                             </div>
                         </div>
 
                         {/* Email */}
-                        <div className="flex gap-3.5 items-start p-4 rounded-xl border border-slate-100 hover:bg-slate-50/40 transition">
-                            <div className="p-2.5 bg-teal-50 text-teal-600 rounded-xl shrink-0">
+                        <div className="flex gap-3.5 items-start p-4 rounded-xl border border-outline-variant/30 bg-surface-container-low hover:bg-surface-container-low/80 transition">
+                            <div className="p-2.5 bg-[#c6e7ff]/40 text-primary border border-[#81cfff]/40 rounded-xl shrink-0">
                                 <Mail className="w-5 h-5" />
                             </div>
                             <div className="space-y-0.5 w-full overflow-hidden">
-                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">{t("emailAddress")}</span>
-                                <p className="text-slate-800 font-bold text-base break-all">{clinic.email || "—"}</p>
+                                <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider block">{t("emailAddress")}</span>
+                                <p className="text-on-surface font-bold text-base break-all">{clinic.email || "—"}</p>
                             </div>
                         </div>
 
                         {/* Open hours */}
-                        <div className="flex gap-3.5 items-start p-4 rounded-xl border border-slate-100 hover:bg-slate-50/40 transition">
-                            <div className="p-2.5 bg-green-50 text-green-600 rounded-xl shrink-0">
+                        <div className="flex gap-3.5 items-start p-4 rounded-xl border border-outline-variant/30 bg-surface-container-low hover:bg-surface-container-low/80 transition">
+                            <div className="p-2.5 bg-[#6ffbbe]/25 text-[#003925] border border-[#4edea3]/60 rounded-xl shrink-0">
                                 <Clock className="w-5 h-5" />
                             </div>
                             <div className="space-y-0.5">
-                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">{t("openHours")}</span>
-                                <p className="text-slate-800 font-bold text-base">
+                                <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider block">{t("openHours")}</span>
+                                <p className="text-on-surface font-bold text-base">
                                     {formatTime(clinic.openTime)} - {formatTime(clinic.closeTime)}
                                 </p>
                             </div>
                         </div>
 
                         {/* Public status & publish action */}
-                        <div className="flex gap-3.5 items-start p-4 rounded-xl border border-slate-100 hover:bg-slate-50/40 transition">
-                            <div className={`p-2.5 rounded-xl shrink-0 ${clinic.isPublished ? "bg-blue-50 text-blue-600" : clinic.isPublicationRequested ? "bg-amber-50 text-amber-600" : "bg-slate-50 text-slate-400"}`}>
+                        <div className="flex gap-3.5 items-start p-4 rounded-xl border border-outline-variant/30 bg-surface-container-low hover:bg-surface-container-low/80 transition">
+                            <div className={`p-2.5 rounded-xl shrink-0 border ${clinic.isPublished ? "bg-[#c6e7ff]/40 text-primary border-[#81cfff]/40" : clinic.isPublicationRequested ? "bg-amber-50 text-amber-700 border-amber-200/70" : "bg-surface-container text-on-surface-variant border-outline-variant/40"}`}>
                                 <Globe className="w-5 h-5" />
                             </div>
                             <div className="space-y-0.5 flex-1">
-                                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">{t("publicStatus")}</span>
+                                <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider block">{t("publicStatus")}</span>
                                 <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
-                                    <p className={`font-bold text-base ${clinic.isPublished ? "text-blue-600" : clinic.isPublicationRequested ? "text-amber-600" : "text-slate-500"}`}>
+                                    <p className={`font-bold text-base ${clinic.isPublished ? "text-primary" : clinic.isPublicationRequested ? "text-amber-800" : "text-on-surface-variant"}`}>
                                         {clinic.isPublished ? t("isPublished") : clinic.isPublicationRequested ? t("pendingApproval") : t("notPublished")}
                                     </p>
 
                                     {!clinic.isPublished && !clinic.isPublicationRequested && clinic.isActive && (
                                         <button
                                             onClick={handleOpenPublishModal}
-                                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-all active:scale-95 shadow-sm"
+                                            className="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:opacity-90 text-on-primary text-sm font-semibold rounded-xl transition-all active:scale-95 shadow-xs cursor-pointer"
                                         >
                                             {t("requestPublish")}
                                         </button>
                                     )}
 
                                     {clinic.isPublicationRequested && !clinic.isPublished && (
-                                        <span className="text-xs text-amber-600 font-medium bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200 flex items-center gap-1.5">
-                                            <Clock className="w-3.5 h-3.5 animate-pulse" />
+                                        <span className="text-xs text-amber-800 font-semibold bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200/70 flex items-center gap-1.5">
+                                            <Clock className="w-3.5 h-3.5 animate-pulse text-amber-700" />
                                             {t("requestSubmitted")}
                                         </span>
                                     )}
 
                                     {clinic.isPublished && (
-                                        <span className="text-xs text-blue-600 font-medium bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-200 flex items-center gap-1.5">
+                                        <span className="text-xs text-[#003925] font-semibold bg-[#6ffbbe]/25 px-3 py-1.5 rounded-lg border border-[#4edea3]/60 flex items-center gap-1.5">
+                                            <CheckCircle2 className="w-3.5 h-3.5 text-[#006c49]" />
                                             <span>{t("isPublished")}</span>
                                         </span>
                                     )}
@@ -338,10 +339,10 @@ export default function ClinicProfilePage() {
 
                     {/* Description */}
                     {clinic.description && (
-                        <div className="pt-4 border-t border-slate-100 space-y-2">
-                            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">{t("detailedDescription")}</span>
-                            <div className="bg-slate-50 border border-slate-200/60 p-5 rounded-2xl">
-                                <p className="text-slate-600 text-sm leading-relaxed whitespace-pre-line">{clinic.description}</p>
+                        <div className="pt-4 border-t border-outline-variant/30 space-y-2">
+                            <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider block">{t("detailedDescription")}</span>
+                            <div className="bg-surface-container-low border border-outline-variant/40 p-5 rounded-2xl">
+                                <p className="text-on-surface text-sm leading-relaxed whitespace-pre-line font-medium">{clinic.description}</p>
                             </div>
                         </div>
                     )}
@@ -351,56 +352,53 @@ export default function ClinicProfilePage() {
 
             {/* Request publish modal */}
             {showPublishModal && (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl w-[90vw] max-w-lg min-w-[300px] shadow-2xl border border-slate-100 overflow-hidden animate-in zoom-in-95 duration-200">
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
+                    <div className="bg-surface-container-lowest rounded-2xl w-[460px] max-w-[95vw] p-6 border border-outline-variant/60 shadow-2xl block text-left space-y-4 animate-scale-in">
                         
-                        <div className="p-6 border-b border-slate-100">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-blue-50 rounded-full">
-                                    <Globe className="w-6 h-6 text-blue-600" />
-                                </div>
-                                <h3 className="text-xl font-bold text-slate-900">{t("modalTitle")}</h3>
+                        <div className="flex items-center gap-3">
+                            <div className="p-2.5 rounded-xl bg-[#c6e7ff]/40 text-primary border border-[#81cfff]/40">
+                                <Globe className="w-6 h-6" />
                             </div>
+                            <h3 className="text-xl font-bold text-on-surface">{t("modalTitle")}</h3>
                         </div>
 
-                        <div className="p-6 space-y-4">
-                            <p className="text-slate-600 text-base leading-relaxed">
+                        <div className="space-y-4">
+                            <p className="text-on-surface-variant text-sm leading-relaxed">
                                 {t("modalBody", { name: clinic.name })}
                             </p>
 
-                            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
-                                <p className="text-sm font-semibold text-blue-700">{t("modalNoticeTitle")}</p>
-                                <ul className="list-disc list-inside space-y-1 mt-1 text-sm text-blue-600">
+                            <div className="bg-[#c6e7ff]/30 border border-[#81cfff]/40 rounded-xl p-4">
+                                <p className="text-sm font-bold text-primary">{t("modalNoticeTitle")}</p>
+                                <ul className="list-disc list-inside space-y-1 mt-1 text-xs text-on-surface-variant font-medium">
                                     <li>{t("modalNoticeItem")}</li>
                                 </ul>
                             </div>
 
                             {/* Modal error display */}
                             {publishError && (
-                                <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-sm flex items-start gap-2.5">
-                                    <AlertCircle className="w-5 h-5 shrink-0 text-rose-600 mt-0.5" />
-                                    <span className="leading-relaxed font-medium">{publishError}</span>
+                                <div className="p-4 bg-error-container/30 border border-error-container rounded-xl text-error text-sm flex items-start gap-2.5">
+                                    <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                                    <span className="leading-relaxed font-semibold">{publishError}</span>
                                 </div>
                             )}
                         </div>
 
-                        <div className="p-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row gap-3 justify-end">
+                        <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-end">
                             <button 
                                 onClick={handleClosePublishModal} 
                                 disabled={publishing}
-                                className="px-4 py-2.5 text-slate-700 bg-white border border-slate-300 rounded-xl font-semibold hover:bg-slate-50 transition disabled:opacity-50"
+                                className="px-4 py-2.5 text-on-surface bg-surface-container-lowest border border-outline-variant/60 rounded-xl font-semibold hover:bg-surface-container-low transition cursor-pointer disabled:opacity-50"
                             >
                                 Hủy bỏ
                             </button>
                             <button 
                                 onClick={handleConfirmPublish} 
                                 disabled={publishing}
-                                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 min-w-[120px]"
+                                className="px-6 py-2.5 bg-primary hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-on-primary font-semibold rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 min-w-[120px] shadow-xs cursor-pointer"
                             >
                                 {publishing ? t("processing") : t("requestPublish")}
                             </button>
                         </div>
-
                     </div>
                 </div>
             )}

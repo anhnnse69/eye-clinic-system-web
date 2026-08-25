@@ -120,16 +120,16 @@ export default function CreateClinicAdminPage() {
     }
 
     return (
-        <div className="block w-full p-4 md:p-6 text-left clear-both">
+        <div className="block w-full p-4 md:p-6 text-left clear-both bg-background min-h-screen">
             <div className="max-w-3xl mx-auto space-y-6">
 
                 {/* Thanh điều hướng / Tiêu đề */}
                 <div className="flex items-start gap-4 w-full">
                     <Link
                         href="/system-admin/accounts"
-                        className="p-2 border border-outline-variant rounded-xl hover:bg-surface-container-low transition-colors shrink-0"
+                        className="p-2 border border-outline-variant/60 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low transition-colors shrink-0 text-on-surface-variant hover:text-primary"
                     >
-                        <ArrowLeft className="h-5 w-5 text-on-surface-variant" />
+                        <ArrowLeft className="h-5 w-5" />
                     </Link>
                     <div className="flex-1 min-w-0">
                         <h2 className="text-headline-md font-bold text-on-surface flex items-center gap-2 flex-wrap">
@@ -142,11 +142,11 @@ export default function CreateClinicAdminPage() {
                     </div>
                 </div>
 
-                <hr className="border-outline-variant" />
+                <hr className="border-outline-variant/40" />
 
                 {/* Thông báo lỗi tải danh sách phòng khám */}
                 {clinicFetchError && (
-                    <div className="p-4 bg-amber-50 text-amber-900 rounded-xl flex items-center gap-2 text-body-md font-medium border border-amber-200 w-full">
+                    <div className="p-4 bg-amber-50 text-amber-900 rounded-xl flex items-center gap-2 text-body-md font-medium border border-amber-200/70 w-full">
                         <AlertCircle className="h-5 w-5 text-amber-600 shrink-0" />
                         <span className="wrap-break-word">{clinicFetchError}</span>
                     </div>
@@ -154,7 +154,7 @@ export default function CreateClinicAdminPage() {
 
                 {/* Thông báo Lỗi submit */}
                 {error && (
-                    <div className="p-4 bg-error-container text-on-error-container rounded-xl flex items-center gap-2 text-body-md font-medium border border-error/20 w-full">
+                    <div className="p-4 bg-error-container/40 text-on-error-container rounded-xl flex items-center gap-2 text-body-md font-medium border border-error-container w-full">
                         <AlertCircle className="h-5 w-5 text-error shrink-0" />
                         <span className="wrap-break-word">{error}</span>
                     </div>
@@ -162,14 +162,14 @@ export default function CreateClinicAdminPage() {
 
                 {/* Thông báo Thành công */}
                 {success && (
-                    <div className="p-4 bg-emerald-50 text-emerald-800 rounded-xl flex items-center gap-2 text-body-md font-medium border border-emerald-200 w-full">
-                        <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+                    <div className="p-4 bg-[#6ffbbe]/25 text-[#003925] rounded-xl flex items-center gap-2 text-body-md font-medium border border-[#4edea3]/60 w-full">
+                        <CheckCircle2 className="h-5 w-5 text-[#006c49] shrink-0" />
                         <span className="wrap-break-word">{success}</span>
                     </div>
                 )}
 
                 {/* Biểu mẫu Form nhập liệu */}
-                <form onSubmit={handleSubmit} className="space-y-5 bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant shadow-sm w-full block">
+                <form onSubmit={handleSubmit} className="space-y-5 bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/40 shadow-xs w-full block">
 
                     {/* Hộp lựa chọn (Select) phòng khám từ DB */}
                     <div className="flex flex-col space-y-2 w-full">
@@ -181,7 +181,7 @@ export default function CreateClinicAdminPage() {
                                 value={clinicId}
                                 onChange={(e) => setClinicId(e.target.value)}
                                 disabled={submitting || loadingClinics}
-                                className="w-full px-4 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors disabled:opacity-60 block cursor-pointer appearance-none pr-10 font-medium"
+                                className="w-full px-4 py-2.5 bg-surface-container-low text-on-surface border border-outline-variant/60 rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors disabled:opacity-60 block cursor-pointer appearance-none pr-10 font-medium"
                             >
                                 <option value="">
                                     {loadingClinics ? t("loadingClinics") : t("selectClinicPlaceholder")}
@@ -212,7 +212,7 @@ export default function CreateClinicAdminPage() {
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
                             disabled={submitting}
-                            className="w-full px-4 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors disabled:opacity-60 block"
+                            className="w-full px-4 py-2.5 bg-surface-container-low text-on-surface border border-outline-variant/60 rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors disabled:opacity-60 block"
                         />
                     </div>
 
@@ -228,7 +228,7 @@ export default function CreateClinicAdminPage() {
                                 value={phone}
                                 onChange={(e) => setPhone(e.target.value)}
                                 disabled={submitting}
-                                className="w-full px-4 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors disabled:opacity-60 block"
+                                className="w-full px-4 py-2.5 bg-surface-container-low text-on-surface border border-outline-variant/60 rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors disabled:opacity-60 block"
                             />
                         </div>
 
@@ -242,23 +242,23 @@ export default function CreateClinicAdminPage() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 disabled={submitting}
-                                className="w-full px-4 py-2.5 bg-surface-container-lowest text-on-surface border border-outline-variant rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors disabled:opacity-60 block"
+                                className="w-full px-4 py-2.5 bg-surface-container-low text-on-surface border border-outline-variant/60 rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors disabled:opacity-60 block"
                             />
                         </div>
                     </div>
 
                     {/* Thanh Nút bấm hành động */}
-                    <div className="flex items-center justify-end gap-3 pt-4 border-t border-outline-variant w-full">
+                    <div className="flex items-center justify-end gap-3 pt-4 border-t border-outline-variant/30 w-full">
                         <Link
                             href="/system-admin/accounts"
-                            className="px-5 py-2.5 border border-outline-variant rounded-xl text-label-md font-medium text-on-surface hover:bg-surface-container-low transition-colors whitespace-nowrap"
+                            className="px-5 py-2.5 border border-outline-variant/60 rounded-xl text-label-md font-medium text-on-surface hover:bg-surface-container-low transition-colors whitespace-nowrap"
                         >
                             {t("cancel")}
                         </Link>
                         <button
                             type="submit"
                             disabled={submitting || loadingClinics}
-                            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-xl hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-label-md font-medium shadow-sm whitespace-nowrap"
+                            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-xl hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-label-md font-medium shadow-xs whitespace-nowrap cursor-pointer"
                         >
                             {submitting ? (
                                 <>

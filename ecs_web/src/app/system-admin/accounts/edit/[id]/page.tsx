@@ -157,44 +157,44 @@ export default function EditAccountPage() {
   }
 
   return (
-    <div className="space-y-6 text-left p-4 md:p-6 w-full max-w-3xl mx-auto">
+    <div className="space-y-6 text-left p-4 md:p-6 w-full max-w-3xl mx-auto bg-background min-h-screen">
       {/* Tiêu đề & Breadcrumb chuẩn Slate UI */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-on-surface flex items-center gap-2">
             <button
               type="button"
               onClick={() => router.back()}
-              className="p-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 rounded-xl transition-all cursor-pointer mr-1"
+              className="p-2 border border-outline-variant/60 bg-surface-container-lowest hover:bg-surface-container-low text-on-surface-variant rounded-xl transition-all cursor-pointer mr-1"
               title={t("backToList")}
             >
-              <ArrowLeft className="h-5 w-5 text-slate-600" />
+              <ArrowLeft className="h-5 w-5 text-on-surface-variant" />
             </button>
             {isReadOnly ? (
               <span className="flex items-center gap-2">
-                <Eye className="h-6 w-6 text-blue-600 shrink-0" /> {t("accountDetailTitle")}
+                <Eye className="h-6 w-6 text-primary shrink-0" /> {t("accountDetailTitle")}
               </span>
             ) : (
               t("editClinicAdminTitle")
             )}
           </h2>
-          <nav className="flex text-sm text-slate-500 gap-1 mt-1.5 pl-11">
-            <span className="cursor-pointer hover:text-blue-600" onClick={() => router.push("/system-admin/dashboard")}>Dashboard</span>
+          <nav className="flex text-sm text-on-surface-variant gap-1 mt-1.5 pl-11">
+            <span className="cursor-pointer hover:text-primary transition-colors" onClick={() => router.push("/system-admin/dashboard")}>Dashboard</span>
             <span>/</span>
-            <span className="cursor-pointer hover:text-blue-600" onClick={() => router.push("/system-admin/accounts")}>{t("listTitle")}</span>
+            <span className="cursor-pointer hover:text-primary transition-colors" onClick={() => router.push("/system-admin/accounts")}>{t("listTitle")}</span>
             <span>/</span>
-            <span className="text-slate-800">{isReadOnly ? t("accountDetailTitle") : t("editTitle")}</span>
+            <span className="text-on-surface font-medium">{isReadOnly ? t("accountDetailTitle") : t("editTitle")}</span>
           </nav>
         </div>
       </div>
 
       {/* Thông báo thông tin Chế độ Chỉ xem nếu là tài khoản không phải Clinic Admin */}
       {isReadOnly && (
-        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-start gap-3">
-          <Info className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+        <div className="bg-[#c6e7ff]/30 border border-[#81cfff]/50 rounded-2xl p-4 flex items-start gap-3">
+          <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
           <div className="text-sm">
-            <p className="font-semibold text-blue-900 mb-0.5">{t("readOnlyNoticeTitle")}</p>
-            <p className="text-blue-700 leading-relaxed">
+            <p className="font-semibold text-on-surface mb-0.5">{t("readOnlyNoticeTitle")}</p>
+            <p className="text-on-surface-variant leading-relaxed">
               {t("readOnlyNoticeBody")}
             </p>
           </div>
@@ -203,19 +203,19 @@ export default function EditAccountPage() {
 
       {/* Hiển thị thông báo lỗi từ hệ thống nếu có */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
-          <p className="text-sm font-medium text-red-700">{error}</p>
+        <div className="bg-error-container/40 border border-error-container rounded-2xl p-4 flex items-start gap-3">
+          <AlertCircle className="h-5 w-5 text-error shrink-0 mt-0.5" />
+          <p className="text-sm font-medium text-on-error-container">{error}</p>
         </div>
       )}
 
       {/* Form Nhập Liệu Chuẩn Slate UI */}
-      <form onSubmit={handleSubmit} className="w-full bg-white p-6 md:p-8 rounded-2xl border border-slate-200 space-y-5 shadow-sm">
+      <form onSubmit={handleSubmit} className="w-full bg-surface-container-lowest p-6 md:p-8 rounded-2xl border border-outline-variant/40 space-y-5 shadow-xs">
 
         {/* Trường: Họ và tên */}
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-            <User className="h-4 w-4 text-blue-600" /> {t("fullNameLabel")} {!isReadOnly && <span className="text-red-500">*</span>}
+          <label className="text-sm font-semibold text-on-surface flex items-center gap-1.5">
+            <User className="h-4 w-4 text-primary" /> {t("fullNameLabel")} {!isReadOnly && <span className="text-error">*</span>}
           </label>
           <input
             type="text"
@@ -223,7 +223,7 @@ export default function EditAccountPage() {
             disabled={isReadOnly || submitting}
             value={formDataState.fullName}
             onChange={(e) => setFormDataState({ ...formDataState, fullName: e.target.value })}
-            className="w-full px-4 py-2.5 bg-slate-50 text-slate-800 border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-slate-100 disabled:text-slate-600 disabled:opacity-90 transition-all font-medium"
+            className="w-full px-4 py-2.5 bg-surface-container-low text-on-surface border border-outline-variant/60 rounded-xl text-sm placeholder:text-on-surface-variant/50 focus:ring-1 focus:ring-primary focus:border-primary outline-none disabled:bg-surface-container disabled:text-on-surface-variant disabled:opacity-90 transition-all font-medium"
             placeholder={t("fullNamePlaceholder")}
           />
         </div>
@@ -232,8 +232,8 @@ export default function EditAccountPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Trường: Số điện thoại */}
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-              <Phone className="h-4 w-4 text-blue-600" /> {t("phoneLabel")} {!isReadOnly && <span className="text-red-500">*</span>}
+            <label className="text-sm font-semibold text-on-surface flex items-center gap-1.5">
+              <Phone className="h-4 w-4 text-primary" /> {t("phoneLabel")} {!isReadOnly && <span className="text-error">*</span>}
             </label>
             <input
               type="text"
@@ -241,63 +241,63 @@ export default function EditAccountPage() {
               disabled={isReadOnly || submitting}
               value={formDataState.phone}
               onChange={(e) => setFormDataState({ ...formDataState, phone: e.target.value })}
-              className="w-full px-4 py-2.5 bg-slate-50 text-slate-800 border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-slate-100 disabled:text-slate-600 disabled:opacity-90 transition-all font-medium"
+              className="w-full px-4 py-2.5 bg-surface-container-low text-on-surface border border-outline-variant/60 rounded-xl text-sm placeholder:text-on-surface-variant/50 focus:ring-1 focus:ring-primary focus:border-primary outline-none disabled:bg-surface-container disabled:text-on-surface-variant disabled:opacity-90 transition-all font-medium"
               placeholder={t("phonePlaceholder")}
             />
           </div>
 
           {/* Trường: Địa chỉ Email */}
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-              <Mail className="h-4 w-4 text-blue-600" /> {t("emailLabel")}
+            <label className="text-sm font-semibold text-on-surface flex items-center gap-1.5">
+              <Mail className="h-4 w-4 text-primary" /> {t("emailLabel")}
             </label>
             <input
               type="email"
               disabled={isReadOnly || submitting}
               value={formDataState.email || ""}
               onChange={(e) => setFormDataState({ ...formDataState, email: e.target.value })}
-              className="w-full px-4 py-2.5 bg-slate-50 text-slate-800 border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-slate-100 disabled:text-slate-600 disabled:opacity-90 transition-all font-medium"
+              className="w-full px-4 py-2.5 bg-surface-container-low text-on-surface border border-outline-variant/60 rounded-xl text-sm placeholder:text-on-surface-variant/50 focus:ring-1 focus:ring-primary focus:border-primary outline-none disabled:bg-surface-container disabled:text-on-surface-variant disabled:opacity-90 transition-all font-medium"
               placeholder={t("emailPlaceholder")}
             />
           </div>
         </div>
 
-        {/* Trường: Vai trò quyền quản trị hệ thống (CHỈ XEM, KHÔNG CHO SỬA & LOẠI BỎ CHUỖI ENUM TRONG NGOẶC) */}
+        {/* Trường: Vai trò quyền quản trị hệ thống */}
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-            <ShieldCheck className="h-4 w-4 text-blue-600" /> {t("roleLabel")}
+          <label className="text-sm font-semibold text-on-surface flex items-center gap-1.5">
+            <ShieldCheck className="h-4 w-4 text-primary" /> {t("roleLabel")}
           </label>
           <input
             type="text"
             disabled
             readOnly
             value={getRoleFriendlyName(formDataState.role) || formDataState.role || t("clinicAdminRoleOption")}
-            className="w-full px-4 py-2.5 bg-slate-100 text-slate-700 font-semibold border border-slate-200 rounded-xl text-sm cursor-not-allowed opacity-90 select-none"
+            className="w-full px-4 py-2.5 bg-surface-container text-on-surface-variant font-semibold border border-outline-variant/40 rounded-xl text-sm cursor-not-allowed opacity-90 select-none"
           />
         </div>
 
         {/* Đường dẫn ảnh đại diện */}
         <div className="space-y-2">
-          <label className="text-sm font-semibold text-slate-700 flex items-center gap-1.5">
-            <User className="h-4 w-4 text-blue-600" /> {t("avatarLabel")}
+          <label className="text-sm font-semibold text-on-surface flex items-center gap-1.5">
+            <User className="h-4 w-4 text-primary" /> {t("avatarLabel")}
           </label>
           <input
             type="text"
             disabled={isReadOnly || submitting}
             value={formDataState.avatarUrl || ""}
             onChange={(e) => setFormDataState({ ...formDataState, avatarUrl: e.target.value })}
-            className="w-full px-4 py-2.5 bg-slate-50 text-slate-800 border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:bg-slate-100 disabled:text-slate-600 disabled:opacity-90 transition-all font-medium"
+            className="w-full px-4 py-2.5 bg-surface-container-low text-on-surface border border-outline-variant/60 rounded-xl text-sm placeholder:text-on-surface-variant/50 focus:ring-1 focus:ring-primary focus:border-primary outline-none disabled:bg-surface-container disabled:text-on-surface-variant disabled:opacity-90 transition-all font-medium"
             placeholder={t("avatarPlaceholder")}
           />
         </div>
 
         {/* Khu vực nút chức năng hành động */}
-        <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-3">
+        <div className="pt-4 border-t border-outline-variant/30 flex items-center justify-end gap-3">
           <button
             type="button"
             disabled={submitting}
             onClick={() => router.back()}
-            className="px-5 py-2.5 border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-50 transition-all text-sm font-semibold rounded-xl cursor-pointer"
+            className="px-5 py-2.5 border border-outline-variant/60 text-on-surface bg-surface-container-lowest hover:bg-surface-container-low disabled:opacity-50 transition-all text-sm font-semibold rounded-xl cursor-pointer"
           >
             {t("backToList")}
           </button>
@@ -305,7 +305,7 @@ export default function EditAccountPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="flex items-center justify-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl hover:opacity-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-sm font-semibold shadow-sm cursor-pointer"
+              className="flex items-center justify-center gap-2 px-6 py-2.5 bg-primary hover:opacity-90 text-on-primary rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all text-sm font-semibold shadow-xs cursor-pointer"
             >
               <Save className="h-4 w-4" />
               {submitting ? t("saving") : t("saveChanges")}

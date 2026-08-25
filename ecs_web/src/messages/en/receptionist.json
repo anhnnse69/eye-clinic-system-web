@@ -151,6 +151,8 @@
       "identityInvalid": "ID number must contain 9 or 12 digits.",
       "confirmCancelEdit": "Are you sure you want to discard the changes and return to the profile?",
       "confirmSaveEdit": "Are you sure you want to save these changes?",
+      "cancelHeaderTitle": "Confirm Discard Changes",
+      "saveHeaderTitle": "Confirm Profile Update",
       "saveSuccess": "Patient profile updated successfully.",
       "identityDuplicate": "This ID number already exists in another patient record.",
       "phoneDuplicate": "This phone number is already registered to another patient.",

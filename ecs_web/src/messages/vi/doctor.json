@@ -674,11 +674,18 @@
       "patients": "bệnh nhân",
       "statusOptions": {
         "scheduled": "Đã lên lịch",
+        "booked": "Đã đặt lịch",
+        "arrived": "Đã đến viện",
+        "waiting": "Đang chờ khám",
+        "calling": "Đang gọi khám",
+        "pending": "Chờ xử lý",
+        "depositPaid": "Đã đặt cọc",
         "checkedIn": "Đã check-in",
         "inProgress": "Đang khám",
         "completed": "Hoàn thành",
         "cancelled": "Đã hủy",
-        "noShow": "Không đến"
+        "noShow": "Không đến",
+        "noshow": "Không đến"
       },
       "error": {
         "loadFailed": "Không thể tải danh sách bệnh nhân"

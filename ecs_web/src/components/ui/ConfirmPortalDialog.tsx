@@ -80,74 +80,74 @@ export default function ConfirmPortalDialog({
               onClick={(e) => e.stopPropagation()}
             >
               {/* Glow effect */}
-              <div className="absolute -inset-1 bg-gradient-to-br from-blue-500/20 via-indigo-500/20 to-purple-500/20 rounded-3xl blur-xl" />
-  
-              <div className="relative bg-white rounded-2xl overflow-hidden shadow-2xl border border-gray-100">
+              <div className="absolute -inset-1 bg-gradient-to-br from-primary/20 via-primary-container/20 to-primary/10 rounded-3xl blur-xl" />
+
+              <div className="relative bg-surface-container-lowest rounded-2xl overflow-hidden shadow-2xl border border-outline-variant">
                 {/* Top accent bar */}
-                <div className="h-1 w-full bg-gradient-to-r from-blue-400 via-indigo-500 to-blue-600" />
-  
+                <div className="h-1 w-full bg-gradient-to-r from-primary-container via-primary to-primary-container" />
+
                 {/* Header */}
                 <div className="relative px-6 pt-6 pb-4">
                   <button
                     onClick={onClose}
                     disabled={submitting}
-                    className="absolute top-4 right-4 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all disabled:opacity-40"
+                    className="absolute top-4 right-4 p-1.5 text-on-surface-variant/60 hover:text-on-surface hover:bg-surface-container rounded-lg transition-all disabled:opacity-40"
                   >
                     <X className="w-4 h-4" />
                   </button>
-  
+
                   {/* Icon */}
                   <div className="flex items-center gap-4 mb-1">
                     <div className="relative">
-                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center shadow-sm">
-                        <UserPlus className="w-6 h-6 text-blue-600" />
+                      <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center shadow-xs">
+                        <UserPlus className="w-6 h-6 text-primary" />
                       </div>
-                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-100 rounded-full flex items-center justify-center border-2 border-white">
-                        <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-tertiary-container/20 rounded-full flex items-center justify-center border-2 border-surface-container-lowest">
+                        <ShieldCheck className="w-3.5 h-3.5 text-tertiary" />
                       </div>
                     </div>
                     <div>
-                      <h2 className="text-lg font-bold text-gray-900 leading-tight">
+                      <h2 className="text-lg font-bold text-on-surface leading-tight">
                         {t("title")}
                       </h2>
-                      <p className="text-xs text-gray-400 mt-0.5">
+                      <p className="text-xs text-on-surface-variant mt-0.5">
                         {t("subtitle")}
                       </p>
                     </div>
                   </div>
                 </div>
-  
+
                 {/* Divider */}
-                <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent mx-6" />
-  
+                <div className="h-px bg-outline-variant/40 mx-6" />
+
                 {/* Content */}
                 <div className="px-6 py-5 space-y-4">
                   {/* Info card */}
-                  <div className="bg-blue-50/60 border border-blue-100 rounded-xl p-4 flex items-start gap-3">
-                    <div className="mt-0.5 w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center shrink-0">
-                      <User className="w-4 h-4 text-blue-600" />
+                  <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex items-start gap-3">
+                    <div className="mt-0.5 w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <User className="w-4 h-4 text-primary" />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold text-blue-500 uppercase tracking-wider mb-0.5">
+                      <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-0.5">
                         {t("patientLabel")}
                       </p>
-                      <p className="text-sm font-semibold text-gray-900 truncate">
+                      <p className="text-sm font-semibold text-on-surface truncate">
                         {patientName || "—"}
                       </p>
                     </div>
                   </div>
-  
-                  <p className="text-sm text-gray-500 leading-relaxed">
+
+                  <p className="text-sm text-on-surface-variant leading-relaxed">
                     {t("warning")}
                   </p>
                 </div>
-  
+
                 {/* Footer */}
                 <div className="px-6 pb-6 flex items-center gap-3">
                   <button
                     onClick={onClose}
                     disabled={submitting}
-                    className="flex-1 px-4 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50"
+                    className="flex-1 px-4 py-2.5 text-sm font-semibold text-on-surface-variant bg-surface-container hover:bg-surface-container-high rounded-xl transition-all active:scale-[0.98] disabled:opacity-50"
                   >
                     {t("cancel")}
                   </button>
@@ -156,12 +156,7 @@ export default function ConfirmPortalDialog({
                     disabled={submitting}
                     whileHover={{ scale: submitting ? 1 : 1.02 }}
                     whileTap={{ scale: submitting ? 1 : 0.97 }}
-                    className="flex-1 px-4 py-2.5 text-sm font-semibold text-white rounded-xl transition-all disabled:opacity-70 flex items-center justify-center gap-2 shadow-md shadow-blue-200"
-                    style={{
-                      background: submitting
-                        ? "#93c5fd"
-                        : "linear-gradient(135deg, #3b82f6 0%, #4f46e5 100%)",
-                    }}
+                    className="flex-1 px-4 py-2.5 text-sm font-semibold text-on-primary bg-primary hover:bg-primary/90 rounded-xl transition-all disabled:opacity-70 flex items-center justify-center gap-2 shadow-sm shadow-primary/20"
                   >
                     {submitting ? (
                       <>

@@ -22,7 +22,7 @@ import { useForm, FormProvider } from "react-hook-form"
 import type { Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useTranslations, useLocale } from "next-intl"
-import { Loader2, AlertCircle, CheckCircle2, Printer, Sparkles, Plus, X, Microscope, History, Zap, Stethoscope, Eye, Globe, HeartPulse, Pill, FileText, ClipboardCheck, ListChecks, ArrowRight, Glasses } from "lucide-react"
+import { Loader2, AlertCircle, CheckCircle2, Lock, Printer, Sparkles, Plus, X, Microscope, History, Zap, Stethoscope, Eye, Globe, HeartPulse, Pill, FileText, ClipboardCheck, ListChecks, ArrowRight, ArrowLeft, Check, Glasses } from "lucide-react"
 import SummaryDiagnosisModal from "./medical-record-form/SummaryDiagnosisModal"
 import CompletionCheckModal from "./CompletionCheckModal"
 import CreatePrescriptionModal from "./medical-record-form/CreatePrescriptionModal"
@@ -85,43 +85,11 @@ type PropsForSections = {
 }
 
 function accentButtonClass(recordType: string | undefined): string {
-  switch (recordType) {
-    case "MS21_TRAUMA":
-      return "bg-rose-600 hover:bg-rose-700"
-    case "MS22_ANTERIOR":
-      return "bg-teal-600 hover:bg-teal-700"
-    case "MS23_FUNDUS":
-      return "bg-amber-600 hover:bg-amber-700"
-    case "MS24_GLAUCOMA":
-      return "bg-indigo-600 hover:bg-indigo-700"
-    case "MS25_STRABISMUS_PTOSIS":
-      return "bg-sky-600 hover:bg-sky-700"
-    case "MS26_PEDIATRIC":
-      return "bg-violet-600 hover:bg-violet-700"
-    default:
-      return "bg-gray-600 hover:bg-gray-700"
-  }
+  return "bg-primary text-on-primary font-bold hover:opacity-90 active:scale-95 shadow-xs transition-all cursor-pointer"
 }
 
 function accentTextClass(accent: string): string {
-  switch (accent) {
-    case "rose":
-      return "text-rose-700"
-    case "teal":
-      return "text-teal-700"
-    case "amber":
-      return "text-amber-700"
-    case "indigo":
-      return "text-indigo-700"
-    case "sky":
-      return "text-sky-700"
-    case "violet":
-      return "text-violet-700"
-    case "emerald":
-      return "text-emerald-700"
-    default:
-      return "text-slate-700"
-  }
+  return "text-primary font-bold"
 }
 
 export default function CreateMedicalRecordClient({
@@ -657,9 +625,9 @@ export default function CreateMedicalRecordClient({
               key={rt}
               type="button"
               onClick={() => setRecordType(rt)}
-              className="group flex flex-col items-start rounded-lg border border-gray-200 bg-white p-4 text-left transition hover:border-indigo-500 hover:shadow"
+              className="group flex flex-col items-start rounded-lg border border-gray-200 bg-white p-4 text-left transition hover:border-[#00658D] hover:shadow-xs"
             >
-              <span className="text-sm font-semibold text-indigo-600">
+              <span className="text-sm font-semibold text-[#00658D]">
                 {rt.replace("MS", "MS ")}
               </span>
               <span className="mt-1 text-sm text-gray-700">
@@ -672,9 +640,9 @@ export default function CreateMedicalRecordClient({
         <button
           type="button"
           onClick={() => router.back()}
-          className="mt-6 inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
+          className="mt-6 inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 font-medium"
         >
-          ← {tCommon("back")}
+          <ArrowLeft className="h-4 w-4" /> {tCommon("back")}
         </button>
       </div>
     )
@@ -774,13 +742,13 @@ export default function CreateMedicalRecordClient({
         </div>
 
         {/* EMR Professional Stepper Indicator — 6 STEPS (AI → Template → Save → Paraclinical → Summary → Prescription) */}
-        <div className="rounded-2xl border-2 border-indigo-200 bg-white p-5 shadow-md space-y-4">
-          <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-            <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-              <ListChecks className="h-4 w-4 text-indigo-600" />
+        <div className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-xs space-y-4">
+          <div className="flex items-center justify-between border-b border-outline-variant/30 pb-3">
+            <h3 className="text-sm font-bold text-on-surface flex items-center gap-2">
+              <ListChecks className="h-4 w-4 text-primary" />
               {tWorkflow("title")}
             </h3>
-            <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
+            <span className="rounded-full bg-amber-50 border border-amber-200/70 px-3 py-1 text-xs font-bold text-amber-800">
               {tWorkflow("currentBadge", { current: Math.min(currentStepNumber, 6), total: 6 })}
             </span>
           </div>
@@ -797,15 +765,15 @@ export default function CreateMedicalRecordClient({
             ].map((s) => {
               const isCurrent = s.n === currentStepNumber
               const baseColor = isCurrent
-                ? "border-amber-400 bg-amber-50 shadow-md ring-2 ring-amber-200"
+                ? "border-primary bg-[#c6e7ff]/30 shadow-xs ring-1 ring-primary/20"
                 : s.done
-                  ? "border-green-300 bg-green-50/80"
+                  ? "border-emerald-300 bg-emerald-50/80"
                   : s.mandatory
-                    ? "border-amber-300 bg-amber-50/80"
-                    : "border-indigo-200 bg-indigo-50/60"
-              const badgeColor = s.done ? "bg-green-600" : isCurrent ? "bg-amber-500" : s.mandatory ? "bg-amber-500" : "bg-indigo-500"
-              const subColor = s.done ? "text-green-700" : isCurrent || s.mandatory ? "text-amber-800" : "text-indigo-700"
-              const tagColor = s.done ? "bg-green-100 text-green-700" : s.mandatory ? "bg-amber-100 text-amber-800" : "bg-indigo-100 text-indigo-700"
+                    ? "border-amber-200 bg-amber-50/60"
+                    : "border-outline-variant/40 bg-surface-container-low/60"
+              const badgeColor = s.done ? "bg-[#006c49]" : isCurrent ? "bg-primary" : s.mandatory ? "bg-amber-600" : "bg-on-surface-variant/40"
+              const subColor = s.done ? "text-[#006c49]" : isCurrent ? "text-primary" : s.mandatory ? "text-amber-800" : "text-on-surface-variant"
+              const tagColor = s.done ? "bg-emerald-100 text-emerald-800" : s.mandatory ? "bg-amber-100 text-amber-800" : "bg-surface-container text-on-surface-variant"
               const tagText = s.done ? tWorkflow("done") : s.mandatory ? tWorkflow("mandatory") : tWorkflow("optional")
               return (
                 <li
@@ -814,7 +782,7 @@ export default function CreateMedicalRecordClient({
                   className={`flex items-center gap-3 rounded-xl border-2 p-3 ${baseColor}`}
                 >
                   <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${badgeColor}`}>
-                    {s.done ? "✓" : s.n}
+                    {s.done ? <Check className="h-4 w-4 stroke-[3]" /> : s.n}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">
@@ -823,8 +791,14 @@ export default function CreateMedicalRecordClient({
                     <p className="text-xs font-bold text-gray-900 truncate">
                       {tWorkflow(`${s.enKey}.label`)}
                     </p>
-                    <p className={`text-[10px] truncate font-semibold ${subColor}`}>
-                      {s.done ? `${tWorkflow("done")} ✅` : tWorkflow(`${s.enKey}.hint`)}
+                    <p className={`text-[10px] truncate font-semibold flex items-center gap-1 ${subColor}`}>
+                      {s.done ? (
+                        <>
+                          {tWorkflow("done")} <CheckCircle2 className="h-3 w-3 text-emerald-600 shrink-0" />
+                        </>
+                      ) : (
+                        tWorkflow(`${s.enKey}.hint`)
+                      )}
                     </p>
                     <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[9px] font-bold ${tagColor}`}>
                       {tagText}
@@ -859,7 +833,7 @@ export default function CreateMedicalRecordClient({
               <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600 mt-0.5" />
               <div>
                 <strong className="font-bold">Đủ điều kiện hoàn thành ca khám!</strong> Tất cả các bước bắt buộc đã hoàn tất.
-                Bác sĩ có thể bấm nút <strong>"✅ Hoàn thành ca khám"</strong> ở dưới cùng trang để kết thúc và chuyển bệnh nhân ra viện.
+                Bác sĩ có thể bấm nút <strong className="inline-flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> "Hoàn thành ca khám"</strong> ở dưới cùng trang để kết thúc và chuyển bệnh nhân ra viện.
               </div>
             </div>
           )}
@@ -878,61 +852,68 @@ export default function CreateMedicalRecordClient({
         </div>
 
         {/* EMR Interactive Action Hub */}
+        {/* EMR Interactive Action Hub */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {/* Card 1: Paraclinical (Optional) — Step 4 */}
-          <div className="rounded-2xl border-2 border-indigo-200 bg-white p-5 shadow-xs flex flex-col justify-between space-y-3">
+          <div className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-xs flex flex-col justify-between space-y-3">
             <div>
-              <div className="flex items-center gap-2 text-indigo-700 font-bold text-sm">
+              <div className="flex items-center gap-2 text-primary font-bold text-sm">
                 <Microscope className="h-5 w-5" />
                 <span>Bước 4 · Cận lâm sàng</span>
-                <span className="ml-auto rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-bold text-indigo-700">Tùy chọn</span>
+                <span className="ml-auto rounded-full bg-surface-container-low border border-outline-variant/30 px-2 py-0.5 text-[10px] font-bold text-on-surface-variant">Tùy chọn</span>
               </div>
-              <p className="mt-2 text-xs text-gray-600 leading-relaxed">
+              <p className="mt-2 text-xs text-on-surface-variant leading-relaxed">
                 Tạo phiếu chỉ định OCT võng mạc, Thị trường, Siêu âm hoặc xét nghiệm cho bệnh nhân này.
               </p>
             </div>
             <button
               type="button"
               onClick={() => setShowLabRequestForm(true)}
-              className="w-full inline-flex items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-indigo-700 transition-colors"
+              className="w-full inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-on-primary shadow-xs hover:opacity-90 transition-colors cursor-pointer"
             >
               <Plus className="h-4 w-4" /> {isStep4Done ? "Xem / Thêm cận lâm sàng" : "Tạo phiếu cận lâm sàng"}
             </button>
           </div>
 
           {/* Card 2: Medical Record Summary (MANDATORY) — Step 5 */}
-          <div className={`rounded-2xl border-2 ${isStep5Done ? "border-green-300 bg-green-50/30" : "border-amber-300 bg-amber-50/30"} p-5 shadow-xs flex flex-col justify-between space-y-3`}>
+          <div className={`rounded-2xl border-2 ${isStep5Done ? "border-emerald-300 bg-emerald-50/30" : "border-amber-300 bg-amber-50/30"} p-5 shadow-xs flex flex-col justify-between space-y-3`}>
             <div>
               <div className="flex items-center gap-2 text-amber-800 font-bold text-sm">
                 <FileText className="h-5 w-5" />
                 <span>Bước 5 · Tổng kết bệnh án</span>
-                <span className="ml-auto rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">BẮT BUỘC</span>
+                <span className="ml-auto rounded-full bg-amber-100 border border-amber-200/70 px-2 py-0.5 text-[10px] font-bold text-amber-800">BẮT BUỘC</span>
               </div>
-              <p className="mt-2 text-xs text-gray-700 leading-relaxed">
+              <p className="mt-2 text-xs text-on-surface-variant leading-relaxed">
                 Điền <strong>Chẩn đoán chính</strong>, gắn <strong>Mã ICD-10</strong>, <strong>Hướng điều trị tiếp theo</strong> & tình trạng ra viện.
               </p>
             </div>
             <button
               type="button"
               onClick={() => setShowSummaryModal(true)}
-              className={`w-full inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-bold text-white shadow-xs transition-colors ${isStep5Done ? "bg-green-600 hover:bg-green-700" : "bg-amber-600 hover:bg-amber-700 ring-2 ring-amber-300"}`}
+              className={`w-full inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-bold text-white shadow-xs transition-colors ${isStep5Done ? "bg-[#006c49] hover:bg-[#005237]" : "bg-amber-700 hover:bg-amber-800"}`}
             >
               <Sparkles className="h-4 w-4 text-amber-200" />
-              {isStep5Done ? "Sửa tổng kết bệnh án ✅" : "Tổng kết bệnh án & ICD-10 (Cần làm)"}
+              {isStep5Done ? (
+                <>
+                  Sửa tổng kết bệnh án <CheckCircle2 className="h-3.5 w-3.5 text-emerald-100" />
+                </>
+              ) : (
+                "Tổng kết bệnh án & ICD-10 (Cần làm)"
+              )}
             </button>
           </div>
 
           {/* Card 3: Prescription / Glasses Rx (MANDATORY) — Step 6 */}
-          <div className={`rounded-2xl border-2 ${isStep6Done ? "border-green-300 bg-green-50/30" : "border-blue-300 bg-blue-50/30"} p-5 shadow-xs flex flex-col justify-between space-y-3`}>
+          <div className={`rounded-2xl border-2 ${isStep6Done ? "border-emerald-300 bg-emerald-50/30" : "border-[#81cfff]/40 bg-[#c6e7ff]/20"} p-5 shadow-xs flex flex-col justify-between space-y-3`}>
             <div>
-              <div className="flex items-center gap-2 text-blue-800 font-bold text-sm">
+              <div className="flex items-center gap-2 text-primary font-bold text-sm">
                 <Pill className="h-5 w-5" />
                 <span>Bước 6 · Kê đơn thuốc/kính</span>
-                <span className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold ${isStep6Done ? "bg-green-100 text-green-800" : "bg-blue-100 text-blue-800"}`}>
+                <span className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold ${isStep6Done ? "bg-emerald-100 text-emerald-800 border border-emerald-200/70" : "bg-[#c6e7ff]/40 text-primary border border-[#81cfff]/40"}`}>
                   {isStep6Done ? "ĐÃ HOÀN THÀNH" : "BẮT BUỘC"}
                 </span>
               </div>
-              <p className="mt-2 text-xs text-gray-700 leading-relaxed">
+              <p className="mt-2 text-xs text-on-surface-variant leading-relaxed">
                 Mở cửa sổ kê <strong>đơn thuốc điện tử</strong> hoặc <strong>đơn kính khúc xạ</strong> EMR. Hoàn tất bước này để có thể kết thúc ca khám.
               </p>
 
@@ -955,10 +936,16 @@ export default function CreateMedicalRecordClient({
             <button
               type="button"
               onClick={() => setShowPrescriptionModal(true)}
-              className={`w-full inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-bold text-white shadow-xs transition-colors ${isStep6Done ? "bg-green-600 hover:bg-green-700" : "bg-blue-600 hover:bg-blue-700 ring-2 ring-blue-300"}`}
+              className={`w-full inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-bold text-white shadow-xs transition-colors ${isStep6Done ? "bg-emerald-600 hover:bg-emerald-700" : "bg-[#00658D] hover:bg-[#005273] ring-2 ring-[#00658D]/30"}`}
             >
               <Pill className="h-4 w-4" />
-              {isStep6Done ? "Xem / Sửa đơn thuốc & kính ✅" : "Kê đơn thuốc/kính (Cần làm)"}
+              {isStep6Done ? (
+                <>
+                  Xem / Sửa đơn thuốc & kính <CheckCircle2 className="h-3.5 w-3.5 text-emerald-100" />
+                </>
+              ) : (
+                "Kê đơn thuốc/kính (Cần làm)"
+              )}
             </button>
           </div>
         </div>
@@ -1039,21 +1026,14 @@ export default function CreateMedicalRecordClient({
             onClick={() => router.push("/doctor/queue")}
             className="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-xs"
           >
-            ← Quay lại Hàng chờ bác sĩ
+            <ArrowLeft className="h-4 w-4" /> Quay lại Hàng chờ bác sĩ
           </button>
 
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={handlePrint}
-              className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-sm font-semibold text-indigo-700 hover:bg-indigo-100 transition-colors"
-            >
-              <Printer className="h-4 w-4" /> In bệnh án nhãn khoa (A4)
-            </button>
-            <button
-              type="button"
               onClick={() => router.push(`/doctor/records/${successInfo.recordId}`)}
-              className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-black transition-colors shadow-xs"
+              className="inline-flex items-center gap-2 rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-black transition-colors shadow-xs cursor-pointer"
             >
               {t("viewDetail")}
             </button>
@@ -1061,13 +1041,22 @@ export default function CreateMedicalRecordClient({
               type="button"
               onClick={() => setShowCompletionCheckModal(true)}
               disabled={!isStep5Done || !isStep6Done}
-              className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-colors shadow-md hover:shadow-lg ${(!isStep5Done || !isStep6Done) ? "bg-gray-400 cursor-not-allowed" : "bg-emerald-600 hover:bg-emerald-700"}`}
+              className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-colors shadow-md hover:shadow-lg ${(!isStep5Done || !isStep6Done) ? "bg-slate-400 cursor-not-allowed" : "bg-emerald-600 hover:bg-emerald-700"}`}
               title={(!isStep5Done || !isStep6Done)
                 ? "Vui lòng hoàn thành Tổng kết bệnh án (Bước 5) và Kê đơn thuốc/kính (Bước 6) trước khi kết thúc ca khám."
                 : "Xác nhận hoàn thành các bước bắt buộc và kết thúc ca khám"}
             >
-              <CheckCircle2 className="h-4 w-4 text-emerald-200" />
-              {(!isStep5Done || !isStep6Done) ? "🔒 Hoàn thành ca khám (chưa đủ điều kiện)" : "✅ Hoàn thành ca khám"}
+              {(!isStep5Done || !isStep6Done) ? (
+                <>
+                  <Lock className="h-4 w-4 text-slate-200 shrink-0" />
+                  Hoàn thành ca khám (chưa đủ điều kiện)
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="h-4 w-4 text-emerald-200 shrink-0" />
+                  Hoàn thành ca khám
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -1578,18 +1567,18 @@ export default function CreateMedicalRecordClient({
               <span>Đang kiểm tra lịch sử khám mẫu <strong>{recordType ? MEDICAL_RECORD_TYPE_LABELS[recordType] : ""}</strong> cho bệnh nhân này...</span>
             </div>
           ) : historyStatus === "found" && historyRecord ? (
-            <div className="rounded-xl border border-indigo-200 bg-linear-to-r from-indigo-50/90 via-white to-blue-50/90 p-4 shadow-xs">
+            <div className="rounded-xl border border-sky-200 bg-linear-to-r from-sky-50/90 via-white to-slate-50/90 p-4 shadow-xs">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-white shadow-xs">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#00658D] text-white shadow-xs">
                     <History className="h-5 w-5" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-indigo-950 text-sm">
+                      <span className="font-bold text-slate-900 text-sm">
                         Phát hiện lịch sử khám mẫu {recordType ? MEDICAL_RECORD_TYPE_LABELS[recordType] : ""} ngày {historyRecord.date}
                       </span>
-                      <span className="rounded-full bg-indigo-100 px-2.5 py-0.5 text-[11px] font-semibold text-indigo-800">
+                      <span className="rounded-full bg-sky-100 px-2.5 py-0.5 text-[11px] font-semibold text-[#00658D]">
                         Lần khám trước
                       </span>
                     </div>
@@ -1602,7 +1591,7 @@ export default function CreateMedicalRecordClient({
                   <button
                     type="button"
                     onClick={handleApplyHistoryPrefill}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 transition-colors"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-[#00658D] px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-[#005273] transition-colors cursor-pointer"
                   >
                     <Sparkles className="h-4 w-4 text-amber-300" />
                     Sao chép khám gần nhất
@@ -1640,7 +1629,7 @@ export default function CreateMedicalRecordClient({
                     className="inline-flex items-center gap-1.5 rounded-lg bg-amber-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-amber-700 transition-colors"
                   >
                     <Zap className="h-4 w-4 text-amber-200" />
-                    ⚡ Điền mẫu khám chuẩn (Bình thường)
+                    Điền mẫu khám chuẩn (Bình thường)
                   </button>
                   <button
                     type="button"
@@ -1672,33 +1661,33 @@ export default function CreateMedicalRecordClient({
         {/* Mini TOC — Clinical Navigation */}
         <nav
           aria-label={isEn ? "Clinical examination TOC" : "Mục lục khám mắt lâm sàng"}
-          className="sticky top-2 z-10 rounded-xl border border-gray-200 bg-white/95 p-3 backdrop-blur print:hidden shadow-xs"
+          className="sticky top-2 z-10 rounded-xl border border-outline-variant/40 bg-surface-container-lowest/95 p-3 backdrop-blur print:hidden shadow-xs"
         >
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-gray-600">
-            <span className="font-bold text-gray-800 flex items-center gap-1">
-              <Stethoscope className="h-3.5 w-3.5 text-indigo-600" />
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-on-surface-variant">
+            <span className="font-bold text-on-surface flex items-center gap-1">
+              <Stethoscope className="h-3.5 w-3.5 text-primary" />
               {isEn ? "EMR Clinical Examination:" : "Khám mắt lâm sàng EMR:"}
             </span>
-            <a href="#sec-thi-luc" className="hover:text-indigo-600 font-semibold text-indigo-700 flex items-center gap-1">
-              <Eye className="h-3.5 w-3.5" />
+            <a href="#sec-thi-luc" className="hover:text-primary font-bold text-on-surface-variant flex items-center gap-1.5 transition-colors">
+              <Eye className="h-3.5 w-3.5 text-primary" />
               {isEn ? "Visual Acuity & IOP" : "Thị lực & Nhãn áp"}
             </a>
-            <a href="#sec-ban-phan-truoc" className="hover:text-teal-600 font-semibold text-teal-700 flex items-center gap-1">
-              <Microscope className="h-3.5 w-3.5" />
+            <a href="#sec-ban-phan-truoc" className="hover:text-primary font-bold text-on-surface-variant flex items-center gap-1.5 transition-colors">
+              <Microscope className="h-3.5 w-3.5 text-primary" />
               {isEn ? "Anterior Segment" : "Bán phần trước"}
             </a>
-            <a href="#sec-ban-phan-sau" className="hover:text-amber-600 font-semibold text-amber-700 flex items-center gap-1">
-              <Globe className="h-3.5 w-3.5" />
+            <a href="#sec-ban-phan-sau" className="hover:text-primary font-bold text-on-surface-variant flex items-center gap-1.5 transition-colors">
+              <Globe className="h-3.5 w-3.5 text-primary" />
               {isEn ? "Posterior Segment" : "Bán phần sau"}
             </a>
             {recordType && (
-              <a href="#sec-chuyen-khoa" className="hover:text-purple-600 font-semibold text-purple-700 flex items-center gap-1">
-                <Stethoscope className="h-3.5 w-3.5" />
+              <a href="#sec-chuyen-khoa" className="hover:text-primary font-bold text-on-surface-variant flex items-center gap-1.5 transition-colors">
+                <Stethoscope className="h-3.5 w-3.5 text-primary" />
                 {isEn ? "Specialty Examination" : "Khám Chuyên Khoa"}
               </a>
             )}
-            <a href="#sec-toan-than" className="hover:text-emerald-600 font-semibold text-emerald-700 flex items-center gap-1">
-              <HeartPulse className="h-3.5 w-3.5" />
+            <a href="#sec-toan-than" className="hover:text-primary font-bold text-on-surface-variant flex items-center gap-1.5 transition-colors">
+              <HeartPulse className="h-3.5 w-3.5 text-primary" />
               {isEn ? "Systemic Examination" : "Khám Toàn Thân"}
             </a>
           </div>

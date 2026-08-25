@@ -110,7 +110,7 @@ class StaffService {
   
   async getStaffList(params?: ViewListStaffRequest): Promise<ApiResponse<StaffAccountResponse[]>> {
   const response = await apiClient.get<ApiResponse<StaffAccountResponse[]>>(
-    "https://localhost:7070/api/v1/clinic-admin/staff/accounts",
+    "/clinic-admin/staff/accounts",
     {
       params: {
         PageNumber: params?.pageNumber,
@@ -125,7 +125,7 @@ class StaffService {
 
   async createStaffAccount(data: CreateStaffAccountRequest): Promise<ApiResponse<any>> {
     const response = await apiClient.post<ApiResponse<any>>(
-      "https://localhost:7070/api/v1/clinic-admin/staff/create", 
+      "/clinic-admin/staff/create", 
       data
     )
     return response.data
@@ -133,7 +133,7 @@ class StaffService {
 
   async editStaffAccount(data: EditStaffRequest): Promise<ApiResponse<EditStaffResponse>> {
     const response = await apiClient.put<ApiResponse<EditStaffResponse>>(
-        "https://localhost:7070/api/v1/clinic-admin/staff/edit", 
+        "/clinic-admin/staff/edit", 
         data
     )
     return response.data

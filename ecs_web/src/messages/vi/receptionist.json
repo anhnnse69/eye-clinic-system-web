@@ -151,6 +151,8 @@
       "identityInvalid": "Số CCCD/CMND phải bao gồm 9 hoặc 12 ký tự số.",
       "confirmCancelEdit": "Bạn có chắc chắn muốn hủy bỏ các thay đổi và quay lại hồ sơ?",
       "confirmSaveEdit": "Bạn có chắc chắn muốn lưu các thay đổi này không?",
+      "cancelHeaderTitle": "Xác nhận hủy thay đổi",
+      "saveHeaderTitle": "Xác nhận cập nhật hồ sơ",
       "saveSuccess": "Cập nhật hồ sơ bệnh nhân thành công.",
       "identityDuplicate": "Số CCCD/CMND này đã tồn tại trên một hồ sơ hệ thống khác.",
       "phoneDuplicate": "Số điện thoại này đã được đăng ký bởi một bệnh nhân khác.",

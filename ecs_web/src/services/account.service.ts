@@ -151,7 +151,7 @@ class AccountService {
 
   async getAccounts(params: GetAccountsRequest): Promise<ApiResponse<GetAccountResponse[]>> {
     const response = await apiClient.get<ApiResponse<GetAccountResponse[]>>(
-      "https://localhost:7070/api/v1/system-admin/accounts",
+      "/system-admin/accounts",
       {
         params: {
           pageNumber: params.pageNumber,
@@ -168,7 +168,7 @@ class AccountService {
 
   async createAccount(params: CreateAccountRequest): Promise<ApiResponse<CreateAccountResponse>> {
     const response = await apiClient.post<ApiResponse<CreateAccountResponse>>(
-      "https://localhost:7070/api/v1/system-admin/accounts/create",
+      "/system-admin/accounts/create",
       {
         phone: params.phone,
         email: params.email,
@@ -183,7 +183,7 @@ class AccountService {
 
   async editAccount(params: EditAccountRequest): Promise<ApiResponse<EditAccountResponse>> {
     const response = await apiClient.put<ApiResponse<EditAccountResponse>>(
-      "https://localhost:7070/api/v1/system-admin/account/edit",
+      "/system-admin/account/edit",
       {
         id: params.id,
         phone: params.phone,
@@ -198,7 +198,7 @@ class AccountService {
 
   async deleteAccount(body: DeleteAccountRequest): Promise<ApiResponse<DeleteAccountResponse>> {
     const response = await apiClient.put<ApiResponse<DeleteAccountResponse>>(
-      "https://localhost:7070/api/v1/system-admin/accounts/delete",
+      "/system-admin/accounts/delete",
       body
     )
     return response.data
@@ -206,7 +206,7 @@ class AccountService {
 
   async createClinicAdmin(params: CreateClinicAdminRequest): Promise<ApiResponse<CreateClinicAdminResponse>> {
     const response = await apiClient.post<ApiResponse<CreateClinicAdminResponse>>(
-      "https://localhost:7070/api/v1/system-admin/accounts/clinic-admin",
+      "/system-admin/accounts/clinic-admin",
       {
         clinicId: params.clinicId,
         phone: params.phone,

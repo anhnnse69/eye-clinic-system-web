@@ -23,7 +23,7 @@ const GRID_HEIGHT = TOTAL_HOURS * PX_PER_HOUR;
 const SHIFT_BANDS: { shift: ShiftType; from: number; to: number; tint: string }[] = [
   { shift: ShiftType.MORNING, from: 8, to: 12, tint: "bg-amber-50/40" },
   { shift: ShiftType.AFTERNOON, from: 12, to: 17, tint: "bg-sky-50/40" },
-  { shift: ShiftType.EVENING, from: 17, to: 20, tint: "bg-indigo-50/40" },
+  { shift: ShiftType.EVENING, from: 17, to: 20, tint: "bg-[#00658D]/5" },
 ];
 
 const WEEKDAY_LABEL = ["CN", "Th 2", "Th 3", "Th 4", "Th 5", "Th 6", "Th 7"];
@@ -134,12 +134,12 @@ export default function DoctorPersonalScheduleClient({
 
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-slate-800">{tSchedule("personalSchedule")}</h2>
+        <h2 className="text-2xl font-bold text-gray-900 tracking-tight">{tSchedule("personalSchedule")}</h2>
         <p className="text-sm text-slate-500 mt-0.5">{tPersonal("subtitle")}</p>
       </div>
 
       {/* Week nav bar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between flex-wrap gap-3">
+      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setWeekStart((w) => addDays(w, -7))}
@@ -152,7 +152,7 @@ export default function DoctorPersonalScheduleClient({
             onClick={() => setWeekStart(startOfWeek(new Date()))}
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-sm font-semibold text-slate-700 transition-colors"
           >
-            <CalendarDays className="h-3.5 w-3.5" />
+            <CalendarDays className="h-3.5 w-3.5 text-[#00658D]" />
             {tPersonal("thisWeek")}
           </button>
           <button
@@ -168,33 +168,33 @@ export default function DoctorPersonalScheduleClient({
         <button
           onClick={fetchWeek}
           disabled={loading}
-          className="border border-blue-600 text-blue-600 hover:bg-blue-50 px-4 py-2 rounded-xl font-medium text-sm flex items-center gap-2 transition-all active:scale-95 h-[38px]"
+          className="border border-[#00658D] text-[#00658D] hover:bg-[#00658D]/10 px-4 py-2 rounded-xl font-semibold text-sm flex items-center gap-2 transition-all active:scale-95 shadow-2xs h-[38px]"
         >
-          <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          <RefreshCw className={`h-4 w-4 text-[#00658D] ${loading ? "animate-spin" : ""}`} />
           {loading ? tPersonal("reloading") : tPersonal("reload")}
         </button>
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-4 bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs font-medium text-slate-600">
-        <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-green-50 border border-green-300" /><span>{tPersonal("legend.available")}</span></div>
+      <div className="flex flex-wrap gap-4 bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-600 shadow-2xs">
+        <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-emerald-50 border border-emerald-300" /><span>{tPersonal("legend.available")}</span></div>
         <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-amber-50 border border-amber-300" /><span>{tPersonal("legend.fullyBooked")}</span></div>
         <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-rose-50 border border-rose-200" /><span>{tPersonal("legend.locked")}</span></div>
         <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-amber-50/70 border border-amber-100" /><span>{tPersonal("legend.morningShiftBand")}</span></div>
         <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-sky-50/70 border border-sky-100" /><span>{tPersonal("legend.afternoonShiftBand")}</span></div>
-        <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-indigo-50/70 border border-indigo-100" /><span>{tPersonal("legend.eveningShiftBand")}</span></div>
+        <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded bg-[#00658D]/10 border border-[#00658D]/20" /><span>{tPersonal("legend.eveningShiftBand")}</span></div>
       </div>
 
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm font-medium">
+        <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-sm font-medium">
           {error}
         </div>
       )}
 
       {/* Calendar grid */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
         {/* Header ngày */}
-        <div className="flex border-b border-slate-200 bg-slate-50/80">
+        <div className="flex border-b border-slate-200 bg-slate-50">
           <div className="w-16 shrink-0 border-r border-slate-200" />
           {weekDays.map((d) => {
             const dStr = toLocalDateString(d);
@@ -202,12 +202,12 @@ export default function DoctorPersonalScheduleClient({
             return (
               <div
                 key={dStr}
-                className={`flex-1 min-w-[150px] text-center py-3 border-r border-slate-200 last:border-r-0 ${isToday ? "bg-blue-50" : ""}`}
+                className={`flex-1 min-w-[150px] text-center py-3 border-r border-slate-200 last:border-r-0 ${isToday ? "bg-[#00658D]/10" : ""}`}
               >
-                <p className={`text-[11px] font-bold uppercase tracking-wide ${isToday ? "text-blue-600" : "text-slate-400"}`}>
+                <p className={`text-[11px] font-bold uppercase tracking-wide ${isToday ? "text-[#00658D]" : "text-slate-400"}`}>
                   {WEEKDAY_LABEL[d.getDay()]}
                 </p>
-                <p className={`text-lg font-bold ${isToday ? "text-blue-700" : "text-slate-700"}`}>
+                <p className={`text-lg font-bold ${isToday ? "text-[#00658D]" : "text-slate-700"}`}>
                   {d.getDate()}/{d.getMonth() + 1}
                 </p>
               </div>
@@ -219,8 +219,8 @@ export default function DoctorPersonalScheduleClient({
         <div ref={scrollRef} className="relative overflow-y-auto" style={{ maxHeight: 640 }}>
           {loading && (
             <div className="absolute inset-0 bg-white/70 z-20 flex flex-col items-center justify-center">
-              <Loader2 className="h-7 w-7 text-blue-600 animate-spin mb-2" />
-              <p className="text-sm text-slate-500">{tPersonal("loadingWeek")}</p>
+              <Loader2 className="h-7 w-7 text-[#00658D] animate-spin mb-2" />
+              <p className="text-sm text-slate-500 font-medium">{tPersonal("loadingWeek")}</p>
             </div>
           )}
 
@@ -248,7 +248,7 @@ export default function DoctorPersonalScheduleClient({
               return (
                 <div
                   key={dStr}
-                  className={`flex-1 min-w-[150px] relative border-r border-slate-200 last:border-r-0 ${isToday ? "bg-blue-50/30" : ""}`}
+                  className={`flex-1 min-w-[150px] relative border-r border-slate-200 last:border-r-0 ${isToday ? "bg-[#00658D]/5" : ""}`}
                 >
                   {/* Dải nền theo ca */}
                   {SHIFT_BANDS.map((band) => (
@@ -327,26 +327,26 @@ function SlotBlock({
 }) {
   const roomBadge = (
     <span className="flex items-center gap-1 text-[9px] text-slate-400 font-medium truncate">
-      <DoorOpen className="h-2.5 w-2.5 shrink-0" />
+      <DoorOpen className="h-2.5 w-2.5 shrink-0 text-slate-400" />
       {shift.roomName || tPersonal("slot.unassignedRoom")}
     </span>
   );
 
   if (effectiveStatus === SlotStatus.BLOCKED) {
     return (
-      <div className="w-full h-full rounded-lg bg-rose-50 border border-rose-200 flex flex-col items-center justify-center overflow-hidden px-1">
-        <Ban className="h-3 w-3 text-rose-400" />
-        <span className="text-[9px] font-bold text-rose-500">{tPersonal("slot.locked")}</span>
+      <div className="w-full h-full rounded-lg bg-rose-50 border border-rose-200/80 flex flex-col items-center justify-center overflow-hidden px-1">
+        <Ban className="h-3 w-3 text-rose-500" />
+        <span className="text-[9px] font-bold text-rose-600">{tPersonal("slot.locked")}</span>
       </div>
     );
   }
 
   if (effectiveStatus === SlotStatus.BOOKED) {
     return (
-      <div className="w-full h-full rounded-lg bg-amber-50 border border-amber-200 flex flex-col gap-0.5 px-1.5 py-1 overflow-hidden">
+      <div className="w-full h-full rounded-lg bg-amber-50 border border-amber-200/80 flex flex-col gap-0.5 px-1.5 py-1 overflow-hidden">
         <div className="flex items-center justify-between">
-          <span className="text-[9px] font-bold text-amber-700">{tPersonal("slot.full")}</span>
-          <span className="text-[8px] font-bold text-amber-600 bg-amber-100 border border-amber-200 px-1 rounded">
+          <span className="text-[9px] font-bold text-amber-800">{tPersonal("slot.full")}</span>
+          <span className="text-[8px] font-bold text-amber-700 bg-white border border-amber-200/80 px-1 rounded">
             {slot.currentPatients}/{slot.maxPatients}
           </span>
         </div>
@@ -355,7 +355,7 @@ function SlotBlock({
             <div
               key={a.appointmentId}
               title={a.symptoms || ""}
-              className="bg-white/80 border border-amber-100 rounded px-1 py-0.5"
+              className="bg-white/90 border border-amber-100 rounded px-1 py-0.5"
             >
               <p className="font-semibold text-slate-800 truncate flex items-center gap-1 text-[9px]">
                 <User className="w-2.5 h-2.5 text-slate-400 shrink-0" />
@@ -377,12 +377,12 @@ function SlotBlock({
 
   // AVAILABLE
   return (
-    <div className="w-full h-full rounded-lg bg-green-50 border border-green-200 flex flex-col items-center justify-center gap-0.5 overflow-hidden px-1">
-      <div className="flex items-center gap-1 font-bold text-green-700 text-[10px]">
-        <CheckCircle2 className="h-2.5 w-2.5 text-green-600" />
+    <div className="w-full h-full rounded-lg bg-emerald-50 border border-emerald-200/80 flex flex-col items-center justify-center gap-0.5 overflow-hidden px-1">
+      <div className="flex items-center gap-1 font-bold text-emerald-700 text-[10px]">
+        <CheckCircle2 className="h-2.5 w-2.5 text-emerald-600" />
         <span>{tPersonal("slot.available")}</span>
       </div>
-      <span className="text-[8px] font-extrabold text-green-600 bg-white border border-green-100 px-1 rounded">
+      <span className="text-[8px] font-extrabold text-emerald-700 bg-white border border-emerald-200/60 px-1 rounded">
         {slot.currentPatients}/{slot.maxPatients} {tPersonal("slot.patients")}
       </span>
       {roomBadge}

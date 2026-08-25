@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useFormContext, useFieldArray } from "react-hook-form"
-import { Plus, Trash2, Printer, Pill, Sparkles } from "lucide-react"
+import { Plus, Trash2, Printer, Pill, Sparkles, X } from "lucide-react"
 import { useTranslations } from "next-intl"
 import type { MedicalRecordFormDataPayload } from "@/types"
 import PrescriptionTemplatePicker from "../PrescriptionTemplatePicker"
@@ -151,9 +151,9 @@ function QuickAddModal({
           <h3 className="font-semibold text-gray-900">{t("quickAdd")}</h3>
           <button
             onClick={onClose}
-            className="rounded-md p-1 hover:bg-gray-100"
+            className="rounded-md p-1 hover:bg-surface-container-low transition-colors cursor-pointer text-on-surface-variant"
           >
-            ✕
+            <X className="w-4 h-4" />
           </button>
         </div>
         <div className="max-h-[60vh] overflow-y-auto p-4">

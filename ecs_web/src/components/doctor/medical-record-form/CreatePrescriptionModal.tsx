@@ -266,14 +266,14 @@ export default function CreatePrescriptionModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
       <div className="relative w-full max-w-4xl rounded-2xl bg-white shadow-2xl my-6 border border-emerald-100 flex flex-col max-h-[90vh]">
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 bg-linear-to-r from-emerald-800 to-teal-800 text-white rounded-t-2xl">
+        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 bg-[#00658D] text-white rounded-t-2xl">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-white/20 rounded-xl backdrop-blur-md">
-              <Pill className="h-6 w-6 text-emerald-200" />
+            <div className="p-2 bg-white/15 rounded-xl backdrop-blur-md">
+              <Pill className="h-6 w-6 text-white/90" />
             </div>
             <div>
               <h2 className="text-lg font-bold">Kê Đơn Thuốc & Đơn Kính Điện Tử EMR</h2>
-              <p className="text-xs text-emerald-100/90">
+              <p className="text-xs text-sky-100/90">
                 {patientName ? `Bệnh nhân: ${patientName}` : "Kê đơn kính và thuốc trực tiếp cho hồ sơ khám bệnh"}
               </p>
             </div>
@@ -281,22 +281,22 @@ export default function CreatePrescriptionModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full p-1.5 text-emerald-100 hover:bg-white/20 hover:text-white transition-colors"
+            className="rounded-full p-1.5 text-white/80 hover:bg-white/20 hover:text-white transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center justify-between px-6 pt-4 border-b border-gray-100 bg-gray-50/50">
+        <div className="flex items-center justify-between px-6 pt-4 border-b border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => setActiveTab("both")}
               className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all ${
                 activeTab === "both"
-                  ? "bg-emerald-600 text-white shadow-xs"
-                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+                  ? "bg-[#00658D] text-white shadow-2xs"
+                  : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
               }`}
             >
               <Sparkles className="h-4 w-4" /> Kê Cả Kính & Thuốc
@@ -306,8 +306,8 @@ export default function CreatePrescriptionModal({
               onClick={() => setActiveTab("glasses")}
               className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all ${
                 activeTab === "glasses"
-                  ? "bg-indigo-600 text-white shadow-xs"
-                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+                  ? "bg-[#00658D] text-white shadow-2xs"
+                  : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
               }`}
             >
               <Glasses className="h-4 w-4" /> Đơn Kính Khúc Xạ
@@ -317,15 +317,15 @@ export default function CreatePrescriptionModal({
               onClick={() => setActiveTab("medications")}
               className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all ${
                 activeTab === "medications"
-                  ? "bg-emerald-600 text-white shadow-xs"
-                  : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+                  ? "bg-[#00658D] text-white shadow-2xs"
+                  : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
               }`}
             >
               <Pill className="h-4 w-4" /> Đơn Thuốc Điện Tử
             </button>
           </div>
 
-          <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+          <span className="text-[11px] font-semibold text-[#00658D] bg-[#00658D]/10 px-3 py-1 rounded-full border border-[#00658D]/20">
             Bước 6 · Bắt buộc trong EMR
           </span>
         </div>
@@ -342,16 +342,16 @@ export default function CreatePrescriptionModal({
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* SECTION 1: ĐƠN KÍNH KHÚC XẠ */}
           {(activeTab === "both" || activeTab === "glasses") && (
-            <div className="rounded-2xl border border-indigo-200 bg-indigo-50/20 p-5 space-y-4 shadow-2xs">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-indigo-100 pb-3">
-                <div className="flex items-center gap-2 font-bold text-sm text-indigo-950">
-                  <Glasses className="h-5 w-5 text-indigo-600" />
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/40 p-5 space-y-4 shadow-2xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
+                <div className="flex items-center gap-2 font-bold text-sm text-gray-900">
+                  <Glasses className="h-5 w-5 text-[#00658D]" />
                   <span>1. Đơn Kính Khúc Xạ (Refraction Prescription)</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowGlassesTemplatePicker(!showGlassesTemplatePicker)}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-indigo-700 transition-colors self-start sm:self-auto"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-[#00658D] px-3 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-[#005273] transition-colors self-start sm:self-auto"
                 >
                   <Sparkles className="h-3.5 w-3.5" /> Chọn Đơn Kính Mẫu (Preset)
                 </button>
@@ -370,12 +370,12 @@ export default function CreatePrescriptionModal({
               {/* Refraction Table Grid (OD & OS) */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* MẮT PHẢI (OD) */}
-                <div className="rounded-xl border border-blue-200 bg-white p-4 space-y-3 shadow-2xs">
-                  <div className="flex items-center justify-between border-b border-blue-100 pb-2">
-                    <span className="font-bold text-xs text-blue-900 flex items-center gap-1.5">
-                      <Eye className="h-4 w-4 text-blue-600" /> MẮT PHẢI (OD - Oculi Dexter)
+                <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-3 shadow-2xs">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <span className="font-bold text-xs text-gray-900 flex items-center gap-1.5">
+                      <Eye className="h-4 w-4 text-[#00658D]" /> MẮT PHẢI (OD - Oculi Dexter)
                     </span>
-                    <span className="text-[10px] font-semibold bg-blue-50 text-blue-700 px-2 py-0.5 rounded">Mắt Phải</span>
+                    <span className="text-[10px] font-semibold bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Mắt Phải</span>
                   </div>
 
                   <div className="grid grid-cols-4 gap-2">
@@ -386,7 +386,7 @@ export default function CreatePrescriptionModal({
                         value={sphOd}
                         onChange={(e) => setSphOd(e.target.value)}
                         placeholder="-2.50"
-                        className="w-full text-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-mono font-bold text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        className="w-full text-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-mono font-bold text-gray-900 focus:border-[#00658D] focus:ring-1 focus:ring-[#00658D]"
                       />
                     </div>
                     <div>
@@ -396,7 +396,7 @@ export default function CreatePrescriptionModal({
                         value={cylOd}
                         onChange={(e) => setCylOd(e.target.value)}
                         placeholder="-0.75"
-                        className="w-full text-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-mono font-bold text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        className="w-full text-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-mono font-bold text-gray-900 focus:border-[#00658D] focus:ring-1 focus:ring-[#00658D]"
                       />
                     </div>
                     <div>
@@ -406,7 +406,7 @@ export default function CreatePrescriptionModal({
                         value={axisOd}
                         onChange={(e) => setAxisOd(e.target.value)}
                         placeholder="180°"
-                        className="w-full text-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-mono font-bold text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        className="w-full text-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-mono font-bold text-gray-900 focus:border-[#00658D] focus:ring-1 focus:ring-[#00658D]"
                       />
                     </div>
                     <div>
@@ -416,19 +416,19 @@ export default function CreatePrescriptionModal({
                         value={addOd}
                         onChange={(e) => setAddOd(e.target.value)}
                         placeholder="+1.50"
-                        className="w-full text-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-mono font-bold text-gray-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        className="w-full text-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-mono font-bold text-gray-900 focus:border-[#00658D] focus:ring-1 focus:ring-[#00658D]"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* MẮT TRÁI (OS) */}
-                <div className="rounded-xl border border-purple-200 bg-white p-4 space-y-3 shadow-2xs">
-                  <div className="flex items-center justify-between border-b border-purple-100 pb-2">
-                    <span className="font-bold text-xs text-purple-900 flex items-center gap-1.5">
-                      <Eye className="h-4 w-4 text-purple-600" /> MẮT TRÁI (OS - Oculi Sinister)
+                <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-3 shadow-2xs">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <span className="font-bold text-xs text-gray-900 flex items-center gap-1.5">
+                      <Eye className="h-4 w-4 text-[#00658D]" /> MẮT TRÁI (OS - Oculi Sinister)
                     </span>
-                    <span className="text-[10px] font-semibold bg-purple-50 text-purple-700 px-2 py-0.5 rounded">Mắt Trái</span>
+                    <span className="text-[10px] font-semibold bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Mắt Trái</span>
                   </div>
 
                   <div className="grid grid-cols-4 gap-2">
@@ -439,7 +439,7 @@ export default function CreatePrescriptionModal({
                         value={sphOs}
                         onChange={(e) => setSphOs(e.target.value)}
                         placeholder="-2.00"
-                        className="w-full text-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-mono font-bold text-gray-900 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                        className="w-full text-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-mono font-bold text-gray-900 focus:border-[#00658D] focus:ring-1 focus:ring-[#00658D]"
                       />
                     </div>
                     <div>
@@ -449,7 +449,7 @@ export default function CreatePrescriptionModal({
                         value={cylOs}
                         onChange={(e) => setCylOs(e.target.value)}
                         placeholder="-0.50"
-                        className="w-full text-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-mono font-bold text-gray-900 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                        className="w-full text-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-mono font-bold text-gray-900 focus:border-[#00658D] focus:ring-1 focus:ring-[#00658D]"
                       />
                     </div>
                     <div>
@@ -459,7 +459,7 @@ export default function CreatePrescriptionModal({
                         value={axisOs}
                         onChange={(e) => setAxisOs(e.target.value)}
                         placeholder="90°"
-                        className="w-full text-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-mono font-bold text-gray-900 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                        className="w-full text-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-mono font-bold text-gray-900 focus:border-[#00658D] focus:ring-1 focus:ring-[#00658D]"
                       />
                     </div>
                     <div>
@@ -469,7 +469,7 @@ export default function CreatePrescriptionModal({
                         value={addOs}
                         onChange={(e) => setAddOs(e.target.value)}
                         placeholder="+1.50"
-                        className="w-full text-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-mono font-bold text-gray-900 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                        className="w-full text-center rounded-lg border border-gray-300 px-2 py-1.5 text-xs font-mono font-bold text-gray-900 focus:border-[#00658D] focus:ring-1 focus:ring-[#00658D]"
                       />
                     </div>
                   </div>
@@ -477,7 +477,7 @@ export default function CreatePrescriptionModal({
               </div>
 
               {/* Extra Glasses Parameters */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white p-3.5 rounded-xl border border-indigo-100">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white p-3.5 rounded-xl border border-slate-200">
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1">
                     Khoảng cách đồng tử PD (mm):
@@ -487,7 +487,7 @@ export default function CreatePrescriptionModal({
                     value={pd}
                     onChange={(e) => setPd(e.target.value)}
                     placeholder="62"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-xs text-gray-900 font-semibold focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-xs text-gray-900 font-semibold focus:border-[#00658D] focus:ring-1 focus:ring-[#00658D]"
                   />
                 </div>
                 <div>
@@ -497,7 +497,7 @@ export default function CreatePrescriptionModal({
                   <select
                     value={lensType}
                     onChange={(e) => setLensType(e.target.value)}
-                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-xs text-gray-900 font-semibold focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-xs text-gray-900 font-semibold focus:border-[#00658D] focus:ring-1 focus:ring-[#00658D]"
                   >
                     <option value="Đơn tròng (Single Vision)">Đơn tròng (Single Vision)</option>
                     <option value="Đa tròng (Progressive)">Đa tròng (Progressive)</option>
@@ -515,7 +515,7 @@ export default function CreatePrescriptionModal({
                     value={glassesNotes}
                     onChange={(e) => setGlassesNotes(e.target.value)}
                     placeholder="VD: Đeo kính khi làm việc máy tính, tái khám kiểm tra thị lực sau 6 tháng"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-xs text-gray-900 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-xs text-gray-900 focus:border-[#00658D] focus:ring-1 focus:ring-[#00658D]"
                   />
                 </div>
               </div>
@@ -524,16 +524,16 @@ export default function CreatePrescriptionModal({
 
           {/* SECTION 2: ĐƠN THUỐC ĐIỆN TỬ */}
           {(activeTab === "both" || activeTab === "medications") && (
-            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/20 p-5 space-y-4 shadow-2xs">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-100 pb-3">
-                <div className="flex items-center gap-2 font-bold text-sm text-emerald-950">
-                  <Pill className="h-5 w-5 text-emerald-600" />
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/40 p-5 space-y-4 shadow-2xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
+                <div className="flex items-center gap-2 font-bold text-sm text-gray-900">
+                  <Pill className="h-5 w-5 text-[#00658D]" />
                   <span>2. Đơn Thuốc Điện Tử (Medication Prescription)</span>
                 </div>
 
                 {/* Prescription Presets Selector */}
                 <div className="flex items-center gap-2 self-start sm:self-auto">
-                  <span className="text-[11px] font-semibold text-emerald-800 hidden sm:inline">Mẫu thuốc:</span>
+                  <span className="text-[11px] font-semibold text-slate-700 hidden sm:inline">Mẫu thuốc:</span>
                   <select
                     onChange={(e) => {
                       if (e.target.value) {
@@ -541,7 +541,7 @@ export default function CreatePrescriptionModal({
                         e.target.value = ""
                       }
                     }}
-                    className="rounded-lg border border-emerald-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-emerald-900 focus:border-emerald-500 focus:outline-none shadow-2xs"
+                    className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-900 focus:border-[#00658D] focus:outline-none shadow-2xs"
                   >
                     <option value="">-- Chọn đơn thuốc mẫu nhãn khoa --</option>
                     {prescriptionTemplates.map((t) => (
@@ -554,9 +554,9 @@ export default function CreatePrescriptionModal({
               </div>
 
               {/* Drug Table */}
-              <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-2xs">
+              <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-2xs">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-gray-50 border-b border-gray-200 text-gray-700 font-bold">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold">
                     <tr>
                       <th className="px-3 py-2.5 text-center w-8">#</th>
                       <th className="px-3 py-2.5">Tên thuốc</th>
@@ -577,7 +577,7 @@ export default function CreatePrescriptionModal({
                       </tr>
                     ) : (
                       drugs.map((drug, index) => (
-                        <tr key={drug.id} className="hover:bg-gray-50/50">
+                        <tr key={drug.id} className="hover:bg-slate-50/50">
                           <td className="px-3 py-2 text-center text-gray-400 font-mono font-bold">
                             {index + 1}
                           </td>
@@ -587,7 +587,7 @@ export default function CreatePrescriptionModal({
                               value={drug.medicineName}
                               onChange={(e) => handleDrugChange(drug.id, "medicineName", e.target.value)}
                               placeholder="Tên thuốc (VD: Tobrex 0.3%)"
-                              className="w-full rounded border border-gray-300 px-2 py-1 text-xs font-bold text-gray-900 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                              className="w-full rounded border border-gray-300 px-2 py-1 text-xs font-bold text-gray-900 focus:border-[#00658D] focus:ring-1 focus:ring-[#00658D]"
                             />
                           </td>
                           <td className="px-3 py-2">
@@ -596,7 +596,7 @@ export default function CreatePrescriptionModal({
                               value={drug.dosage}
                               onChange={(e) => handleDrugChange(drug.id, "dosage", e.target.value)}
                               placeholder="15ml"
-                              className="w-full rounded border border-gray-300 px-2 py-1 text-xs text-gray-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                              className="w-full rounded border border-gray-300 px-2 py-1 text-xs text-gray-700 focus:border-[#00658D] focus:ring-1 focus:ring-[#00658D]"
                             />
                           </td>
                           <td className="px-3 py-2">
@@ -605,14 +605,14 @@ export default function CreatePrescriptionModal({
                               value={drug.quantity}
                               onChange={(e) => handleDrugChange(drug.id, "quantity", e.target.value)}
                               placeholder="1"
-                              className="w-full text-center rounded border border-gray-300 px-2 py-1 text-xs font-bold text-emerald-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                              className="w-full text-center rounded border border-gray-300 px-2 py-1 text-xs font-bold text-[#00658D] focus:border-[#00658D] focus:ring-1 focus:ring-[#00658D]"
                             />
                           </td>
                           <td className="px-3 py-2">
                             <select
                               value={drug.unit}
                               onChange={(e) => handleDrugChange(drug.id, "unit", e.target.value)}
-                              className="w-full rounded border border-gray-300 px-2 py-1 text-xs text-gray-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                              className="w-full rounded border border-gray-300 px-2 py-1 text-xs text-gray-700 focus:border-[#00658D] focus:ring-1 focus:ring-[#00658D]"
                             >
                               <option value="Lọ">Lọ</option>
                               <option value="Viên">Viên</option>
@@ -628,7 +628,7 @@ export default function CreatePrescriptionModal({
                               value={drug.frequency}
                               onChange={(e) => handleDrugChange(drug.id, "frequency", e.target.value)}
                               placeholder="4 lần/ngày"
-                              className="w-full rounded border border-gray-300 px-2 py-1 text-xs text-gray-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                              className="w-full rounded border border-gray-300 px-2 py-1 text-xs text-gray-700 focus:border-[#00658D] focus:ring-1 focus:ring-[#00658D]"
                             />
                           </td>
                           <td className="px-3 py-2">
@@ -637,14 +637,14 @@ export default function CreatePrescriptionModal({
                               value={drug.instruction}
                               onChange={(e) => handleDrugChange(drug.id, "instruction", e.target.value)}
                               placeholder="Nhỏ 1-2 giọt vào mắt"
-                              className="w-full rounded border border-gray-300 px-2 py-1 text-xs text-gray-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                              className="w-full rounded border border-gray-300 px-2 py-1 text-xs text-gray-600 focus:border-[#00658D] focus:ring-1 focus:ring-[#00658D]"
                             />
                           </td>
                           <td className="px-3 py-2 text-center">
                             <button
                               type="button"
                               onClick={() => handleRemoveDrugRow(drug.id)}
-                              className="p-1 rounded text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                              className="p-1 rounded text-rose-400 hover:bg-rose-50 hover:text-rose-600 transition-colors"
                               title="Xóa dòng này"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -661,12 +661,12 @@ export default function CreatePrescriptionModal({
                 <button
                   type="button"
                   onClick={handleAddDrugRow}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-300 bg-white px-3 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-50 transition-colors shadow-2xs"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-[#00658D] hover:bg-slate-50 transition-colors shadow-2xs"
                 >
-                  <Plus className="h-4 w-4 text-emerald-600" /> Thêm Thuốc Khác
+                  <Plus className="h-4 w-4 text-[#00658D]" /> Thêm Thuốc Khác
                 </button>
                 <span className="text-[11px] text-gray-500 font-medium">
-                  Tổng số thuốc: <strong className="text-emerald-700 font-bold">{drugs.filter((d) => d.medicineName.trim()).length}</strong> loại
+                  Tổng số thuốc: <strong className="text-[#00658D] font-bold">{drugs.filter((d) => d.medicineName.trim()).length}</strong> loại
                 </span>
               </div>
 
@@ -679,18 +679,18 @@ export default function CreatePrescriptionModal({
                   value={rxNotes}
                   onChange={(e) => setRxNotes(e.target.value)}
                   placeholder="Nhập dặn dò tổng quát (VD: Nhỏ thuốc đúng giờ, tránh rửa nước máy vào mắt, tái khám sau 7 ngày...)"
-                  className="w-full rounded-xl border border-gray-300 p-2.5 text-xs text-gray-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  className="w-full rounded-xl border border-gray-300 p-2.5 text-xs text-gray-800 focus:border-[#00658D] focus:ring-1 focus:ring-[#00658D]"
                 />
               </div>
             </div>
           )}
 
           {/* Footer Buttons */}
-          <div className="flex items-center justify-end gap-3 border-t border-gray-200 pt-4">
+          <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+              className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
             >
               Hủy Bỏ
             </button>
@@ -698,7 +698,7 @@ export default function CreatePrescriptionModal({
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-2.5 text-xs font-bold text-white shadow-md hover:bg-emerald-700 transition-colors active:scale-95 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#00658D] px-6 py-2.5 text-xs font-bold text-white shadow-2xs hover:bg-[#005273] transition-colors active:scale-95 disabled:opacity-50"
             >
               {submitting ? (
                 <>
@@ -706,7 +706,7 @@ export default function CreatePrescriptionModal({
                 </>
               ) : (
                 <>
-                  <CheckCircle2 className="h-4 w-4 text-emerald-200" /> Lưu Đơn Kính & Đơn Thuốc
+                  <CheckCircle2 className="h-4 w-4 text-sky-200" /> Lưu Đơn Kính & Đơn Thuốc
                 </>
               )}
             </button>

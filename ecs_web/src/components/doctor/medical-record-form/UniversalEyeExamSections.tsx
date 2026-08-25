@@ -47,10 +47,10 @@ import SubspecialtySections from "./SubspecialtySections"
 import GlaucomaFormSections from "./GlaucomaFormSections"
 
 const inputClass =
-  "w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 print:border-slate-800 print:bg-white print:py-1 print:px-2 print:text-[11px] print:font-bold print:shadow-none"
-const labelClass = "mb-0.5 block text-[11px] font-medium text-gray-700 print:text-[10px] print:font-bold print:text-black"
+  "w-full rounded-xl border border-outline-variant/60 bg-surface-container-lowest px-3 py-2 text-xs font-semibold text-on-surface shadow-xs focus:border-primary focus:outline-hidden focus:ring-1 focus:ring-primary print:border-slate-800 print:bg-white print:py-1 print:px-2 print:text-[11px] print:font-bold print:shadow-none"
+const labelClass = "mb-1 block text-[11px] font-bold text-on-surface-variant print:text-[10px] print:font-bold print:text-black"
 const subGroupClass =
-  "rounded-lg border border-slate-200/80 bg-slate-50/80 p-3 print:border-slate-400 print:bg-white print:p-1.5"
+  "rounded-xl border border-outline-variant/40 bg-surface-container-low/50 p-3 print:border-slate-400 print:bg-white print:p-1.5"
 
 interface EyeSideProps {
   side: "matPhai" | "matTrai"
@@ -62,16 +62,16 @@ function EyeSideHeader({ side }: EyeSideProps) {
   const isEn = locale === "en"
   const isOD = side === "matPhai"
   return (
-    <div className={`mb-2 flex items-center justify-between border-b pb-1.5 ${isOD ? "border-indigo-200" : "border-emerald-200"}`}>
+    <div className="mb-2 flex items-center justify-between border-b border-outline-variant/30 pb-1.5">
       <div className="flex items-center gap-2">
-        <span className={`flex h-5 w-7 items-center justify-center rounded text-[10px] font-extrabold tracking-wide ${isOD ? "bg-indigo-600 text-white shadow-xs" : "bg-emerald-600 text-white shadow-xs"}`}>
+        <span className="flex h-5 w-7 items-center justify-center rounded text-[10px] font-bold tracking-wide bg-primary text-on-primary shadow-xs">
           {isOD ? "OD" : "OS"}
         </span>
-        <span className="text-xs font-bold text-slate-800">
+        <span className="text-xs font-bold text-on-surface">
           {isOD ? (t("sideOD") || (isEn ? "Right eye (OD)" : "Mắt phải (OD)")) : (t("sideOS") || (isEn ? "Left eye (OS)" : "Mắt trái (OS)"))}
         </span>
       </div>
-      <span className="text-[10px] font-medium text-slate-500 italic">
+      <span className="text-[10px] font-medium text-on-surface-variant italic">
         {isOD ? "Ocular Dexter" : "Ocular Sinister"}
       </span>
     </div>
@@ -140,11 +140,11 @@ function EyeCheckboxField({
 }) {
   const { register } = useFormContext<MedicalRecordFormDataPayload>()
   return (
-    <label className="flex items-start gap-2 text-xs font-medium text-slate-700 hover:text-slate-900 cursor-pointer select-none py-0.5">
+    <label className="flex items-start gap-2 text-xs font-semibold text-on-surface hover:text-primary cursor-pointer select-none py-0.5">
       <input
         type="checkbox"
         {...register(f(base, side, leaf) as any)}
-        className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+        className="mt-0.5 h-4 w-4 shrink-0 rounded border-outline-variant/60 text-primary focus:ring-primary"
       />
       <span className="leading-snug">{label}</span>
     </label>
@@ -1567,105 +1567,56 @@ function CollapsibleSection({
   title,
   subtitle,
   icon: Icon,
-  accentColor = "slate",
   children,
   isOpen,
   onToggle,
 }: SectionProps) {
-  const t = useTranslations("form.exam")
   const [internalOpen, setInternalOpen] = useState(true)
-
   const open = isOpen !== undefined ? isOpen : internalOpen
   const toggle = () => {
     if (onToggle) onToggle()
     else setInternalOpen((v) => !v)
   }
 
-  const accentBorder =
-    accentColor === "indigo"
-      ? "border-l-indigo-600"
-      : accentColor === "teal"
-        ? "border-l-teal-600"
-        : accentColor === "rose"
-          ? "border-l-rose-600"
-          : accentColor === "amber"
-            ? "border-l-amber-600"
-            : accentColor === "sky"
-              ? "border-l-sky-600"
-              : accentColor === "violet"
-                ? "border-l-violet-600"
-                : accentColor === "emerald"
-                  ? "border-l-emerald-600"
-                  : "border-l-slate-600"
-
-  const accentText =
-    accentColor === "indigo"
-      ? "text-indigo-700"
-      : accentColor === "teal"
-        ? "text-teal-700"
-        : accentColor === "rose"
-          ? "text-rose-700"
-          : accentColor === "amber"
-            ? "text-amber-700"
-            : accentColor === "sky"
-              ? "text-sky-700"
-              : accentColor === "violet"
-                ? "text-violet-700"
-                : accentColor === "emerald"
-                  ? "text-emerald-700"
-                  : "text-slate-700"
-
-  const accentBg =
-    accentColor === "indigo"
-      ? "bg-indigo-50/70"
-      : accentColor === "teal"
-        ? "bg-teal-50/70"
-        : accentColor === "rose"
-          ? "bg-rose-50/70"
-          : accentColor === "amber"
-            ? "bg-amber-50/70"
-            : accentColor === "sky"
-              ? "bg-sky-50/70"
-              : accentColor === "violet"
-                ? "bg-violet-50/70"
-                : accentColor === "emerald"
-                  ? "bg-emerald-50/70"
-                  : "bg-slate-50/70"
+  const accentBorder = "border-l-primary"
+  const accentText = "text-primary font-bold"
+  const accentBg = "bg-surface-container-lowest"
 
   return (
-    <section className={`rounded-2xl border border-slate-200/90 bg-white shadow-xs transition-all overflow-hidden border-l-4 ${accentBorder} print:border-slate-400 print:mb-3 print:p-0 print:break-inside-avoid`}>
+    <section className={`rounded-2xl border border-outline-variant/40 bg-surface-container-lowest shadow-xs transition-all overflow-hidden border-l-4 ${accentBorder} print:border-slate-400 print:mb-3 print:p-0 print:break-inside-avoid`}>
       {/* Notebook Chapter Header Bar */}
       <button
         type="button"
         onClick={toggle}
-        className={`flex w-full items-center justify-between px-5 py-3.5 text-left transition-colors ${accentBg} hover:bg-slate-100/80 cursor-pointer select-none print:hidden`}
+        className={`flex w-full items-center justify-between px-5 py-3.5 text-left transition-colors ${accentBg} hover:bg-surface-container-low/80 cursor-pointer select-none print:hidden`}
       >
         <div className="flex items-center gap-3">
           {Icon && (
-            <div className={`p-2 rounded-xl bg-white shadow-2xs ${accentText}`}>
+            <div className="p-2 rounded-xl bg-[#c6e7ff]/30 border border-[#81cfff]/40 text-primary">
               <Icon className="h-4 w-4" />
             </div>
           )}
           <div>
-            <span className="text-sm font-bold text-slate-900 tracking-tight block">
+            <span className="text-sm font-bold text-on-surface tracking-tight block">
               {title}
             </span>
             {subtitle && (
-              <span className="text-xs text-slate-500 font-medium">— {subtitle}</span>
+              <span className="text-[11px] text-on-surface-variant font-medium block">
+                {subtitle}
+              </span>
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <span className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-lg ${open ? "bg-white/80 text-slate-700" : "bg-white text-slate-500"} shadow-2xs border border-slate-200/60`}>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-primary flex items-center gap-1">
             {open ? (
               <>
-                <span>Thu gọn</span>
-                <ChevronUp className="h-3.5 w-3.5" />
+                <ChevronUp className="h-4 w-4" />
+                Thu gọn
               </>
             ) : (
               <>
-                <span>Mở xem/nhập</span>
                 <ChevronDown className="h-3.5 w-3.5" />
               </>
             )}
@@ -1736,32 +1687,32 @@ export default function UniversalEyeExamSections({ recordType }: UniversalEyeExa
     setSectionsState(newState)
   }
 
-  const isOpen = (id: string) => (sectionsState[id] !== undefined ? sectionsState[id] : true)
+  const isOpen = (id: string) => (sectionsState[id] !== undefined ? sectionsState[id] : false)
 
   return (
     <div className="space-y-6 antialiased">
       {/* Notebook Binder Header & Controller Bar */}
-      <div className="rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 p-6 text-white shadow-md print:p-0 print:bg-none print:text-slate-900 print:border-none">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-700/60 pb-4 mb-4">
+      <div className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-6 text-on-surface shadow-xs print:p-0 print:bg-none print:text-slate-900 print:border-none">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-outline-variant/30 pb-4 mb-4">
           <div className="flex items-center gap-3.5">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-lg ring-4 ring-indigo-500/20">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#c6e7ff]/40 text-primary border border-[#81cfff]/40 shadow-xs">
               <BookOpen className="h-6 w-6" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="bg-indigo-500/30 text-indigo-300 border border-indigo-400/30 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md tracking-wider">
+                <span className="bg-[#c6e7ff]/40 text-primary border border-[#81cfff]/40 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md tracking-wider">
                   Sổ Tay Bệnh Án EMR
                 </span>
                 {recordType && (
-                  <span className="bg-amber-500/30 text-amber-300 border border-amber-400/30 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md tracking-wider">
+                  <span className="bg-amber-50 text-amber-800 border border-amber-200/70 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md tracking-wider">
                     {MEDICAL_RECORD_TYPE_LABELS[recordType]} ({recordType.replace("MS", "MS ")})
                   </span>
                 )}
               </div>
-              <h2 className="text-xl font-bold text-white tracking-tight mt-1">
+              <h2 className="text-xl font-bold text-on-surface tracking-tight mt-1">
                 {t("title") || (isEn ? "EMR CLINICAL EYE EXAMINATION BINDER" : "SỔ TAY KHÁM LÂM SÀNG NHÃN KHOA CHI TIẾT")}
               </h2>
-              <p className="text-xs text-slate-300 mt-0.5">
+              <p className="text-xs text-on-surface-variant mt-0.5">
                 {isEn ? "Expand the specific clinical section to record or update findings" : "Mở từng Mục lâm sàng cần cập nhật thông tin. Bấm nút Lưu để lưu lại toàn bộ hồ sơ."}
               </p>
             </div>
@@ -1771,17 +1722,17 @@ export default function UniversalEyeExamSections({ recordType }: UniversalEyeExa
             <button
               type="button"
               onClick={() => setAllSections(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-white border border-white/20 transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low text-xs font-bold text-on-surface border border-outline-variant/60 transition-all cursor-pointer shadow-xs"
             >
-              <Maximize2 className="h-3.5 w-3.5" />
+              <Maximize2 className="h-3.5 w-3.5 text-primary" />
               Mở tất cả mục
             </button>
             <button
               type="button"
               onClick={() => setAllSections(false)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold text-white border border-white/20 transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low text-xs font-bold text-on-surface border border-outline-variant/60 transition-all cursor-pointer shadow-xs"
             >
-              <Minimize2 className="h-3.5 w-3.5" />
+              <Minimize2 className="h-3.5 w-3.5 text-on-surface-variant" />
               Gập gọn tất cả
             </button>
           </div>
@@ -1789,45 +1740,45 @@ export default function UniversalEyeExamSections({ recordType }: UniversalEyeExa
 
         {/* Notebook Chapter Quick Jump Links */}
         <div className="flex flex-wrap items-center gap-2 text-xs print:hidden">
-          <span className="font-semibold text-slate-400 mr-1 flex items-center gap-1">
-            <Bookmark className="h-3.5 w-3.5 text-amber-400" />
+          <span className="font-semibold text-on-surface-variant mr-1 flex items-center gap-1">
+            <Bookmark className="h-3.5 w-3.5 text-primary" />
             Chuyển nhanh Chương:
           </span>
           <a
             href="#sec-thi-luc"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-500/20 border border-indigo-400/30 px-3 py-1.5 font-semibold text-indigo-200 hover:bg-indigo-500/40 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-surface-container-low border border-outline-variant/40 px-3 py-1.5 font-bold text-on-surface hover:bg-primary hover:text-on-primary transition-all cursor-pointer"
           >
-            <Eye className="h-3.5 w-3.5 text-indigo-400" />
+            <Eye className="h-3.5 w-3.5 text-primary" />
             1. {t("thiLucNhanAp.title") || (isEn ? "Visual Acuity & IOP" : "Thị lực & Nhãn áp")}
           </a>
           <a
             href="#sec-ban-phan-truoc"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-teal-500/20 border border-teal-400/30 px-3 py-1.5 font-semibold text-teal-200 hover:bg-teal-500/40 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-surface-container-low border border-outline-variant/40 px-3 py-1.5 font-bold text-on-surface hover:bg-primary hover:text-on-primary transition-all cursor-pointer"
           >
-            <Microscope className="h-3.5 w-3.5 text-teal-400" />
+            <Microscope className="h-3.5 w-3.5 text-primary" />
             2. {isEn ? "Anterior Segment" : "Bán phần trước"}
           </a>
           <a
             href="#sec-ban-phan-sau"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500/20 border border-amber-400/30 px-3 py-1.5 font-semibold text-amber-200 hover:bg-amber-500/40 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-surface-container-low border border-outline-variant/40 px-3 py-1.5 font-bold text-on-surface hover:bg-primary hover:text-on-primary transition-all cursor-pointer"
           >
-            <Globe className="h-3.5 w-3.5 text-amber-400" />
+            <Globe className="h-3.5 w-3.5 text-primary" />
             3. {isEn ? "Posterior Segment & Orbit" : "Bán phần sau & Hốc mắt"}
           </a>
           {recordType && (
             <a
               href="#sec-chuyen-khoa"
-              className="inline-flex items-center gap-1.5 rounded-lg bg-purple-500/20 border border-purple-400/30 px-3 py-1.5 font-semibold text-purple-200 hover:bg-purple-500/40 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-surface-container-low border border-outline-variant/40 px-3 py-1.5 font-bold text-on-surface hover:bg-primary hover:text-on-primary transition-all cursor-pointer"
             >
-              <Stethoscope className="h-3.5 w-3.5 text-purple-400" />
+              <Stethoscope className="h-3.5 w-3.5 text-primary" />
               4. Khám Chuyên Khoa
             </a>
           )}
           <a
             href="#sec-toan-than"
-            className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/20 border border-emerald-400/30 px-3 py-1.5 font-semibold text-emerald-200 hover:bg-emerald-500/40 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-surface-container-low border border-outline-variant/40 px-3 py-1.5 font-bold text-on-surface hover:bg-primary hover:text-on-primary transition-all cursor-pointer"
           >
-            <HeartPulse className="h-3.5 w-3.5 text-emerald-400" />
+            <HeartPulse className="h-3.5 w-3.5 text-primary" />
             5. Khám Toàn Thân
           </a>
         </div>
@@ -1849,8 +1800,8 @@ export default function UniversalEyeExamSections({ recordType }: UniversalEyeExa
 
       {/* 2. Bán phần trước */}
       <div id="sec-ban-phan-truoc" className="space-y-4">
-        <div className="border-b border-teal-200 pb-1.5 text-xs font-extrabold text-teal-900 uppercase tracking-wider flex items-center gap-2">
-          <Microscope className="h-4 w-4 text-teal-600" />
+        <div className="border-b border-outline-variant/30 pb-1.5 text-xs font-extrabold text-primary uppercase tracking-wider flex items-center gap-2">
+          <Microscope className="h-4 w-4 text-primary" />
           {isEn ? "Anterior Segment Examination" : "Chương II: Bán phần trước (Anterior Segment Examination)"}
         </div>
         <CollapsibleSection
@@ -1927,8 +1878,8 @@ export default function UniversalEyeExamSections({ recordType }: UniversalEyeExa
 
       {/* 3. Bán phần sau & Hốc mắt */}
       <div id="sec-ban-phan-sau" className="space-y-4">
-        <div className="border-b border-amber-200 pb-1.5 text-xs font-extrabold text-amber-900 uppercase tracking-wider flex items-center gap-2">
-          <Globe className="h-4 w-4 text-amber-600" />
+        <div className="border-b border-outline-variant/30 pb-1.5 text-xs font-extrabold text-primary uppercase tracking-wider flex items-center gap-2">
+          <Globe className="h-4 w-4 text-primary" />
           {isEn ? "Posterior Segment & Orbit Examination" : "Chương III: Bán phần sau & Hốc mắt (Posterior Segment & Orbit)"}
         </div>
         <CollapsibleSection
@@ -1976,11 +1927,11 @@ export default function UniversalEyeExamSections({ recordType }: UniversalEyeExa
       {/* 4. Khám Chuyên Khoa riêng theo recordType */}
       {recordType && (
         <div id="sec-chuyen-khoa" className="space-y-4">
-          <div className="border-b border-purple-200 pb-1.5 text-xs font-extrabold text-purple-900 uppercase tracking-wider flex items-center gap-2">
-            <Stethoscope className="h-4 w-4 text-purple-600" />
+          <div className="border-b border-outline-variant/30 pb-1.5 text-xs font-extrabold text-primary uppercase tracking-wider flex items-center gap-2">
+            <Stethoscope className="h-4 w-4 text-primary" />
             Chương IV: Khám Chuyên Khoa Mắt — {MEDICAL_RECORD_TYPE_LABELS[recordType]} ({recordType.replace("MS", "MS ")})
           </div>
-          <div className="rounded-2xl border border-purple-200 bg-white p-5 shadow-xs">
+          <div className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-xs">
             {recordType === "MS24_GLAUCOMA" ? (
               <GlaucomaFormSections />
             ) : (

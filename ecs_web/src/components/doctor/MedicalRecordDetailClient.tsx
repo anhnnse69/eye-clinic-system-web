@@ -39,6 +39,7 @@ import type { GetMedicalRecordDetailResponse } from "@/types"
 import { RECORD_TYPE_LABELS, type RecordType } from "@/types"
 import OfficialMedicalRecordA4Print from "./medical-record-form/OfficialMedicalRecordA4Print"
 import EMRDocument from "./EMRDocument"
+import MS15BV01OutpatientMedicalRecordPrint from "./medical-record-form/MS15BV01OutpatientMedicalRecordPrint"
 
 interface MedicalRecordDetailClientProps {
   recordId: string
@@ -90,7 +91,7 @@ function DetailSection({
         onClick={() => setIsOpen(!isOpen)}
         className="w-full px-5 py-4 flex items-center gap-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left print:hidden"
       >
-        <span className="text-blue-600">{icon}</span>
+        <span className="text-[#00658D]">{icon}</span>
         <span className="text-sm font-semibold text-gray-800 flex-1">{title}</span>
         {isOpen ? (
           <ChevronUp className="w-4 h-4 text-gray-400" />
@@ -172,9 +173,9 @@ function EyeSideGrid({
         {title}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-100 print:divide-black">
-        <div className="p-3 bg-blue-50/20 print:bg-white">
-          <p className="text-xs font-bold text-blue-700 mb-2 pb-1 border-b border-blue-100 flex items-center gap-1.5 print:text-black print:border-black">
-            <span className="w-2 h-2 rounded-full bg-blue-600 print:hidden"></span>
+        <div className="p-3 bg-[#00658D]/5 print:bg-white">
+          <p className="text-xs font-bold text-[#00658D] mb-2 pb-1 border-b border-[#00658D]/20 flex items-center gap-1.5 print:text-black print:border-black">
+            <span className="w-2 h-2 rounded-full bg-[#00658D] print:hidden"></span>
             {odLabel}
           </p>
           <InfoGrid items={odData} tYes={tYes} tNo={tNo} />
@@ -324,24 +325,24 @@ function PrescriptionTable({
 
               <div className="p-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                 {/* Mắt Phải OD */}
-                <div className="rounded-lg bg-blue-50/40 p-3 border border-blue-100 space-y-1.5">
-                  <div className="font-bold text-blue-900 border-b border-blue-100 pb-1 flex items-center gap-1">
-                    <Eye className="h-3.5 w-3.5 text-blue-600" /> MẮT PHẢI (OD)
+                <div className="rounded-lg bg-[#00658D]/5 p-3 border border-[#00658D]/20 space-y-1.5">
+                  <div className="font-bold text-[#00658D] border-b border-[#00658D]/20 pb-1 flex items-center gap-1">
+                    <Eye className="h-3.5 w-3.5 text-[#00658D]" /> MẮT PHẢI (OD)
                   </div>
                   <div className="grid grid-cols-4 gap-1 text-center pt-1 font-mono">
-                    <div className="bg-white p-1.5 rounded border border-blue-100">
+                    <div className="bg-white p-1.5 rounded border border-[#00658D]/20">
                       <span className="block text-[9px] text-gray-500 font-sans">SPH</span>
                       <span className="font-bold text-gray-900">{gRx.sphOd ?? gRx.odSphere ?? "—"}</span>
                     </div>
-                    <div className="bg-white p-1.5 rounded border border-blue-100">
+                    <div className="bg-white p-1.5 rounded border border-[#00658D]/20">
                       <span className="block text-[9px] text-gray-500 font-sans">CYL</span>
                       <span className="font-bold text-gray-900">{gRx.cylOd ?? gRx.odCylinder ?? "—"}</span>
                     </div>
-                    <div className="bg-white p-1.5 rounded border border-blue-100">
+                    <div className="bg-white p-1.5 rounded border border-[#00658D]/20">
                       <span className="block text-[9px] text-gray-500 font-sans">AXIS</span>
                       <span className="font-bold text-gray-900">{gRx.axisOd ?? gRx.odAxis ?? "—"}°</span>
                     </div>
-                    <div className="bg-white p-1.5 rounded border border-blue-100">
+                    <div className="bg-white p-1.5 rounded border border-[#00658D]/20">
                       <span className="block text-[9px] text-gray-500 font-sans">ADD</span>
                       <span className="font-bold text-gray-900">{gRx.addOd ?? gRx.odAdd ?? "—"}</span>
                     </div>
@@ -404,7 +405,7 @@ export default function MedicalRecordDetailClient({
   const [record, setRecord] = useState<GetMedicalRecordDetailResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [viewMode, setViewMode] = useState<"emr-doc" | "web-cards">("emr-doc")
+  const [viewMode, setViewMode] = useState<"ms15-print" | "emr-doc" | "web-cards">("ms15-print")
   const [activeTab, setActiveTab] = useState<"summary" | "full" | "clinical">("summary")
   const [showPrintModal, setShowPrintModal] = useState(false)
 
@@ -510,9 +511,9 @@ export default function MedicalRecordDetailClient({
         <div className="text-center">
           <div className="relative w-20 h-20 mx-auto mb-6">
             <div className="absolute inset-0 rounded-full border-4 border-gray-100"></div>
-            <div className="absolute inset-0 rounded-full border-4 border-blue-600 border-t-transparent animate-spin"></div>
-            <div className="absolute inset-3 rounded-full bg-blue-50 flex items-center justify-center">
-              <FileText className="w-6 h-6 text-blue-600 animate-pulse" />
+            <div className="absolute inset-0 rounded-full border-4 border-[#00658D] border-t-transparent animate-spin"></div>
+            <div className="absolute inset-3 rounded-full bg-[#00658D]/10 flex items-center justify-center">
+              <FileText className="w-6 h-6 text-[#00658D] animate-pulse" />
             </div>
           </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-1">{t("loadingTitle")}</h3>
@@ -536,7 +537,7 @@ export default function MedicalRecordDetailClient({
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               onClick={() => window.location.reload()}
-              className="px-6 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 transition-colors shadow-xs"
+              className="px-6 py-2.5 text-sm font-semibold text-white bg-[#00658D] rounded-xl hover:bg-[#005273] transition-colors shadow-2xs"
             >
               {t("retry")}
             </button>
@@ -675,15 +676,10 @@ export default function MedicalRecordDetailClient({
   const normalLabel = t("eyeSides.normal")
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-4 sm:p-6 lg:p-8 print:p-0 print:m-0 print:bg-white">
-      {/* Printable EMR Document for @media print */}
-      <div className="hidden print:block print:w-full print:m-0 print:p-0">
-        <EMRDocument record={record} showActions={false} />
-      </div>
-
-      <div className="max-w-6xl mx-auto space-y-6 print:hidden">
+    <div className="min-h-screen bg-gray-50/50 p-4 sm:p-6 lg:p-8 print:p-0 print:m-0 print:bg-white print:min-h-0 print:w-full">
+      <div className="max-w-6xl mx-auto space-y-6 print:max-w-none print:w-full print:m-0 print:p-0 print:space-y-0">
         {/* Header Bar */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
           <div>
             <Link
               href="/doctor/records"
@@ -748,10 +744,20 @@ export default function MedicalRecordDetailClient({
                 </span>
                 <Link
                   href={`/doctor/records/${record.id}/edit${appointmentId ? `?appointmentId=${appointmentId}` : ""}`}
-                  className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md transition-all active:scale-95"
+                  className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-[#00658D] hover:bg-[#005273] rounded-xl shadow-2xs transition-all active:scale-95"
                 >
                   <Edit3 className="w-4 h-4" /> Cập Nhật Hồ Sơ Bệnh Án
                 </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setViewMode("ms15-print")
+                    setTimeout(() => window.print(), 300)
+                  }}
+                  className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-xl shadow-2xs transition-all active:scale-95 cursor-pointer"
+                >
+                  <Printer className="w-4 h-4" /> Xuất Mẫu MS 15/BV-01
+                </button>
               </div>
             )}
           </div>
@@ -759,12 +765,12 @@ export default function MedicalRecordDetailClient({
 
         {/* Status Banners */}
         {requestState === "RESET" && (
-          <div className="p-4 bg-blue-50/90 border border-blue-200 rounded-2xl flex items-start justify-between gap-3 text-xs text-blue-900 shadow-2xs">
+          <div className="p-4 bg-[#00658D]/10 border border-[#00658D]/20 rounded-2xl flex items-start justify-between gap-3 text-xs text-[#00658D] shadow-2xs print:hidden">
             <div className="flex items-start gap-3">
-              <FileCheck className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+              <FileCheck className="w-5 h-5 text-[#00658D] shrink-0 mt-0.5" />
               <div>
-                <h4 className="font-bold text-blue-950 text-sm mb-0.5">Lượt cập nhật bệnh án trước đó đã hoàn tất</h4>
-                <p className="leading-relaxed text-blue-800">
+                <h4 className="font-bold text-slate-900 text-sm mb-0.5">Lượt cập nhật bệnh án trước đó đã hoàn tất</h4>
+                <p className="leading-relaxed text-slate-700">
                   Quyền chỉnh sửa lượt trước đã được đóng lại sau khi lưu thành công. Nếu cần điều chỉnh thêm thông tin chuyên môn cho lần tiếp theo, bác sĩ có thể tiếp tục bấm <strong>"Gửi Yêu Cầu Chỉnh Sửa Lần Tiếp Theo"</strong> để Admin phê duyệt lại.
                 </p>
               </div>
@@ -774,7 +780,7 @@ export default function MedicalRecordDetailClient({
 
         {/* Status Banners */}
         {requestState === "PENDING" && (
-          <div className="p-4 bg-amber-50/90 border border-amber-200 rounded-2xl flex items-start justify-between gap-3 text-xs text-amber-900 shadow-2xs">
+          <div className="p-4 bg-amber-50/90 border border-amber-200 rounded-2xl flex items-start justify-between gap-3 text-xs text-amber-900 shadow-2xs print:hidden">
             <div className="flex items-start gap-3">
               <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
               <div>
@@ -795,32 +801,71 @@ export default function MedicalRecordDetailClient({
         )}
 
         {/* View Mode Navigation Tabs */}
-        <div className="flex items-center gap-2 border-b border-gray-200 pb-2">
+        <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-2 print:hidden">
           <button
             type="button"
-            onClick={() => setViewMode("emr-doc")}
-            className={`inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${viewMode === "emr-doc"
-                ? "bg-emerald-800 text-white shadow-xs"
-                : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+            onClick={() => setViewMode("ms15-print")}
+            className={`inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${viewMode === "ms15-print"
+                ? "bg-[#00658D] text-white shadow-2xs"
+                : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
               }`}
           >
-            <FileText className="h-4 w-4" /> Mẫu Hồ Sơ Bệnh Án Điện Tử EMR (Bộ Y Tế TT 46/2018)
+            <Printer className="h-4 w-4" /> Bệnh Án Điện Tử (EMR)
           </button>
           <button
             type="button"
             onClick={() => setViewMode("web-cards")}
             className={`inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${viewMode === "web-cards"
-                ? "bg-blue-600 text-white shadow-xs"
-                : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200"
+                ? "bg-slate-800 text-white shadow-2xs"
+                : "bg-white text-slate-700 hover:bg-slate-50 border border-slate-200"
               }`}
           >
             <Eye className="h-4 w-4" /> Giao diện Web (Thẻ Collapsible)
           </button>
         </div>
 
+        {/* View Mode 0: Official Ministry of Health MS 15/BV-01 Outpatient Medical Record */}
+        {viewMode === "ms15-print" && (
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs print:hidden">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
+                <Printer className="h-5 w-5 text-[#00658D]" />
+                <span>Mẫu Bệnh Án Ngoại Trú MS: 15/BV-01 (Mẫu Chuẩn Bộ Y Tế - In A4 2 Trang)</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="inline-flex items-center gap-2 rounded-xl bg-[#00658D] px-4 py-2 text-xs font-bold text-white shadow-2xs hover:bg-[#005273] transition-all cursor-pointer active:scale-95"
+              >
+                <Printer className="h-4 w-4" /> In / Xuất Mẫu MS 15/BV-01
+              </button>
+            </div>
+            <MS15BV01OutpatientMedicalRecordPrint
+              record={record}
+              clinicProfile={{
+                soYTe: record.formData?.benhAn?.hanhChinh?.soYTe || record.formData?.hanhChinh?.soYTe || (record as any).soYTe,
+                clinicName: record.formData?.benhAn?.hanhChinh?.tenCoSo || record.formData?.hanhChinh?.tenCoSo || (record as any).clinicName,
+                address: record.formData?.benhAn?.hanhChinh?.diaChiCoSo || record.formData?.hanhChinh?.diaChiCoSo || (record as any).clinicAddress,
+                phone: record.formData?.benhAn?.hanhChinh?.dienThoaiCoSo || record.formData?.hanhChinh?.dienThoaiCoSo,
+                email: record.formData?.benhAn?.hanhChinh?.emailCoSo || record.formData?.hanhChinh?.emailCoSo,
+              }}
+            />
+          </div>
+        )}
+
         {/* View Mode 1: EMR Official Paper Document */}
         {viewMode === "emr-doc" && (
-          <EMRDocument record={record} showActions={true} />
+          <EMRDocument
+            record={record}
+            showActions={true}
+            clinicProfile={{
+              soYTe: record.formData?.benhAn?.hanhChinh?.soYTe || record.formData?.hanhChinh?.soYTe || (record as any).soYTe,
+              clinicName: record.formData?.benhAn?.hanhChinh?.tenCoSo || record.formData?.hanhChinh?.tenCoSo || (record as any).clinicName,
+              address: record.formData?.benhAn?.hanhChinh?.diaChiCoSo || record.formData?.hanhChinh?.diaChiCoSo || (record as any).clinicAddress,
+              phone: record.formData?.benhAn?.hanhChinh?.dienThoaiCoSo || record.formData?.hanhChinh?.dienThoaiCoSo,
+              email: record.formData?.benhAn?.hanhChinh?.emailCoSo || record.formData?.hanhChinh?.emailCoSo,
+            }}
+          />
         )}
 
         {/* View Mode 2: Web Cards (Collapsible List) */}
@@ -1441,7 +1486,7 @@ export default function MedicalRecordDetailClient({
                 {requestState === "APPROVED" && (
                   <Link
                     href={`/doctor/records/${record.id}/edit${appointmentId ? `?appointmentId=${appointmentId}` : ""}`}
-                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 active:scale-95 transition-all shadow-xs"
+                    className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#00658D] rounded-xl hover:bg-[#005273] active:scale-95 transition-all shadow-2xs"
                   >
                     <Edit3 className="w-4 h-4" /> Cập Nhật Hồ Sơ Bệnh Án
                   </Link>
@@ -1458,7 +1503,7 @@ export default function MedicalRecordDetailClient({
               {/* Modal Header */}
               <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-blue-600/30 border border-blue-400/30 flex items-center justify-center text-blue-400">
+                  <div className="w-9 h-9 rounded-xl bg-[#00658D]/20 border border-[#00658D]/30 flex items-center justify-center text-[#00658D]">
                     <Building2 className="w-5 h-5" />
                   </div>
                   <div>
@@ -1477,8 +1522,8 @@ export default function MedicalRecordDetailClient({
 
               {/* Modal Body */}
               <div className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
-                <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl flex items-start gap-2.5 text-xs text-blue-800">
-                  <FileCheck className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                <div className="p-3 bg-[#00658D]/10 border border-[#00658D]/20 rounded-xl flex items-start gap-2.5 text-xs text-[#00658D]">
+                  <FileCheck className="w-4 h-4 text-[#00658D] shrink-0 mt-0.5" />
                   <span>
                     Hệ thống yêu cầu bác sĩ giải trình nguyên nhân chỉnh sửa bài bản và đính kèm giấy phép/văn bản ủy quyền chính thức từ Clinic Admin trước khi được mở quyền cập nhật.
                   </span>
@@ -1494,21 +1539,21 @@ export default function MedicalRecordDetailClient({
                     value={requestReason}
                     onChange={(e) => setRequestReason(e.target.value)}
                     placeholder="Nhập chi tiết lý do chuyên môn (Ví dụ: Bổ sung diễn biến lâm sàng, đính chính chẩn đoán ban đầu theo kết quả xét nghiệm cận lâm sàng mới công bố, bổ sung chỉ định theo kết luận hội đồng chuyên môn...)"
-                    className="w-full text-xs p-3 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all text-gray-900"
+                    className="w-full text-xs p-3 rounded-xl border border-slate-200 focus:border-[#00658D] focus:ring-2 focus:ring-[#00658D]/20 outline-hidden transition-all text-slate-900"
                   />
                 </div>
 
                 {/* Field 2: Permission doc */}
                 <div>
-                  <label className="block text-xs font-bold text-gray-800 mb-1.5">
-                    Giấy phép / Văn bản cho phép chỉnh sửa từ Clinic Admin <span className="text-red-500">*</span>
+                  <label className="block text-xs font-bold text-slate-800 mb-1.5">
+                    Giấy phép / Văn bản cho phép chỉnh sửa từ Clinic Admin <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={requestDoc}
                     onChange={(e) => setRequestDoc(e.target.value)}
                     placeholder="Ví dụ: GP-2026-0818/QĐ-CA (Quyết định / Văn bản cấp phép từ Clinic Admin)"
-                    className="w-full text-xs px-3 py-2.5 rounded-xl border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-hidden transition-all text-gray-900"
+                    className="w-full text-xs px-3 py-2.5 rounded-xl border border-slate-200 focus:border-[#00658D] focus:ring-2 focus:ring-[#00658D]/20 outline-hidden transition-all text-slate-900"
                   />
                 </div>
 
@@ -1536,7 +1581,7 @@ export default function MedicalRecordDetailClient({
                         <UploadCloud className="w-4 h-4 text-gray-400 shrink-0" />
                         <span className="truncate">
                           {attachedFileName ? (
-                            <strong className="text-blue-700 font-semibold">{attachedFileName}</strong>
+                            <strong className="text-[#00658D] font-semibold">{attachedFileName}</strong>
                           ) : (
                             "Tải lên tệp giấy phép (PDF, PNG, DOCX...)"
                           )}

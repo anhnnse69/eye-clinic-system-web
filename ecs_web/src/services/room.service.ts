@@ -122,7 +122,7 @@ class RoomService {
 
   async getClinicRooms(params: ViewClinicRoomsRequest): Promise<ApiResponse<ViewClinicRoomResponse[]>> {
     const response = await apiClient.get<ApiResponse<ViewClinicRoomResponse[]>>(
-      "https://localhost:7070/api/v1/clinic-admin/rooms",
+      "/clinic-admin/rooms",
       {
         params: {
           pageNumber: params.pageNumber,
@@ -138,20 +138,20 @@ class RoomService {
   
   async createRoom(data: CreateRoomRequest): Promise<ApiResponse<CreateRoomResponse>> {
     const response = await apiClient.post<ApiResponse<CreateRoomResponse>>(
-      "https://localhost:7070/api/v1/clinic-admin/rooms",
+      "/clinic-admin/rooms",
       data
     );
     return response.data;
   }
 
   async editClinicRoom(data: EditRoomRequest): Promise<ApiResponse<EditRoomResponse>> {
-  const response = await apiClient.put<ApiResponse<EditRoomResponse>>("https://localhost:7070/api/v1/clinic-admin/rooms/edit", data);
+  const response = await apiClient.put<ApiResponse<EditRoomResponse>>("/clinic-admin/rooms/edit", data);
   return response.data;
 }
 
 async toggleRoomStatus(data: DeleteRoomRequest): Promise<ApiResponse<DeleteRoomResponse>> {
   const response = await apiClient.patch<ApiResponse<DeleteRoomResponse>>(
-    `https://localhost:7070/api/v1/clinic-admin/rooms/${data.roomId}/status`,
+    `/clinic-admin/rooms/${data.roomId}/status`,
     data
   );
   return response.data;

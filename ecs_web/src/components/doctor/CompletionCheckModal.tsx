@@ -193,7 +193,7 @@ export default function CompletionCheckModal({
 
         {loading ? (
           <div className="flex flex-col items-center justify-center py-10 text-xs text-gray-500 gap-2">
-            <Loader2 className="h-6 w-6 animate-spin text-indigo-600" />
+            <Loader2 className="h-6 w-6 animate-spin text-[#00658D]" />
             <span>Đang kiểm tra tiến trình quy trình khám...</span>
           </div>
         ) : error ? (
@@ -215,27 +215,31 @@ export default function CompletionCheckModal({
                 <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
               )}
               <div>
-                <p className="font-bold text-sm">
-                  {isAllMandatoryDone
-                    ? "Đủ điều kiện hoàn thành ca khám! ✅"
-                    : "Chưa thể hoàn thành ca khám (Còn bước bắt buộc chưa làm)"}
+                <p className="font-bold text-sm flex items-center gap-1.5">
+                  {isAllMandatoryDone ? (
+                    <>
+                      Đủ điều kiện hoàn thành ca khám! <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                    </>
+                  ) : (
+                    "Chưa thể hoàn thành ca khám (Còn bước bắt buộc chưa làm)"
+                  )}
                 </p>
                 <p className="mt-1 leading-relaxed text-gray-700">
                   {isAllMandatoryDone
-                    ? "Tất cả 4 bước của quy trình khám (Lưu hồ sơ khám bệnh, Tổng kết bệnh án, Kê đơn thuốc/kính) đã hoàn tất thành công."
+                    ? "Tất cả các bước của quy trình khám (Lưu hồ sơ khám bệnh, Tổng kết bệnh án, Kê đơn thuốc/kính) đã hoàn tất thành công."
                     : `Theo quy trình EMR, bác sĩ bắt buộc phải hoàn thành: Tổng kết bệnh án (chẩn đoán cuối + ICD-10) và Kê đơn thuốc/kính trước khi kết thúc ca khám. Đang thiếu: ${pendingMandatorySteps.join(" và ")}.`}
                 </p>
               </div>
             </div>
 
             {/* Checklist */}
-            <div className="space-y-2.5 rounded-2xl border border-gray-200 bg-gray-50/50 p-4">
-              <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider mb-2">
+            <div className="space-y-2.5 rounded-2xl border border-slate-200 bg-slate-50/50 p-4">
+              <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                 Danh sách kiểm tra quy trình khám EMR:
               </h4>
 
               {/* Step 1 */}
-              <div className="flex items-center justify-between rounded-xl bg-white p-3 border border-gray-200 text-xs">
+              <div className="flex items-center justify-between rounded-xl bg-white p-3 border border-slate-200 text-xs">
                 <div className="flex items-center gap-2.5">
                   <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
                   <div>
@@ -243,28 +247,34 @@ export default function CompletionCheckModal({
                     <span className="ml-2 text-gray-500">(Hồ sơ bệnh án đã lưu thành công)</span>
                   </div>
                 </div>
-                <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 font-bold text-emerald-800 text-[11px]">
-                  Hoàn thành ✅
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 font-bold text-emerald-700 border border-emerald-200/80 text-[11px]">
+                  Hoàn thành <CheckCircle2 className="h-3 w-3 text-emerald-600" />
                 </span>
               </div>
 
               {/* Step 2 */}
-              <div className="flex items-center justify-between rounded-xl bg-white p-3 border border-gray-200 text-xs">
+              <div className="flex items-center justify-between rounded-xl bg-white p-3 border border-slate-200 text-xs">
                 <div className="flex items-center gap-2.5">
-                  <Microscope className="h-4 w-4 text-indigo-600 shrink-0" />
+                  <Microscope className="h-4 w-4 text-slate-500 shrink-0" />
                   <div>
                     <span className="font-bold text-gray-900">Bước 2: Chỉ định Cận lâm sàng</span>
                     <span className="ml-2 text-gray-500">(OCT, Thị trường, Siêu âm — Tùy chọn)</span>
                   </div>
                 </div>
-                <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 font-semibold text-indigo-700 text-[11px]">
-                  {isStep2Done ? "Có xét nghiệm ✅" : "Không bắt buộc (Tùy chọn)"}
+                <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 font-semibold text-slate-700 border border-slate-200 text-[11px]">
+                  {isStep2Done ? (
+                    <>
+                      Có xét nghiệm <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                    </>
+                  ) : (
+                    "Không bắt buộc (Tùy chọn)"
+                  )}
                 </span>
               </div>
 
               {/* Step 3 */}
               <div
-                className={`flex items-center justify-between rounded-xl p-3 border-2 text-xs ${isStep3Done ? "bg-white border-green-300" : "bg-amber-50/80 border-amber-400"
+                className={`flex items-center justify-between rounded-xl p-3 border-2 text-xs ${isStep3Done ? "bg-white border-emerald-300" : "bg-amber-50/80 border-amber-300"
                   }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
@@ -279,8 +289,8 @@ export default function CompletionCheckModal({
                   </div>
                 </div>
                 {isStep3Done ? (
-                  <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 font-bold text-emerald-800 text-[11px] shrink-0">
-                    Đã tổng kết ✅
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 font-bold text-emerald-700 border border-emerald-200/80 text-[11px] shrink-0">
+                    Đã tổng kết <CheckCircle2 className="h-3 w-3 text-emerald-600" />
                   </span>
                 ) : (
                   <button
@@ -298,14 +308,14 @@ export default function CompletionCheckModal({
 
               {/* Step 4 */}
               <div
-                className={`flex items-center justify-between rounded-xl p-3 border-2 text-xs ${isStep4Done ? "bg-white border-green-300" : "bg-blue-50/80 border-blue-400"
+                className={`flex items-center justify-between rounded-xl p-3 border-2 text-xs ${isStep4Done ? "bg-white border-emerald-300" : "bg-[#00658D]/5 border-[#00658D]/30"
                   }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   {isStep4Done ? (
                     <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
                   ) : (
-                    <XCircle className="h-4 w-4 text-blue-600 shrink-0" />
+                    <XCircle className="h-4 w-4 text-[#00658D] shrink-0" />
                   )}
                   <div className="truncate">
                     <span className="font-bold text-gray-900">Bước 4: Kê đơn thuốc hoặc đơn kính</span>
@@ -313,8 +323,8 @@ export default function CompletionCheckModal({
                   </div>
                 </div>
                 {isStep4Done ? (
-                  <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 font-bold text-emerald-800 text-[11px] shrink-0">
-                    Đã kê đơn ✅
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 font-bold text-emerald-700 border border-emerald-200/80 text-[11px] shrink-0">
+                    Đã kê đơn <CheckCircle2 className="h-3 w-3 text-emerald-600" />
                   </span>
                 ) : (
                   <button
@@ -325,7 +335,7 @@ export default function CompletionCheckModal({
                         `/doctor/prescriptions?recordId=${recordId}&patientId=${patientId}&appointmentId=${appointmentId}`
                       )
                     }}
-                    className="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1 text-xs font-bold text-white shadow-2xs hover:bg-blue-700 transition-colors shrink-0"
+                    className="inline-flex items-center gap-1 rounded-lg bg-[#00658D] px-3 py-1 text-xs font-bold text-white shadow-2xs hover:bg-[#005273] transition-colors shrink-0"
                   >
                     <Pill className="h-3.5 w-3.5" /> Kê đơn ngay
                   </button>

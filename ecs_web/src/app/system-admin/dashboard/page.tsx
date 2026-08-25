@@ -124,35 +124,35 @@ export default function SystemDashboardPage() {
   // Hàm trả về Label trạng thái động dựa theo hiệu suất % thực tế
   const getClinicStatusLabel = (percentage: number) => {
     if (percentage >= 80) {
-      return { text: tDashboard("systemWorkingWell"), color: "text-emerald-500", barColor: "bg-emerald-500", badgeBg: "bg-emerald-50 text-emerald-700 border-emerald-100" }
+      return { text: tDashboard("systemWorkingWell"), color: "text-[#006c49]", barColor: "bg-[#00ae78]", badgeBg: "bg-[#6ffbbe]/30 text-[#003925] border-[#4edea3]/60" }
     } else if (percentage >= 50) {
-      return { text: tDashboard("systemStable"), color: "text-amber-500", barColor: "bg-amber-500", badgeBg: "bg-amber-50 text-amber-700 border-amber-100" }
+      return { text: tDashboard("systemStable"), color: "text-amber-600", barColor: "bg-amber-500", badgeBg: "bg-amber-50 text-amber-800 border-amber-200/80" }
     } else {
-      return { text: tDashboard("lowPerformance"), color: "text-rose-500", barColor: "bg-rose-500", badgeBg: "bg-rose-50 text-rose-700 border-rose-100" }
+      return { text: tDashboard("lowPerformance"), color: "text-[#ba1a1a]", barColor: "bg-[#ba1a1a]", badgeBg: "bg-[#ffdad6]/60 text-[#93000a] border-[#ffdad6]" }
     }
   }
   const statusConfig = getClinicStatusLabel(clinicPercentage)
 
-  // Mảng cấu trúc trạng thái lịch hẹn đồng bộ màu sắc nhẹ sang trọng kèm Icon động
+  // Mảng cấu trúc trạng thái lịch hẹn đồng bộ màu sắc chuẩn DESIGN.md kèm Icon lucide-react
   const getAppointmentStatusGrid = (data: AdminSystemDashboardResponse["appointments"]) => [
-    { label: tDashboard("pending"), count: data.pending, bg: 'bg-amber-500', color: 'text-amber-500', iconColor: 'text-amber-600', bgBox: 'bg-amber-50/60', badgeBg: 'bg-amber-50 text-amber-700 border-amber-100', icon: HelpCircle },
-    { label: tDashboard("depositPaid"), count: data.depositPaid, bg: 'bg-cyan-500', color: 'text-cyan-500', iconColor: 'text-cyan-600', bgBox: 'bg-cyan-50/60', badgeBg: 'bg-cyan-50 text-cyan-700 border-cyan-100', icon: AlertCircle },
-    { label: tDashboard("booked"), count: data.booked, bg: 'bg-blue-500', color: 'text-blue-500', iconColor: 'text-blue-600', bgBox: 'bg-blue-50/60', badgeBg: 'bg-blue-50 text-blue-700 border-blue-100', icon: Calendar },
-    { label: tDashboard("arrived"), count: data.arrived, bg: 'bg-indigo-500', color: 'text-indigo-500', iconColor: 'text-indigo-600', bgBox: 'bg-indigo-50/60', badgeBg: 'bg-indigo-50 text-indigo-700 border-indigo-100', icon: UserCheck },
-    { label: tDashboard("inProgress"), count: data.inProgress, bg: 'bg-purple-500', color: 'text-purple-500', iconColor: 'text-purple-600', bgBox: 'bg-purple-50/60', badgeBg: 'bg-purple-50 text-purple-700 border-purple-100', icon: Activity },
-    { label: tDashboard("completed"), count: data.completed, bg: 'bg-emerald-500', color: 'text-emerald-500', iconColor: 'text-emerald-600', bgBox: 'bg-emerald-50/60', badgeBg: 'bg-emerald-50 text-emerald-700 border-emerald-100', icon: CheckCircle2 },
-    { label: tDashboard("cancelled"), count: data.cancelled, bg: 'bg-rose-500', color: 'text-rose-500', iconColor: 'text-rose-600', bgBox: 'bg-rose-50/60', badgeBg: 'bg-rose-50 text-rose-700 border-rose-100', icon: XCircle },
-    { label: tDashboard("noShow"), count: data.noShow, bg: 'bg-slate-400', color: 'text-slate-400', iconColor: 'text-slate-500', bgBox: 'bg-slate-100/60', badgeBg: 'bg-slate-50 text-slate-700 border-slate-200', icon: Clock },
+    { label: tDashboard("pending"), count: data.pending, bg: 'bg-amber-500', color: 'text-amber-700', iconColor: 'text-amber-600', bgBox: 'bg-amber-50', badgeBg: 'bg-amber-50 text-amber-800 border-amber-200/70', icon: HelpCircle },
+    { label: tDashboard("depositPaid"), count: data.depositPaid, bg: 'bg-sky-500', color: 'text-sky-700', iconColor: 'text-sky-600', bgBox: 'bg-sky-50', badgeBg: 'bg-sky-50 text-sky-800 border-sky-200/70', icon: AlertCircle },
+    { label: tDashboard("booked"), count: data.booked, bg: 'bg-[#00a3e0]', color: 'text-[#00658d]', iconColor: 'text-[#00658d]', bgBox: 'bg-[#c6e7ff]/40', badgeBg: 'bg-[#c6e7ff]/40 text-[#00354b] border-[#81cfff]/60', icon: Calendar },
+    { label: tDashboard("arrived"), count: data.arrived, bg: 'bg-[#00658d]', color: 'text-[#00658d]', iconColor: 'text-[#00658d]', bgBox: 'bg-[#c6e7ff]/30', badgeBg: 'bg-[#c6e7ff]/30 text-[#001e2d] border-[#81cfff]/60', icon: UserCheck },
+    { label: tDashboard("inProgress"), count: data.inProgress, bg: 'bg-[#565e74]', color: 'text-[#565e74]', iconColor: 'text-[#565e74]', bgBox: 'bg-[#dae2fd]/50', badgeBg: 'bg-[#dae2fd]/50 text-[#131b2e] border-[#bec6e0]', icon: Activity },
+    { label: tDashboard("completed"), count: data.completed, bg: 'bg-[#00ae78]', color: 'text-[#006c49]', iconColor: 'text-[#006c49]', bgBox: 'bg-[#6ffbbe]/25', badgeBg: 'bg-[#6ffbbe]/25 text-[#003925] border-[#4edea3]/60', icon: CheckCircle2 },
+    { label: tDashboard("cancelled"), count: data.cancelled, bg: 'bg-[#ba1a1a]', color: 'text-[#93000a]', iconColor: 'text-[#ba1a1a]', bgBox: 'bg-[#ffdad6]/60', badgeBg: 'bg-[#ffdad6]/60 text-[#93000a] border-[#ffdad6]', icon: XCircle },
+    { label: tDashboard("noShow"), count: data.noShow, bg: 'bg-[#6e7881]', color: 'text-[#3e4850]', iconColor: 'text-[#3e4850]', bgBox: 'bg-[#e0e3e5]/60', badgeBg: 'bg-[#e0e3e5]/60 text-[#191c1e] border-[#bdc8d1]', icon: Clock },
   ]
 
   return (
-    <div className="space-y-5 w-full min-w-0 px-6 py-5 bg-[#f8fafc] min-h-screen text-slate-600 font-sans antialiased">
+    <div className="space-y-5 w-full min-w-0 px-6 py-5 bg-background min-h-screen text-on-surface-variant font-sans antialiased">
       
       {/* HEADER TIÊU ĐỀ */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2 tracking-tight">
-            <LayoutDashboard className="h-5 w-5 text-blue-600" />
+          <h2 className="text-lg font-bold text-on-surface flex items-center gap-2 tracking-tight">
+            <LayoutDashboard className="h-5 w-5 text-primary" />
             {tDashboard("title")}
           </h2>
         </div>
@@ -160,39 +160,39 @@ export default function SystemDashboardPage() {
           <button
             onClick={fetchDashboardMetrics}
             disabled={loading}
-            className="p-2 bg-white border border-slate-200/80 hover:bg-slate-50 text-slate-500 rounded-xl transition-all shadow-sm active:scale-95 disabled:opacity-50"
+            className="p-2 bg-surface-container-lowest border border-outline-variant/60 hover:bg-surface-container text-on-surface-variant rounded-xl transition-all shadow-xs active:scale-95 disabled:opacity-50"
           >
-            <RotateCw className={`h-3.5 w-3.5 ${loading ? "animate-spin text-blue-600" : ""}`} />
+            <RotateCw className={`h-3.5 w-3.5 ${loading ? "animate-spin text-primary" : ""}`} />
           </button>
         </div>
       </div>
 
       {/* ERROR */}
       {error && (
-        <div className="p-3 bg-red-50 border border-red-100 rounded-xl text-xs text-red-600 flex items-center gap-2">
-          <ShieldAlert className="h-4 w-4 shrink-0" />
+        <div className="p-3 bg-error-container/40 border border-error-container rounded-xl text-xs text-on-error-container flex items-center gap-2">
+          <ShieldAlert className="h-4 w-4 shrink-0 text-error" />
           <span>{error}</span>
         </div>
       )}
 
       {loading ? (
-        <div className="bg-white border border-slate-100 rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[260px]">
-          <RefreshCw className="h-6 w-6 text-blue-500 animate-spin mb-2" />
-          <p className="text-xs text-slate-400 font-medium">{tDashboard("loading")}</p>
+        <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[260px]">
+          <RefreshCw className="h-6 w-6 text-primary animate-spin mb-2" />
+          <p className="text-xs text-on-surface-variant font-medium">{tDashboard("loading")}</p>
         </div>
       ) : dashboardData ? (
         <div className="space-y-6">
           
           {/* ================= VÙNG 1: CHỈ SỐ DỮ LIỆU TOÀN HỆ THỐNG ================= */}
           <div className="space-y-3">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1 border-b border-slate-200/60">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1 border-b border-outline-variant/40">
               <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4 text-slate-400" />
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                <Globe className="h-4 w-4 text-primary" />
+                <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">
                   {tDashboard("systemIndicators")}
                 </span>
               </div>
-              <span className="text-[10px] text-slate-400 bg-slate-100 font-medium px-2 py-0.5 rounded-md border border-slate-200/40">
+              <span className="text-[10px] text-on-surface-variant bg-surface-container font-medium px-2 py-0.5 rounded-md border border-outline-variant/30">
                 {tDashboard("macroIndicator")}
               </span>
             </div>
@@ -201,20 +201,20 @@ export default function SystemDashboardPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               
               {/* PHÒNG KHÁM VẬN HÀNH */}
-              <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] flex flex-col justify-between min-h-[135px] relative group">
+              <div className="bg-surface-container-lowest p-4 rounded-2xl border border-outline-variant/40 shadow-xs flex flex-col justify-between min-h-[135px] relative group">
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{tDashboard("operationalClinics")}</span>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shadow-sm flex items-center gap-1 ${statusConfig.badgeBg}`}>
+                    <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">{tDashboard("operationalClinics")}</span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shadow-xs flex items-center gap-1 ${statusConfig.badgeBg}`}>
                       {tDashboard("percentage")} {clinicPercentage}%
                     </span>
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-800 tracking-tight">
-                    {dashboardData.operationalClinics.active} <span className="text-xs font-normal text-slate-400">/ {dashboardData.operationalClinics.total} {tDashboard("total")}</span>
+                  <h3 className="text-2xl font-bold text-on-surface tracking-tight">
+                    {dashboardData.operationalClinics.active} <span className="text-xs font-normal text-on-surface-variant">/ {dashboardData.operationalClinics.total} {tDashboard("total")}</span>
                   </h3>
                 </div>
                 <div className="mt-3 space-y-1">
-                  <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                  <div className="w-full bg-surface-container-low rounded-full h-1.5 overflow-hidden">
                     <div className={`h-1.5 rounded-full transition-all duration-500 ${statusConfig.barColor}`} style={{ width: `${clinicPercentage}%` }}></div>
                   </div>
                   <p className={`text-[10px] text-left font-medium ${statusConfig.color}`}>
@@ -224,45 +224,45 @@ export default function SystemDashboardPage() {
               </div>
 
               {/* HỒ SƠ BỆNH NHÂN GỐC */}
-              <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] flex flex-col justify-between min-h-[135px]">
+              <div className="bg-surface-container-lowest p-4 rounded-2xl border border-outline-variant/40 shadow-xs flex flex-col justify-between min-h-[135px]">
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{tDashboard("patientRecords")}</span>
-                    <span className="text-[10px] font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-100/60 shrink-0">
+                    <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">{tDashboard("patientRecords")}</span>
+                    <span className="text-[10px] font-bold text-[#006c49] bg-[#6ffbbe]/20 px-2 py-0.5 rounded-md border border-[#4edea3]/50 shrink-0">
                       {tDashboard("systemScale")}
                     </span>
                   </div>
-                  <h3 className="text-2xl font-bold text-slate-800 tracking-tight mt-1">
-                    {dashboardData.registeredPatients.toLocaleString()} <span className="text-xs font-normal text-slate-400">{tDashboard("records")}</span>
+                  <h3 className="text-2xl font-bold text-on-surface tracking-tight mt-1">
+                    {dashboardData.registeredPatients.toLocaleString()} <span className="text-xs font-normal text-on-surface-variant">{tDashboard("records")}</span>
                   </h3>
                 </div>
-                <div className="mt-3 border-t border-slate-50 pt-2">
-                  <p className="text-[10px] text-slate-400 font-medium leading-relaxed">
+                <div className="mt-3 border-t border-outline-variant/20 pt-2">
+                  <p className="text-[10px] text-on-surface-variant font-medium leading-relaxed">
                     {tDashboard("systemScaleDescription")}
                   </p>
                 </div>
               </div>
 
               {/* ĐƠN ĐĂNG KÝ CHỜ DUYỆT */}
-              <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] lg:col-span-2 flex flex-col justify-between min-h-[135px]">
-                <div className="flex items-center justify-between mb-2 border-b border-slate-50 pb-1.5">
+              <div className="bg-surface-container-lowest p-4 rounded-2xl border border-outline-variant/40 shadow-xs lg:col-span-2 flex flex-col justify-between min-h-[135px]">
+                <div className="flex items-center justify-between mb-2 border-b border-outline-variant/20 pb-1.5">
                   <div className="flex items-center gap-1.5">
                     <ClipboardList className="h-4 w-4 text-amber-500" />
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{tDashboard("pendingApplications")}</span>
+                    <span className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">{tDashboard("pendingApplications")}</span>
                   </div>
-                  <span className="text-[10px] bg-amber-50 text-amber-700 font-bold px-2 py-0.5 rounded-md border border-amber-100/60">
+                  <span className="text-[10px] bg-amber-50 text-amber-700 font-bold px-2 py-0.5 rounded-md border border-amber-200/60">
                     {dashboardData.pendingClinics.length} {tDashboard("newApplications")}
                   </span>
                 </div>
-                <div className="divide-y divide-slate-100/60 max-h-[80px] overflow-y-auto pr-1 scrollbar-thin">
+                <div className="divide-y divide-outline-variant/20 max-h-[80px] overflow-y-auto pr-1 scrollbar-thin">
                   {dashboardData.pendingClinics.length === 0 ? (
-                    <p className="text-xs text-slate-400 text-center py-4 font-medium">{tDashboard("noApplications")}</p>
+                    <p className="text-xs text-on-surface-variant text-center py-4 font-medium">{tDashboard("noApplications")}</p>
                   ) : (
                     dashboardData.pendingClinics.map((req) => (
-                      <div key={req.id} className="flex items-center justify-between py-1.5 text-xs hover:bg-slate-50/60 px-1 rounded transition-colors">
-                        <div className="font-semibold text-slate-700 truncate max-w-[200px]">{req.name}</div>
-                        <div className="text-slate-400 text-[11px]">{tDashboard("representative")}: <span className="text-slate-600 font-medium">{req.owner}</span></div>
-                        <div className="text-slate-400 font-mono text-[10px]">{req.date}</div>
+                      <div key={req.id} className="flex items-center justify-between py-1.5 text-xs hover:bg-surface-container-low px-1 rounded transition-colors">
+                        <div className="font-semibold text-on-surface truncate max-w-[200px]">{req.name}</div>
+                        <div className="text-on-surface-variant text-[11px]">{tDashboard("representative")}: <span className="text-on-surface font-medium">{req.owner}</span></div>
+                        <div className="text-on-surface-variant font-mono text-[10px]">{req.date}</div>
                       </div>
                     ))
                   )}
@@ -274,48 +274,48 @@ export default function SystemDashboardPage() {
 
           {/* ================= VÙNG 2: SỐ LIỆU KINH DOANH & NGHIỆP VỤ Y TẾ ================= */}
           <div className="space-y-3">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1 border-b border-slate-200/60">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1 border-b border-outline-variant/40">
               <div className="flex items-center gap-2">
-                <Activity className="h-4 w-4 text-slate-400" />
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                <Activity className="h-4 w-4 text-primary" />
+                <span className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">
                   {tDashboard("networkPerformance")}
                 </span>
               </div>
-              <span className="text-[10px] text-blue-500 bg-blue-50 font-medium px-2 py-0.5 rounded-md border border-blue-100/40">
+              <span className="text-[10px] text-primary bg-[#c6e7ff]/30 font-medium px-2 py-0.5 rounded-md border border-[#81cfff]/40">
                 {tDashboard("detailedDataAnalysis")}
               </span>
             </div>
             
-            {/* THANH BỘ LỌC ĐÃ DI CHUYỂN XUỐNG ĐÂY */}
-            <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]">
+            {/* THANH BỘ LỌC */}
+            <div className="bg-surface-container-lowest p-4 rounded-2xl border border-outline-variant/40 shadow-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
                 
                 {/* BỘ LỌC CHI NHÁNH */}
                 <div className="flex flex-col gap-1.5 relative" ref={dropdownRef}>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{tDashboard("allClinics")}</label>
+                  <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">{tDashboard("allClinics")}</label>
                   <div 
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="w-full px-3 py-1.5 bg-slate-50/60 border border-slate-200/80 rounded-xl text-xs font-medium text-slate-700 cursor-pointer flex items-center justify-between transition-all hover:bg-slate-100/50 select-none min-h-[36px]"
+                    className="w-full px-3 py-1.5 bg-surface-container-low border border-outline-variant/60 rounded-xl text-xs font-medium text-on-surface cursor-pointer flex items-center justify-between transition-all hover:bg-surface-container select-none min-h-[36px]"
                   >
                     <span className="truncate pr-2 font-medium">{selectedClinicName}</span>
-                    <ChevronDown className={`h-3.5 w-3.5 text-slate-400 transition-transform shrink-0 ${isDropdownOpen ? "rotate-180" : ""}`} />
+                    <ChevronDown className={`h-3.5 w-3.5 text-on-surface-variant transition-transform shrink-0 ${isDropdownOpen ? "rotate-180" : ""}`} />
                   </div>
 
                   {isDropdownOpen && (
-                    <div className="absolute top-[110%] left-0 w-full bg-white border border-slate-200/70 rounded-xl shadow-xl z-50 flex flex-col max-h-[300px] overflow-hidden animate-in fade-in slide-in-from-top-1 duration-100">
-                      <div className="p-2 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
-                        <Search className="h-3.5 w-3.5 text-slate-400 shrink-0 ml-1" />
+                    <div className="absolute top-[110%] left-0 w-full bg-surface-container-lowest border border-outline-variant/60 rounded-xl shadow-xl z-50 flex flex-col max-h-[300px] overflow-hidden animate-in fade-in slide-in-from-top-1 duration-100">
+                      <div className="p-2 border-b border-outline-variant/20 bg-surface-container-low flex items-center gap-2">
+                        <Search className="h-3.5 w-3.5 text-on-surface-variant shrink-0 ml-1" />
                         <input
                           type="text"
                           placeholder={tCommon("search")}
                           value={clinicSearchTerm}
                           onChange={(e) => setClinicSearchTerm(e.target.value)}
-                          className="w-full bg-transparent text-xs outline-none border-none py-1 text-slate-700 placeholder-slate-400 font-medium"
+                          className="w-full bg-transparent text-xs outline-none border-none py-1 text-on-surface placeholder-on-surface-variant/60 font-medium"
                           autoFocus
                         />
                       </div>
 
-                      <div className="overflow-y-auto max-h-56 divide-y divide-slate-50">
+                      <div className="overflow-y-auto max-h-56 divide-y divide-outline-variant/20">
                         <div
                           onClick={() => {
                             setSelectedClinic("")
@@ -323,19 +323,19 @@ export default function SystemDashboardPage() {
                             setIsDropdownOpen(false)
                             setClinicSearchTerm("")
                           }}
-                          className={`px-4 py-2.5 text-xs font-semibold cursor-pointer sticky top-0 bg-white z-10 border-b border-slate-100 transition-colors ${!selectedClinic ? "bg-blue-50 text-blue-600" : "text-slate-500 hover:bg-slate-50"}`}
+                          className={`px-4 py-2.5 text-xs font-semibold cursor-pointer sticky top-0 bg-surface-container-lowest z-10 border-b border-outline-variant/20 transition-colors ${!selectedClinic ? "bg-[#c6e7ff]/30 text-primary" : "text-on-surface-variant hover:bg-surface-container-low"}`}
                         >
                           {tDashboard("allClinics")}
                         </div>
 
                         {loadingClinics ? (
-                          <div className="p-4 text-center text-xs text-slate-400 font-medium flex items-center justify-center gap-1.5">
-                            <RefreshCw className="h-3 w-3 animate-spin text-blue-500" /> {tCommon("loading")}
+                          <div className="p-4 text-center text-xs text-on-surface-variant font-medium flex items-center justify-center gap-1.5">
+                            <RefreshCw className="h-3 w-3 animate-spin text-primary" /> {tCommon("loading")}
                           </div>
                         ) : clinicsList.length === 0 ? (
-                          <div className="p-4 text-center text-xs text-slate-400 font-medium">{tDashboard("noClinics")}</div>
+                          <div className="p-4 text-center text-xs text-on-surface-variant font-medium">{tDashboard("noClinics")}</div>
                         ) : (
-                          <div className="divide-y divide-slate-100">
+                          <div className="divide-y divide-outline-variant/20">
                             {clinicsList.map((c) => {
                               const id = c.id_clinic
                               const name = c.clinicName
@@ -348,10 +348,10 @@ export default function SystemDashboardPage() {
                                     setIsDropdownOpen(false)
                                     setClinicSearchTerm("") 
                                   }}
-                                  className={`px-4 py-2.5 text-xs cursor-pointer transition-colors flex flex-col gap-0.5 ${selectedClinic === id ? "bg-blue-50 text-blue-600 font-bold" : "text-slate-700 hover:bg-slate-50"}`}
+                                  className={`px-4 py-2.5 text-xs cursor-pointer transition-colors flex flex-col gap-0.5 ${selectedClinic === id ? "bg-[#c6e7ff]/30 text-primary font-bold" : "text-on-surface hover:bg-surface-container-low"}`}
                                 >
                                   <span className="font-medium truncate">{name}</span>
-                                  <span className="text-[9px] text-slate-400 font-mono">ID: {id.substring(0, 8)}...</span>
+                                  <span className="text-[9px] text-on-surface-variant font-mono">ID: {id.substring(0, 8)}...</span>
                                 </div>
                               )
                             })}
@@ -364,21 +364,21 @@ export default function SystemDashboardPage() {
 
                 {/* BỘ LỌC THỜI GIAN */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{tDashboard("fromDate")}</label>
+                  <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">{tDashboard("fromDate")}</label>
                   <input
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full px-3 py-1.5 bg-slate-50/60 border border-slate-200/80 rounded-xl text-xs font-medium focus:ring-1 focus:ring-blue-500 outline-none text-slate-700 transition-all min-h-[36px]"
+                    className="w-full px-3 py-1.5 bg-surface-container-low border border-outline-variant/60 rounded-xl text-xs font-medium focus:ring-1 focus:ring-primary outline-none text-on-surface transition-all min-h-[36px]"
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{tDashboard("toDate")}</label>
+                  <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">{tDashboard("toDate")}</label>
                   <input
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full px-3 py-1.5 bg-slate-50/60 border border-slate-200/80 rounded-xl text-xs font-medium focus:ring-1 focus:ring-blue-500 outline-none text-slate-700 transition-all min-h-[36px]"
+                    className="w-full px-3 py-1.5 bg-surface-container-low border border-outline-variant/60 rounded-xl text-xs font-medium focus:ring-1 focus:ring-primary outline-none text-on-surface transition-all min-h-[36px]"
                   />
                 </div>
                 <button
@@ -389,7 +389,7 @@ export default function SystemDashboardPage() {
                     setEndDate("")
                     setClinicSearchTerm("")
                   }}
-                  className="text-slate-600 hover:text-blue-600 text-xs font-semibold h-[36px] flex items-center justify-center gap-1.5 bg-slate-100/80 hover:bg-blue-50 rounded-xl border border-transparent hover:border-blue-100 transition-all shadow-sm"
+                  className="text-on-surface-variant hover:text-primary text-xs font-semibold h-[36px] flex items-center justify-center gap-1.5 bg-surface-container hover:bg-[#c6e7ff]/30 rounded-xl border border-transparent hover:border-[#81cfff]/40 transition-all shadow-xs cursor-pointer"
                 >
                   <Filter className="h-3.5 w-3.5" />
                   {tCommon("reset")}
@@ -398,33 +398,33 @@ export default function SystemDashboardPage() {
             </div>
 
             <div className="space-y-4 pt-1">
-              {/* KHỐI TÀI KHOẢN NHÂN SỰ CHUYỂN THÀNH CHIẾM TRỌN HÀNG NGANG */}
-              <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 min-h-[70px]">
+              {/* KHỐI TÀI KHOẢN NHÂN SỰ */}
+              <div className="bg-surface-container-lowest p-4 rounded-2xl border border-outline-variant/40 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 min-h-[70px]">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-50 text-blue-600 rounded-xl shrink-0">
+                  <div className="p-2 bg-[#c6e7ff]/40 text-primary rounded-xl shrink-0">
                     <Users className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{tDashboard("totalAccounts")}</p>
-                    <h3 className="text-2xl font-bold text-slate-800 mt-0.5 tracking-tight">{dashboardData.totalSystemAccounts.total} <span className="text-xs font-normal text-slate-400">{tDashboard("totalStaff")}</span></h3>
+                    <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">{tDashboard("totalAccounts")}</p>
+                    <h3 className="text-2xl font-bold text-on-surface mt-0.5 tracking-tight">{dashboardData.totalSystemAccounts.total} <span className="text-xs font-normal text-on-surface-variant">{tDashboard("totalStaff")}</span></h3>
                   </div>
                 </div>
-                <div className="flex items-center justify-start sm:justify-end text-[11px] text-slate-500 font-medium gap-x-2.5 flex-wrap max-w-full sm:max-w-[70%]">
+                <div className="flex items-center justify-start sm:justify-end text-[11px] text-on-surface-variant font-medium gap-x-2.5 flex-wrap max-w-full sm:max-w-[70%]">
                   <div className="flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                    <span>{tDashboard("doctor")}: <strong className="text-slate-700 font-semibold">{dashboardData.totalSystemAccounts.doctor}</strong></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#00a3e0]"></span>
+                    <span>{tDashboard("doctor")}: <strong className="text-on-surface font-semibold">{dashboardData.totalSystemAccounts.doctor}</strong></span>
                   </div>
-                  <div className="flex items-center gap-1 border-l border-slate-200 pl-2.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
-                    <span>{tDashboard("receptionist")}: <strong className="text-slate-700 font-semibold">{dashboardData.totalSystemAccounts.receptionist}</strong></span>
+                  <div className="flex items-center gap-1 border-l border-outline-variant/30 pl-2.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#565e74]"></span>
+                    <span>{tDashboard("receptionist")}: <strong className="text-on-surface font-semibold">{dashboardData.totalSystemAccounts.receptionist}</strong></span>
                   </div>
-                  <div className="flex items-center gap-1 border-l border-slate-200 pl-2.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                    <span>{tDashboard("clinicAdmin")}: <strong className="text-slate-700 font-semibold">{dashboardData.totalSystemAccounts.clinicAdmin}</strong></span>
+                  <div className="flex items-center gap-1 border-l border-outline-variant/30 pl-2.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#00ae78]"></span>
+                    <span>{tDashboard("clinicAdmin")}: <strong className="text-on-surface font-semibold">{dashboardData.totalSystemAccounts.clinicAdmin}</strong></span>
                   </div>
-                  <div className="flex items-center gap-1 border-l border-slate-200 pl-2.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                    <span>{tDashboard("systemAdmin")}: <strong className="text-slate-700 font-semibold">{dashboardData.totalSystemAccounts.systemAdmin}</strong></span>
+                  <div className="flex items-center gap-1 border-l border-outline-variant/30 pl-2.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#ba1a1a]"></span>
+                    <span>{tDashboard("systemAdmin")}: <strong className="text-on-surface font-semibold">{dashboardData.totalSystemAccounts.systemAdmin}</strong></span>
                   </div>
                 </div>
               </div>
@@ -433,14 +433,14 @@ export default function SystemDashboardPage() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 
                 {/* PHẦN BÊN TRÁI: TỔNG SỐ LƯỢNG LỊCH HẸN KHÁM CÓ ICON TỪNG TRẠNG THÁI */}
-                <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] flex flex-col justify-between">
+                <div className="bg-surface-container-lowest p-4 rounded-2xl border border-outline-variant/40 shadow-xs flex flex-col justify-between">
                   <div>
-                    <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100/70">
+                    <div className="flex items-center justify-between mb-3 pb-2 border-b border-outline-variant/20">
                       <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-violet-500" />
-                        <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">{tDashboard("appointments")}</h4>
+                        <Calendar className="h-4 w-4 text-primary" />
+                        <h4 className="text-xs font-bold text-on-surface uppercase tracking-wider">{tDashboard("appointments")}</h4>
                       </div>
-                      <span className="text-sm font-bold text-violet-700 bg-violet-50 px-2.5 py-0.5 rounded-md border border-violet-100/70">
+                      <span className="text-xs font-bold text-primary bg-[#c6e7ff]/30 px-2.5 py-0.5 rounded-md border border-[#81cfff]/50">
                         {dashboardData.appointments.total} {tDashboard("pending")}
                       </span>
                     </div>
@@ -451,18 +451,18 @@ export default function SystemDashboardPage() {
                         return (
                           <div 
                             key={index} 
-                            className="flex items-center justify-between p-2 rounded-xl bg-slate-50/50 hover:bg-slate-50 border border-slate-100/80 transition-all text-xs"
+                            className="flex items-center justify-between p-2 rounded-xl bg-surface-container-low/50 hover:bg-surface-container-low border border-outline-variant/30 transition-all text-xs"
                           >
                             <div className="flex items-center space-x-2.5 min-w-0">
                               {/* Điểm tròn màu nhận diện */}
                               <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${item.bg}`}></span>
                               
                               {/* Box chứa Icon đồng bộ thiết kế */}
-                              <div className={`p-1 rounded-md ${item.bgBox} text-slate-500 shrink-0 flex items-center justify-center`}>
+                              <div className={`p-1 rounded-md ${item.bgBox} text-on-surface-variant shrink-0 flex items-center justify-center`}>
                                 <StatusIcon className={`h-3.5 w-3.5 ${item.iconColor}`} />
                               </div>
                               
-                              <span className="font-medium text-slate-600 truncate">{item.label}</span>
+                              <span className="font-medium text-on-surface-variant truncate">{item.label}</span>
                             </div>
                             <span className={`font-bold px-2 py-0.5 rounded text-[11px] border min-w-[32px] text-center ${item.badgeBg}`}>
                               {item.count}
@@ -475,35 +475,35 @@ export default function SystemDashboardPage() {
                 </div>
 
                 {/* PHẦN BÊN PHẢI: CƠ CẤU GÓI DỊCH VỤ Y TẾ PHỔ BIẾN NHẤT */}
-                <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] flex flex-col justify-between">
+                <div className="bg-surface-container-lowest p-4 rounded-2xl border border-outline-variant/40 shadow-xs flex flex-col justify-between">
                   <div>
-                    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-100/70">
-                      <Star className="h-4 w-4 text-blue-500" />
-                      <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">{tDashboard("topServices")}</h4>
+                    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-outline-variant/20">
+                      <Star className="h-4 w-4 text-primary" />
+                      <h4 className="text-xs font-bold text-on-surface uppercase tracking-wider">{tDashboard("topServices")}</h4>
                     </div>
                     
                     <div className="space-y-1 max-h-[280px] overflow-y-auto pr-0.5 scrollbar-thin">
                       {dashboardData.topServices.length === 0 ? (
-                        <p className="text-xs text-slate-400 py-12 text-center font-medium">{tDashboard("noData") || tCommon("noData")}</p>
+                        <p className="text-xs text-on-surface-variant py-12 text-center font-medium">{tDashboard("noData") || tCommon("noData")}</p>
                       ) : (
                         dashboardData.topServices.map((service, index) => (
                           <div 
                             key={index} 
-                            className="py-2.5 px-2 bg-transparent hover:bg-slate-50/80 rounded-xl flex items-center justify-between transition-all text-xs border-b border-slate-100/50 last:border-none"
+                            className="py-2.5 px-2 bg-transparent hover:bg-surface-container-low/80 rounded-xl flex items-center justify-between transition-all text-xs border-b border-outline-variant/20 last:border-none"
                           >
                             <div className="flex items-center gap-3 min-w-0 max-w-[75%]">
-                              <span className="text-xs font-bold text-slate-400 w-4 text-center shrink-0">
+                              <span className="text-xs font-bold text-on-surface-variant w-4 text-center shrink-0">
                                 {index + 1}
                               </span>
                               <div className="truncate">
-                                <div className="font-semibold text-slate-700 truncate">{service.name}</div>
+                                <div className="font-semibold text-on-surface truncate">{service.name}</div>
                               </div>
                             </div>
                             <div className="text-right shrink-0 flex items-center gap-2.5">
-                              <span className="font-bold text-slate-700 font-mono">
+                              <span className="font-bold text-on-surface font-mono">
                                 {service.count} {tDashboard("cases")}
                               </span>
-                              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                              <span className="text-[10px] font-bold text-[#006c49] bg-[#6ffbbe]/25 px-1.5 py-0.5 rounded border border-[#4edea3]/50">
                                 {service.growth}
                               </span>
                             </div>
@@ -520,7 +520,7 @@ export default function SystemDashboardPage() {
 
         </div>
       ) : (
-        <div className="text-center text-slate-400 py-12 text-xs font-medium">{tDashboard("noData")}</div>
+        <div className="text-center text-on-surface-variant py-12 text-xs font-medium">{tDashboard("noData")}</div>
       )}
     </div>
   )

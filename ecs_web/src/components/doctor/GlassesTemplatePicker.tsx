@@ -61,7 +61,7 @@ export default function GlassesTemplatePicker({
       <div className="border-b border-gray-200 p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-purple-100 text-purple-700">
+            <div className="p-2 rounded-lg bg-[#00658D]/10 text-[#00658D]">
               <Glasses className="h-5 w-5" />
             </div>
             <div>
@@ -86,13 +86,13 @@ export default function GlassesTemplatePicker({
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Tìm kiếm đơn kính..."
-            className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 text-sm focus:border-purple-500 focus:outline-none"
+            className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 text-sm focus:border-[#00658D] focus:outline-none"
           />
         </div>
 
@@ -106,8 +106,8 @@ export default function GlassesTemplatePicker({
               className={`
                 px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors
                 ${selectedCategory === cat
-                  ? "bg-purple-600 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  ? "bg-[#00658D] text-white"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }
               `}
             >
@@ -134,8 +134,8 @@ export default function GlassesTemplatePicker({
                   className={`
                     p-3 rounded-lg border cursor-pointer transition-all
                     ${isSelected
-                      ? "border-purple-500 bg-purple-50 shadow-sm"
-                      : "border-gray-200 hover:border-purple-300 hover:bg-gray-50"
+                      ? "border-[#00658D] bg-[#00658D]/5 shadow-2xs"
+                      : "border-slate-200 hover:border-[#00658D]/40 hover:bg-slate-50"
                     }
                   `}
                   onClick={() => setSelectedTemplate(tpl)}
@@ -147,7 +147,7 @@ export default function GlassesTemplatePicker({
                           {tpl.name}
                         </p>
                         {isSelected && (
-                          <CheckCircle2 className="h-4 w-4 text-purple-600 shrink-0" />
+                          <CheckCircle2 className="h-4 w-4 text-[#00658D] shrink-0" />
                         )}
                       </div>
                       <p className="text-xs text-gray-500 mt-0.5">
@@ -157,10 +157,10 @@ export default function GlassesTemplatePicker({
                         {tpl.description}
                       </p>
                       <div className="mt-2 flex flex-wrap gap-1">
-                        <span className="px-1.5 py-0.5 rounded bg-gray-100 text-[10px] text-gray-600">
+                        <span className="px-1.5 py-0.5 rounded bg-slate-100 text-[10px] text-slate-600">
                           {tpl.category}
                         </span>
-                        <span className="px-1.5 py-0.5 rounded bg-purple-100 text-[10px] text-purple-700">
+                        <span className="px-1.5 py-0.5 rounded bg-[#00658D]/10 text-[10px] text-[#00658D]">
                           {tpl.patientGroup}
                         </span>
                       </div>
@@ -171,7 +171,7 @@ export default function GlassesTemplatePicker({
                         e.stopPropagation()
                         handleApply(tpl)
                       }}
-                      className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-purple-600 text-white text-xs font-medium hover:bg-purple-700 transition-colors"
+                      className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#00658D] text-white text-xs font-medium hover:bg-[#005273] transition-colors"
                     >
                       <Sparkles className="h-3 w-3" />
                       Áp dụng
@@ -229,8 +229,8 @@ export default function GlassesTemplatePicker({
                         </p>
                       )}
                       {tpl.recommendations && (
-                        <p className="text-xs text-gray-600 mt-2 italic">
-                          📌 {tpl.recommendations}
+                        <p className="text-xs text-gray-600 mt-2 italic flex items-center gap-1">
+                          <Sparkles className="h-3 w-3 text-[#00658D] shrink-0" /> {tpl.recommendations}
                         </p>
                       )}
                     </div>

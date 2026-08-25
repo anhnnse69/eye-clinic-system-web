@@ -127,7 +127,7 @@ export default function ClinicAdminDashboard() {
       const response = await clinicDashboardService.getExportReport()
 
       if (!response.data) {
-        alert(tDashboard("exportFailed"))
+        setError(tDashboard("exportFailed"))
         return
       }
 
@@ -135,7 +135,7 @@ export default function ClinicAdminDashboard() {
       setExportSuccess(tDashboard("exportSuccess"))
       setTimeout(() => setExportSuccess(null), 4000)
     } catch (err: any) {
-      alert(
+      setError(
         err?.response?.data?.message ||
         err?.message ||
         tDashboard("exportError")
@@ -147,28 +147,28 @@ export default function ClinicAdminDashboard() {
 
   if (loading) {
     return (
-      <div className="p-6 max-w-7xl mx-auto space-y-8">
+      <div className="p-6 max-w-7xl mx-auto space-y-8 bg-background min-h-screen">
         <div className="animate-pulse space-y-3">
-          <div className="h-8 w-64 bg-gray-200 rounded-xl" />
-          <div className="h-4 w-48 bg-gray-100 rounded-lg" />
+          <div className="h-8 w-64 bg-surface-container-low rounded-xl" />
+          <div className="h-4 w-48 bg-surface-container-low rounded-lg" />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-32 bg-gray-200 rounded-3xl" />
+            <div key={i} className="h-32 bg-surface-container-low rounded-3xl" />
           ))}
         </div>
-        <div className="h-64 bg-gray-200 rounded-3xl" />
+        <div className="h-64 bg-surface-container-low rounded-3xl" />
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="p-8 text-center min-h-[400px] flex flex-col items-center justify-center">
-        <div className="text-red-500 text-lg font-medium">{error}</div>
+      <div className="p-8 text-center min-h-[400px] flex flex-col items-center justify-center bg-background">
+        <div className="text-error text-lg font-medium">{error}</div>
         <button
           onClick={loadDashboard}
-          className="mt-4 px-6 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition shadow-sm active:scale-95"
+          className="mt-4 px-6 py-2.5 bg-primary text-on-primary font-medium rounded-xl hover:opacity-90 transition shadow-xs cursor-pointer"
         >
           {tCommon("loading")}
         </button>
@@ -177,24 +177,24 @@ export default function ClinicAdminDashboard() {
   }
 
   return (
-    <div className="space-y-8 p-6 max-w-7xl mx-auto">
+    <div className="space-y-8 p-6 max-w-7xl mx-auto bg-background min-h-screen">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-outline-variant/30 pb-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{tDashboard("title")}</h1>
-          <p className="text-gray-500 mt-1 text-sm sm:text-base">{tDashboard("subtitle")}</p>
+          <h1 className="text-3xl font-bold text-on-surface tracking-tight">{tDashboard("title")}</h1>
+          <p className="text-on-surface-variant mt-1 text-sm sm:text-base">{tDashboard("subtitle")}</p>
         </div>
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
           {exportSuccess && (
-            <span className="text-sm font-medium text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 animate-fade-in">
+            <span className="text-sm font-semibold text-[#003925] bg-[#6ffbbe]/25 px-3 py-1.5 rounded-xl border border-[#4edea3]/60 animate-fade-in">
               {exportSuccess}
             </span>
           )}
           <button
             onClick={handleExportExcel}
             disabled={isExporting}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white font-medium text-sm rounded-xl hover:bg-emerald-700 active:scale-95 disabled:opacity-50 transition shadow-sm cursor-pointer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#006c49] text-white font-semibold text-sm rounded-xl hover:bg-[#005237] active:scale-95 disabled:opacity-50 transition shadow-xs cursor-pointer"
           >
             {isExporting ? (
               <>
@@ -215,57 +215,52 @@ export default function ClinicAdminDashboard() {
         <DashboardCard
           title={tDashboard("todayAppointments")}
           value={dashboard?.totalAppointments ?? 0}
-          icon={<Calendar className="w-7 h-7 text-blue-600" />}
-          color="blue"
+          icon={<Calendar className="w-6 h-6 text-primary" />}
+          iconBg="bg-[#c6e7ff]/40 border-[#81cfff]/40"
         />
         <DashboardCard
           title={tDashboard("completed")}
           value={dashboard?.completedAppointments ?? 0}
-          icon={<CheckCircle className="w-7 h-7 text-emerald-600" />}
-          color="emerald"
+          icon={<CheckCircle className="w-6 h-6 text-[#006c49]" />}
+          iconBg="bg-[#6ffbbe]/25 border-[#4edea3]/60"
         />
         <DashboardCard
           title={tDashboard("todayRevenue")}
           value={formatCurrency(dashboard?.totalRevenue ?? 0)}
-          icon={<TrendingUp className="w-7 h-7 text-violet-600" />}
-          color="violet"
+          icon={<TrendingUp className="w-6 h-6 text-primary" />}
+          iconBg="bg-[#c6e7ff]/40 border-[#81cfff]/40"
         />
       </div>
 
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8">
+      <div className="bg-surface-container-lowest rounded-3xl border border-outline-variant/40 shadow-xs p-6 sm:p-8">
         <div className="flex items-center gap-3 mb-6">
-          <Building2 className="w-6 h-6 text-gray-800" />
-          <h2 className="text-xl font-bold text-gray-900">{tDashboard("overview")}</h2>
+          <Building2 className="w-6 h-6 text-on-surface" />
+          <h2 className="text-xl font-bold text-on-surface">{tDashboard("overview")}</h2>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
           <OverviewCard
             title={tDashboard("staff")}
             value={dashboard?.totalStaffs ?? 0}
-            icon={<Users className="w-8 h-8 text-blue-600" />}
+            icon={<Users className="w-7 h-7 text-primary" />}
           />
           <OverviewCard
             title={tDashboard("services")}
             value={dashboard?.totalServices ?? 0}
-            icon={<Briefcase className="w-8 h-8 text-purple-600" />}
+            icon={<Briefcase className="w-7 h-7 text-primary" />}
           />
           <OverviewCard
             title={tDashboard("rooms")}
             value={dashboard?.totalRooms ?? 0}
-            icon={<DoorOpen className="w-8 h-8 text-rose-600" />}
-          />
-          <OverviewCard
-            title={tDashboard("medicines")}
-            value={dashboard?.totalMedicines ?? 0}
-            icon={<Pill className="w-8 h-8 text-emerald-600" />}
+            icon={<DoorOpen className="w-7 h-7 text-primary" />}
           />
         </div>
       </div>
 
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8">
+      <div className="bg-surface-container-lowest rounded-3xl border border-outline-variant/40 shadow-xs p-6 sm:p-8">
         <div className="flex items-center gap-3 mb-6">
-          <TrendingUp className="w-6 h-6 text-gray-800" />
-          <h2 className="text-xl font-bold text-gray-900">{tDashboard("weeklyStats")}</h2>
+          <TrendingUp className="w-6 h-6 text-on-surface" />
+          <h2 className="text-xl font-bold text-on-surface">{tDashboard("weeklyStats")}</h2>
         </div>
 
         <div className="space-y-3.5">
@@ -273,30 +268,30 @@ export default function ClinicAdminDashboard() {
             dashboard.weeklyStatistics.map((item) => (
               <div
                 key={item.date}
-                className="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100/80 border border-transparent hover:border-gray-200/60 rounded-2xl transition-all duration-200 group"
+                className="flex items-center justify-between p-4 bg-surface-container-low hover:bg-surface-container-low/80 border border-outline-variant/30 rounded-2xl transition-all duration-200 group"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-11 h-11 bg-white rounded-xl flex items-center justify-center shadow-sm border border-gray-100 group-hover:scale-105 transition-transform">
-                    <Calendar className="w-5 h-5 text-gray-500" />
+                  <div className="w-11 h-11 bg-surface-container-lowest rounded-xl flex items-center justify-center shadow-xs border border-outline-variant/60 group-hover:scale-105 transition-transform">
+                    <Calendar className="w-5 h-5 text-on-surface-variant" />
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-800 text-sm sm:text-base">{item.date}</p>
-                    <p className="text-xs sm:text-sm text-gray-400 font-medium">
+                    <p className="font-semibold text-on-surface text-sm sm:text-base">{item.date}</p>
+                    <p className="text-xs sm:text-sm text-on-surface-variant font-medium">
                       {item.appointments} {tDashboard("appointments")}
                     </p>
                   </div>
                 </div>
 
                 <div className="text-right">
-                  <p className="text-lg sm:text-xl font-bold text-emerald-600 tracking-tight">
+                  <p className="text-lg sm:text-xl font-bold text-[#006c49] tracking-tight">
                     {formatCurrency(item.revenue)}
                   </p>
-                  <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">{tDashboard("revenue")}</p>
+                  <p className="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">{tDashboard("revenue")}</p>
                 </div>
               </div>
             ))
           ) : (
-            <div className="text-center py-8 text-gray-400 text-sm">{tDashboard("noWeeklyData")}</div>
+            <div className="text-center py-8 text-on-surface-variant/50 text-sm">{tDashboard("noWeeklyData")}</div>
           )}
         </div>
       </div>
@@ -308,29 +303,23 @@ function DashboardCard({
   title,
   value,
   icon,
-  color = "blue",
+  iconBg = "bg-[#c6e7ff]/40 border-[#81cfff]/40",
 }: {
   title: string
   value: string | number
   icon: React.ReactNode
-  color?: string
+  iconBg?: string
 }) {
-  const colorMap: any = {
-    blue: "bg-blue-50/60 border-blue-100/80 text-blue-900",
-    emerald: "bg-emerald-50/60 border-emerald-100/80 text-emerald-900",
-    violet: "bg-violet-50/60 border-violet-100/80 text-violet-900",
-  }
-
   return (
-    <div className={`rounded-3xl border p-6 transition-all hover:shadow-lg hover:-translate-y-1 bg-white ${colorMap[color] || colorMap.blue}`}>
+    <div className="rounded-3xl border border-outline-variant/40 p-6 transition-all hover:shadow-md hover:-translate-y-0.5 bg-surface-container-lowest shadow-xs">
       <div className="flex justify-between items-start">
         <div>
-          <p className="text-gray-400 text-sm font-semibold tracking-wide uppercase">{title}</p>
-          <p className="text-3xl font-extrabold text-gray-900 mt-3 tracking-tight">
+          <p className="text-on-surface-variant text-xs font-bold tracking-wider uppercase">{title}</p>
+          <p className="text-3xl font-black text-on-surface mt-2 tracking-tight">
             {value}
           </p>
         </div>
-        <div className="p-3 bg-white rounded-2xl shadow-sm border border-gray-100/50">
+        <div className={`p-3 rounded-2xl shadow-xs border ${iconBg}`}>
           {icon}
         </div>
       </div>
@@ -348,12 +337,12 @@ function OverviewCard({
   icon: React.ReactNode
 }) {
   return (
-    <div className="border border-gray-100 hover:border-gray-200 bg-gray-50/30 hover:bg-white rounded-2xl p-5 text-center transition-all hover:shadow-md group">
-      <div className="mx-auto w-14 h-14 bg-white border border-gray-100 group-hover:scale-105 transition-transform rounded-2xl flex items-center justify-center mb-3 shadow-sm">
+    <div className="border border-outline-variant/60 bg-surface-container-low hover:bg-surface-container-lowest rounded-2xl p-5 text-center transition-all hover:shadow-xs group">
+      <div className="mx-auto w-14 h-14 bg-surface-container-lowest border border-outline-variant/60 group-hover:scale-105 transition-transform rounded-2xl flex items-center justify-center mb-3 shadow-xs">
         {icon}
       </div>
-      <p className="text-2xl font-bold text-gray-900 mb-0.5">{value}</p>
-      <p className="text-gray-400 text-sm font-medium">{title}</p>
+      <p className="text-2xl font-bold text-on-surface mb-0.5">{value}</p>
+      <p className="text-on-surface-variant text-sm font-semibold">{title}</p>
     </div>
   )
 }

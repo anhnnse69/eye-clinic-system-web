@@ -93,7 +93,7 @@ export default function RecordApprovalDetailPage({
   }
 
   return (
-    <div className="space-y-6 p-6 max-w-6xl mx-auto print:p-0 print:m-0 print:max-w-none print:bg-white">
+    <div className="space-y-6 p-6 max-w-6xl mx-auto bg-background min-h-screen print:p-0 print:m-0 print:max-w-none print:bg-white">
       {/* ─── PRINT ONLY: Clean A4 PDF Paper Document ─── */}
       <div className="hidden print:block print:w-full print:m-0 print:p-0 print:bg-white text-gray-900 font-serif">
         <div
@@ -181,54 +181,54 @@ export default function RecordApprovalDetailPage({
       <div className="print:hidden">
         <Link
           href="/clinic-admin/record-approvals"
-          className="inline-flex items-center gap-2 text-xs font-semibold text-gray-500 hover:text-gray-900 transition-colors mb-2"
+          className="inline-flex items-center gap-2 text-xs font-bold text-on-surface-variant hover:text-on-surface transition-colors mb-2 cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" /> Quay lại danh sách phê duyệt
         </Link>
       </div>
 
       {/* Header Bar */}
-      <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden">
+      <div className="bg-surface-container-lowest rounded-3xl border border-outline-variant/40 p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden">
         <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-blue-600 mb-1">
-            <Building2 className="w-4 h-4" /> Đơn Đề Nghị Chỉnh Sửa Hồ Sơ EMR
+          <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider mb-1">
+            <Building2 className="w-4 h-4 text-primary" /> Đơn Đề Nghị Chỉnh Sửa Hồ Sơ EMR
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+          <h1 className="text-xl sm:text-2xl font-bold text-on-surface">
             Chi Tiết Đơn Phê Duyệt Hồ Sơ
           </h1>
-          <p className="text-xs text-gray-500 mt-1 font-mono">
-            Giấy Phép Số: <span className="font-bold text-blue-700 font-mono">{requestDetail.permissionDoc}</span>
+          <p className="text-xs text-on-surface-variant mt-1 font-mono">
+            Giấy Phép Số: <span className="font-bold text-primary font-mono">{requestDetail.permissionDoc}</span>
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           {requestDetail.status === "PENDING" && (
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200">
-              <Clock className="w-4 h-4 text-amber-600 animate-pulse" /> Chờ Clinic Admin Phê Duyệt
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200/70">
+              <Clock className="w-4 h-4 text-amber-700 animate-pulse" /> Chờ Clinic Admin Phê Duyệt
             </span>
           )}
           {requestDetail.status === "APPROVED" && (
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-900 border border-emerald-200">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Đã Phê Duyệt Cấp Quyền
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/70">
+              <CheckCircle2 className="w-4 h-4 text-emerald-700" /> Đã Phê Duyệt Cấp Quyền
             </span>
           )}
           {requestDetail.status === "REJECTED" && (
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-red-50 text-red-900 border border-red-200">
-              <AlertCircle className="w-4 h-4 text-red-600" /> Đã Từ Chối Đơn
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-rose-50 text-rose-800 border border-rose-200/70">
+              <AlertCircle className="w-4 h-4 text-rose-700" /> Đã Từ Chối Đơn
             </span>
           )}
         </div>
       </div>
 
       {actionSuccess && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs font-bold text-emerald-900 flex items-center justify-between print:hidden">
+        <div className="p-4 bg-[#6ffbbe]/25 border border-[#4edea3]/60 rounded-2xl text-xs font-bold text-[#003925] flex items-center justify-between print:hidden animate-fade-in">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+            <CheckCircle2 className="w-5 h-5 text-[#006c49]" />
             <span>{actionSuccess}</span>
           </div>
           <button
             onClick={() => setActionSuccess(null)}
-            className="text-emerald-700 hover:text-emerald-950 font-semibold cursor-pointer"
+            className="text-[#003925] hover:opacity-80 font-bold cursor-pointer"
           >
             Đóng
           </button>
@@ -238,61 +238,61 @@ export default function RecordApprovalDetailPage({
       {/* Main Info Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 print:hidden">
         {/* Patient & Doctor Card */}
-        <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-xs space-y-4 md:col-span-1">
-          <h3 className="font-bold text-sm text-gray-900 border-b border-gray-100 pb-3 flex items-center gap-2">
-            <User className="w-4 h-4 text-blue-600" /> Thông Tin Đối Tượng
+        <div className="bg-surface-container-lowest rounded-3xl border border-outline-variant/40 p-6 shadow-xs space-y-4 md:col-span-1">
+          <h3 className="font-bold text-sm text-on-surface border-b border-outline-variant/30 pb-3 flex items-center gap-2">
+            <User className="w-4 h-4 text-primary" /> Thông Tin Đối Tượng
           </h3>
           <div className="space-y-3 text-xs">
             <div>
-              <span className="text-gray-400 block text-[11px]">Bệnh nhân:</span>
-              <span className="font-bold text-gray-900 text-sm">{requestDetail.patientName}</span>
+              <span className="text-on-surface-variant block text-[11px] font-medium">Bệnh nhân:</span>
+              <span className="font-bold text-on-surface text-sm">{requestDetail.patientName}</span>
             </div>
             <div>
-              <span className="text-gray-400 block text-[11px]">Bác sĩ đề nghị:</span>
-              <span className="font-semibold text-gray-800 flex items-center gap-1.5">
-                <Stethoscope className="w-3.5 h-3.5 text-gray-400" />
+              <span className="text-on-surface-variant block text-[11px] font-medium">Bác sĩ đề nghị:</span>
+              <span className="font-semibold text-on-surface flex items-center gap-1.5">
+                <Stethoscope className="w-3.5 h-3.5 text-on-surface-variant" />
                 {requestDetail.doctorName}
               </span>
             </div>
             <div>
-              <span className="text-gray-400 block text-[11px]">Thời gian gửi đơn:</span>
-              <span className="text-gray-700 font-medium">{requestDetail.requestedAt}</span>
+              <span className="text-on-surface-variant block text-[11px] font-medium">Thời gian gửi đơn:</span>
+              <span className="text-on-surface font-medium">{requestDetail.requestedAt}</span>
             </div>
           </div>
         </div>
 
         {/* Edit Reason & Document Details */}
-        <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-xs space-y-5 md:col-span-2">
-          <h3 className="font-bold text-sm text-gray-900 border-b border-gray-100 pb-3 flex items-center gap-2">
-            <FileText className="w-4 h-4 text-indigo-600" /> Lý Do Chuyên Môn & Giấy Phép
+        <div className="bg-surface-container-lowest rounded-3xl border border-outline-variant/40 p-6 shadow-xs space-y-5 md:col-span-2">
+          <h3 className="font-bold text-sm text-on-surface border-b border-outline-variant/30 pb-3 flex items-center gap-2">
+            <FileText className="w-4 h-4 text-primary" /> Lý Do Chuyên Môn & Giấy Phép
           </h3>
 
           <div className="space-y-4 text-xs">
             <div>
-              <label className="block text-gray-400 text-[11px] font-medium mb-1">
+              <label className="block text-on-surface-variant text-[11px] font-medium mb-1">
                 Lý do & Nguyên nhân điều chỉnh chuyên môn bài bản:
               </label>
-              <div className="p-4 bg-gray-50 rounded-2xl border border-gray-200/80 text-gray-900 leading-relaxed font-medium">
+              <div className="p-4 bg-surface-container-low rounded-2xl border border-outline-variant/40 text-on-surface leading-relaxed font-medium italic">
                 "{requestDetail.reason}"
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-              <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100 space-y-1">
-                <span className="text-blue-600 text-[11px] font-semibold block">Mã Giấy Phép / Số VB Ủy Quyền:</span>
-                <span className="font-bold text-blue-950 font-mono text-sm block">{requestDetail.permissionDoc}</span>
+              <div className="p-4 bg-[#c6e7ff]/30 rounded-2xl border border-[#81cfff]/40 space-y-1">
+                <span className="text-primary text-[11px] font-bold block">Mã Giấy Phép / Số VB Ủy Quyền:</span>
+                <span className="font-bold text-primary font-mono text-sm block">{requestDetail.permissionDoc}</span>
               </div>
 
-              <div className="p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100 space-y-2">
-                <span className="text-indigo-600 text-[11px] font-semibold block">Tệp văn bản giấy phép đính kèm:</span>
+              <div className="p-4 bg-[#c6e7ff]/30 rounded-2xl border border-[#81cfff]/40 space-y-2">
+                <span className="text-primary text-[11px] font-bold block">Tệp văn bản giấy phép đính kèm:</span>
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-semibold text-indigo-950 flex items-center gap-1.5 truncate">
-                    <Paperclip className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                  <span className="font-semibold text-on-surface flex items-center gap-1.5 truncate">
+                    <Paperclip className="w-3.5 h-3.5 text-primary shrink-0" />
                     <span className="truncate">{requestDetail.attachedFileName || "GiayPhepChinhSua.pdf"}</span>
                   </span>
                   <button
                     onClick={() => setShowPdfModal(true)}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs transition-colors shrink-0 cursor-pointer shadow-2xs"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-primary hover:opacity-90 text-on-primary rounded-xl font-bold text-xs transition-colors shrink-0 cursor-pointer shadow-xs"
                   >
                     <Eye className="w-3.5 h-3.5" /> Xem PDF
                   </button>
@@ -304,21 +304,21 @@ export default function RecordApprovalDetailPage({
       </div>
 
       {/* Action Footer */}
-      <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-xs flex items-center justify-end gap-4 print:hidden">
+      <div className="bg-surface-container-lowest rounded-3xl border border-outline-variant/40 p-6 shadow-xs flex items-center justify-end gap-4 print:hidden">
         <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
           {requestDetail.status === "PENDING" && (
             <>
               <button
                 type="button"
                 onClick={handleReject}
-                className="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-bold text-xs rounded-xl hover:bg-gray-100 transition-all cursor-pointer"
+                className="px-5 py-2.5 bg-surface-container-lowest border border-outline-variant/60 text-on-surface font-bold text-xs rounded-xl hover:bg-surface-container-low transition-all cursor-pointer"
               >
                 Từ Chối Yêu Cầu
               </button>
               <button
                 type="button"
                 onClick={handleApprove}
-                className="inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 active:scale-95 transition-all shadow-md cursor-pointer"
+                className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#006c49] text-white font-bold text-xs rounded-xl hover:bg-[#005237] active:scale-95 transition-all shadow-xs cursor-pointer"
               >
                 <Check className="w-4 h-4" /> Phê Duyệt Cấp Quyền
               </button>
@@ -326,13 +326,13 @@ export default function RecordApprovalDetailPage({
           )}
 
           {requestDetail.status === "APPROVED" && (
-            <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold text-xs rounded-xl">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" /> Đã Phê Duyệt Cấp Quyền Cho Bác Sĩ
+            <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-50 border border-emerald-200/70 text-emerald-800 font-bold text-xs rounded-xl">
+              <ShieldCheck className="w-4 h-4 text-emerald-700" /> Đã Phê Duyệt Cấp Quyền Cho Bác Sĩ
             </div>
           )}
 
           {requestDetail.status === "REJECTED" && (
-            <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-50 border border-red-200 text-red-800 font-bold text-xs rounded-xl">
+            <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-rose-50 border border-rose-200/70 text-rose-800 font-bold text-xs rounded-xl">
               Đã Từ Chối Yêu Cầu Chỉnh Sửa
             </div>
           )}
@@ -341,8 +341,8 @@ export default function RecordApprovalDetailPage({
 
       {/* PDF Modal Viewer */}
       {showPdfModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-xs animate-in fade-in duration-200 print:hidden">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-5xl w-full border border-gray-100 overflow-hidden flex flex-col max-h-[92vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-fade-in print:hidden">
+          <div className="bg-surface-container-lowest rounded-3xl shadow-2xl max-w-5xl w-full border border-outline-variant/60 overflow-hidden flex flex-col max-h-[92vh] animate-scale-in">
             {/* Modal Header */}
             <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">

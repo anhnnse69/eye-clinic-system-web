@@ -7,6 +7,13 @@ import { MEDICAL_RECORD_TYPE_LABELS, type GetMedicalRecordDetailResponse } from 
 export interface EMRDocumentProps {
   record: GetMedicalRecordDetailResponse
   showActions?: boolean
+  clinicProfile?: {
+    soYTe?: string | null
+    clinicName?: string | null
+    address?: string | null
+    phone?: string | null
+    email?: string | null
+  }
 }
 
 export const RECORD_TYPE_FORM_CODES: Record<string, { code: string; title: string; subtitle: string }> = {
@@ -18,7 +25,7 @@ export const RECORD_TYPE_FORM_CODES: Record<string, { code: string; title: strin
   MS26_PEDIATRIC: { code: "26/BV-01", title: "BỆNH ÁN NGOẠI TRÚ NHÃN KHOA NHI", subtitle: "Bệnh án mắt (Trẻ em)" },
 }
 
-export default function EMRDocument({ record, showActions = true }: EMRDocumentProps) {
+export default function EMRDocument({ record, showActions = true, clinicProfile }: EMRDocumentProps) {
   const formInfo = RECORD_TYPE_FORM_CODES[record.recordType] || {
     code: "22/BV-01",
     title: "BỆNH ÁN NGOẠI TRÚ NHÃN KHOA",
@@ -76,17 +83,17 @@ export default function EMRDocument({ record, showActions = true }: EMRDocumentP
   }
 
   // Patient info extracted directly from backend response & MongoDB payload
-  const fullName = (record.patientFullName || hanhChinh.hoTen || "NGUYỄN VĂN A").toUpperCase()
+  const fullName = (record.patientFullName || hanhChinh.hoTen || "").toUpperCase()
   const rawDob = record.patientDob || hanhChinh.ngaySinh
   const dobFormatted = safeFormatDate(rawDob)
-  const gender = (record.patientGender || hanhChinh.gioiTinh || "NAM").toUpperCase()
+  const gender = (record.patientGender || hanhChinh.gioiTinh || "").toUpperCase()
   const phone = record.patientPhone || hanhChinh.dienThoai || "—"
   const identity = record.patientIdentityNumber || hanhChinh.cmnd || hanhChinh.cccd || "—"
   const bhyt = hanhChinh.soBHYT || "—"
   const address = record.patientAddress || hanhChinh.diaChi || "—"
   const emergencyContact = hanhChinh.nhaBaoTin || "—"
-  const job = hanhChinh.ngheNghiep || "Tự do"
-  const ethnicity = hanhChinh.danToc || "Kinh"
+  const job = hanhChinh.ngheNghiep || "—"
+  const ethnicity = hanhChinh.danToc || "—"
 
   // Medical history
   const lyDoKhams = benhAn.lyDoVaoVien || record.chiefComplaint || "Mờ mắt, đau nhức nhẹ"
@@ -167,22 +174,8 @@ export default function EMRDocument({ record, showActions = true }: EMRDocumentP
         {/* CSS for Print - Fit A4 perfectly without browser headers/footers or gray outer boxes */}
         <style>{`
           @media print {
-            @page {
-              size: A4 portrait;
-              margin: 0 !important;
-            }
-            html, body, #__next, main {
-              background: #ffffff !important;
-              color: #000000 !important;
-              font-family: Arial, "Helvetica Neue", Helvetica, sans-serif !important;
-              -webkit-print-color-adjust: exact !important;
-              print-color-adjust: exact !important;
-              width: 100% !important;
-              height: 100% !important;
-              margin: 0 !important;
-              padding: 0 !important;
-            }
             .emr-print-container {
+              font-family: Arial, "Helvetica Neue", Helvetica, sans-serif !important;
               width: 100% !important;
               max-width: 100% !important;
               margin: 0 !important;
@@ -193,28 +186,14 @@ export default function EMRDocument({ record, showActions = true }: EMRDocumentP
               background: #ffffff !important;
               box-sizing: border-box !important;
             }
-            .print\\:hidden, header, nav, footer, button {
-              display: none !important;
+            .emr-print-container * {
+              box-shadow: none !important;
+              text-shadow: none !important;
             }
             .emr-section {
               page-break-inside: avoid !important;
               break-inside: avoid !important;
               margin-bottom: 4px !important;
-            }
-            /* Remove all gray backgrounds and shadows when printing/exporting PDF */
-            *, *::before, *::after {
-              box-shadow: none !important;
-              text-shadow: none !important;
-            }
-            div, table, tr, td, th, span, p, h1, h2, h3 {
-              background-color: #ffffff !important;
-              background: #ffffff !important;
-            }
-            table, tr, td, th {
-              border-color: #000000 !important;
-            }
-            table td, table th {
-              padding: 2px 4px !important;
             }
           }
         `}</style>
@@ -223,10 +202,18 @@ export default function EMRDocument({ record, showActions = true }: EMRDocumentP
         <div className="border-b-2 border-black pb-3 mb-4 print:mb-2 space-y-2">
           <div className="grid grid-cols-2 text-xs leading-snug">
             <div className="text-left space-y-0.5">
-              <p className="uppercase font-bold text-[11px]">SỞ Y TẾ TP. HỒ CHÍ MINH</p>
-              <p className="font-bold text-xs uppercase text-emerald-950">PHÒNG KHÁM CHUYÊN KHOA MẮT ECS</p>
-              <p className="text-[11px]">Địa chỉ: 123 Nguyễn Trãi, Q.5, TP.HCM</p>
-              <p className="text-[11px]">Hotline: 1900 6789 - Email: emr@eyeclinic.vn</p>
+              <p className="uppercase font-bold text-[11px]">{(clinicProfile?.soYTe || hanhChinh.soYTe || (record as any).soYTe || "SỞ Y TẾ").toUpperCase()}</p>
+              <p className="font-bold text-xs uppercase text-emerald-950">{(clinicProfile?.clinicName || (record as any).clinicName || hanhChinh.tenCoSo || "BỆNH VIỆN / PHÒNG KHÁM").toUpperCase()}</p>
+              {(clinicProfile?.address || (record as any).clinicAddress) && (
+                <p className="text-[11px]">Địa chỉ: {clinicProfile?.address || (record as any).clinicAddress}</p>
+              )}
+              {(clinicProfile?.phone || clinicProfile?.email) && (
+                <p className="text-[11px]">
+                  {clinicProfile?.phone ? `Hotline: ${clinicProfile.phone}` : ""}
+                  {clinicProfile?.phone && clinicProfile?.email ? " - " : ""}
+                  {clinicProfile?.email ? `Email: ${clinicProfile.email}` : ""}
+                </p>
+              )}
             </div>
 
             <div className="text-right space-y-0.5">

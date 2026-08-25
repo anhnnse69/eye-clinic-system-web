@@ -21,30 +21,42 @@ const PAGE_SIZE = 10;
 const STATUS_OPTIONS: { value: AppointmentStatusEnum | ""; labelKey: string }[] = [
   { value: "", labelKey: "statusAll" },
   { value: "PENDING", labelKey: "statusPending" },
+  { value: "DEPOSIT_PAID", labelKey: "statusDepositPaid" },
   { value: "BOOKED", labelKey: "statusBooked" },
+  { value: "ARRIVED", labelKey: "statusArrived" },
+  { value: "IN_PROGRESS", labelKey: "statusInProgress" },
+  { value: "COMPLETED", labelKey: "statusCompleted" },
   { value: "CANCELLED", labelKey: "statusCancelled" },
+  { value: "NOSHOW", labelKey: "statusNoshow" },
 ];
 
 const STATUS_BADGE_KEY: Record<string, string> = {
-  PENDING: "pending",
-  BOOKED: "confirmed",
-  CANCELLED: "cancelled",
+  PENDING: "statusPending",
+  DEPOSIT_PAID: "statusDepositPaid",
+  BOOKED: "statusBooked",
+  CONFIRMED: "confirmed",
+  ARRIVED: "statusArrived",
+  IN_PROGRESS: "statusInProgress",
+  COMPLETED: "statusCompleted",
+  CANCELLED: "statusCancelled",
+  NOSHOW: "statusNoshow",
 };
 
 const STATUS_STYLE: Record<string, string> = {
-  PENDING: "bg-amber-50 text-amber-700 border-amber-200",
-  DEPOSIT_PAID: "bg-sky-50 text-sky-700 border-sky-200",
-  BOOKED: "bg-blue-50 text-blue-700 border-blue-200",
-  ARRIVED: "bg-indigo-50 text-indigo-700 border-indigo-200",
-  IN_PROGRESS: "bg-purple-50 text-purple-700 border-purple-200",
-  COMPLETED: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  CANCELLED: "bg-gray-100 text-gray-500 border-gray-200",
-  NOSHOW: "bg-red-50 text-red-700 border-red-200",
+  PENDING: "bg-amber-50 text-amber-800 border-amber-200/70",
+  DEPOSIT_PAID: "bg-sky-50 text-sky-800 border-sky-200/70",
+  BOOKED: "bg-indigo-50 text-indigo-800 border-indigo-200/70",
+  CONFIRMED: "bg-indigo-50 text-indigo-800 border-indigo-200/70",
+  ARRIVED: "bg-emerald-50 text-emerald-800 border-emerald-200/70",
+  IN_PROGRESS: "bg-purple-50 text-purple-800 border-purple-200/70",
+  COMPLETED: "bg-teal-50 text-teal-800 border-teal-200/70",
+  CANCELLED: "bg-slate-100 text-slate-700 border-slate-200",
+  NOSHOW: "bg-rose-50 text-rose-800 border-rose-200/70",
 };
 
 function Avatar({ name, url }: { name: string; url?: string }) {
   return (
-    <div className="w-9 h-9 rounded-full bg-blue-100 shrink-0 overflow-hidden flex items-center justify-center font-bold text-blue-600 text-sm">
+    <div className="w-9 h-9 rounded-full bg-[#c6e7ff]/40 shrink-0 overflow-hidden flex items-center justify-center font-bold text-primary text-sm border border-[#81cfff]/40">
       {url ? (
         <img src={url} alt={name} className="w-full h-full object-cover" />
       ) : (
@@ -187,22 +199,22 @@ export default function ClinicAppointmentsClient() {
   };
 
   return (
-    <div className="space-y-5 p-6 max-w-7xl mx-auto">
+    <div className="space-y-5 p-6 max-w-7xl mx-auto bg-background min-h-screen">
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-gray-100">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-outline-variant/30">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+          <h1 className="text-2xl font-bold text-on-surface tracking-tight">
             {t("appointment.listTitle")}
           </h1>
-          <p className="text-gray-500 mt-1 text-sm">
+          <p className="text-on-surface-variant mt-1 text-sm">
             {t("appointment.receptionDescription")}
           </p>
         </div>
         <button
           onClick={load}
           disabled={loading}
-          className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border border-gray-200 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition-all disabled:opacity-50 self-start sm:self-auto"
+          className="flex items-center gap-2 px-4 py-2.5 bg-surface-container-lowest border border-outline-variant/60 text-primary font-bold rounded-xl hover:bg-surface-container-low transition-all disabled:opacity-50 self-start sm:self-auto shadow-xs cursor-pointer"
         >
           <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           {t("appointment.refresh")}
@@ -210,24 +222,24 @@ export default function ClinicAppointmentsClient() {
       </div>
 
       {/* Filter bar */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+      <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/40 shadow-xs p-4">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
 
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant" />
             <input
               type="text"
               placeholder={t("appointment.searchPlaceholder")}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="w-full pl-9 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+              className="w-full pl-9 pr-3 py-2.5 bg-surface-container-low border border-outline-variant/60 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-on-surface transition-all"
             />
           </div>
 
           <select
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-            className="px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-900"
+            className="px-3.5 py-2.5 bg-surface-container-low border border-outline-variant/60 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all text-on-surface font-medium cursor-pointer"
           >
             {STATUS_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -241,13 +253,13 @@ export default function ClinicAppointmentsClient() {
               type="date"
               value={dateFilter}
               onChange={(e) => { setDateFilter(e.target.value); setPage(1); }}
-              className="flex-1 px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-900"
+              className="flex-1 px-3.5 py-2.5 bg-surface-container-low border border-outline-variant/60 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all text-on-surface font-medium cursor-pointer"
             />
             {hasFilter && (
               <button
                 onClick={clearFilters}
                 title={t("common.clearFilters")}
-                className="px-3 py-2.5 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-xl text-gray-600 transition-colors"
+                className="px-3 py-2.5 bg-surface-container-lowest hover:bg-surface-container-low border border-outline-variant/60 rounded-xl text-on-surface-variant transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -256,30 +268,30 @@ export default function ClinicAppointmentsClient() {
         </div>
 
         {data && (
-          <p className="text-xs text-gray-500 mt-3">
+          <p className="text-xs text-on-surface-variant mt-3 font-medium">
             {t("appointment.foundResults", { count: data.totalRecords })}
           </p>
         )}
       </div>
 
-      {/* Action error toast (không hiện khi modal reject đang mở, lỗi hiện trong modal) */}
+      {/* Action error toast */}
       {actionError && !rejectTarget && (
-        <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3 flex items-center justify-between">
-          {actionError}
-          <button onClick={() => setActionError(null)}>
+        <div className="bg-error-container/40 border border-error-container text-on-error-container text-sm rounded-xl px-4 py-3 flex items-center justify-between">
+          <span>{actionError}</span>
+          <button onClick={() => setActionError(null)} className="cursor-pointer">
             <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
       {/* Table */}
-      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-surface-container-lowest rounded-3xl border border-outline-variant/40 shadow-xs overflow-hidden">
         {error ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <p className="text-red-500 font-medium">{error}</p>
+            <p className="text-error font-medium">{error}</p>
             <button
               onClick={load}
-              className="px-5 py-2 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition"
+              className="px-5 py-2 bg-primary text-on-primary font-medium rounded-xl hover:opacity-90 transition cursor-pointer shadow-xs"
             >
               {t("appointment.refresh")}
             </button>
@@ -288,7 +300,7 @@ export default function ClinicAppointmentsClient() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-gray-50/70 border-b border-gray-100 text-gray-500 text-xs font-bold uppercase tracking-wider">
+                <tr className="bg-surface-container-low border-b border-outline-variant/30 text-on-surface-variant text-xs font-bold uppercase tracking-wider">
                   <th className="p-4 pl-6">{t("appointment.patient")}</th>
                   <th className="p-4">{t("appointment.doctor")}</th>
                   <th className="p-4">{t("appointment.time")}</th>
@@ -299,37 +311,37 @@ export default function ClinicAppointmentsClient() {
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-gray-50 text-sm text-gray-700">
+              <tbody className="divide-y divide-outline-variant/20 text-sm text-on-surface">
                 {loading ? (
                   [...Array(5)].map((_, i) => (
                     <tr key={i} className="animate-pulse">
                       <td className="p-4 pl-6">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-gray-200" />
+                          <div className="w-9 h-9 rounded-full bg-surface-container-low" />
                           <div className="space-y-1.5">
-                            <div className="h-4 w-28 bg-gray-200 rounded" />
-                            <div className="h-3 w-20 bg-gray-200 rounded" />
+                            <div className="h-4 w-28 bg-surface-container-low rounded" />
+                            <div className="h-3 w-20 bg-surface-container-low rounded" />
                           </div>
                         </div>
                       </td>
-                      <td className="p-4"><div className="h-4 w-24 bg-gray-200 rounded" /></td>
-                      <td className="p-4"><div className="h-4 w-32 bg-gray-200 rounded" /></td>
-                      <td className="p-4"><div className="h-4 w-28 bg-gray-200 rounded" /></td>
-                      <td className="p-4"><div className="h-4 w-20 bg-gray-200 rounded" /></td>
-                      <td className="p-4"><div className="h-4 w-16 bg-gray-200 rounded" /></td>
-                      <td className="p-4"><div className="h-8 w-32 bg-gray-200 rounded-lg" /></td>
+                      <td className="p-4"><div className="h-4 w-24 bg-surface-container-low rounded" /></td>
+                      <td className="p-4"><div className="h-4 w-32 bg-surface-container-low rounded" /></td>
+                      <td className="p-4"><div className="h-4 w-28 bg-surface-container-low rounded" /></td>
+                      <td className="p-4"><div className="h-4 w-20 bg-surface-container-low rounded" /></td>
+                      <td className="p-4"><div className="h-4 w-16 bg-surface-container-low rounded" /></td>
+                      <td className="p-4"><div className="h-8 w-32 bg-surface-container-low rounded-lg" /></td>
                     </tr>
                   ))
                 ) : !data || data.appointments.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="text-center py-16">
-                      <div className="flex flex-col items-center gap-3 text-gray-400">
+                      <div className="flex flex-col items-center gap-3 text-on-surface-variant/50">
                         <CalendarDays className="w-10 h-10" />
                         <p className="font-medium">{t("appointment.noAppointments")}</p>
                         {hasFilter && (
                           <button
                             onClick={clearFilters}
-                            className="text-sm text-blue-600 hover:underline"
+                            className="text-sm text-primary hover:underline cursor-pointer"
                           >
                             {t("common.clearFilters")}
                           </button>
@@ -356,31 +368,31 @@ export default function ClinicAppointmentsClient() {
 
         {/* Pagination */}
         {data && data.totalPages > 1 && (
-          <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-t border-gray-100">
-            <p className="text-xs sm:text-sm text-gray-500">
+          <div className="flex items-center justify-between px-6 py-4 bg-surface-container-low border-t border-outline-variant/30">
+            <p className="text-xs sm:text-sm text-on-surface-variant">
               {t("appointment.showEntries", { from, to, total: data.totalRecords })}
             </p>
             <div className="flex items-center gap-3">
-              <span className="text-xs sm:text-sm text-gray-500">
+              <span className="text-xs sm:text-sm text-on-surface-variant">
                 {t("appointment.page")}{" "}
-                <span className="font-bold text-gray-800">{data.pageNumber}</span>
+                <span className="font-bold text-on-surface">{data.pageNumber}</span>
                 {" / "}
-                <span className="font-bold text-gray-800">{data.totalPages}</span>
+                <span className="font-bold text-on-surface">{data.totalPages}</span>
               </span>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setPage((p) => Math.max(p - 1, 1))}
                   disabled={page <= 1 || loading}
-                  className="p-2 border border-gray-200 bg-white hover:bg-gray-50 rounded-xl disabled:opacity-40 disabled:pointer-events-none transition shadow-sm"
+                  className="p-2 border border-outline-variant/60 bg-surface-container-lowest hover:bg-surface-container-low rounded-xl disabled:opacity-40 disabled:pointer-events-none transition shadow-xs cursor-pointer"
                 >
-                  <ChevronLeft className="w-4 h-4 text-gray-600" />
+                  <ChevronLeft className="w-4 h-4 text-on-surface-variant" />
                 </button>
                 <button
                   onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
                   disabled={page >= data.totalPages || loading}
-                  className="p-2 border border-gray-200 bg-white hover:bg-gray-50 rounded-xl disabled:opacity-40 disabled:pointer-events-none transition shadow-sm"
+                  className="p-2 border border-outline-variant/60 bg-surface-container-lowest hover:bg-surface-container-low rounded-xl disabled:opacity-40 disabled:pointer-events-none transition shadow-xs cursor-pointer"
                 >
-                  <ChevronRight className="w-4 h-4 text-gray-600" />
+                  <ChevronRight className="w-4 h-4 text-on-surface-variant" />
                 </button>
               </div>
             </div>
@@ -390,50 +402,50 @@ export default function ClinicAppointmentsClient() {
 
       {/* Reject Modal */}
       {rejectTarget && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-[700px] max-w-[90vw] p-8 space-y-6">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-xs animate-fade-in">
+          <div className="bg-surface-container-lowest rounded-2xl shadow-2xl w-[600px] max-w-[90vw] p-6 space-y-5 border border-outline-variant/60 text-left animate-scale-in">
             <div>
-              <h3 className="font-bold text-lg text-gray-900">
+              <h3 className="font-bold text-lg text-on-surface">
                 {t("appointment.cancelAppointment")}
               </h3>
-              <p className="text-sm text-gray-500 mt-1 whitespace-pre-line">
+              <p className="text-sm text-on-surface-variant mt-1 whitespace-pre-line leading-relaxed">
                 {t("appointment.cancelWarning")}
               </p>
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-on-surface-variant mt-2 font-medium">
                 {t("appointment.patient")}:{" "}
-                <span className="font-medium">{rejectTarget.patientName}</span>
+                <span className="font-bold text-on-surface">{rejectTarget.patientName}</span>
                 {" · "}
                 {new Date(rejectTarget.appointmentDate).toLocaleDateString()}
               </p>
             </div>
 
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-1.5 block">
-                {t("appointment.cancelReasonRequired")}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-on-surface uppercase tracking-wider block">
+                {t("appointment.cancelReasonRequired")} <span className="text-error">*</span>
               </label>
               <textarea
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 rows={3}
-                className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all resize-none"
+                className="w-full px-3.5 py-2.5 bg-surface-container-low border border-outline-variant/60 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-error focus:border-error transition-all resize-none text-on-surface"
               />
               {actionError && (
-                <p className="text-xs text-red-600 mt-1.5">{actionError}</p>
+                <p className="text-xs text-error mt-1.5 font-semibold">{actionError}</p>
               )}
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2">
+            <div className="flex items-center justify-end gap-3 pt-2">
               <button
                 onClick={() => setRejectTarget(null)}
                 disabled={actionLoadingId === rejectTarget.appointmentId}
-                className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl transition disabled:opacity-50"
+                className="px-4 py-2.5 text-sm font-semibold text-on-surface border border-outline-variant/60 hover:bg-surface-container-low rounded-xl transition disabled:opacity-50 cursor-pointer"
               >
                 {t("common.cancel")}
               </button>
               <button
                 onClick={handleRejectSubmit}
-                disabled={actionLoadingId === rejectTarget.appointmentId}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-xl transition disabled:opacity-50 flex items-center gap-2"
+                disabled={actionLoadingId === rejectTarget.appointmentId || !rejectReason.trim()}
+                className="px-5 py-2.5 text-sm font-semibold text-on-error bg-error hover:bg-error/90 rounded-xl transition disabled:bg-surface-container disabled:text-on-surface-variant/40 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer shadow-xs"
               >
                 {actionLoadingId === rejectTarget.appointmentId && (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -463,23 +475,23 @@ function ClinicAppointmentRow({
   onReject: () => void;
   t: ReturnType<typeof useTranslations<string>>;
 }) {
-  const statusStyle = STATUS_STYLE[appt.status] ?? "bg-gray-50 text-gray-600 border-gray-200";
+  const statusStyle = STATUS_STYLE[appt.status] ?? "bg-surface-container text-on-surface-variant border-outline-variant/40";
   const statusBadgeKey = STATUS_BADGE_KEY[appt.status];
   const actionable = isActionable(appt.status);
 
   return (
-    <tr className="hover:bg-gray-50/50 transition-colors">
+    <tr className="hover:bg-surface-container-low/60 transition-colors">
 
       {/* Patient */}
       <td className="p-4 pl-6">
         <div className="flex items-center gap-3">
           <Avatar name={appt.patientName} url={appt.patientAvatarUrl} />
           <div className="min-w-0">
-            <p className="font-semibold text-gray-900 truncate">
+            <p className="font-semibold text-on-surface truncate">
               {appt.patientName}
             </p>
-            <span className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-              <Phone className="w-3 h-3" />
+            <span className="text-xs text-on-surface-variant flex items-center gap-1 mt-0.5">
+              <Phone className="w-3 h-3 text-on-surface-variant" />
               {appt.patientPhone || t("appointment.noPhone")}
             </span>
           </div>
@@ -491,12 +503,12 @@ function ClinicAppointmentRow({
         <div className="flex items-center gap-2">
           <Avatar name={appt.doctorName ?? "?"} url={appt.doctorAvatarUrl} />
           <div className="min-w-0">
-            <p className="text-sm font-medium text-gray-800 truncate">
+            <p className="text-sm font-medium text-on-surface truncate">
               {appt.doctorName ?? "—"}
             </p>
             {appt.doctorTitle && (
-              <p className="text-xs text-gray-400 flex items-center gap-1">
-                <Stethoscope className="w-3 h-3" />
+              <p className="text-xs text-on-surface-variant flex items-center gap-1">
+                <Stethoscope className="w-3 h-3 text-on-surface-variant" />
                 {appt.doctorTitle}
               </p>
             )}
@@ -507,16 +519,16 @@ function ClinicAppointmentRow({
       {/* Time */}
       <td className="p-4">
         <div className="space-y-0.5">
-          <div className="flex items-center gap-1.5 font-medium text-gray-900">
-            <CalendarDays className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+          <div className="flex items-center gap-1.5 font-medium text-on-surface">
+            <CalendarDays className="w-3.5 h-3.5 text-on-surface-variant shrink-0" />
             {new Date(appt.appointmentDate).toLocaleDateString(undefined, {
               day: "2-digit",
               month: "2-digit",
               year: "numeric",
             })}
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-gray-500">
-            <Clock className="w-3 h-3 text-gray-400 shrink-0" />
+          <div className="flex items-center gap-1.5 text-xs text-on-surface-variant">
+            <Clock className="w-3 h-3 text-on-surface-variant shrink-0" />
             {new Date(appt.slotStartTime).toLocaleTimeString(undefined, {
               hour: "2-digit",
               minute: "2-digit",
@@ -534,17 +546,17 @@ function ClinicAppointmentRow({
       <td className="p-4">
         {appt.serviceName ? (
           <div>
-            <p className="text-sm text-gray-800 font-medium">
+            <p className="text-sm text-on-surface font-medium">
               {appt.serviceName}
             </p>
             {appt.servicePrice != null && (
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className="text-xs text-on-surface-variant mt-0.5 font-semibold">
                 {appt.servicePrice.toLocaleString()}đ
               </p>
             )}
           </div>
         ) : (
-          <span className="text-gray-300">—</span>
+          <span className="text-on-surface-variant/40">—</span>
         )}
       </td>
 
@@ -554,7 +566,7 @@ function ClinicAppointmentRow({
           {statusBadgeKey ? t(`appointment.${statusBadgeKey}`) : appt.status}
         </span>
         {appt.depositPaid && (
-          <p className="text-xs text-emerald-600 font-medium mt-1">
+          <p className="text-xs text-[#006c49] font-bold mt-1">
             ✓ {t("appointment.paidDeposit")} {appt.depositAmount.toLocaleString()}đ
           </p>
         )}
@@ -563,12 +575,12 @@ function ClinicAppointmentRow({
       {/* Medical Record */}
       <td className="p-4">
         {appt.hasMedicalRecord ? (
-          <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-full">
-            <FileText className="w-3 h-3" />
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-[#003925] bg-[#6ffbbe]/25 border border-[#4edea3]/60 px-2.5 py-1 rounded-full">
+            <FileText className="w-3.5 h-3.5 text-[#006c49]" />
             {t("appointment.hasMedicalRecord")}
           </span>
         ) : (
-          <span className="text-xs text-gray-400 italic">{t("appointment.noSymptoms")}</span>
+          <span className="text-xs text-on-surface-variant/40 italic">{t("appointment.noSymptoms")}</span>
         )}
       </td>
 
@@ -580,12 +592,12 @@ function ClinicAppointmentRow({
               onClick={onConfirm}
               disabled={isActionLoading}
               title={t("common.confirm")}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-[#003925] bg-[#6ffbbe]/25 hover:bg-[#6ffbbe]/40 border border-[#4edea3]/60 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
             >
               {isActionLoading ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
               ) : (
-                <Check className="w-3.5 h-3.5" />
+                <Check className="w-3.5 h-3.5 text-[#006c49]" />
               )}
               {t("common.confirm")}
             </button>
@@ -594,14 +606,14 @@ function ClinicAppointmentRow({
               onClick={onReject}
               disabled={isActionLoading}
               title={t("appointment.cancel")}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-error bg-error-container/40 hover:bg-error-container/70 border border-error-container rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
             >
-              <Ban className="w-3.5 h-3.5" />
+              <Ban className="w-3.5 h-3.5 text-error" />
               {t("appointment.cancel")}
             </button>
           </div>
         ) : (
-          <span className="text-xs text-gray-300 italic">—</span>
+          <span className="text-xs text-on-surface-variant/30 italic">—</span>
         )}
       </td>
     </tr>

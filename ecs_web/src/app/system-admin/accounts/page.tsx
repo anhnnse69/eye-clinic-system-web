@@ -165,66 +165,66 @@ export default function SystemAccountsManagementPage() {
   }
 
   return (
-    <div className="space-y-6 w-full min-w-0 px-4 py-4 text-left">
+    <div className="space-y-6 w-full min-w-0 px-4 py-4 text-left bg-background min-h-screen">
       {/* Header đồng bộ chuẩn với Clinics và Applications */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">{t("listTitle")}</h2>
-          <nav className="flex text-sm text-slate-500 gap-1 mt-1">
-            <span className="cursor-pointer hover:text-blue-600" onClick={() => router.push("/system-admin/dashboard")}>Dashboard</span>
+          <h2 className="text-2xl font-bold text-on-surface">{t("listTitle")}</h2>
+          <nav className="flex text-sm text-on-surface-variant gap-1 mt-1">
+            <span className="cursor-pointer hover:text-primary transition-colors" onClick={() => router.push("/system-admin/dashboard")}>Dashboard</span>
             <span>/</span>
-            <span className="text-slate-800">{t("listTitle")}</span>
+            <span className="text-on-surface font-medium">{t("listTitle")}</span>
           </nav>
         </div>
 
         <Link
           href="/system-admin/accounts/clinic-admin"
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl transition-all shadow-sm active:scale-95 self-start sm:self-center cursor-pointer whitespace-nowrap"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-primary hover:opacity-90 text-on-primary font-semibold text-sm rounded-xl transition-all shadow-xs active:scale-95 self-start sm:self-center cursor-pointer whitespace-nowrap"
         >
           <Plus className="h-4 w-4" />
           <span>{t("addClinicAdmin")}</span>
         </Link>
       </div>
 
-      {/* Banner hướng dẫn phạm vi quản lý tài khoản của System Admin (chuẩn Slate Blue) */}
-      <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 flex items-start gap-3">
-        <Info className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+      {/* Banner hướng dẫn phạm vi quản lý tài khoản của System Admin */}
+      <div className="bg-[#c6e7ff]/30 border border-[#81cfff]/50 rounded-2xl p-4 flex items-start gap-3">
+        <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
         <div className="text-sm">
-          <p className="font-semibold text-blue-900 mb-0.5">{t("accountScopeTitle")}</p>
-          <p className="text-blue-700 leading-relaxed">
+          <p className="font-semibold text-on-surface mb-0.5">{t("accountScopeTitle")}</p>
+          <p className="text-on-surface-variant leading-relaxed">
             {t("accountScopeBody")}
           </p>
         </div>
       </div>
 
       {/* Bộ Lọc Điều Kiện & Thanh Tìm Kiếm (Khung Grid 3 cột như Clinics & Applications) */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <div className="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/40 shadow-xs">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
           {/* Ô Tìm kiếm */}
           <div className="flex flex-col gap-1.5 w-full">
-            <label className="text-sm font-semibold text-slate-600">{t("searchAccount")}</label>
+            <label className="text-sm font-semibold text-on-surface-variant">{t("searchAccount")}</label>
             <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-on-surface-variant" />
               <input
                 type="text"
                 placeholder={t("searchPlaceholder")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all outline-none"
+                className="w-full pl-10 pr-4 py-2.5 bg-surface-container-low border border-outline-variant/60 rounded-xl focus:ring-1 focus:ring-primary focus:border-primary text-sm text-on-surface transition-all outline-none"
               />
             </div>
           </div>
 
           {/* Lọc theo Vai Trò */}
           <div className="flex flex-col gap-1.5 w-full">
-            <label className="text-sm font-semibold text-slate-600">{t("systemRole")}</label>
+            <label className="text-sm font-semibold text-on-surface-variant">{t("systemRole")}</label>
             <select
               value={roleFilter}
               onChange={(e) => {
                 setRoleFilter(e.target.value)
                 setPageNumber(1)
               }}
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all outline-none text-slate-700 font-medium cursor-pointer"
+              className="w-full px-4 py-2.5 bg-surface-container-low border border-outline-variant/60 rounded-xl focus:ring-1 focus:ring-primary focus:border-primary text-sm transition-all outline-none text-on-surface font-medium cursor-pointer"
             >
               <option value="all">{t("allRoles")}</option>
               <option value="CLINIC_ADMIN">{roleMapping.CLINIC_ADMIN}</option>
@@ -235,14 +235,14 @@ export default function SystemAccountsManagementPage() {
 
           {/* Lọc theo Trạng Thái */}
           <div className="flex flex-col gap-1.5 w-full">
-            <label className="text-sm font-semibold text-slate-600">{t("activityStatus")}</label>
+            <label className="text-sm font-semibold text-on-surface-variant">{t("activityStatus")}</label>
             <select
               value={statusFilter}
               onChange={(e) => {
                 setStatusFilter(e.target.value)
                 setPageNumber(1)
               }}
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all outline-none text-slate-700 font-medium cursor-pointer"
+              className="w-full px-4 py-2.5 bg-surface-container-low border border-outline-variant/60 rounded-xl focus:ring-1 focus:ring-primary focus:border-primary text-sm transition-all outline-none text-on-surface font-medium cursor-pointer"
             >
               <option value="all">{t("allStatuses")}</option>
               <option value="active">{t("statusActive")}</option>
@@ -254,69 +254,69 @@ export default function SystemAccountsManagementPage() {
 
       {/* Thông báo lỗi */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+        <div className="bg-error-container/40 border border-error-container rounded-2xl p-4 flex items-start gap-3">
+          <AlertCircle className="h-5 w-5 text-error shrink-0 mt-0.5" />
           <div>
-            <h3 className="font-semibold text-red-800 mb-0.5">{t("systemError")}</h3>
-            <p className="text-sm text-red-700">{error}</p>
+            <h3 className="font-semibold text-on-error-container mb-0.5">{t("systemError")}</h3>
+            <p className="text-sm text-on-error-container">{error}</p>
           </div>
         </div>
       )}
 
       {/* Hiệu ứng Loading */}
       {loading && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
-          <Loader2 className="h-8 w-8 text-blue-600 animate-spin mb-3" />
-          <p className="text-sm text-slate-500">{t("loadingAccounts")}</p>
+        <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/40 p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
+          <Loader2 className="h-8 w-8 text-primary animate-spin mb-3" />
+          <p className="text-sm text-on-surface-variant">{t("loadingAccounts")}</p>
         </div>
       )}
 
       {/* Hiển thị bảng dữ liệu */}
       {!loading && accountsList.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[300px] w-full">
-          <Users className="h-12 w-12 text-slate-300 mb-3" />
-          <h3 className="text-lg font-bold text-slate-800 mb-1">{t("noAccountsFound")}</h3>
-          <p className="text-sm text-slate-500">{t("noAccountsDescription")}</p>
+        <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[300px] w-full">
+          <Users className="h-12 w-12 text-on-surface-variant/50 mb-3" />
+          <h3 className="text-lg font-bold text-on-surface mb-1">{t("noAccountsFound")}</h3>
+          <p className="text-sm text-on-surface-variant">{t("noAccountsDescription")}</p>
         </div>
       ) : !loading && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full">
+        <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/40 shadow-xs overflow-hidden w-full">
           <div className="overflow-x-auto w-full">
             <table className="w-full text-left border-collapse min-w-[1000px]">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50">
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">{t("tablePersonalInfo")}</th>
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">{t("tablePhoneEmail")}</th>
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">{t("tableRole")}</th>
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">{t("tableCreatedAt")}</th>
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">{t("tableStatus")}</th>
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">{t("tableActions")}</th>
+                <tr className="border-b border-outline-variant/30 bg-surface-container-low">
+                  <th className="px-6 py-3.5 text-xs font-bold text-on-surface-variant uppercase tracking-wider">{t("tablePersonalInfo")}</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-on-surface-variant uppercase tracking-wider">{t("tablePhoneEmail")}</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-on-surface-variant uppercase tracking-wider">{t("tableRole")}</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-on-surface-variant uppercase tracking-wider">{t("tableCreatedAt")}</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-on-surface-variant uppercase tracking-wider text-center">{t("tableStatus")}</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-on-surface-variant uppercase tracking-wider text-center">{t("tableActions")}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200">
+              <tbody className="divide-y divide-outline-variant/20">
                 {accountsList.map((account) => (
-                  <tr key={account.id} className="hover:bg-slate-50/80 transition-colors">
+                  <tr key={account.id} className="hover:bg-surface-container-low/60 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 font-bold text-sm shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-[#c6e7ff]/40 text-primary flex items-center justify-center border border-[#81cfff]/40 font-bold text-sm shrink-0">
                           {account.fullName ? account.fullName.charAt(0).toUpperCase() : "U"}
                         </div>
                         <div>
-                          <p className="font-bold text-sm text-slate-800">{account.fullName}</p>
+                          <p className="font-bold text-sm text-on-surface">{account.fullName}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <p className="font-medium text-sm text-slate-700">{account.phone}</p>
-                      <p className="text-xs text-slate-500">{account.email || "—"}</p>
+                      <p className="font-medium text-sm text-on-surface">{account.phone}</p>
+                      <p className="text-xs text-on-surface-variant">{account.email || "—"}</p>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                        <ShieldCheck className="h-3.5 w-3.5" /> {roleMapping[account.role] || account.role}
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#c6e7ff]/30 text-[#001e2d] border border-[#81cfff]/40">
+                        <ShieldCheck className="h-3.5 w-3.5 text-primary" /> {roleMapping[account.role] || account.role}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-500 font-medium">
+                    <td className="px-6 py-4 text-sm text-on-surface-variant font-medium">
                       <div className="flex items-center gap-1.5">
-                        <Clock className="h-4 w-4 text-slate-400 shrink-0" />
+                        <Clock className="h-4 w-4 text-on-surface-variant shrink-0" />
                         {account.createdAt}
                       </div>
                     </td>
@@ -327,7 +327,7 @@ export default function SystemAccountsManagementPage() {
                             type="button"
                             disabled={updatingId !== null}
                             onClick={() => handleToggleActive(account.id, account.isActive)}
-                            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${account.isActive ? "bg-emerald-500" : "bg-slate-300"
+                            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${account.isActive ? "bg-[#00ae78]" : "bg-outline-variant/60"
                               } ${updatingId === account.id ? "opacity-40 cursor-wait" : ""}`}
                           >
                             <span
@@ -336,7 +336,7 @@ export default function SystemAccountsManagementPage() {
                             />
                           </button>
                         ) : null}
-                        <span className={`text-[11px] font-bold tracking-wide uppercase px-2 py-0.5 rounded ${account.isActive ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-slate-100 text-slate-600 border border-slate-200"
+                        <span className={`text-[11px] font-bold tracking-wide uppercase px-2 py-0.5 rounded ${account.isActive ? "bg-[#6ffbbe]/25 text-[#003925] border border-[#4edea3]/60" : "bg-surface-container text-on-surface-variant border border-outline-variant/40"
                           }`}>
                           {account.isActive ? t("statusActive") : t("statusLocked")}
                         </span>
@@ -347,7 +347,7 @@ export default function SystemAccountsManagementPage() {
                         <button
                           type="button"
                           onClick={() => handleEditRedirect(account)}
-                          className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-blue-600 px-2.5 py-1.5 hover:bg-blue-50 rounded-lg transition-all whitespace-nowrap cursor-pointer"
+                          className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-on-surface-variant hover:text-primary px-2.5 py-1.5 hover:bg-surface-container rounded-lg transition-all whitespace-nowrap cursor-pointer"
                         >
                           <Pencil className="h-4 w-4 shrink-0" />
                           <span>{t("edit")}</span>
@@ -356,10 +356,10 @@ export default function SystemAccountsManagementPage() {
                         <button
                           type="button"
                           onClick={() => handleEditRedirect(account)}
-                          className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-blue-600 px-2.5 py-1.5 hover:bg-slate-100 rounded-lg transition-all whitespace-nowrap cursor-pointer"
+                          className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-on-surface-variant hover:text-primary px-2.5 py-1.5 hover:bg-surface-container rounded-lg transition-all whitespace-nowrap cursor-pointer"
                           title={t("accountDetailTitle")}
                         >
-                          <Eye className="h-4 w-4 shrink-0 text-blue-600" />
+                          <Eye className="h-4 w-4 shrink-0 text-primary" />
                           <span>{t("viewOnly")}</span>
                         </button>
                       )}
@@ -372,8 +372,8 @@ export default function SystemAccountsManagementPage() {
 
           {/* Thanh phân trang ở chân bảng */}
           {meta.total > 0 && (
-            <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
-              <span className="text-sm text-slate-500">
+            <div className="px-6 py-4 bg-surface-container-low border-t border-outline-variant/30 flex items-center justify-between">
+              <span className="text-sm text-on-surface-variant">
                 {t("showingRows", { from: Math.min((meta.page - 1) * meta.size + 1, meta.total), to: Math.min(meta.page * meta.size, meta.total), total: meta.total })}
               </span>
               <div className="flex items-center gap-1">
@@ -381,18 +381,18 @@ export default function SystemAccountsManagementPage() {
                   type="button"
                   disabled={!meta.hasPrevious || loading}
                   onClick={() => setPageNumber(prev => Math.max(prev - 1, 1))}
-                  className="p-1.5 rounded-lg hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-600 cursor-pointer"
+                  className="p-1.5 rounded-lg hover:bg-surface-container disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-on-surface-variant cursor-pointer"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
-                <button className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-sm font-medium">
+                <button className="w-8 h-8 rounded-lg bg-primary text-on-primary flex items-center justify-center text-sm font-medium shadow-xs">
                   {meta.page}
                 </button>
                 <button
                   type="button"
                   disabled={!meta.hasNext || loading}
                   onClick={() => setPageNumber(prev => prev + 1)}
-                  className="p-1.5 rounded-lg hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-600 cursor-pointer"
+                  className="p-1.5 rounded-lg hover:bg-surface-container disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-on-surface-variant cursor-pointer"
                 >
                   <ChevronRight className="h-5 w-5" />
                 </button>

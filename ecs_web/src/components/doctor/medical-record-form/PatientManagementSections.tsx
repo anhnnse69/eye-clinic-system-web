@@ -89,55 +89,37 @@ function TextField({
 }
 
 export default function PatientManagementSections({ recordType, patientProfile }: Props) {
+  void recordType
+  void patientProfile
   const { register } = useFormContext<MedicalRecordFormDataPayload>()
   const tForm = useTranslations("form")
-  const ms = recordType ? MS_BY_RECORD_TYPE[recordType] : "21/BV-01"
 
   return (
     <div className="space-y-4">
-      {/* Header metadata */}
+      {/* Chief Complaint for Outpatient — Streamlined EMR layout */}
       <div className={sectionBoxClass}>
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3 print:grid-cols-3">
-          <TextField name="benhAn.hanhChinh.khoa" label={tForm("department")} />
-          <div>
-            <label className={labelClass}>{tForm("msTemplate")}</label>
-            <input
-              readOnly
-              value={ms}
-              className={`${inputClass} bg-gray-50 print:bg-white cursor-not-allowed`}
-            />
-          </div>
-          <TextField name="benhAn.hanhChinh.soLuuTru" label={tForm("archiveNumber")} />
+        <div className="flex items-center justify-between border-b border-gray-100 pb-2 mb-3">
+          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wide flex items-center gap-2">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-100 text-xs text-indigo-700 font-semibold">I</span>
+            {tForm("chiefComplaint") || "Lý do khám & Bệnh sử"}
+          </h3>
+          <span className="text-xs text-gray-600 italic">Khám ngoại trú EMR</span>
         </div>
-      </div>
-
-      {/* Patient Info from Profile (Read-only) */}
-      <div className={sectionBoxClass}>
-        <h3 className={titleClass}>{tForm("patientInfoFromProfile")}</h3>
-        <PatientInfoDisplay
-          patient={patientProfile ?? {}}
-          showMedicalHistory={true}
-        />
-      </div>
-
-      {/* Chief Complaint for Outpatient — chỉ phần này thay thế mục 12-19 */}
-      <div className={sectionBoxClass}>
-        <h3 className={titleClass}>{tForm("chiefComplaint")}</h3>
-        <div className="grid grid-cols-1 gap-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <label className={labelClass}>{tForm("chiefComplaint")}</label>
+            <label className={labelClass}>{tForm("chiefComplaint") || "Lý do vào viện / khám bệnh"}</label>
             <textarea
               {...register("benhAn.lyDoVaoVien" as any)}
-              className={`${inputClass} min-h-[80px]`}
-              placeholder={tForm("chiefComplaintPlaceholder")}
+              className={`${inputClass} min-h-[80px] text-gray-900 bg-white`}
+              placeholder={tForm("chiefComplaintPlaceholder") || "Nhập triệu chứng chính khiến bệnh nhân đi khám (VD: Đau mắt, mờ mắt...)"}
             />
           </div>
           <div>
-            <label className={labelClass}>{tForm("medicalHistory")}</label>
+            <label className={labelClass}>{tForm("medicalHistory") || "Quá trình bệnh lý (Bệnh sử)"}</label>
             <textarea
               {...register("benhAn.benhSu" as any)}
-              className={`${inputClass} min-h-[60px]`}
-              placeholder={tForm("medicalHistoryPlaceholder")}
+              className={`${inputClass} min-h-[80px] text-gray-900 bg-white`}
+              placeholder={tForm("medicalHistoryPlaceholder") || "Diễn biến bệnh lý từ khi khởi phát đến thời điểm khám..."}
             />
           </div>
         </div>

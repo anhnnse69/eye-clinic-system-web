@@ -146,7 +146,7 @@ class MedicineService {
 
   async getMedicineCatalog(params: GetMedicineCatalogRequest): Promise<ApiResponse<GetMedicineCatalogResponse[]>> {
     const response = await apiClient.get<ApiResponse<GetMedicineCatalogResponse[]>>(
-      "https://localhost:7070/api/v1/clinic-admin/medicine-catalog",
+      "/clinic-admin/medicine-catalog",
       {
         params: {
           pageNumber: params.pageNumber,
@@ -161,7 +161,7 @@ class MedicineService {
 
   async createMedicine(params: CreateMedicineCatalogRequest): Promise<ApiResponse<CreateMedicineCatalogResponse>> {
     const response = await apiClient.post<ApiResponse<CreateMedicineCatalogResponse>>(
-      "https://localhost:7070/api/v1/clinic-admin/medicine-catalog/create",
+      "/clinic-admin/medicine-catalog/create",
       params
     )
     return response.data
@@ -169,7 +169,7 @@ class MedicineService {
 
   async updateMedicineCatalog(params: UpdateMedicineCatalogRequest): Promise<ApiResponse<UpdateMedicineCatalogResponse>> {
     const response = await apiClient.put<ApiResponse<UpdateMedicineCatalogResponse>>(
-      "https://localhost:7070/api/v1/clinic-admin/medicine-catalog/edit",
+      "/clinic-admin/medicine-catalog/edit",
       params
     )
     return response.data
@@ -177,7 +177,7 @@ class MedicineService {
 
   async toggleMedicineStatus(params: DeleteMedicineCatalogRequest): Promise<ApiResponse<DeleteMedicineCatalogResponse>> {
   const response = await apiClient.put<ApiResponse<DeleteMedicineCatalogResponse>>(
-    `https://localhost:7070/api/v1/clinic-admin/medicine-catalog/${params.id}/delete`
+    `/clinic-admin/medicine-catalog/${params.id}/delete`
   );
   return response.data;
 }

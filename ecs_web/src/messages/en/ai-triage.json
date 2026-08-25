@@ -1,0 +1,156 @@
+{
+  "aiTriage": {
+    "title": "AI Symptom Screening",
+    "subtitle": "Enter patient symptoms for AI-assisted diagnostic recommendations",
+    "aiPrediction": "AI Prediction",
+    "differentialDiagnoses": "Differential Diagnoses",
+    "confidence": "Confidence",
+    "disclaimer": "Preliminary AI assessment based on symptoms only. Does NOT replace professional eye care consultation.",
+    "note": "Note:",
+    "riskLevel": "Risk Level",
+    "error": "An error occurred while processing AI. Please try again.",
+    "analyzing": "AI System Analyzing...",
+    "getAiPrediction": "Get AI Prediction",
+    "proceedToExam": "Proceed to Examination",
+    "adjustSymptoms": "Adjust Symptoms",
+    "back": "Back",
+    "useAiSuggestion": "Use AI Suggestion",
+    "selected": "Selected",
+    "reportedCount": "{count} symptoms reported",
+    "boolean": {
+      "yes": "YES",
+      "no": "NO"
+    },
+    "categories": {
+      "main": "Primary Symptoms",
+      "eye": "Eye Examination",
+      "general": "Systemic & Neurological",
+      "history": "History & Demographics"
+    },
+    "symptomFields": {
+      "symptom": "Primary Symptom",
+      "duration": "Duration / Onset",
+      "pain_level": "Pain Intensity",
+      "eye_redness": "Eye Redness",
+      "blurred_vision": "Blurred Vision",
+      "light_sensitivity": "Photophobia / Light Sensitivity",
+      "discharge": "Discharge",
+      "tearing": "Excessive Tearing",
+      "swelling": "Eyelid Swelling",
+      "foreign_body_sensation": "Foreign Body Sensation",
+      "floaters": "Floaters",
+      "halos": "Halos Around Lights",
+      "eye_pressure": "Intraocular Pressure",
+      "corneal_opacity": "Corneal Opacity",
+      "pupil_response": "Pupillary Reflex",
+      "white_reflection": "White Pupil Reflection (Leukocoria)",
+      "headache": "Headache",
+      "nausea": "Nausea / Vomiting",
+      "night_blindness": "Night Blindness",
+      "double_vision": "Double Vision (Diplopia)",
+      "eye_turning": "Eye Deviation (Strabismus)",
+      "age": "Age Group",
+      "diabetes": "History of Diabetes",
+      "hypertension": "History of Hypertension",
+      "family_history": "Family History of Eye Disease"
+    },
+    "options": {
+      "symptom": {
+        "Eye_Pain": "Eye Pain",
+        "Redness": "Eye Redness",
+        "Blurred_Vision": "Blurred Vision",
+        "Eye_Discharge": "Eye Discharge",
+        "Swelling": "Eye Swelling",
+        "Foreign_Body": "Foreign Body",
+        "Itching": "Itching",
+        "Tearing": "Tearing",
+        "Floaters": "Floaters",
+        "Halos": "Halos",
+        "Vision_Loss": "Sudden Vision Loss",
+        "Headache": "Headache"
+      },
+      "duration": {
+        "acute": "Acute (< 1 week)",
+        "chronic": "Chronic (> 1 week)"
+      },
+      "pain_level": {
+        "no": "No pain",
+        "low": "Mild pain",
+        "moderate": "Moderate pain",
+        "high": "Severe pain"
+      },
+      "eye_pressure": {
+        "normal": "Normal",
+        "high": "High",
+        "very_high": "Very High",
+        "low": "Low"
+      },
+      "pupil_response": {
+        "normal": "Normal",
+        "sluggish": "Sluggish / Sluggish Response"
+      },
+      "age": {
+        "child": "Child (< 12 yrs)",
+        "young": "Youth (12-25 yrs)",
+        "adult": "Adult (25-45 yrs)",
+        "middle_age": "Middle Aged (45-60 yrs)",
+        "senior": "Senior (> 60 yrs)"
+      }
+    },
+    "riskLevels": {
+      "LOW": "LOW RISK",
+      "MODERATE": "MODERATE RISK",
+      "HIGH": "HIGH RISK",
+      "lowLabel": "Low",
+      "moderateLabel": "Moderate",
+      "highLabel": "High"
+    },
+    "diseases": {
+      "Corneal_Ulcer": "Corneal Ulcer",
+      "Conjunctivitis": "Conjunctivitis",
+      "Glaucoma": "Glaucoma",
+      "Cataract": "Cataract",
+      "Retinal_Detachment": "Retinal Detachment",
+      "Diabetic_Retinopathy": "Diabetic Retinopathy",
+      "Age_Macular_Degeneration": "Age-related Macular Degeneration",
+      "Normal": "Normal Eye",
+      "Keratitis": "Keratitis",
+      "Corneal_Scar": "Corneal Scar",
+      "Pterygium": "Pterygium",
+      "Macular_Edema": "Macular Edema",
+      "Retinal_Vein_Occlusion": "Retinal Vein Occlusion",
+      "Retinal_Artery_Occlusion": "Retinal Artery Occlusion",
+      "Ocular_Hypertension": "Ocular Hypertension",
+      "Strabismus": "Strabismus",
+      "Ptosis": "Ptosis",
+      "Amblyopia": "Amblyopia",
+      "Congenital_Cataract": "Congenital Cataract",
+      "Corneal_Foreign_Body": "Corneal Foreign Body",
+      "Intraocular_Foreign_Body": "Intraocular Foreign Body",
+      "Chemical_Injury": "Chemical Eye Injury",
+      "Orbital_Fracture": "Orbital Fracture",
+      "Blepharitis": "Blepharitis",
+      "Dry_Eye": "Dry Eye Syndrome",
+      "Diplopia": "Diplopia (Double Vision)",
+      "Nuclear_Cataract": "Nuclear Cataract",
+      "Cortical_Cataract": "Cortical Cataract"
+    }
+  },
+  "examination": {
+    "title": "Examination",
+    "subtitle": "Examination workflow with AI diagnostic assistance",
+    "back": "Back",
+    "proceedToExam": "Proceed to Examination",
+    "selectRecordType": "Select Medical Record Template to Continue",
+    "aiSuggestion": "AI Suggestion",
+    "aiRecommended": "AI Recommended",
+    "recordTypes": {
+      "MS21_TRAUMA": "MS21 - Ocular Trauma",
+      "MS22_ANTERIOR": "MS22 - Anterior Segment (Cornea / Conjunctiva)",
+      "MS23_FUNDUS": "MS23 - Fundus & Retina",
+      "MS24_GLAUCOMA": "MS24 - Glaucoma",
+      "MS25_STRABISMUS_PTOSIS": "MS25 - Strabismus & Ptosis",
+      "MS26_PEDIATRIC": "MS26 - Pediatric Ophthalmology"
+    }
+  }
+}

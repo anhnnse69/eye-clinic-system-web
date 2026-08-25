@@ -151,6 +151,8 @@
       "identityInvalid": "ID number must contain 9 or 12 digits.",
       "confirmCancelEdit": "Are you sure you want to discard the changes and return to the profile?",
       "confirmSaveEdit": "Are you sure you want to save these changes?",
+      "cancelHeaderTitle": "Confirm Discard Changes",
+      "saveHeaderTitle": "Confirm Profile Update",
       "saveSuccess": "Patient profile updated successfully.",
       "identityDuplicate": "This ID number already exists in another patient record.",
       "phoneDuplicate": "This phone number is already registered to another patient.",
@@ -253,6 +255,9 @@
       "randomAssignment": "Random assignment"
     },
     "appointment": {
+      "errors": {
+        "loadFailed": "Failed to load appointment list"
+      },
       "title": "Appointments",
       "subtitle": "Clinic Appointment Management",
       "refresh": "Refresh",
@@ -500,6 +505,10 @@
       "invalidEmail": "Invalid email",
       "invalidPhone": "Invalid phone number",
       "serverError": "Server error"
+    },
+    "error": {
+      "loadFailed": "Failed to load data. Please try again later.",
+      "connectionError": "Lost connection to the server. Please check your network and try again."
     },
     "success": {
       "saved": "Saved successfully",

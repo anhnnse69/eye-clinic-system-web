@@ -178,19 +178,19 @@ export default function ClinicsListPage() {
         key: "UNPUBLISHED" as const,
         label: t("unpublished"),
         dotClass: "bg-slate-400",
-        wrapperClass: "text-slate-600 bg-slate-100 border-slate-200",
+        wrapperClass: "text-on-surface-variant bg-surface-container border-outline-variant/40",
       },
       ACTIVE: {
         key: "ACTIVE" as const,
         label: tCommon("active"),
-        dotClass: "bg-green-600",
-        wrapperClass: "text-green-700 bg-green-50 border-green-200",
+        dotClass: "bg-[#00ae78]",
+        wrapperClass: "text-[#003925] bg-[#6ffbbe]/25 border-[#4edea3]/60",
       },
       INACTIVE: {
         key: "INACTIVE" as const,
         label: tCommon("inactive"),
         dotClass: "bg-amber-500",
-        wrapperClass: "text-amber-700 bg-amber-50 border-amber-200",
+        wrapperClass: "text-amber-800 bg-amber-50 border-amber-200/70",
       },
     }
 
@@ -200,55 +200,55 @@ export default function ClinicsListPage() {
   }
 
   return (
-    <div className="space-y-6 w-full min-w-0 px-4 py-4">
+    <div className="space-y-6 w-full min-w-0 px-4 py-4 bg-background min-h-screen">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">{t("listHeader")}</h2>
-          <nav className="flex text-sm text-slate-500 gap-1 mt-1">
-            <span className="cursor-pointer hover:text-blue-600" onClick={() => router.push("/system-admin/dashboard")}>{t("title")}</span>
+          <h2 className="text-2xl font-bold text-on-surface">{t("listHeader")}</h2>
+          <nav className="flex text-sm text-on-surface-variant gap-1 mt-1">
+            <span className="cursor-pointer hover:text-primary transition-colors" onClick={() => router.push("/system-admin/dashboard")}>{t("title")}</span>
             <span>/</span>
-            <span className="text-slate-800">{t("listHeader")}</span>
+            <span className="text-on-surface font-medium">{t("listHeader")}</span>
           </nav>
         </div>
 
         <button
           onClick={() => router.push("/system-admin/clinics/pending-publications")}
-          className="relative inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm rounded-xl transition-all shadow-sm active:scale-95 self-start sm:self-center cursor-pointer"
+          className="relative inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm rounded-xl transition-all shadow-xs active:scale-95 self-start sm:self-center cursor-pointer"
         >
           <Building2 className="h-4 w-4" />
           <span>{t("publicationRequests")}</span>
 
           {pendingPublicationCount > 0 && (
-            <span className="absolute -top-2 -right-2 flex items-center justify-center min-w-[20px] h-5 px-1 rounded-full bg-red-600 text-white text-[11px] font-bold shadow-md border-2 border-white">
+            <span className="absolute -top-2 -right-2 flex items-center justify-center min-w-[20px] h-5 px-1 rounded-full bg-error text-on-error text-[11px] font-bold shadow-md border-2 border-white">
               {pendingPublicationCount > 99 ? "99+" : pendingPublicationCount}
             </span>
           )}
         </button>
       </div>
 
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <div className="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/40 shadow-xs">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
           <div className="flex flex-col gap-1.5 w-full">
-            <label className="text-sm font-semibold text-slate-600">{t("searchLabel")}</label>
+            <label className="text-sm font-semibold text-on-surface-variant">{t("searchLabel")}</label>
             <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-on-surface-variant" />
               <input
                 type="text"
                 placeholder={t("searchPlaceholder")}
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all outline-none"
+                className="w-full pl-10 pr-4 py-2.5 bg-surface-container-low border border-outline-variant/60 rounded-xl focus:ring-1 focus:ring-primary focus:border-primary text-sm text-on-surface transition-all outline-none"
               />
             </div>
           </div>
 
           <div className="flex flex-col gap-1.5 w-full">
-            <label className="text-sm font-semibold text-slate-600">{t("statusLabel")}</label>
+            <label className="text-sm font-semibold text-on-surface-variant">{t("statusLabel")}</label>
             <select
               value={statusFilter}
               onChange={(e) => handleStatusChange(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all outline-none text-slate-700 font-medium cursor-pointer"
+              className="w-full px-4 py-2.5 bg-surface-container-low border border-outline-variant/60 rounded-xl focus:ring-1 focus:ring-primary focus:border-primary text-sm transition-all outline-none text-on-surface font-medium cursor-pointer"
             >
               <option value="">{t("statusAll")}</option>
               <option value="ACTIVE">{tCommon("active")}</option>
@@ -259,7 +259,7 @@ export default function ClinicsListPage() {
           <button
             onClick={fetchClinics}
             disabled={loading}
-            className="border border-blue-600 text-blue-600 hover:bg-blue-50 px-4 py-2.5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 h-[45px] w-full cursor-pointer"
+            className="border border-primary text-primary hover:bg-[#c6e7ff]/30 px-4 py-2.5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 h-[45px] w-full cursor-pointer shadow-xs"
           >
             <Filter className="h-4 w-4" />
             {loading ? tCommon("loading") : t("refresh")}
@@ -268,43 +268,43 @@ export default function ClinicsListPage() {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+        <div className="bg-error-container/40 border border-error-container rounded-2xl p-4 flex items-start gap-3">
+          <AlertCircle className="h-5 w-5 text-error shrink-0 mt-0.5" />
           <div>
-            <h3 className="font-semibold text-red-800 mb-0.5">{tCommon("error")}</h3>
-            <p className="text-sm text-red-700">{error}</p>
+            <h3 className="font-semibold text-on-error-container mb-0.5">{tCommon("error")}</h3>
+            <p className="text-sm text-on-error-container">{error}</p>
           </div>
         </div>
       )}
 
       {/* Loading */}
       {loading && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
-          <Loader2 className="h-8 w-8 text-blue-600 animate-spin mb-3" />
-          <p className="text-sm text-slate-500">{t("loadingList")}</p>
+        <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/40 p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
+          <Loader2 className="h-8 w-8 text-primary animate-spin mb-3" />
+          <p className="text-sm text-on-surface-variant">{t("loadingList")}</p>
         </div>
       )}
 
       {!loading && clinics.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[300px] w-full">
-          <Building2 className="h-12 w-12 text-slate-300 mb-3" />
-          <h3 className="text-lg font-bold text-slate-800 mb-1">{t("emptyTitle")}</h3>
-          <p className="text-sm text-slate-500">{t("emptyDescription")}</p>
+        <div className="bg-surface-container-lowest border border-outline-variant/40 rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[300px] w-full">
+          <Building2 className="h-12 w-12 text-on-surface-variant/50 mb-3" />
+          <h3 className="text-lg font-bold text-on-surface mb-1">{t("emptyTitle")}</h3>
+          <p className="text-sm text-on-surface-variant">{t("emptyDescription")}</p>
         </div>
       ) : !loading && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden w-full">
+        <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/40 shadow-xs overflow-hidden w-full">
           <div className="overflow-x-auto w-full">
             <table className="w-full text-left border-collapse min-w-[1000px]">
               <thead>
-                <tr className="border-b border-slate-200 bg-slate-50">
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider text-center w-[70px]">{t("tableIndex")}</th>
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">{t("tableClinic")}</th>
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">{t("tableContact")}</th>
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider w-[160px]">{t("tableStatus")}</th>
-                  <th className="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider text-center w-[260px] whitespace-nowrap">{t("tableActions")}</th>
+                <tr className="border-b border-outline-variant/30 bg-surface-container-low">
+                  <th className="px-6 py-3.5 text-xs font-bold text-on-surface-variant uppercase tracking-wider text-center w-[70px]">{t("tableIndex")}</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-on-surface-variant uppercase tracking-wider">{t("tableClinic")}</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-on-surface-variant uppercase tracking-wider">{t("tableContact")}</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-on-surface-variant uppercase tracking-wider w-[160px]">{t("tableStatus")}</th>
+                  <th className="px-6 py-3.5 text-xs font-bold text-on-surface-variant uppercase tracking-wider text-center w-[260px] whitespace-nowrap">{t("tableActions")}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200">
+              <tbody className="divide-y divide-outline-variant/20">
                 {clinics.map((clinic, index) => {
                   const id = clinic.id_clinic || (clinic as any).Id_clinic;
                   const stt = (currentPage - 1) * pageSize + index + 1;
@@ -318,30 +318,30 @@ export default function ClinicsListPage() {
                   const displayState = resolveDisplayState(isPublished, rawStatus);
 
                   return (
-                    <tr key={id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="px-6 py-4 font-bold text-slate-600 text-sm text-center">{stt}</td>
+                    <tr key={id} className="hover:bg-surface-container-low/60 transition-colors">
+                      <td className="px-6 py-4 font-bold text-on-surface-variant text-sm text-center">{stt}</td>
                       <td className="px-6 py-4">
                         <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shrink-0 mt-0.5">
+                          <div className="w-10 h-10 rounded-xl bg-[#c6e7ff]/40 text-primary flex items-center justify-center border border-[#81cfff]/40 shrink-0 mt-0.5">
                             <Building2 className="h-5 w-5" />
                           </div>
                           <div className="flex flex-col gap-0.5">
-                            <span className="font-bold text-sm text-slate-800">{name}</span>
-                            <span className="text-xs text-slate-500 flex items-center gap-1">
-                              <MapPin className="h-3 w-3 shrink-0 text-slate-400" />
+                            <span className="font-bold text-sm text-on-surface">{name}</span>
+                            <span className="text-xs text-on-surface-variant flex items-center gap-1">
+                              <MapPin className="h-3 w-3 shrink-0 text-on-surface-variant" />
                               {address}
                             </span>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex flex-col gap-1 text-xs text-slate-600 font-medium">
+                        <div className="flex flex-col gap-1 text-xs text-on-surface-variant font-medium">
                           <span className="flex items-center gap-1.5">
-                            <Phone className="h-3.5 w-3.5 text-slate-400" />
+                            <Phone className="h-3.5 w-3.5 text-on-surface-variant" />
                             {phone}
                           </span>
-                          <span className="flex items-center gap-1.5 text-slate-500">
-                            <Mail className="h-3.5 w-3.5 text-slate-400" />
+                          <span className="flex items-center gap-1.5 text-on-surface-variant">
+                            <Mail className="h-3.5 w-3.5 text-on-surface-variant" />
                             {email}
                           </span>
                         </div>
@@ -363,7 +363,7 @@ export default function ClinicsListPage() {
                                   router.push(`/system-admin/clinics/edit/${id}?mode=view`)
                                 }
                               }}
-                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-blue-600 px-2.5 py-1.5 hover:bg-blue-50 rounded-lg transition-all whitespace-nowrap cursor-pointer"
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-on-surface-variant hover:text-primary px-2.5 py-1.5 hover:bg-surface-container rounded-lg transition-all whitespace-nowrap cursor-pointer"
                             >
                               <Edit2 className="h-4 w-4 shrink-0" />
                               <span>{t("edit")}</span>
@@ -373,7 +373,7 @@ export default function ClinicsListPage() {
                           {displayState.key === "ACTIVE" && (
                             <button
                               onClick={() => handleOpenDeleteModal(id, name)}
-                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 px-2.5 py-1.5 hover:bg-red-50 rounded-lg transition-all whitespace-nowrap cursor-pointer"
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-error px-2.5 py-1.5 hover:bg-error-container/20 rounded-lg transition-all whitespace-nowrap cursor-pointer"
                             >
                               <Ban className="h-4 w-4 shrink-0" />
                               <span>{t("disable")}</span>
@@ -381,7 +381,7 @@ export default function ClinicsListPage() {
                           )}
 
                           {displayState.key === "UNPUBLISHED" && (
-                            <span className="text-xs text-slate-400 italic">{t("noActions")}</span>
+                            <span className="text-xs text-on-surface-variant italic">{t("noActions")}</span>
                           )}
                         </div>
                       </td>
@@ -393,8 +393,8 @@ export default function ClinicsListPage() {
           </div>
 
           {pagination && (
-            <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
-              <span className="text-sm text-slate-500">
+            <div className="px-6 py-4 bg-surface-container-low border-t border-outline-variant/30 flex items-center justify-between">
+              <span className="text-sm text-on-surface-variant">
                 {t("pagination", {
                   from: pagination.page === 1 ? 1 : (pagination.page - 1) * pagination.size + 1,
                   to: Math.min(pagination.page * pagination.size, pagination.total),
@@ -405,17 +405,17 @@ export default function ClinicsListPage() {
                 <button
                   onClick={handlePreviousPage}
                   disabled={!pagination.hasPrevious || loading}
-                  className="p-1.5 rounded-lg hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-600 cursor-pointer"
+                  className="p-1.5 rounded-lg hover:bg-surface-container disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-on-surface-variant cursor-pointer"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
-                <button className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-sm font-medium">
+                <button className="w-8 h-8 rounded-lg bg-primary text-on-primary flex items-center justify-center text-sm font-medium shadow-xs">
                   {pagination.page}
                 </button>
                 <button
                   onClick={handleNextPage}
                   disabled={!pagination.hasNext || loading}
-                  className="p-1.5 rounded-lg hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-600 cursor-pointer"
+                  className="p-1.5 rounded-lg hover:bg-surface-container disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-on-surface-variant cursor-pointer"
                 >
                   <ChevronRight className="h-5 w-5" />
                 </button>
@@ -426,37 +426,37 @@ export default function ClinicsListPage() {
       )}
 
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-white rounded-2xl max-w-3xl w-full shadow-2xl animate-scaleIn overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-surface-container-lowest rounded-2xl max-w-3xl w-full shadow-2xl animate-scaleIn overflow-hidden border border-outline-variant/60">
             {/* Header */}
-            <div className="p-6 border-b border-gray-100">
+            <div className="p-6 border-b border-outline-variant/20">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-red-50 rounded-full">
-                    <Ban className="h-6 w-6 text-red-600" />
+                  <div className="p-2 bg-error-container/40 rounded-full border border-error/20">
+                    <Ban className="h-6 w-6 text-error" />
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900">{t("confirmDisable")}</h3>
+                  <h3 className="text-xl font-bold text-on-surface">{t("confirmDisable")}</h3>
                 </div>
                 <button
                   onClick={handleCloseDeleteModal}
                   disabled={deleting}
-                  className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                  className="p-1.5 hover:bg-surface-container-low rounded-lg transition-colors cursor-pointer"
                 >
-                  <X className="h-5 w-5 text-gray-500" />
+                  <X className="h-5 w-5 text-on-surface-variant" />
                 </button>
               </div>
             </div>
 
             {/* Body */}
             <div className="p-6 space-y-4">
-              <p className="text-gray-600 text-base leading-relaxed">
+              <p className="text-on-surface-variant text-base leading-relaxed">
                 {t("confirmDisableDescription", { clinicName: selectedClinicName })}
               </p>
 
-              <div className="bg-red-50 border border-red-100 rounded-xl p-4">
+              <div className="bg-error-container/40 border border-error-container rounded-xl p-4">
                 <div className="flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
-                  <div className="text-sm text-red-700">
+                  <AlertCircle className="h-5 w-5 text-error shrink-0 mt-0.5" />
+                  <div className="text-sm text-on-error-container">
                     <p className="font-semibold">{t("warningTitle")}</p>
                     <ul className="list-disc list-inside space-y-1 mt-1">
                       <li>{t("warningPoint1")}</li>
@@ -467,26 +467,26 @@ export default function ClinicsListPage() {
               </div>
 
               {deleteError && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-start gap-2">
-                  <AlertCircle className="h-5 w-5 shrink-0" />
+                <div className="p-3 bg-error-container/40 border border-error-container rounded-xl text-on-error-container text-sm flex items-start gap-2">
+                  <AlertCircle className="h-5 w-5 shrink-0 text-error" />
                   <span>{deleteError}</span>
                 </div>
               )}
             </div>
 
             {/* Footer */}
-            <div className="p-6 bg-gray-50 border-t border-gray-100 flex flex-col sm:flex-row gap-3 justify-end">
+            <div className="p-6 bg-surface-container-low border-t border-outline-variant/20 flex flex-col sm:flex-row gap-3 justify-end">
               <button
                 onClick={handleCloseDeleteModal}
                 disabled={deleting}
-                className="px-4 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-xl font-semibold hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                className="px-4 py-2.5 text-on-surface bg-surface-container-lowest border border-outline-variant/60 rounded-xl font-semibold hover:bg-surface-container-low transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {tCommon("cancel")}
               </button>
               <button
                 onClick={handleConfirmDelete}
                 disabled={deleting}
-                className="px-6 py-2.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 min-w-[140px] cursor-pointer"
+                className="px-6 py-2.5 bg-error hover:bg-error/90 disabled:opacity-50 disabled:cursor-not-allowed text-on-error font-semibold rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2 min-w-[140px] cursor-pointer shadow-xs"
               >
                 {deleting ? (
                   <>

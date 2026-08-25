@@ -109,7 +109,7 @@ class ServiceService {
 
   async getClinicServices(params: ViewClinicServicesRequest): Promise<ApiResponse<ViewClinicServiceResponse[]>> {
     const response = await apiClient.get<ApiResponse<ViewClinicServiceResponse[]>>(
-      "https://localhost:7070/api/v1/clinic-admin/clinic-services",
+      "/clinic-admin/clinic-services",
       {
         params: {
           pageNumber: params.pageNumber,
@@ -124,7 +124,7 @@ class ServiceService {
 
   async createService(data: CreateServiceRequest): Promise<ApiResponse<CreateServiceResponse>> {
     const response = await apiClient.post<ApiResponse<CreateServiceResponse>>(
-      "https://localhost:7070/api/v1/clinic-admin/clinic-services/create",
+      "/clinic-admin/clinic-services/create",
       data
     )
     return response.data
@@ -132,7 +132,7 @@ class ServiceService {
 
   async editService(id: string, data: EditServiceRequest): Promise<ApiResponse<EditServiceResponse>> {
     const response = await apiClient.put<ApiResponse<EditServiceResponse>>(
-      `https://localhost:7070/api/v1/clinic-admin/clinic-services/${id}`,
+      `/clinic-admin/clinic-services/${id}`,
       data
     )
     return response.data
@@ -140,7 +140,7 @@ class ServiceService {
 
   async deactivateService(id: string): Promise<ApiResponse<DeactivateServiceResponse>> {
     const response = await apiClient.put<ApiResponse<DeactivateServiceResponse>>(
-      `https://localhost:7070/api/v1/clinic-admin/clinic-services/${id}/deactivate`
+      `/clinic-admin/clinic-services/${id}/deactivate`
     )
     return response.data
   }

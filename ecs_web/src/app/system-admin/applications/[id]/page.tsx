@@ -199,14 +199,14 @@ export default function ClinicApplicationDetailsPage() {
 
         <div className="flex items-center gap-3">
           {requestData.status === "PENDING" && (
-            <div className="px-4 py-1.5 bg-emerald-100 text-emerald-800 font-semibold rounded-full flex items-center gap-2 border border-emerald-200">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <div className="px-4 py-1.5 bg-amber-50 text-amber-800 font-semibold rounded-full flex items-center gap-2 border border-amber-200/70">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
               <span className="text-label-md font-bold uppercase tracking-wider">{t("pending")}</span>
             </div>
           )}
           {requestData.status === "APPROVED" && (
-            <div className="px-4 py-1.5 bg-green-50 text-green-700 rounded-full flex items-center gap-2 border border-green-200">
-              <span className="w-2 h-2 rounded-full bg-green-600"></span>
+            <div className="px-4 py-1.5 bg-[#6ffbbe]/25 text-[#003925] rounded-full flex items-center gap-2 border border-[#4edea3]/60">
+              <span className="w-2 h-2 rounded-full bg-[#00ae78]"></span>
               <span className="text-label-md font-bold uppercase tracking-wider">{t("approved")}</span>
             </div>
           )}
@@ -226,8 +226,8 @@ export default function ClinicApplicationDetailsPage() {
         <div className="col-span-12 lg:col-span-8 space-y-lg">
           
           {/* Section 1: Thông tin phòng khám */}
-          <section className="bg-surface-container-lowest p-lg rounded-2xl border border-outline-variant shadow-sm">
-            <div className="flex items-center gap-3 mb-6 border-b border-surface-container pb-4">
+          <section className="bg-surface-container-lowest p-lg rounded-2xl border border-outline-variant/40 shadow-xs">
+            <div className="flex items-center gap-3 mb-6 border-b border-outline-variant/20 pb-4">
               <Building2 className="text-primary h-6 w-6" />
               <h3 className="text-title-lg font-title-lg text-on-surface">{t("clinicInfo")}</h3>
             </div>
@@ -240,10 +240,10 @@ export default function ClinicApplicationDetailsPage() {
               <div className="space-y-1">
                 <p className="text-label-md font-semibold text-on-surface-variant uppercase tracking-wider">{t("requestTimeLabel")}</p>
                 <p className="text-body-lg text-on-surface flex items-center gap-sm">
-                  <Calendar className="h-4 w-4 text-outline" /> {requestData.requestedAt}
+                  <Calendar className="h-4 w-4 text-on-surface-variant" /> {requestData.requestedAt}
                 </p>
               </div>
-              <div className="col-span-1 md:col-span-2 space-y-1 border-t border-dashed border-outline-variant/50 pt-4">
+              <div className="col-span-1 md:col-span-2 space-y-1 border-t border-dashed border-outline-variant/40 pt-4">
                 <p className="text-label-md font-semibold text-on-surface-variant uppercase tracking-wider">{t("addressLabel")}</p>
                 <p className="text-body-lg text-on-surface flex items-start gap-xs">
                   <MapPin className="h-5 w-5 text-error mt-0.5 shrink-0" />
@@ -264,12 +264,12 @@ export default function ClinicApplicationDetailsPage() {
             </section>
           )}
 
-          {/* Section 2: Khung hành động Thao duyệt/Từ chối (Ngang hàng với Tài liệu đính kèm) */}
+          {/* Section 2: Khung hành động Thao duyệt/Từ chối */}
           {requestData.status === "PENDING" && (
-            <section className="bg-surface-container-lowest p-lg rounded-2xl border border-outline-variant shadow-sm space-y-md">
-              <div className="flex items-center gap-2 text-on-surface-variant border-b border-surface-container pb-3">
+            <section className="bg-surface-container-lowest p-lg rounded-2xl border border-outline-variant/40 shadow-xs space-y-md">
+              <div className="flex items-center gap-2 text-on-surface-variant border-b border-outline-variant/20 pb-3">
                 <Info className="h-5 w-5 text-primary" />
-                <h4 className="text-body-md font-semibold">{t("reviewDecision")}</h4>
+                <h4 className="text-body-md font-semibold text-on-surface">{t("reviewDecision")}</h4>
               </div>
               <p className="text-body-md text-on-surface-variant">
                 {t("reviewDescription")}
@@ -278,14 +278,14 @@ export default function ClinicApplicationDetailsPage() {
                 <button 
                   onClick={() => setShowRejectModal(true)}
                   disabled={submitting}
-                  className="flex-1 px-xl py-md rounded-xl border-2 border-error text-error font-semibold text-label-md hover:bg-error-container/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-xl py-md rounded-xl border-2 border-error text-error font-semibold text-label-md hover:bg-error-container/20 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {t("reject")}
                 </button>
                 <button 
                   onClick={() => setShowApproveModal(true)}
                   disabled={submitting}
-                  className="flex-1 px-xl py-md rounded-xl bg-primary text-on-primary font-semibold text-label-md shadow-md hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-xl py-md rounded-xl bg-primary text-on-primary font-semibold text-label-md shadow-xs hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {t("approve")}
                 </button>
@@ -298,17 +298,17 @@ export default function ClinicApplicationDetailsPage() {
         <div className="col-span-12 lg:col-span-4 space-y-lg">
           
           {/* Section 3: Người đại diện liên hệ */}
-          <section className="bg-surface-container-lowest p-lg rounded-2xl border border-outline-variant shadow-sm relative overflow-hidden">
+          <section className="bg-surface-container-lowest p-lg rounded-2xl border border-outline-variant/40 shadow-xs relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-16 translate-x-16"></div>
             
-            <div className="flex items-center gap-3 mb-6 border-b border-surface-container pb-4 relative z-10">
+            <div className="flex items-center gap-3 mb-6 border-b border-outline-variant/20 pb-4 relative z-10">
               <User className="text-primary h-6 w-6" />
               <h3 className="text-title-lg font-title-lg text-on-surface">{t("contactInfo")}</h3>
             </div>
 
             <div className="space-y-6 relative z-10">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-primary-fixed rounded-full flex items-center justify-center text-primary font-bold text-title-lg">
+                <div className="w-14 h-14 bg-[#c6e7ff] text-[#001e2d] rounded-full flex items-center justify-center font-bold text-title-lg">
                   {requestData.contactName.split(" ").pop()?.substring(0, 2).toUpperCase()}
                 </div>
                 <div>
@@ -331,17 +331,17 @@ export default function ClinicApplicationDetailsPage() {
           </section>
 
           {/* Section 4: Hồ sơ tài liệu đính kèm */}
-          <section className="bg-surface-container-lowest p-lg rounded-2xl border border-outline-variant shadow-sm">
-            <div className="flex items-center gap-3 mb-6 border-b border-surface-container pb-4">
+          <section className="bg-surface-container-lowest p-lg rounded-2xl border border-outline-variant/40 shadow-xs">
+            <div className="flex items-center gap-3 mb-6 border-b border-outline-variant/20 pb-4">
               <FileText className="text-primary h-6 w-6" />
               <h3 className="text-title-lg font-title-lg text-on-surface">{t("documents")}</h3>
             </div>
 
             <div className="space-y-3">
               {requestData.businessLicenseUrl ? (
-                <div className="group flex items-center justify-between p-3 border border-outline-variant rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer">
+                <div className="group flex items-center justify-between p-3 border border-outline-variant/40 rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-red-50 rounded-lg text-error">
+                    <div className="p-2 bg-error-container/40 rounded-lg text-error">
                       <FileText className="h-6 w-6" />
                     </div>
                     <div>
@@ -353,7 +353,7 @@ export default function ClinicApplicationDetailsPage() {
                     href={requestData.businessLicenseUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-sm text-outline hover:text-primary rounded-lg hover:bg-surface-container-highest transition-all"
+                    className="p-sm text-on-surface-variant hover:text-primary rounded-lg hover:bg-surface-container transition-all"
                     title={t("documentActionTitle")}
                   >
                     <Eye className="h-5 w-5" />
@@ -369,15 +369,15 @@ export default function ClinicApplicationDetailsPage() {
 
       {/* ================= MODAL LỚP PHỦ 1: XÁC NHẬN PHÊ DUYỆT ================= */}
       {showApproveModal && (
-        <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl w-[448px] max-w-[95vw] p-6 border border-outline-variant shadow-2xl block text-left">
+        <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4 backdrop-blur-xs">
+          <div className="bg-surface-container-lowest rounded-2xl w-[448px] max-w-[95vw] p-6 border border-outline-variant/60 shadow-2xl block text-left">
             <div className="text-center space-y-4">
-              <div className="mx-auto h-14 w-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center">
+              <div className="mx-auto h-14 w-14 bg-[#6ffbbe]/25 text-[#006c49] rounded-full flex items-center justify-center border border-[#4edea3]/50">
                 <CheckCircle className="h-8 w-8" />
               </div>
               <div className="space-y-2">
-                <h3 className="text-xl font-bold text-slate-900">{t("approveModalTitle")}</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
+                <h3 className="text-xl font-bold text-on-surface">{t("approveModalTitle")}</h3>
+                <p className="text-sm text-on-surface-variant leading-relaxed">
                   {t("approveModalDescription", { clinicName: requestData.clinicName })}
                 </p>
               </div>
@@ -385,14 +385,14 @@ export default function ClinicApplicationDetailsPage() {
                 <button 
                   onClick={() => setShowApproveModal(false)}
                   disabled={submitting}
-                  className="flex-1 py-2.5 rounded-xl border border-slate-300 font-semibold text-sm text-slate-700 hover:bg-slate-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 py-2.5 rounded-xl border border-outline-variant/60 font-semibold text-sm text-on-surface hover:bg-surface-container-low transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {t("approveCancel")}
                 </button>
                 <button 
                   onClick={handleConfirmApprove}
                   disabled={submitting}
-                  className="flex-1 py-2.5 rounded-xl bg-sky-700 text-white font-semibold text-sm hover:bg-sky-800 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 rounded-xl bg-primary text-on-primary font-semibold text-sm hover:opacity-90 transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {submitting ? (
                     <>
@@ -411,17 +411,17 @@ export default function ClinicApplicationDetailsPage() {
 
      {/* ================= MODAL LỚP PHỦ 2: TỪ CHỐI TIẾP NHẬN ================= */}
       {showRejectModal && (
-        <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl w-[448px] max-w-[95vw] p-6 border border-slate-200 shadow-2xl block text-left">
+        <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4 backdrop-blur-xs">
+          <div className="bg-surface-container-lowest rounded-2xl w-[448px] max-w-[95vw] p-6 border border-outline-variant/60 shadow-2xl block text-left">
             
             {/* Tiêu đề & Icon */}
             <div className="flex flex-col items-center text-center gap-3 w-full">
-              <div className="h-12 w-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center shrink-0">
+              <div className="h-12 w-12 bg-error-container/40 text-error rounded-full flex items-center justify-center shrink-0 border border-error/20">
                 <XCircle className="h-6 w-6" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-lg font-bold text-slate-900">{t("rejectModalTitle")}</h3>
-                <p className="text-sm text-slate-500">
+                <h3 className="text-lg font-bold text-on-surface">{t("rejectModalTitle")}</h3>
+                <p className="text-sm text-on-surface-variant">
                   {t("rejectModalDescription")}
                 </p>
               </div>
@@ -429,15 +429,15 @@ export default function ClinicApplicationDetailsPage() {
 
             {/* Ô nhập dữ liệu */}
             <div className="space-y-2 mt-4 w-full block">
-              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-                {t("rejectReasonLabel")} <span className="text-red-500">*</span>
+              <label className="text-xs font-bold text-on-surface uppercase tracking-wider block">
+                {t("rejectReasonLabel")} <span className="text-error">*</span>
               </label>
               <textarea 
                 rows={3}
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 placeholder={t("rejectReasonPlaceholder")}
-                className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm text-slate-800 outline-none resize-none block"
+                className="w-full px-3 py-2 bg-surface-container-low border border-outline-variant/60 rounded-xl focus:ring-1 focus:ring-error focus:border-error text-sm text-on-surface outline-none resize-none block"
               />
             </div>
 
@@ -446,16 +446,16 @@ export default function ClinicApplicationDetailsPage() {
               <button 
                 onClick={() => { setShowRejectModal(false); setRejectReason(""); }}
                 disabled={submitting}
-                className="flex-1 py-2.5 rounded-xl border border-slate-300 font-semibold text-sm text-slate-700 hover:bg-slate-50 transition-all text-center disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 py-2.5 rounded-xl border border-outline-variant/60 font-semibold text-sm text-on-surface hover:bg-surface-container-low transition-all text-center disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {t("rejectCancel")}
               </button>
               <button 
                 onClick={handleConfirmReject}
                 disabled={!rejectReason.trim() || submitting}
-                className="flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all text-center shadow-sm flex items-center justify-center gap-2
-                  disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed
-                  bg-red-600 text-white hover:bg-red-700"
+                className="flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all text-center shadow-xs flex items-center justify-center gap-2 cursor-pointer
+                  disabled:bg-surface-container disabled:text-on-surface-variant/40 disabled:cursor-not-allowed
+                  bg-error text-on-error hover:bg-error/90"
               >
                 {submitting ? (
                   <>

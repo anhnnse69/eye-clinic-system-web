@@ -9,6 +9,7 @@ import {
   Phone,
   FileText,
   CheckCircle,
+  CheckCircle2,
   Check,
   ClipboardCheck,
   XCircle,
@@ -20,24 +21,29 @@ import {
   Users,
   Activity,
   CalendarDays,
+  Pill,
+  Sparkles,
+  Microscope,
 } from "lucide-react"
 import { queueService } from "@/services/queue.service"
 import { queueCompleteService } from "@/services/queue-complete.service"
+import { medicalRecordsService } from "@/services/medical-records.service"
 import type { QueueListResponse, QueueItem } from "@/types"
 import { QueueStatus } from "@/types"
 import { getMessage } from "@/constants/messages"
+import CompletionCheckModal from "./CompletionCheckModal"
 
 interface QueueClientProps {
   doctorId: string
 }
 
-const STATUS_COLORS: Record<string, { bg: string; text: string; icon: string }> = {
-  WAITING: { bg: "bg-[#00658D]/10", text: "text-[#00658D]", icon: "bg-[#00658D]" },
-  CALLING: { bg: "bg-purple-100", text: "text-purple-700", icon: "bg-purple-500" },
-  IN_PROGRESS: { bg: "bg-amber-100", text: "text-amber-700", icon: "bg-amber-500" },
-  COMPLETED: { bg: "bg-green-100", text: "text-green-700", icon: "bg-green-500" },
-  NO_SHOW: { bg: "bg-red-100", text: "text-red-700", icon: "bg-red-500" },
-  CANCELLED: { bg: "bg-gray-100", text: "text-gray-700", icon: "bg-gray-500" },
+const STATUS_COLORS: Record<string, { bg: string; text: string; border: string; icon: string }> = {
+  WAITING: { bg: "bg-[#00658D]/10", text: "text-[#00658D]", border: "border-[#00658D]/20", icon: "bg-[#00658D]" },
+  CALLING: { bg: "bg-sky-50", text: "text-sky-700", border: "border-sky-200", icon: "bg-sky-500" },
+  IN_PROGRESS: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200/80", icon: "bg-amber-500" },
+  COMPLETED: { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200/80", icon: "bg-emerald-500" },
+  NO_SHOW: { bg: "bg-rose-50", text: "text-rose-700", border: "border-rose-200/60", icon: "bg-rose-500" },
+  CANCELLED: { bg: "bg-slate-100", text: "text-slate-600", border: "border-slate-200", icon: "bg-slate-500" },
 }
 
 export default function QueueClient({ doctorId }: QueueClientProps) {
@@ -135,6 +141,9 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
       if (!isSilent) {
         setLoading(false)
       }
+      // Drop any cached per-row EMR step status when the queue is refreshed
+      // so newly-completed steps are re-detected on the next poll.
+      setStepStatusByRecord({})
     }
   }, [selectedDate, tErrors])
 
@@ -148,6 +157,89 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
 
     return () => clearInterval(intervalId)
   }, [fetchQueueData])
+
+  // ─── Per-row EMR step detection ────────────────────────────────────
+  // For each queue item that already has a medical record, fetch the full
+  // detail so we can show which 6-step EMR phases are actually completed
+  // (instead of falsely showing everything green as soon as a record exists).
+  const [stepStatusByRecord, setStepStatusByRecord] = useState<
+    Record<
+      string,
+      {
+        isStep1Done: boolean // AI pre-diagnosis
+        isStep3Done: boolean // EMR saved (always true when record exists)
+        isStep4Done: boolean // Paraclinical (optional)
+        isStep5Done: boolean // Medical record summary (final diagnosis + ICD-10)
+        isStep6Done: boolean // Prescription / Glasses Rx
+      }
+    >
+  >({})
+
+  useEffect(() => {
+    const items = queueData?.items ?? []
+    const candidates = items.filter(
+      (it) => it.hasMedicalRecord && it.medicalRecordId && !stepStatusByRecord[it.medicalRecordId],
+    )
+    if (candidates.length === 0) return
+    let cancelled = false
+    Promise.all(
+      candidates.map(async (it) => {
+        try {
+          const res = await medicalRecordsService.getMedicalRecordById(it.medicalRecordId!)
+          const detail = res?.data
+          if (!detail) return null
+          const isStep1Done = Boolean(detail?.formData?.aiSuggestion?.suggestedDisease)
+          const isStep3Done = true
+          const isStep4Done = Boolean(
+            (detail?.octResults && detail.octResults.length > 0) ||
+              (detail?.visualFieldTests && detail.visualFieldTests.length > 0) ||
+              (detail?.ultrasoundEyes && detail.ultrasoundEyes.length > 0),
+          )
+          const isStep5Done = Boolean(
+            detail?.diagnosisMain?.trim() ||
+              detail?.formData?.chanDoanVaRaVien?.chanDoanChinh?.trim() ||
+              detail?.formData?.benhAn?.chanDoanMaICD?.raVienBenhChinhTonThuong?.trim(),
+          )
+          const isStep6Done = Boolean(
+            (detail?.prescriptions && detail.prescriptions.length > 0) ||
+              (detail?.glassesPrescriptions && detail.glassesPrescriptions.length > 0) ||
+              (detail?.formData?.prescription?.drugs && detail.formData.prescription.drugs.length > 0) ||
+              (detail?.formData?.keDonThuoc?.danhSachThuoc && detail.formData.keDonThuoc.danhSachThuoc.length > 0) ||
+              (detail?.formData?.glassesPrescription && Object.values(detail.formData.glassesPrescription).some((v: any) => v !== null && v !== undefined && String(v).trim() !== "")),
+          )
+          return {
+            recordId: it.medicalRecordId!,
+            status: { isStep1Done, isStep3Done, isStep4Done, isStep5Done, isStep6Done },
+          }
+        } catch {
+          // If fetch fails, fall back to all-false so the badges stay neutral.
+          return {
+            recordId: it.medicalRecordId!,
+            status: {
+              isStep1Done: false,
+              isStep3Done: true,
+              isStep4Done: false,
+              isStep5Done: false,
+              isStep6Done: false,
+            },
+          }
+        }
+      }),
+    ).then((entries) => {
+      if (cancelled) return
+      setStepStatusByRecord((prev) => {
+        const next = { ...prev }
+        for (const e of entries) {
+          if (e) next[e.recordId] = e.status
+        }
+        return next
+      })
+    })
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queueData?.items])
 
   const handlePreviousDay = () => {
     const newDate = new Date(selectedDate)
@@ -168,7 +260,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
   const isToday = formatDate(selectedDate) === formatDate(new Date())
 
   const getStatusColor = (status: string) => {
-    return STATUS_COLORS[status] || { bg: "bg-gray-100", text: "text-gray-700", icon: "bg-gray-500" }
+    return STATUS_COLORS[status] || { bg: "bg-slate-100", text: "text-slate-600", border: "border-slate-200", icon: "bg-slate-500" }
   }
 
   const filteredItems = queueData?.items?.filter((item) => {
@@ -184,29 +276,53 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
   }
 
   const handleStartExamination = (item: QueueItem) => {
-    if (item.hasMedicalRecord) {
-      router.push(`/doctor/records/${item.medicalRecordId || item.appointmentId}`)
-    } else {
-      router.push(
-        `/doctor/records/create?appointmentId=${item.appointmentId}&patientId=${item.patientId}`
-      )
-    }
+    // Step 1 of the 6-step EMR workflow: AI pre-diagnosis (Triage).
+    // After the AI result is reviewed and a record template is chosen, the
+    // flow continues into CreateMedicalRecordClient which handles Steps 2–6.
+    router.push(
+      `/doctor/examination/${item.appointmentId}?patientId=${item.patientId}`
+    )
   }
 
+  const [activeCompletionModal, setActiveCompletionModal] = useState<{
+    recordId: string
+    appointmentId: string
+    patientId: string
+    patientName: string
+    queueId: string
+  } | null>(null)
+
   const handleContinueExamination = (item: QueueItem) => {
+    // Resume the 6-step EMR workflow where the doctor left off.
+    // ExaminationClient detects that the appointment already has a MedicalRecord
+    // (saved via Step 3) and forwards straight to CreateMedicalRecordClient in
+    // "success hub" mode — i.e. the doctor lands on the same screen they were
+    // on right after saving the medical record (showing the post-save banner
+    // and the Step 4 / 5 / 6 action cards) instead of being asked to save a
+    // duplicate record.
     router.push(
-      `/doctor/records/create?appointmentId=${item.appointmentId}&patientId=${item.patientId}&continue=true`
+      `/doctor/examination/${item.appointmentId}?patientId=${item.patientId}`
     )
   }
 
   const handleCompleteQueue = async (item: QueueItem, e: React.MouseEvent) => {
     e.stopPropagation()
-    if (!confirm(tQueue("confirmComplete", { name: item.patientName }))) return
-    try {
-      await queueCompleteService.completeQueue({ queueId: item.queueId })
-      fetchQueueData()
-    } catch {
-      alert(tQueue("errorOccurred"))
+    if (item.hasMedicalRecord && item.medicalRecordId) {
+      setActiveCompletionModal({
+        recordId: item.medicalRecordId,
+        appointmentId: item.appointmentId,
+        patientId: item.patientId,
+        patientName: item.patientName,
+        queueId: item.queueId,
+      })
+    } else {
+      if (!confirm(tQueue("confirmComplete", { name: item.patientName }))) return
+      try {
+        await queueCompleteService.completeQueue({ queueId: item.queueId })
+        fetchQueueData()
+      } catch {
+        alert(tQueue("errorOccurred"))
+      }
     }
   }
 
@@ -232,7 +348,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F8FAFC]">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-4 py-4">
         <div className="flex items-center justify-between">
@@ -281,8 +397,8 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
               </div>
               <div className="text-sm text-gray-500 mt-1">
                 {isToday ? (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200/80 rounded-full text-xs font-medium">
+                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
                     {tQueue("today")}
                   </span>
                 ) : (
@@ -386,13 +502,13 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
 
       {/* Filter Tabs */}
       <div className="bg-white border-b border-gray-200 px-4">
-        <div className="flex gap-2 overflow-x-auto py-2">
+        <div className="flex gap-2 overflow-x-auto py-2.5">
           <button
             onClick={() => setFilter("ALL")}
-            className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
+            className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
               filter === "ALL"
-                ? "bg-[#00658D] text-white"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                ? "bg-[#00658D] text-white shadow-xs"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200/70 border border-slate-200/60"
             }`}
           >
             {tQueue("all")} ({activeTotal})
@@ -404,10 +520,10 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
               <button
                 key={status}
                 onClick={() => setFilter(status)}
-                className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${
+                className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
                   filter === status
-                    ? "bg-[#00658D] text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    ? "bg-[#00658D] text-white shadow-xs"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200/70 border border-slate-200/60"
                 }`}
               >
                 {label} ({count})
@@ -457,11 +573,11 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
               return (
                 <div
                   key={item.queueId}
-                  className="bg-gray-50 rounded-xl p-4 border border-gray-200 hover:border-[#00658D]/40 transition-colors"
+                  className="bg-white rounded-2xl p-4.5 border border-slate-200/80 hover:border-[#00658D]/40 hover:shadow-sm transition-all"
                 >
                   <div className="flex items-start gap-4">
                     <div className="shrink-0">
-                      <div className="w-12 h-12 rounded-2xl bg-[#00658D] text-white flex flex-col items-center justify-center shadow-md">
+                      <div className="w-12 h-12 rounded-2xl bg-[#00658D] text-white flex flex-col items-center justify-center shadow-xs">
                         <span className="text-[11px] font-medium text-white/80 leading-none mb-px">STT</span>
                         <span className="text-lg font-bold leading-none">{item.queueNumber}</span>
                       </div>
@@ -473,12 +589,12 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                           {item.patientName}
                         </h3>
                         <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${statusColor.bg} ${statusColor.text}`}
+                          className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${statusColor.bg} ${statusColor.text} ${statusColor.border}`}
                         >
                           {item.statusText || STATUS_LABELS[item.status] || item.status}
                         </span>
                         {item.hasMedicalRecord && (
-                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                          <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
                             {tQueue("hasMedicalRecord")}
                           </span>
                         )}
@@ -516,18 +632,100 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                       </div>
 
                       {item.completedAt && (
-                        <p className="mt-2 text-xs text-green-600 font-medium" suppressHydrationWarning>
+                        <p className="mt-2 text-xs text-emerald-700 font-medium" suppressHydrationWarning>
                           {tQueue("completedAt", { time: new Date(item.completedAt).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }) })}
                         </p>
                       )}
 
+                      {/* Step status badges — harmonized emerald (done) and slate (pending) */}
+                      {item.hasMedicalRecord && (() => {
+                        const status = stepStatusByRecord[item.medicalRecordId || ""]
+                        const isStep1Done = status?.isStep1Done ?? false
+                        const isStep3Done = status?.isStep3Done ?? true
+                        const isStep4Done = status?.isStep4Done ?? false
+                        const isStep5Done = status?.isStep5Done ?? false
+                        const isStep6Done = status?.isStep6Done ?? false
+                        const allMandatoryDone =
+                          isStep1Done && isStep3Done && isStep5Done && isStep6Done
+
+                        const renderBadge = (
+                          num: number,
+                          done: boolean,
+                          Icon: typeof Sparkles,
+                          label: string,
+                          titleDone: string,
+                          titlePending: string,
+                        ) => (
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold border transition-colors ${
+                              done
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-200/80"
+                                : "bg-slate-50 text-slate-600 border-slate-200"
+                            }`}
+                            title={done ? titleDone : titlePending}
+                          >
+                            <Icon className="w-3 h-3" /> Bước {num}: {label}
+                          </span>
+                        )
+
+                        return (
+                          <div className="mt-2.5 flex items-center gap-1.5 flex-wrap">
+                            {renderBadge(
+                              1, isStep1Done,
+                              Sparkles,
+                              "AI sơ bộ",
+                              "Bước 1: AI chẩn đoán sơ bộ — đã hoàn thành",
+                              "Bước 1: AI chẩn đoán sơ bộ — CHƯA chạy",
+                            )}
+                            {renderBadge(
+                              3, isStep3Done,
+                              CheckCircle,
+                              "HS khám bệnh",
+                              "Bước 3: Hồ sơ khám bệnh đã được lưu",
+                              "Bước 3: Hồ sơ khám bệnh chưa lưu",
+                            )}
+                            {renderBadge(
+                              4, isStep4Done,
+                              Microscope,
+                              "Cận lâm sàng",
+                              "Bước 4: Cận lâm sàng (OCT / Thị trường / Siêu âm) — đã có kết quả",
+                              "Bước 4: Cận lâm sàng — tùy chọn, chưa có kết quả",
+                            )}
+                            {renderBadge(
+                              5, isStep5Done,
+                              FileText,
+                              "Tổng kết",
+                              "Bước 5: Tổng kết bệnh án (Chẩn đoán + ICD-10) — đã hoàn thành",
+                              "Bước 5: Tổng kết bệnh án (Chẩn đoán + ICD-10) — BẮT BUỘC, chưa làm",
+                            )}
+                            {renderBadge(
+                              6, isStep6Done,
+                              Pill,
+                              "Kê đơn",
+                              "Bước 6: Kê đơn thuốc/kính — đã hoàn thành",
+                              "Bước 6: Kê đơn thuốc/kính — BẮT BUỘC, chưa làm",
+                            )}
+                            <span
+                              className={`text-[10px] italic inline-flex items-center gap-1 ${allMandatoryDone ? "text-emerald-700 font-semibold" : "text-slate-500"}`}
+                            >
+                              {allMandatoryDone ? (
+                                <>
+                                  — Đủ điều kiện hoàn thành ca khám <CheckCircle2 className="w-3 h-3 text-emerald-600 inline shrink-0" />
+                                </>
+                              ) : (
+                                "— Ca khám chưa hoàn thành, bác sĩ cần làm tiếp các bước chưa xong"
+                              )}
+                            </span>
+                          </div>
+                        )
+                      })()}
                       <div className="mt-3 flex flex-wrap gap-2">
                         {item.hasMedicalRecord && (
                           <button
                             onClick={() => handleViewRecord(item)}
-                            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-white border border-slate-300 text-slate-700 rounded-xl hover:bg-slate-50 transition-colors font-medium shadow-2xs"
                           >
-                            <FileText className="w-4 h-4" />
+                            <FileText className="w-4 h-4 text-slate-500" />
                             {tQueue("viewRecord")}
                           </button>
                         )}
@@ -536,7 +734,7 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                           !item.hasMedicalRecord && (
                             <button
                               onClick={() => handleStartExamination(item)}
-                              className="flex items-center gap-1 px-3 py-1.5 text-sm bg-[#00658D] text-white rounded-lg hover:bg-[#005273] transition-colors"
+                              className="flex items-center gap-1.5 px-3.5 py-1.5 text-sm bg-[#00658D] text-white rounded-xl hover:bg-[#005273] transition-colors font-medium shadow-xs"
                             >
                               <CheckCircle className="w-4 h-4" />
                               {tQueue("startExam")}
@@ -546,39 +744,37 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
                           <>
                             <button
                               onClick={() => handleContinueExamination(item)}
-                              className="flex items-center gap-1 px-3 py-1.5 text-sm bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors"
+                              className="flex items-center gap-1.5 px-3.5 py-1.5 text-sm bg-[#00658D] text-white rounded-xl hover:bg-[#005273] transition-colors font-medium shadow-xs"
                             >
                               <Activity className="w-4 h-4" />
                               {tQueue("continueExam")}
                             </button>
                             {item.hasMedicalRecord && (
-                              <button
-                                onClick={(e) => handleCompleteQueue(item, e)}
-                                className="flex items-center gap-1 px-3 py-1.5 text-sm bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
-                              >
-                                <ClipboardCheck className="w-4 h-4" />
-                                {tQueue("completeExam")}
-                              </button>
+                              <CompletionCheckButton
+                                item={item}
+                                stepStatusByRecord={stepStatusByRecord}
+                                tQueue={tQueue}
+                                onComplete={handleCompleteQueue}
+                              />
                             )}
                           </>
                         ) : null}
 
                         {item.status === QueueStatus.WAITING && item.hasMedicalRecord && (
-                          <button
-                            onClick={(e) => handleCompleteQueue(item, e)}
-                            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
-                          >
-                            <ClipboardCheck className="w-4 h-4" />
-                            {tQueue("completeExam")}
-                          </button>
+                          <CompletionCheckButton
+                            item={item}
+                            stepStatusByRecord={stepStatusByRecord}
+                            tQueue={tQueue}
+                            onComplete={handleCompleteQueue}
+                          />
                         )}
 
                         {item.status === QueueStatus.CALLING && (
                           <button
                             onClick={() => {}}
-                            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-white border border-rose-200 text-rose-600 rounded-xl hover:bg-rose-50 transition-colors font-medium"
                           >
-                            <XCircle className="w-4 h-4" />
+                            <XCircle className="w-4 h-4 text-rose-500" />
                             {tQueue("noShow")}
                           </button>
                         )}
@@ -591,6 +787,89 @@ export default function QueueClient({ doctorId }: QueueClientProps) {
           </div>
         )}
       </div>
+
+      {activeCompletionModal && (
+        <CompletionCheckModal
+          isOpen={Boolean(activeCompletionModal)}
+          onClose={() => setActiveCompletionModal(null)}
+          recordId={activeCompletionModal.recordId}
+          appointmentId={activeCompletionModal.appointmentId}
+          patientId={activeCompletionModal.patientId}
+          patientName={activeCompletionModal.patientName}
+          queueId={activeCompletionModal.queueId}
+          onCompleted={() => fetchQueueData()}
+        />
+      )}
     </div>
+  )
+}
+
+/**
+ * CompletionCheckButton
+ *
+ * Wraps the "Complete Exam" button on each queue row. The button is enabled
+ * ONLY when the medical record has both:
+ *   - Step 5 done: Medical record summary (final diagnosis + ICD-10)
+ *   - Step 6 done: Prescription / Glasses Rx
+ *
+ * Until both are done, the button is disabled and shows a tooltip explaining
+ * why. Defense-in-depth: even if the disabled state is bypassed, the actual
+ * completion flow is blocked by CompleteQueueService on the backend, which
+ * re-validates the form JSON envelope.
+ *
+ * While the record detail is still being fetched (stepStatusByRecord entry
+ * is missing), the button is treated as disabled to avoid a premature
+ * green state during the loading window.
+ */
+interface CompletionCheckButtonProps {
+  item: QueueItem
+  stepStatusByRecord: Record<
+    string,
+    {
+      isStep1Done: boolean
+      isStep3Done: boolean
+      isStep4Done: boolean
+      isStep5Done: boolean
+      isStep6Done: boolean
+    }
+  >
+  tQueue: (key: string) => string
+  onComplete: (item: QueueItem, e: React.MouseEvent) => void
+}
+
+function CompletionCheckButton({
+  item,
+  stepStatusByRecord,
+  tQueue,
+  onComplete,
+}: CompletionCheckButtonProps) {
+  const stepStatus = item.medicalRecordId
+    ? stepStatusByRecord[item.medicalRecordId]
+    : undefined
+  const isReady = Boolean(stepStatus?.isStep5Done && stepStatus?.isStep6Done)
+  const isLoading = item.hasMedicalRecord && !stepStatus
+  const isLocked = !isReady
+  const tooltip = tQueue("completeExamLockedTooltip")
+
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        if (isLocked) return
+        onComplete(item, e)
+      }}
+      disabled={isLocked}
+      title={isLocked ? tooltip : tQueue("completeExam")}
+      aria-disabled={isLocked}
+      data-loading={isLoading || undefined}
+      className={`flex items-center gap-1.5 px-3.5 py-1.5 text-sm rounded-xl transition-colors font-medium ${
+        isLocked
+          ? "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
+          : "bg-emerald-600 text-white hover:bg-emerald-700 shadow-xs"
+      }`}
+    >
+      <ClipboardCheck className="w-4 h-4" />
+      {tQueue("completeExam")}
+    </button>
   )
 }

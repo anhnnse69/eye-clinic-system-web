@@ -233,9 +233,9 @@ export default function EditClinicProfilePage() {
         name: form.name,
         address: form.address,
         phone: form.phone,
-        email: form.email || null,
-        logoUrl: finalLogoUrl || null,
-        description: form.description || null,
+        email: form.email || undefined,
+        logoUrl: finalLogoUrl || undefined,
+        description: form.description || undefined,
         openTime: form.openTime,
         closeTime: form.closeTime,
       }
@@ -282,70 +282,70 @@ export default function EditClinicProfilePage() {
 
   const inputCls = (field: string) =>
     cn(
-      "w-full border rounded-xl p-3.5 outline-none transition-all duration-200 bg-white",
+      "w-full border rounded-xl p-3.5 outline-none transition-all duration-200 bg-surface-container-lowest text-on-surface font-medium",
       fieldErrors[field]
-        ? "border-rose-400 focus:ring-2 focus:ring-rose-200 focus:border-rose-400"
-        : "border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary hover:border-slate-300"
+        ? "border-error focus:ring-1 focus:ring-error focus:border-error bg-error-container/10"
+        : "border-outline-variant/60 focus:ring-1 focus:ring-primary focus:border-primary hover:border-outline-variant"
     )
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto p-8 flex flex-col items-center justify-center min-h-150">
+      <div className="max-w-4xl mx-auto p-8 flex flex-col items-center justify-center min-h-150 bg-background">
         <Loader2 className="w-12 h-12 text-primary animate-spin" />
-        <p className="mt-4 text-slate-500 font-medium">{t("loadingData")}</p>
+        <p className="mt-4 text-on-surface-variant font-medium">{t("loadingData")}</p>
       </div>
     )
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-8">
+    <div className="max-w-4xl mx-auto p-4 md:p-8 bg-background min-h-screen space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
+      <div className="flex items-center gap-4 mb-2">
         <button
           type="button"
           onClick={() => router.back()}
-          className="p-2.5 hover:bg-slate-100 rounded-xl transition-colors duration-200"
+          className="p-2.5 bg-surface-container-lowest border border-outline-variant/60 hover:bg-surface-container-low rounded-xl transition-colors duration-200 cursor-pointer"
         >
-          <ArrowLeft className="w-5 h-5 text-slate-600" />
+          <ArrowLeft className="w-5 h-5 text-on-surface-variant" />
         </button>
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-bold text-on-surface tracking-tight">
             {t("title")}
           </h1>
-          <p className="text-sm text-slate-500 mt-1">{t("subtitle")}</p>
+          <p className="text-sm text-on-surface-variant mt-1">{t("subtitle")}</p>
         </div>
       </div>
 
       {/* Form Card */}
-      <div className="bg-white border border-slate-200 shadow-sm rounded-2xl overflow-hidden">
+      <div className="bg-surface-container-lowest border border-outline-variant/40 shadow-xs rounded-2xl overflow-hidden">
         <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-7" noValidate>
 
           {/* Alerts */}
           {generalError && (
-            <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm flex items-start gap-3">
+            <div className="p-4 rounded-xl bg-error-container/30 border border-error-container text-error text-sm flex items-start gap-3 animate-fade-in">
               <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-              <span className="flex-1">{generalError}</span>
+              <span className="flex-1 font-semibold">{generalError}</span>
             </div>
           )}
 
           {successMessage && (
-            <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm flex items-start gap-3 animate-fadeIn">
-              <CheckCircle className="w-5 h-5 shrink-0 mt-0.5" />
-              <span className="flex-1 font-medium">{successMessage}</span>
+            <div className="p-4 rounded-xl bg-[#6ffbbe]/25 border border-[#4edea3]/60 text-[#003925] text-sm flex items-start gap-3 animate-fade-in">
+              <CheckCircle className="w-5 h-5 shrink-0 mt-0.5 text-[#006c49]" />
+              <span className="flex-1 font-semibold">{successMessage}</span>
             </div>
           )}
 
           {/* Basic Information Section */}
           <div className="space-y-5">
-            <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+            <div className="flex items-center gap-2 pb-2 border-b border-outline-variant/30">
               <div className="w-1 h-6 bg-primary rounded-full"></div>
-              <h2 className="text-lg font-semibold text-slate-800">{t("basicInfo")}</h2>
+              <h2 className="text-lg font-bold text-on-surface">{t("basicInfo")}</h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                  {t("clinicName")} <span className="text-rose-500">*</span>
+                <label className="block text-xs font-bold text-on-surface uppercase tracking-wider mb-1.5">
+                  {t("clinicName")} <span className="text-error">*</span>
                 </label>
                 <input
                   name="name"
@@ -356,7 +356,7 @@ export default function EditClinicProfilePage() {
                   disabled={saving || uploadingLogo}
                 />
                 {fieldErrors.name && (
-                  <p className="mt-1.5 text-sm text-rose-600 flex items-center gap-1.5">
+                  <p className="mt-1.5 text-xs text-error font-semibold flex items-center gap-1.5">
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     {fieldErrors.name}
                   </p>
@@ -364,8 +364,8 @@ export default function EditClinicProfilePage() {
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                  {t("address")} <span className="text-rose-500">*</span>
+                <label className="block text-xs font-bold text-on-surface uppercase tracking-wider mb-1.5">
+                  {t("address")} <span className="text-error">*</span>
                 </label>
                 <input
                   name="address"
@@ -376,7 +376,7 @@ export default function EditClinicProfilePage() {
                   disabled={saving || uploadingLogo}
                 />
                 {fieldErrors.address && (
-                  <p className="mt-1.5 text-sm text-rose-600 flex items-center gap-1.5">
+                  <p className="mt-1.5 text-xs text-error font-semibold flex items-center gap-1.5">
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     {fieldErrors.address}
                   </p>
@@ -384,8 +384,8 @@ export default function EditClinicProfilePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                  {t("phone")} <span className="text-rose-500">*</span>
+                <label className="block text-xs font-bold text-on-surface uppercase tracking-wider mb-1.5">
+                  {t("phone")} <span className="text-error">*</span>
                 </label>
                 <input
                   name="phone"
@@ -396,7 +396,7 @@ export default function EditClinicProfilePage() {
                   disabled={saving || uploadingLogo}
                 />
                 {fieldErrors.phone && (
-                  <p className="mt-1.5 text-sm text-rose-600 flex items-center gap-1.5">
+                  <p className="mt-1.5 text-xs text-error font-semibold flex items-center gap-1.5">
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     {fieldErrors.phone}
                   </p>
@@ -404,7 +404,7 @@ export default function EditClinicProfilePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                <label className="block text-xs font-bold text-on-surface uppercase tracking-wider mb-1.5">
                   {t("email")}
                 </label>
                 <input
@@ -417,7 +417,7 @@ export default function EditClinicProfilePage() {
                   disabled={saving || uploadingLogo}
                 />
                 {fieldErrors.email && (
-                  <p className="mt-1.5 text-sm text-rose-600 flex items-center gap-1.5">
+                  <p className="mt-1.5 text-xs text-error font-semibold flex items-center gap-1.5">
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     {fieldErrors.email}
                   </p>
@@ -428,18 +428,18 @@ export default function EditClinicProfilePage() {
 
           {/* Operating Hours Section */}
           <div className="space-y-5 pt-2">
-            <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-              <div className="w-1 h-6 bg-blue-500 rounded-full"></div>
-              <h2 className="text-lg font-semibold text-slate-800">{t("workHours")}</h2>
+            <div className="flex items-center gap-2 pb-2 border-b border-outline-variant/30">
+              <div className="w-1 h-6 bg-primary rounded-full"></div>
+              <h2 className="text-lg font-bold text-on-surface">{t("workHours")}</h2>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                  {t("openTime")} <span className="text-rose-500">*</span>
+                <label className="block text-xs font-bold text-on-surface uppercase tracking-wider mb-1.5">
+                  {t("openTime")} <span className="text-error">*</span>
                 </label>
                 <div className="relative">
-                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -449,12 +449,12 @@ export default function EditClinicProfilePage() {
                     name="openTime"
                     value={form.openTime}
                     onChange={handleChange}
-                    className={cn(inputCls("openTime"), "pl-11")}
+                    className={cn(inputCls("openTime"), "pl-11 cursor-pointer")}
                     disabled={saving || uploadingLogo}
                   />
                 </div>
                 {fieldErrors.openTime && (
-                  <p className="mt-1.5 text-sm text-rose-600 flex items-center gap-1.5">
+                  <p className="mt-1.5 text-xs text-error font-semibold flex items-center gap-1.5">
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     {fieldErrors.openTime}
                   </p>
@@ -462,11 +462,11 @@ export default function EditClinicProfilePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-                  {t("closeTime")} <span className="text-rose-500">*</span>
+                <label className="block text-xs font-bold text-on-surface uppercase tracking-wider mb-1.5">
+                  {t("closeTime")} <span className="text-error">*</span>
                 </label>
                 <div className="relative">
-                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -476,12 +476,12 @@ export default function EditClinicProfilePage() {
                     name="closeTime"
                     value={form.closeTime}
                     onChange={handleChange}
-                    className={cn(inputCls("closeTime"), "pl-11")}
+                    className={cn(inputCls("closeTime"), "pl-11 cursor-pointer")}
                     disabled={saving || uploadingLogo}
                   />
                 </div>
                 {fieldErrors.closeTime && (
-                  <p className="mt-1.5 text-sm text-rose-600 flex items-center gap-1.5">
+                  <p className="mt-1.5 text-xs text-error font-semibold flex items-center gap-1.5">
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     {fieldErrors.closeTime}
                   </p>
@@ -491,8 +491,8 @@ export default function EditClinicProfilePage() {
 
             {/* Work hours preview */}
             {form.openTime && form.closeTime && !fieldErrors.openTime && !fieldErrors.closeTime && (
-              <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl text-sm text-blue-700 flex items-center gap-2">
-                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <div className="p-3.5 bg-[#c6e7ff]/30 border border-[#81cfff]/40 rounded-xl text-sm text-primary flex items-center gap-2 font-medium">
+                <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>
@@ -504,29 +504,29 @@ export default function EditClinicProfilePage() {
 
           {/* Media & Description Section */}
           <div className="space-y-5 pt-2">
-            <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
-              <div className="w-1 h-6 bg-purple-500 rounded-full"></div>
-              <h2 className="text-lg font-semibold text-slate-800">{t("extraInfo")}</h2>
+            <div className="flex items-center gap-2 pb-2 border-b border-outline-variant/30">
+              <div className="w-1 h-6 bg-primary rounded-full"></div>
+              <h2 className="text-lg font-bold text-on-surface">{t("extraInfo")}</h2>
             </div>
 
             {/* Logo Upload */}
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+              <label className="block text-xs font-bold text-on-surface uppercase tracking-wider mb-1.5">
                 {t("uploadLogo")}
               </label>
               
               {previewLogo ? (
                 <div className="relative inline-block">
-                  <div className="w-32 h-32 rounded-2xl border border-slate-200 overflow-hidden bg-slate-50">
+                  <div className="w-32 h-32 rounded-2xl border border-outline-variant/60 overflow-hidden bg-surface-container-low p-1">
                     <img
                       src={previewLogo}
                       alt="Logo preview"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover rounded-xl"
                       onError={() => setPreviewLogo("")}
                     />
                   </div>
                   {uploadingLogo && (
-                    <div className="absolute inset-0 bg-white/70 flex items-center justify-center rounded-2xl">
+                    <div className="absolute inset-0 bg-surface-container-lowest/80 flex items-center justify-center rounded-2xl">
                       <Loader2 className="w-8 h-8 text-primary animate-spin" />
                     </div>
                   )}
@@ -534,7 +534,7 @@ export default function EditClinicProfilePage() {
                     type="button"
                     onClick={handleRemoveLogo}
                     disabled={saving || uploadingLogo}
-                    className="absolute -top-2 -right-2 p-1.5 bg-rose-500 text-white rounded-full shadow-md hover:bg-rose-600 transition-colors disabled:opacity-50"
+                    className="absolute -top-2 -right-2 p-1.5 bg-error text-on-error rounded-full shadow-md hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer"
                     title={t("removeLogo")}
                   >
                     <X className="w-3.5 h-3.5" />
@@ -546,22 +546,22 @@ export default function EditClinicProfilePage() {
                   onClick={() => logoInputRef.current?.click()}
                   disabled={saving || uploadingLogo}
                   className={cn(
-                    "w-full py-6 border-2 border-dashed rounded-xl flex flex-col items-center gap-2 transition-all",
+                    "w-full py-6 border-2 border-dashed rounded-xl flex flex-col items-center gap-2 transition-all cursor-pointer",
                     fieldErrors.logoUrl
-                      ? "border-rose-400 bg-rose-50/50"
-                      : "border-slate-200 hover:border-primary hover:bg-primary/5",
+                      ? "border-error bg-error-container/20"
+                      : "border-outline-variant/60 hover:border-primary hover:bg-[#c6e7ff]/20",
                     (saving || uploadingLogo) && "opacity-50 cursor-not-allowed"
                   )}
                 >
                   {uploadingLogo ? (
                     <Loader2 className="w-6 h-6 text-primary animate-spin" />
                   ) : (
-                    <ImagePlus className="w-6 h-6 text-slate-400" />
+                    <ImagePlus className="w-6 h-6 text-on-surface-variant" />
                   )}
-                  <span className="text-sm text-slate-500 font-medium">
+                  <span className="text-sm text-on-surface font-semibold">
                     {t("uploadLogoHint")}
                   </span>
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-on-surface-variant">
                     {t("uploadLogoFormats")}
                   </span>
                 </button>
@@ -577,7 +577,7 @@ export default function EditClinicProfilePage() {
               />
 
               {fieldErrors.logoUrl && (
-                <p className="mt-1.5 text-sm text-rose-600 flex items-center gap-1.5">
+                <p className="mt-1.5 text-xs text-error font-semibold flex items-center gap-1.5">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   {fieldErrors.logoUrl}
                 </p>
@@ -586,7 +586,7 @@ export default function EditClinicProfilePage() {
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+              <label className="block text-xs font-bold text-on-surface uppercase tracking-wider mb-1.5">
                 {t("description")}
               </label>
               <textarea
@@ -600,14 +600,14 @@ export default function EditClinicProfilePage() {
               />
               <div className="mt-1.5 flex justify-end">
                 <span className={cn(
-                  "text-xs",
-                  form.description.length > 2000 ? "text-rose-500" : "text-slate-400"
+                  "text-xs font-medium",
+                  form.description.length > 2000 ? "text-error" : "text-on-surface-variant"
                 )}>
                   {form.description.length}/2000
                 </span>
               </div>
               {fieldErrors.description && (
-                <p className="mt-1.5 text-sm text-rose-600 flex items-center gap-1.5">
+                <p className="mt-1.5 text-xs text-error font-semibold flex items-center gap-1.5">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   {fieldErrors.description}
                 </p>
@@ -616,11 +616,11 @@ export default function EditClinicProfilePage() {
           </div>
 
           {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-100">
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-outline-variant/30">
             <button
               type="button"
               onClick={() => router.back()}
-              className="flex-1 px-6 py-3 border border-slate-300 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-all duration-200 disabled:opacity-50"
+              className="flex-1 px-6 py-3 border border-outline-variant/60 bg-surface-container-lowest text-on-surface font-semibold rounded-xl hover:bg-surface-container-low transition-colors duration-200 cursor-pointer disabled:opacity-50"
               disabled={saving || uploadingLogo}
             >
               {t("cancel")}
@@ -630,10 +630,10 @@ export default function EditClinicProfilePage() {
               type="submit"
               disabled={saving || uploadingLogo}
               className={cn(
-                "flex-1 px-6 py-3 rounded-xl text-white font-semibold transition-all duration-200 flex items-center justify-center gap-2.5",
+                "flex-1 px-6 py-3 rounded-xl text-on-primary font-semibold transition-all duration-200 flex items-center justify-center gap-2.5 shadow-xs cursor-pointer",
                 saving || uploadingLogo
                   ? "bg-primary/70 cursor-not-allowed"
-                  : "bg-primary hover:bg-primary/90 hover:shadow-lg active:scale-[0.98]"
+                  : "bg-primary hover:opacity-90 active:scale-[0.98]"
               )}
             >
               {saving || uploadingLogo ? (

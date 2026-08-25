@@ -50,6 +50,7 @@ import {
   BarChart3,
   Lightbulb,
   AlertCircle,
+  Settings,
 } from "lucide-react"
 
 import paraclinicalService, {
@@ -59,9 +60,10 @@ import paraclinicalService, {
   type LabResultSummary,
 } from "@/services/paraclinical.service"
 import aiSuggestionService, { type AiSuggestResponse } from "@/services/ai-suggestion.service"
+import { uploadService } from "@/services/upload.service"
 
 const inputClass =
-  "w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+  "w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-[#00658D] focus:outline-none focus:ring-1 focus:ring-[#00658D]"
 const labelClass = "mb-1 block text-xs font-medium text-gray-700"
 
 export interface OctClassDetails {
@@ -118,34 +120,34 @@ export function getOctSeverityConfig(t: ParaclinicalTranslator): Record<OctSever
   return {
     high: {
       label: t("severity.high"),
-      gradient: "from-rose-50 via-pink-50 to-red-50",
-      badge: "bg-rose-100 text-rose-800 border-rose-300",
-      ring: "ring-rose-300",
-      bar: "bg-gradient-to-r from-rose-500 to-pink-600",
+      gradient: "bg-rose-50/80 border-rose-200",
+      badge: "bg-rose-50 text-rose-700 border-rose-200/80",
+      ring: "ring-rose-200",
+      bar: "bg-rose-600",
       icon: "text-rose-600",
     },
     medium: {
       label: t("severity.medium"),
-      gradient: "from-amber-50 via-orange-50 to-yellow-50",
-      badge: "bg-amber-100 text-amber-800 border-amber-300",
-      ring: "ring-amber-300",
-      bar: "bg-gradient-to-r from-amber-500 to-orange-500",
+      gradient: "bg-amber-50/80 border-amber-200",
+      badge: "bg-amber-50 text-amber-700 border-amber-200/80",
+      ring: "ring-amber-200",
+      bar: "bg-amber-500",
       icon: "text-amber-600",
     },
     low: {
       label: t("severity.low"),
-      gradient: "from-sky-50 via-blue-50 to-cyan-50",
-      badge: "bg-sky-100 text-sky-800 border-sky-300",
-      ring: "ring-sky-300",
-      bar: "bg-gradient-to-r from-sky-500 to-cyan-500",
-      icon: "text-sky-600",
+      gradient: "bg-sky-50/80 border-sky-200",
+      badge: "bg-[#00658D]/10 text-[#00658D] border-[#00658D]/20",
+      ring: "ring-[#00658D]/30",
+      bar: "bg-[#00658D]",
+      icon: "text-[#00658D]",
     },
     normal: {
       label: t("severity.normal"),
-      gradient: "from-emerald-50 via-green-50 to-teal-50",
-      badge: "bg-emerald-100 text-emerald-800 border-emerald-300",
-      ring: "ring-emerald-300",
-      bar: "bg-gradient-to-r from-emerald-500 to-teal-500",
+      gradient: "bg-emerald-50/80 border-emerald-200",
+      badge: "bg-emerald-50 text-emerald-700 border-emerald-200/80",
+      ring: "ring-emerald-200",
+      bar: "bg-emerald-600",
       icon: "text-emerald-600",
     },
   }
@@ -166,37 +168,37 @@ export function getLabTypeConfig(t: ParaclinicalTranslator): Record<string, LabT
   return {
     OCT: {
       label: t("labTypes.OCT"),
-      bg: "bg-blue-50",
-      text: "text-blue-700",
-      border: "border-blue-200",
+      bg: "bg-[#00658D]/10",
+      text: "text-[#00658D]",
+      border: "border-[#00658D]/20",
     },
     VISUAL_FIELD: {
       label: t("labTypes.VISUAL_FIELD"),
-      bg: "bg-purple-50",
-      text: "text-purple-700",
-      border: "border-purple-200",
+      bg: "bg-slate-100",
+      text: "text-slate-700",
+      border: "border-slate-200",
     },
     ULTRASOUND: {
       label: t("labTypes.ULTRASOUND"),
       bg: "bg-emerald-50",
       text: "text-emerald-700",
-      border: "border-emerald-200",
+      border: "border-emerald-200/80",
     },
     GENERAL_LAB: {
       label: t("labTypes.GENERAL_LAB"),
       bg: "bg-amber-50",
       text: "text-amber-700",
-      border: "border-amber-200",
+      border: "border-amber-200/80",
     },
   }
 }
 
 export function getStatusConfig(t: ParaclinicalTranslator): Record<string, { label: string; badge: string }> {
   return {
-    COMPLETED: { label: t("statusOptions.COMPLETED"), badge: "bg-emerald-100 text-emerald-800 border-emerald-200" },
-    IN_PROGRESS: { label: t("statusOptions.IN_PROGRESS"), badge: "bg-amber-100 text-amber-800 border-amber-200" },
-    REQUESTED: { label: t("statusOptions.REQUESTED"), badge: "bg-blue-100 text-blue-800 border-blue-200" },
-    CANCELLED: { label: t("statusOptions.CANCELLED"), badge: "bg-gray-100 text-gray-700 border-gray-200" },
+    COMPLETED: { label: t("statusOptions.COMPLETED"), badge: "bg-emerald-50 text-emerald-700 border-emerald-200/80" },
+    IN_PROGRESS: { label: t("statusOptions.IN_PROGRESS"), badge: "bg-amber-50 text-amber-700 border-amber-200/80" },
+    REQUESTED: { label: t("statusOptions.REQUESTED"), badge: "bg-[#00658D]/10 text-[#00658D] border-[#00658D]/20" },
+    CANCELLED: { label: t("statusOptions.CANCELLED"), badge: "bg-slate-100 text-slate-600 border-slate-200" },
   }
 }
 
@@ -370,37 +372,37 @@ export default function ParaclinicalPanel({
   })
 
   return (
-    <div className="rounded-xl border border-indigo-200 bg-white shadow-xs overflow-hidden">
+    <div className="rounded-xl border border-slate-200 bg-white shadow-xs overflow-hidden">
       {/* Header nút mở rộng/thu gọn */}
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between px-5 py-3.5 text-left transition hover:bg-indigo-50/50 bg-linear-to-r from-indigo-50/60 to-white"
+        className="flex w-full items-center justify-between px-5 py-3.5 text-left transition hover:bg-slate-50 bg-white border-b border-slate-100"
       >
-        <span className="flex items-center gap-2.5 text-sm font-bold text-indigo-950">
-          <div className="p-1.5 rounded-lg bg-indigo-100 text-indigo-700">
+        <span className="flex items-center gap-2.5 text-sm font-bold text-gray-900">
+          <div className="p-1.5 rounded-lg bg-[#00658D]/10 text-[#00658D]">
             <Microscope className="h-4 w-4" />
           </div>
           {t("panelTitle")}
-          <span className="rounded-full bg-indigo-100/80 px-2.5 py-0.5 text-xs font-semibold text-indigo-700 border border-indigo-200">
+          <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700 border border-slate-200">
             {t("requestCount", { count: results.length })}
           </span>
         </span>
-        <span className="text-xs font-semibold text-indigo-600 flex items-center gap-1">
+        <span className="text-xs font-semibold text-[#00658D] flex items-center gap-1">
           {open ? t("collapse") : t("expand")}
         </span>
       </button>
 
       {open && (
-        <div className="space-y-4 border-t border-indigo-100 p-5 bg-slate-50/40">
+        <div className="space-y-4 border-t border-slate-100 p-5 bg-slate-50/40">
           {/* Controls Bar: Filter, Search, Refresh */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-gray-200 shadow-2xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-2xs">
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative min-w-[160px]">
                 <select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value as LabType | "")}
-                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-800 focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-800 focus:border-[#00658D] focus:outline-none"
                 >
                   <option value="">{t("filterAllTypes")}</option>
                   {LAB_TYPES.map((lt) => (
@@ -412,13 +414,13 @@ export default function ParaclinicalPanel({
               </div>
 
               <div className="relative flex-1 min-w-[180px]">
-                <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-gray-400" />
+                <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-slate-400" />
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder={t("searchResultPlaceholder")}
-                  className="w-full rounded-lg border border-gray-200 bg-gray-50 pl-8 pr-3 py-1.5 text-xs text-gray-800 focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-200 bg-slate-50 pl-8 pr-3 py-1.5 text-xs text-slate-800 focus:border-[#00658D] focus:outline-none"
                 />
               </div>
             </div>
@@ -428,16 +430,16 @@ export default function ParaclinicalPanel({
                 type="button"
                 onClick={refresh}
                 disabled={loading}
-                className="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 active:bg-gray-100 disabled:opacity-50 transition-colors shadow-2xs"
+                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 active:bg-slate-100 disabled:opacity-50 transition-colors shadow-2xs"
               >
-                <RefreshCw className={`h-3.5 w-3.5 text-gray-500 ${loading ? "animate-spin" : ""}`} />
+                <RefreshCw className={`h-3.5 w-3.5 text-slate-500 ${loading ? "animate-spin" : ""}`} />
                 {loading ? t("panel.loading") : tCommon("refresh") || t("panel.refreshFallback")}
               </button>
 
               <button
                 type="button"
                 onClick={() => setShowCreate((v) => !v)}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700 transition-all shadow-xs"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#00658D] px-3.5 py-1.5 text-xs font-medium text-white hover:bg-[#005273] transition-all shadow-2xs"
               >
                 <Plus className="h-3.5 w-3.5" /> {t("panel.createNew")}
               </button>
@@ -446,15 +448,15 @@ export default function ParaclinicalPanel({
 
           {/* Action toggle buttons: AI Analysis */}
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-700 flex items-center gap-1.5">
-              <FileText className="h-4 w-4 text-indigo-600" /> {t("panel.listTitle")}
+            <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+              <FileText className="h-4 w-4 text-[#00658D]" /> {t("panel.listTitle")}
             </span>
             <button
               type="button"
               onClick={() => setShowAi((v) => !v)}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-linear-to-r from-purple-600 to-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:from-purple-700 hover:to-indigo-700 transition-all shadow-xs"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#00658D] px-3.5 py-1.5 text-xs font-medium text-white hover:bg-[#005273] transition-all shadow-2xs"
             >
-              <Brain className="h-3.5 w-3.5 text-purple-200" /> {t("btnAiOct")}
+              <Brain className="h-3.5 w-3.5 text-white/90" /> {t("btnAiOct")}
               {showAi ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
             </button>
           </div>
@@ -534,7 +536,7 @@ export default function ParaclinicalPanel({
                 return (
                   <div
                     key={item.labResultId}
-                    className="group relative rounded-xl border border-gray-200/90 bg-white p-4 transition-all hover:border-indigo-300 hover:shadow-md flex flex-col justify-between"
+                    className="group relative rounded-xl border border-slate-200/90 bg-white p-4 transition-all hover:border-[#00658D]/40 hover:shadow-xs flex flex-col justify-between"
                   >
                     <div>
                       {/* Top Badges */}
@@ -546,7 +548,7 @@ export default function ParaclinicalPanel({
                             {typeCfg.label}
                           </span>
                           {item.side && (
-                            <span className="px-2 py-0.5 text-[11px] font-semibold bg-gray-100 text-gray-700 rounded-md">
+                            <span className="px-2 py-0.5 text-[11px] font-semibold bg-slate-100 text-slate-700 rounded-md border border-slate-200">
                               {getSideLabel(t, item.side)}
                             </span>
                           )}
@@ -560,7 +562,7 @@ export default function ParaclinicalPanel({
                       <div className="space-y-1.5 text-xs">
                         {item.machineName && (
                           <p className="font-semibold text-gray-800 flex items-center gap-1">
-                            <Activity className="h-3.5 w-3.5 text-indigo-500" />
+                            <Activity className="h-3.5 w-3.5 text-[#00658D]" />
                             {item.machineName} {item.scanPattern ? `(${item.scanPattern})` : ""}
                           </p>
                         )}
@@ -579,16 +581,16 @@ export default function ParaclinicalPanel({
                         </div>
 
                         {item.clinicalConclusion && (
-                          <div className="mt-2 rounded-lg bg-gray-50 p-2 text-[11px] text-gray-700 border border-gray-100">
+                          <div className="mt-2 rounded-lg bg-slate-50 p-2 text-[11px] text-gray-700 border border-slate-100">
                             <span className="font-semibold text-gray-900">{t("panel.conclusionPrefix")} </span>
                             <span className="line-clamp-2">{item.clinicalConclusion}</span>
                           </div>
                         )}
 
                         {item.imageUrl && (
-                          <div className="mt-2 flex items-center gap-2 rounded-lg bg-blue-50/50 p-1.5 border border-blue-100">
-                            <ImageIcon className="h-4 w-4 text-blue-600" />
-                            <span className="text-[11px] font-medium text-blue-700 truncate flex-1">{t("panel.hasImage")}</span>
+                          <div className="mt-2 flex items-center gap-2 rounded-lg bg-[#00658D]/5 p-1.5 border border-[#00658D]/20">
+                            <ImageIcon className="h-4 w-4 text-[#00658D]" />
+                            <span className="text-[11px] font-medium text-[#00658D] truncate flex-1">{t("panel.hasImage")}</span>
                           </div>
                         )}
                       </div>
@@ -607,7 +609,7 @@ export default function ParaclinicalPanel({
                       <button
                         type="button"
                         onClick={() => setSelectedDetail(item)}
-                        className="inline-flex items-center gap-1 rounded-md px-3 py-1 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-2xs"
+                        className="inline-flex items-center gap-1 rounded-md px-3 py-1 text-xs font-semibold text-white bg-[#00658D] hover:bg-[#005273] transition-colors shadow-2xs"
                       >
                         <Eye className="h-3.5 w-3.5" /> {t("btnDetail")}
                       </button>
@@ -695,9 +697,9 @@ function ParaclinicalDetailModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
       <div className="relative w-full max-w-3xl rounded-2xl bg-white shadow-2xl overflow-hidden my-8 max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-100 bg-linear-to-r from-indigo-50/80 via-white to-purple-50/50 px-6 py-4">
+        <div className="flex items-center justify-between border-b border-gray-100 bg-linear-to-r from-sky-50/80 via-white to-slate-50/50 px-6 py-4">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-indigo-100 text-indigo-700">
+            <div className="p-2 rounded-xl bg-sky-100 text-[#00658D]">
               <Microscope className="h-5 w-5" />
             </div>
             <div>
@@ -756,9 +758,9 @@ function ParaclinicalDetailModal({
           {/* Clinical Conclusion Box */}
           <div>
             <h4 className="text-xs font-bold text-gray-700 mb-1.5 flex items-center gap-1.5">
-              <FileText className="h-4 w-4 text-indigo-600" /> {t("detail.clinicalConclusionTitle")}
+              <FileText className="h-4 w-4 text-[#00658D]" /> {t("detail.clinicalConclusionTitle")}
             </h4>
-            <div className="rounded-xl bg-indigo-50/60 p-4 border border-indigo-100 text-gray-800 leading-relaxed font-medium">
+            <div className="rounded-xl bg-sky-50/60 p-4 border border-sky-100 text-gray-800 leading-relaxed font-medium">
               {item.clinicalConclusion ? item.clinicalConclusion : <span className="text-gray-400 italic">{t("detail.clinicalConclusionEmpty")}</span>}
             </div>
           </div>
@@ -838,6 +840,374 @@ function ParaclinicalDetailModal({
           </button>
         </div>
       </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────
+// PARACLINICAL IMAGE UPLOADER COMPONENT (Upload image to backend & convert to URL)
+// ─────────────────────────────────────────────────────────────────
+function ParaclinicalImageUploader({
+  imageUrl,
+  setImageUrl,
+  label = "Hình ảnh kết quả cận lâm sàng (OCT, Thị trường, Siêu âm...)",
+}: {
+  imageUrl: string
+  setImageUrl: (url: string) => void
+  label?: string
+}) {
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    await processUpload(file)
+  }
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault()
+    const file = e.dataTransfer.files?.[0]
+    if (!file) return
+    await processUpload(file)
+  }
+
+  const processUpload = async (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      setUploadError("Vui lòng chọn tệp định dạng hình ảnh (PNG, JPG, JPEG, WebP...)")
+      return
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError("Kích thước tệp quá lớn (tối đa 10MB)")
+      return
+    }
+
+    setUploading(true)
+    setUploadError(null)
+
+    try {
+      const response = await uploadService.uploadImage(file)
+      if (response.data?.url) {
+        setImageUrl(response.data.url)
+      } else {
+        setUploadError("Không thể lấy URL hình ảnh sau khi tải lên.")
+      }
+    } catch (err) {
+      console.error("Upload error:", err)
+      setUploadError("Lỗi kết nối khi tải ảnh lên server API. Vui lòng thử lại.")
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  return (
+    <div className="space-y-2">
+      <label className="block text-xs font-bold text-gray-700">{label}</label>
+
+      {imageUrl ? (
+        <div className="relative rounded-xl border border-indigo-200 bg-indigo-50/50 p-3 flex flex-col sm:flex-row items-center gap-4">
+          <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-black/5 shadow-xs group">
+            <img src={imageUrl} alt="Kết quả cận lâm sàng" className="h-full w-full object-cover" />
+            <a
+              href={imageUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[11px] font-bold gap-1"
+            >
+              Xem ảnh <ExternalLink className="h-3 w-3" />
+            </a>
+          </div>
+          <div className="min-w-0 flex-1 space-y-1.5 w-full">
+            <div className="flex items-center justify-between">
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800">
+                <CheckCircle2 className="h-3 w-3" /> Đã tải lên CSDL thành công
+              </span>
+              <button
+                type="button"
+                onClick={() => setImageUrl("")}
+                className="text-xs font-semibold text-red-600 hover:text-red-800 flex items-center gap-1"
+              >
+                <X className="h-3.5 w-3.5" /> Gỡ ảnh
+              </button>
+            </div>
+            <input
+              type="text"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-[11px] font-mono text-gray-800 focus:border-indigo-500 focus:outline-none"
+              title="URL hình ảnh"
+            />
+            <p className="text-[11px] text-gray-500">
+              Hệ thống đã tự động convert ảnh sang URL. Bạn có thể nhấn "Gỡ ảnh" để chọn tệp mới.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={handleDrop}
+          onClick={() => fileInputRef.current?.click()}
+          className="group relative cursor-pointer rounded-xl border-2 border-dashed border-indigo-300 bg-linear-to-b from-indigo-50/50 via-purple-50/30 to-white p-5 text-center transition-all hover:border-indigo-600 hover:bg-indigo-50/90 shadow-2xs"
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+
+          {uploading ? (
+            <div className="flex flex-col items-center justify-center py-2 text-xs font-semibold text-indigo-700 gap-2">
+              <Loader2 className="h-6 w-6 animate-spin text-indigo-600" />
+              <span>Đang tải tệp ảnh lên CSDL và tự động convert sang URL...</span>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center space-y-1.5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 group-hover:scale-110 transition-transform shadow-xs">
+                <Upload className="h-5 w-5" />
+              </div>
+              <p className="text-xs font-bold text-indigo-950">
+                Bấm vào đây để chọn tệp ảnh hoặc Kéo & Thả ảnh kết quả vào đây
+              </p>
+              <p className="text-[11px] text-gray-500">
+                Tự động sử dụng API Upload Backend để chuyển đổi ảnh chụp (OCT, Thị trường, SA...) thành đường dẫn URL an toàn.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {uploadError && <p className="text-xs font-semibold text-red-600 mt-1">{uploadError}</p>}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────
+// PARACLINICAL MEASUREMENTS BUILDER (Medical Non-Tech Key-Value Table)
+// ─────────────────────────────────────────────────────────────────
+interface MeasurementPair {
+  id: string
+  key: string
+  value: string
+}
+
+function ParaclinicalMeasurementsBuilder({
+  initialJson,
+  onChangeJson,
+  labType = "OCT",
+}: {
+  initialJson: string
+  onChangeJson: (jsonStr: string) => void
+  labType?: LabType
+}) {
+  const [pairs, setPairs] = useState<MeasurementPair[]>(() => {
+    try {
+      const obj = initialJson.trim() ? JSON.parse(initialJson) : {}
+      if (typeof obj === "object" && obj !== null && !Array.isArray(obj)) {
+        const entries = Object.entries(obj)
+        if (entries.length > 0) {
+          return entries.map(([k, v], idx) => ({
+            id: `init-${idx}`,
+            key: k,
+            value: String(v ?? ""),
+          }))
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return [
+      { id: "1", key: "Độ dày trung tâm hoàng điểm (CFT)", value: "250 µm" },
+      { id: "2", key: "Thể tích võng mạc (Macular Volume)", value: "8.5 mm³" },
+    ]
+  })
+
+  const [rawMode, setRawMode] = useState(false)
+  const [rawText, setRawText] = useState(initialJson)
+
+  const updateJsonFromPairs = (currentPairs: MeasurementPair[]) => {
+    const obj: Record<string, string> = {}
+    currentPairs.forEach((p) => {
+      if (p.key.trim()) {
+        obj[p.key.trim()] = p.value
+      }
+    })
+    const jsonStr = JSON.stringify(obj, null, 2)
+    setRawText(jsonStr)
+    onChangeJson(jsonStr)
+  }
+
+  const handlePairChange = (id: string, field: "key" | "value", val: string) => {
+    const updated = pairs.map((p) => (p.id === id ? { ...p, [field]: val } : p))
+    setPairs(updated)
+    updateJsonFromPairs(updated)
+  }
+
+  const handleAddPair = () => {
+    const newPair = { id: String(Date.now()), key: "", value: "" }
+    const updated = [...pairs, newPair]
+    setPairs(updated)
+    updateJsonFromPairs(updated)
+  }
+
+  const handleRemovePair = (id: string) => {
+    const updated = pairs.filter((p) => p.id !== id)
+    setPairs(updated)
+    updateJsonFromPairs(updated)
+  }
+
+  const applyPreset = (presetType: "OCT" | "VISUAL_FIELD" | "ULTRASOUND" | "IOP") => {
+    let presetPairs: MeasurementPair[] = []
+    if (presetType === "OCT") {
+      presetPairs = [
+        { id: "1", key: "Độ dày trung tâm hoàng điểm (CFT)", value: "250 µm" },
+        { id: "2", key: "Thể tích võng mạc (Macular Volume)", value: "8.5 mm³" },
+        { id: "3", key: "Độ dày lớp RNFL", value: "98 µm" },
+      ]
+    } else if (presetType === "VISUAL_FIELD") {
+      presetPairs = [
+        { id: "1", key: "Chỉ số độ lệch trung bình (MD)", value: "-2.5 dB" },
+        { id: "2", key: "Độ lệch chuẩn mẫu (PSD)", value: "1.8 dB" },
+        { id: "3", key: "Chỉ số thị trường (VFI)", value: "96%" },
+      ]
+    } else if (presetType === "ULTRASOUND") {
+      presetPairs = [
+        { id: "1", key: "Trục nhãn cầu (Axial Length)", value: "23.5 mm" },
+        { id: "2", key: "Độ sâu tiền phòng (ACD)", value: "3.2 mm" },
+        { id: "3", key: "Độ dày thể thủy tinh (Lens Thickness)", value: "4.1 mm" },
+      ]
+    } else {
+      presetPairs = [
+        { id: "1", key: "Nhãn áp Mắt Phải (IOP OD)", value: "16 mmHg" },
+        { id: "2", key: "Nhãn áp Mắt Trái (IOP OS)", value: "15 mmHg" },
+      ]
+    }
+    setPairs(presetPairs)
+    updateJsonFromPairs(presetPairs)
+  }
+
+  return (
+    <div className="space-y-3 rounded-xl border border-indigo-200 bg-indigo-50/30 p-4 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-indigo-100 pb-2.5">
+        <div>
+          <label className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
+            <BarChart3 className="h-4 w-4 text-indigo-600" /> Bảng Chỉ Số & Thông Số Đo Đạc Y Tế
+          </label>
+          <p className="text-[11px] text-gray-500 mt-0.5">
+            Nhập trực tiếp các chỉ số kỹ thuật (Độ dày hoàng điểm, Nhãn áp...) không cần dùng mã JSON.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setRawMode(!rawMode)}
+          className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary hover:underline self-start sm:self-auto cursor-pointer"
+        >
+          {rawMode ? (
+            <>
+              <FileText className="w-3.5 h-3.5" />
+              <span>Chuyển sang Bảng nhập bác sĩ</span>
+            </>
+          ) : (
+            <>
+              <Settings className="w-3.5 h-3.5" />
+              <span>Chế độ nâng cao (JSON)</span>
+            </>
+          )}
+        </button>
+      </div>
+
+      {!rawMode ? (
+        <div className="space-y-2.5">
+          {/* Preset Buttons */}
+          <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+            <span className="font-semibold text-gray-500 mr-1 flex items-center gap-1">
+              <Sparkles className="h-3 w-3 text-amber-500" /> Mẫu chỉ số nhanh:
+            </span>
+            <button
+              type="button"
+              onClick={() => applyPreset("OCT")}
+              className="rounded-md bg-white px-2.5 py-1 font-semibold text-indigo-700 border border-indigo-200 hover:bg-indigo-50 shadow-2xs"
+            >
+              OCT Võng Mạc
+            </button>
+            <button
+              type="button"
+              onClick={() => applyPreset("VISUAL_FIELD")}
+              className="rounded-md bg-white px-2.5 py-1 font-semibold text-purple-700 border border-purple-200 hover:bg-purple-50 shadow-2xs"
+            >
+              Đo Thị Trường
+            </button>
+            <button
+              type="button"
+              onClick={() => applyPreset("ULTRASOUND")}
+              className="rounded-md bg-white px-2.5 py-1 font-semibold text-teal-700 border border-teal-200 hover:bg-teal-50 shadow-2xs"
+            >
+              Siêu Âm Mắt
+            </button>
+            <button
+              type="button"
+              onClick={() => applyPreset("IOP")}
+              className="rounded-md bg-white px-2.5 py-1 font-semibold text-blue-700 border border-blue-200 hover:bg-blue-50 shadow-2xs"
+            >
+              Nhãn Áp (IOP)
+            </button>
+          </div>
+
+          {/* Key-Value Pair Grid */}
+          <div className="space-y-2">
+            {pairs.map((p, index) => (
+              <div key={p.id} className="flex items-center gap-2">
+                <span className="text-[11px] font-bold text-gray-400 w-4 text-center">{index + 1}.</span>
+                <input
+                  type="text"
+                  value={p.key}
+                  onChange={(e) => handlePairChange(p.id, "key", e.target.value)}
+                  placeholder="Tên chỉ số (VD: Độ dày CFT, Nhãn áp...)"
+                  className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-900 focus:border-indigo-500 focus:outline-none shadow-2xs"
+                />
+                <input
+                  type="text"
+                  value={p.value}
+                  onChange={(e) => handlePairChange(p.id, "value", e.target.value)}
+                  placeholder="Giá trị (VD: 250 µm, 16 mmHg...)"
+                  className="flex-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-900 focus:border-indigo-500 focus:outline-none shadow-2xs"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemovePair(p.id)}
+                  className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                  title="Xóa chỉ số này"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={handleAddPair}
+            className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900 bg-white border border-indigo-200 rounded-lg px-3 py-1.5 hover:bg-indigo-50 transition-colors shadow-2xs"
+          >
+            <Plus className="h-3.5 w-3.5" /> Thêm chỉ số đo đạc mới
+          </button>
+        </div>
+      ) : (
+        <div>
+          <textarea
+            rows={4}
+            value={rawText}
+            onChange={(e) => {
+              setRawText(e.target.value)
+              onChangeJson(e.target.value)
+            }}
+            className="w-full rounded-lg border border-gray-300 bg-white p-3 font-mono text-[11px] text-gray-900 focus:border-indigo-500 focus:outline-none"
+            placeholder='{ "centralFovealThickness": "250 µm" }'
+          />
+        </div>
+      )}
     </div>
   )
 }
@@ -955,16 +1325,11 @@ function UpdateLabResultModal({
             />
           </div>
 
-          <div>
-            <label className={labelClass}>{t("update.imageUrlLabel")}</label>
-            <input
-              type="text"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              className={inputClass}
-              placeholder="https://res.cloudinary.com/..."
-            />
-          </div>
+          <ParaclinicalImageUploader
+            imageUrl={imageUrl}
+            setImageUrl={setImageUrl}
+            label={t("update.imageUrlLabel")}
+          />
 
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -987,15 +1352,10 @@ function UpdateLabResultModal({
             </div>
           </div>
 
-          <div>
-            <label className={labelClass}>{t("update.measurementsLabel")}</label>
-            <textarea
-              rows={4}
-              value={measurementsJson}
-              onChange={(e) => setMeasurementsJson(e.target.value)}
-              className={`${inputClass} font-mono text-[11px]`}
-            />
-          </div>
+          <ParaclinicalMeasurementsBuilder
+            initialJson={measurementsJson}
+            onChangeJson={setMeasurementsJson}
+          />
 
           {error && <p className="text-xs font-semibold text-red-600">{error}</p>}
         </div>
@@ -1097,7 +1457,7 @@ export function CreateLabRequestForm({
   return (
     <div className="space-y-3 rounded-xl border border-gray-200 bg-white p-4 shadow-2xs">
       <h4 className="text-xs font-bold text-gray-800 flex items-center gap-1.5">
-        <Plus className="h-4 w-4 text-indigo-600" /> {t("create.title")}
+        <Plus className="h-4 w-4 text-[#00658D]" /> {t("create.title")}
       </h4>
 
       <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
@@ -1159,6 +1519,22 @@ export function CreateLabRequestForm({
             placeholder={t("create.scanPatternPlaceholder")}
           />
         </div>
+
+        <div className="sm:col-span-2">
+          <ParaclinicalImageUploader
+            imageUrl={imageUrl}
+            setImageUrl={setImageUrl}
+            label="Tải ảnh kết quả cận lâm sàng (Tự động chuyển đổi sang URL):"
+          />
+        </div>
+
+        <div className="sm:col-span-2">
+          <ParaclinicalMeasurementsBuilder
+            initialJson={measurements}
+            onChangeJson={setMeasurements}
+            labType={labType}
+          />
+        </div>
       </div>
 
       {error && <p className="text-xs font-semibold text-red-600">{error}</p>}
@@ -1168,7 +1544,7 @@ export function CreateLabRequestForm({
           type="button"
           onClick={handleCreate}
           disabled={submitting}
-          className="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors shadow-2xs"
+          className="inline-flex items-center gap-1 rounded-lg bg-[#00658D] px-4 py-2 text-xs font-semibold text-white hover:bg-[#005273] disabled:opacity-50 transition-colors shadow-2xs"
         >
           {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : t("create.saveBtn")}
         </button>
@@ -1281,12 +1657,12 @@ function AiSuggestionForm({
   }
 
   return (
-    <div className="space-y-3 rounded-xl border border-indigo-200 bg-white p-4 shadow-sm">
+    <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
       <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
-        <div className="p-1.5 rounded-lg bg-linear-to-br from-purple-500 to-indigo-600 text-white shadow-sm">
+        <div className="p-1.5 rounded-lg bg-[#00658D] text-white shadow-2xs">
           <Brain className="h-4 w-4" />
         </div>
-        <h4 className="text-xs font-bold text-purple-950">
+        <h4 className="text-xs font-bold text-gray-900">
           {t("ai.title")}
         </h4>
       </div>
@@ -1300,9 +1676,9 @@ function AiSuggestionForm({
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-start">
         {/* File picker + preview */}
         <div className="space-y-2">
-          <label className="flex items-center justify-between gap-3 rounded-lg border-2 border-dashed border-purple-200 bg-purple-50/30 px-3 py-2.5 hover:bg-purple-50/60 hover:border-purple-400 transition cursor-pointer">
+          <label className="flex items-center justify-between gap-3 rounded-lg border-2 border-dashed border-slate-200 bg-slate-50/50 px-3 py-2.5 hover:bg-slate-100/70 hover:border-[#00658D]/50 transition cursor-pointer">
             <div className="flex items-center gap-2 min-w-0">
-              <div className="shrink-0 p-1.5 rounded-md bg-purple-100 text-purple-700">
+              <div className="shrink-0 p-1.5 rounded-md bg-[#00658D]/10 text-[#00658D]">
                 <Upload className="h-3.5 w-3.5" />
               </div>
               <div className="min-w-0">
@@ -1322,9 +1698,6 @@ function AiSuggestionForm({
               accept="image/jpeg,image/png,image/bmp"
               onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
               onClick={(e) => {
-                // Clear value upfront so selecting the same file twice still
-                // fires onChange. Otherwise the browser dedupes the event and
-                // the user sees stale "result" state on the UI.
                 ; (e.target as HTMLInputElement).value = ""
               }}
               className="hidden"
@@ -1345,7 +1718,7 @@ function AiSuggestionForm({
           </label>
 
           {previewUrl && !result && (
-            <div className="relative rounded-lg overflow-hidden border border-purple-200 bg-black/5 group animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="relative rounded-lg overflow-hidden border border-slate-200 bg-black/5 group animate-in fade-in slide-in-from-top-2 duration-300">
               <img
                 src={previewUrl}
                 alt="OCT preview"

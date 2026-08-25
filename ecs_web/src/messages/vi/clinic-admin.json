@@ -42,7 +42,8 @@
       "editService": "Sửa dịch vụ",
       "feedback": "Phản hồi",
       "accountInfo": "Thông tin tài khoản",
-      "recordTransfers": "Luân chuyển hồ sơ"
+      "recordTransfers": "Luân chuyển hồ sơ",
+      "recordApprovals": "Phê duyệt hồ sơ"
     },
     "common": {
       "add": "Thêm mới",

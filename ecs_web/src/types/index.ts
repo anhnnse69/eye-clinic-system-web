@@ -4865,7 +4865,7 @@ export interface GetMedicalRecordsRequest {
 
   searchTerm?: string
 
-
+  patientId?: string
 }
 
 
@@ -9185,29 +9185,16 @@ export interface UpdateGlassesPrescriptionData {
 
 
 export interface UpdateMedicalRecordResponse {
-
-
   medicalRecordId: string
-
-
   patientName?: string
-
-
   recordTypeLabel?: string
-
-
   appointmentDate?: string
-
-
   doctorName?: string
-
-
   updatedAt: string
-
-
+  editReason?: string
+  editPermissionDocument?: string
+  statusMessage?: string
   isSuccess: boolean
-
-
 }
 
 
@@ -9382,3 +9369,129 @@ export interface CompleteQueueResponse {
 }
 
 
+
+
+// ==========================================
+// AI TRIAGE  Symptom Prediction v3.0
+// ==========================================
+
+export interface AITriageSymptomInput {
+  symptom: string;
+  duration: string;
+  pain_level: string;
+  eye_redness: string;
+  blurred_vision: string;
+  light_sensitivity: string;
+  discharge: string;
+  tearing: string;
+  swelling: string;
+  foreign_body_sensation: string;
+  floaters: string;
+  halos: string;
+  eye_pressure: string;
+  corneal_opacity: string;
+  pupil_response: string;
+  night_blindness: string;
+  double_vision: string;
+  eye_turning: string;
+  white_reflection: string;
+  headache: string;
+  nausea: string;
+  age: string;
+  diabetes: string;
+  hypertension: string;
+  family_history: string;
+}
+
+export const DEFAULT_AI_TRIAGE_INPUT: AITriageSymptomInput = {
+  symptom: "Eye_Pain",
+  duration: "acute",
+  pain_level: "low",
+  eye_redness: "no",
+  blurred_vision: "no",
+  light_sensitivity: "no",
+  discharge: "no",
+  tearing: "no",
+  swelling: "no",
+  foreign_body_sensation: "no",
+  floaters: "no",
+  halos: "no",
+  eye_pressure: "normal",
+  corneal_opacity: "no",
+  pupil_response: "normal",
+  night_blindness: "no",
+  double_vision: "no",
+  eye_turning: "no",
+  white_reflection: "no",
+  headache: "no",
+  nausea: "no",
+  age: "adult",
+  diabetes: "no",
+  hypertension: "no",
+  family_history: "no",
+};
+
+export interface AITriageResult {
+  task_id: string;
+  status: "PENDING" | "COMPLETED" | "FAILED";
+  predicted_disease: string | null;
+  confidence: number | null;
+  all_probabilities: Record<string, number> | null;
+  risk_level: "LOW" | "MODERATE" | "HIGH" | null;
+  disclaimer: string;
+  error_code: string | null;
+  error_message: string | null;
+  created_at: string | null;
+  completed_at: string | null;
+}
+
+export interface AITriageDifferential {
+  disease: string;
+  confidence: number;
+}
+
+export interface AITriageResponse {
+  taskId: string;
+  status: "PENDING" | "COMPLETED" | "FAILED";
+  predictedDisease: string | null;
+  confidence: number | null;
+  riskLevel: "LOW" | "MODERATE" | "HIGH" | null;
+  differentials: AITriageDifferential[];
+  allProbabilities: Record<string, number> | null;
+  disclaimer: string;
+  errorCode: string | null;
+  errorMessage: string | null;
+  createdAt: string | null;
+  completedAt: string | null;
+  isSuccess: boolean;
+}
+
+export const DISEASE_EXAMINATION_MAP: Record<string, string[]> = {
+  Corneal_Ulcer: ["visualAcuity", "iop", "slitLamp", "cornea"],
+  Conjunctivitis: ["visualAcuity", "slitLamp", "conjunctiva"],
+  Glaucoma: ["visualAcuity", "iop", "fundoscopy", "cupDiscRatio"],
+  Cataract: ["visualAcuity", "slitLamp", "lens"],
+  Retinal_Detachment: ["visualAcuity", "fundoscopy", "ultrasound"],
+  Diabetic_Retinopathy: ["visualAcuity", "fundoscopy", "iop"],
+  Age_Macular_Degeneration: ["visualAcuity", "fundoscopy", "oct"],
+  Normal: ["visualAcuity", "external"],
+};
+
+export function getRequiredExaminationFields(predictedDisease: string): string[] {
+  return DISEASE_EXAMINATION_MAP[predictedDisease] || ["visualAcuity", "external"];
+}
+
+export const DISEASE_DISPLAY_NAMES: Record<string, string> = {
+  Corneal_Ulcer: "Lo�t gi�c m?c",
+  Conjunctivitis: "Vi�m k?t m?c",
+  Glaucoma: "Gl�c�m",
+  Cataract: "�?c th? th?y tinh",
+  Retinal_Detachment: "Bong v�ng m?c",
+  Diabetic_Retinopathy: "B?nh v�ng m?c d�i th�o du?ng",
+  Age_Macular_Degeneration: "Tho�i h�a ho�ng di?m do tu?i",
+  Normal: "B�nh thu?ng",
+};
+
+export function getDiseaseDisplayName(disease: string): string {
+  return DISEASE_DISPLAY_NAMES[disease] || disease.replace(/_/g, " ");
+}

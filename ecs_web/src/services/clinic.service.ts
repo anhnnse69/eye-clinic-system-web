@@ -161,7 +161,7 @@ class ClinicsService {
 
   async getClinicLookup(): Promise<ApiResponse<GetClinicLookupResponse[]>> {
     const response = await apiClient.get<ApiResponse<GetClinicLookupResponse[]>>(
-      "https://localhost:7070/api/v1/system-admin/clinics/lookup"
+      "/system-admin/clinics/lookup"
     )
     return response.data
   }

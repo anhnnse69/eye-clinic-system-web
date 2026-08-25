@@ -621,6 +621,7 @@
       "startExam": "Start Exam",
       "continueExam": "Continue Exam",
       "completeExam": "Complete Exam",
+      "completeExamLockedTooltip": "Please complete the Medical Record Summary (Step 5) and Prescription / Glasses Rx (Step 6) before completing the examination.",
       "viewRecord": "View Record",
       "noShow": "No Show",
       "confirmComplete": "Confirm completion for patient \"{name}\"?",
@@ -671,11 +672,18 @@
       "patients": "patients",
       "statusOptions": {
         "scheduled": "Scheduled",
+        "booked": "Booked",
+        "arrived": "Arrived",
+        "waiting": "Waiting",
+        "calling": "Calling",
+        "pending": "Pending",
+        "depositPaid": "Deposit paid",
         "checkedIn": "Checked in",
         "inProgress": "In progress",
         "completed": "Completed",
         "cancelled": "Cancelled",
-        "noShow": "No show"
+        "noShow": "No show",
+        "noshow": "No show"
       },
       "error": {
         "loadFailed": "Cannot load patient list"
@@ -1021,7 +1029,14 @@
         "boolYes": "Yes",
         "boolNo": "No",
         "prescription": {
-          "empty": "No prescription issued",
+          "empty": "No medication or glasses prescription issued",
+          "title": "Electronic Medication Prescription",
+          "glassesTitle": "Refraction Glasses Prescription",
+          "colName": "Medicine Name",
+          "colDosage": "Dosage / Strength",
+          "colQuantity": "Quantity",
+          "colUsage": "Usage & Instructions",
+          "colUnit": "Unit",
           "doctorPrefix": "Dr. ",
           "doctorDefault": "Prescribing doctor",
           "notesLabel": "Notes:",
@@ -1247,8 +1262,8 @@
     "exam": {
       "title": "Examination",
       "subtitle": "Ophthalmic examination — Right eye (OD) and Left eye (OS)",
-      "sideOD": "Right eye (MP / OD)",
-      "sideOS": "Left eye (MT / OS)",
+      "sideOD": "Right eye (OD)",
+      "sideOS": "Left eye (OS)",
       "collapse": "Collapse",
       "expand": "Expand",
       "subtitleMPMT": "OD / OS side-by-side",

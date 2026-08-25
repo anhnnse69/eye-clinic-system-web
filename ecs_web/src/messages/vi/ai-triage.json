@@ -1,0 +1,156 @@
+{
+  "aiTriage": {
+    "title": "AI Sàng lọc triệu chứng",
+    "subtitle": "Nhập thông tin triệu chứng để AI hỗ trợ chẩn đoán chính xác",
+    "aiPrediction": "Dự đoán của AI",
+    "differentialDiagnoses": "Chẩn đoán phân biệt",
+    "confidence": "Độ tin cậy",
+    "disclaimer": "Kết quả AI chỉ mang tính tham khảo hỗ trợ bác sĩ. Không thay thế chẩn đoán chuyên môn.",
+    "note": "Lưu ý:",
+    "riskLevel": "Mức độ rủi ro",
+    "error": "Đã xảy ra lỗi khi xử lý AI. Vui lòng thử lại.",
+    "analyzing": "Hệ thống AI đang phân tích...",
+    "getAiPrediction": "Chẩn đoán với AI",
+    "proceedToExam": "Tiến hành khám bệnh",
+    "adjustSymptoms": "Điều chỉnh triệu chứng",
+    "back": "Quay lại",
+    "useAiSuggestion": "Dùng gợi ý từ AI",
+    "selected": "Đã chọn",
+    "reportedCount": "{count} triệu chứng ghi nhận",
+    "boolean": {
+      "yes": "CÓ",
+      "no": "KHÔNG"
+    },
+    "categories": {
+      "main": "Triệu chứng chính",
+      "eye": "Khám mắt",
+      "general": "Toàn thân & Thần kinh",
+      "history": "Tiền sử & Nhân khẩu học"
+    },
+    "symptomFields": {
+      "symptom": "Triệu chứng chủ yếu",
+      "duration": "Thời gian diễn tiến",
+      "pain_level": "Mức độ đau",
+      "eye_redness": "Đỏ mắt",
+      "blurred_vision": "Mờ mắt",
+      "light_sensitivity": "Sợ ánh sáng (Chói mắt)",
+      "discharge": "Dịch / Mủ tiết",
+      "tearing": "Chảy nước mắt",
+      "swelling": "Sưng mí mắt",
+      "foreign_body_sensation": "Cảm giác dị vật",
+      "floaters": "Ruồi bay (Đốm đen)",
+      "halos": "Quầng sáng xung quanh đèn",
+      "eye_pressure": "Áp lực nhãn áp",
+      "corneal_opacity": "Đục giác mạc",
+      "pupil_response": "Phản xạ đồng tử",
+      "white_reflection": "Đồng tử màu trắng",
+      "headache": "Đau đầu",
+      "nausea": "Buồn nôn / Nôn",
+      "night_blindness": "Quáng gà / Mù đêm",
+      "double_vision": "Nhìn đôi (Song thị)",
+      "eye_turning": "Mắt lé (Lác)",
+      "age": "Nhóm tuổi",
+      "diabetes": "Tiền sử Đái tháo đường",
+      "hypertension": "Tiền sử Tăng huyết áp",
+      "family_history": "Gia đình có tiền sử bệnh mắt"
+    },
+    "options": {
+      "symptom": {
+        "Eye_Pain": "Đau mắt",
+        "Redness": "Đỏ mắt",
+        "Blurred_Vision": "Mờ mắt",
+        "Eye_Discharge": "Chảy dịch / mủ",
+        "Swelling": "Sưng mắt",
+        "Foreign_Body": "Dị vật",
+        "Itching": "Ngứa mắt",
+        "Tearing": "Chảy nước mắt",
+        "Floaters": "Ruồi bay",
+        "Halos": "Quầng sáng",
+        "Vision_Loss": "Mất thị lực đột ngột",
+        "Headache": "Đau đầu"
+      },
+      "duration": {
+        "acute": "Cấp tính (< 1 tuần)",
+        "chronic": "Mạn tính (> 1 tuần)"
+      },
+      "pain_level": {
+        "no": "Không đau",
+        "low": "Đau nhẹ",
+        "moderate": "Đau vừa",
+        "high": "Đau dữ dội"
+      },
+      "eye_pressure": {
+        "normal": "Bình thường",
+        "high": "Cao",
+        "very_high": "Rất cao",
+        "low": "Thấp"
+      },
+      "pupil_response": {
+        "normal": "Bình thường",
+        "sluggish": "Chậm / Mất phản xạ"
+      },
+      "age": {
+        "child": "Trẻ em (< 12 tuổi)",
+        "young": "Thanh thiếu niên (12-25 tuổi)",
+        "adult": "Người lớn (25-45 tuổi)",
+        "middle_age": "Trung niên (45-60 tuổi)",
+        "senior": "Cao tuổi (> 60 tuổi)"
+      }
+    },
+    "riskLevels": {
+      "LOW": "RỦI RO THẤP",
+      "MODERATE": "RỦI RO TRUNG BÌNH",
+      "HIGH": "RỦI RO CAO",
+      "lowLabel": "Thấp",
+      "moderateLabel": "Trung bình",
+      "highLabel": "Cao"
+    },
+    "diseases": {
+      "Corneal_Ulcer": "Loét giác mạc",
+      "Conjunctivitis": "Viêm kết mạc",
+      "Glaucoma": "Glôcôm (Tăng nhãn áp)",
+      "Cataract": "Đục thủy tinh thể",
+      "Retinal_Detachment": "Bong võng mạc",
+      "Diabetic_Retinopathy": "Bệnh võng mạc đái tháo đường",
+      "Age_Macular_Degeneration": "Thoái hóa hoàng điểm tuổi già",
+      "Normal": "Mắt bình thường",
+      "Keratitis": "Viêm giác mạc",
+      "Corneal_Scar": "Sẹo giác mạc",
+      "Pterygium": "Mộng thịt",
+      "Macular_Edema": "Phù hoàng điểm",
+      "Retinal_Vein_Occlusion": "Tắc tĩnh mạch võng mạc",
+      "Retinal_Artery_Occlusion": "Tắc động mạch võng mạc",
+      "Ocular_Hypertension": "Tăng nhãn áp đơn thuần",
+      "Strabismus": "Mắt lé (Lác)",
+      "Ptosis": "Sụp mi",
+      "Amblyopia": "Nhược thị",
+      "Congenital_Cataract": "Đục thủy tinh thể bẩm sinh",
+      "Corneal_Foreign_Body": "Dị vật giác mạc",
+      "Intraocular_Foreign_Body": "Dị vật nội nhãn",
+      "Chemical_Injury": "Bỏng hóa chất mắt",
+      "Orbital_Fracture": "Vỡ xương hốc mắt",
+      "Blepharitis": "Viêm bờ mi",
+      "Dry_Eye": "Hội chứng khô mắt",
+      "Diplopia": "Nhìn đôi (Song thị)",
+      "Nuclear_Cataract": "Đục nhân thủy tinh thể",
+      "Cortical_Cataract": "Đục vỏ thủy tinh thể"
+    }
+  },
+  "examination": {
+    "title": "Khám bệnh",
+    "subtitle": "Quy trình khám bệnh với AI hỗ trợ",
+    "back": "Quay lại",
+    "proceedToExam": "Tiến hành khám bệnh",
+    "selectRecordType": "Chọn mẫu bệnh án để tiếp tục",
+    "aiSuggestion": "Gợi ý từ AI",
+    "aiRecommended": "AI khuyên dùng",
+    "recordTypes": {
+      "MS21_TRAUMA": "MS21 - Chấn thương",
+      "MS22_ANTERIOR": "MS22 - Mắt trước (Giác mạc / Kết mạc)",
+      "MS23_FUNDUS": "MS23 - Đáy mắt & Võng mạc",
+      "MS24_GLAUCOMA": "MS24 - Glôcôm",
+      "MS25_STRABISMUS_PTOSIS": "MS25 - Lé / Sụp mi",
+      "MS26_PEDIATRIC": "MS26 - Nhãn khoa Nhi"
+    }
+  }
+}

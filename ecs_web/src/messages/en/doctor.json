@@ -11,7 +11,7 @@
       "title": "Paraclinical",
       "eyecareBadge": "Ophthalmology Paraclinical Management",
       "pageTitle": "Paraclinical List & Details",
-      "pageDescription": "Look up paraclinical requests (OCT retinal scan, Visual Field test, Eye Ultrasound, Lab tests), view detailed measurement metrics, and AI diagnostic analyses.",
+      "pageDescription": "Look up paraclinical requests (OCT retinal scan, Visual Field test, Eye Ultrasound, Lab tests) and view detailed measurement metrics.",
       "selectPatientTitle": "Select Patient Record to view Paraclinical",
       "selectPatientSubtitle": "Select a patient from the list or search by name / phone number.",
       "searchPlaceholder": "Search by patient name / phone...",
@@ -26,7 +26,7 @@
       "phoneShort": "Phone:",
       "medicalRecordDefault": "Medical record",
       "samplePrefix": "Sample ",
-      "panelTitle": "Paraclinical & AI Diagnosis",
+      "panelTitle": "Paraclinical Test Slips & Results",
       "requestCount": "{count} requests",
       "collapse": "Collapse ▲",
       "expand": "Expand ▼",
@@ -818,7 +818,7 @@
           "pediatric": "Subspecialty: Pediatric Ophthalmology (MS26_PEDIATRIC)",
           "diagnosis": "Diagnosis & Treatment Plan",
           "prescription": "Prescriptions",
-          "paraclinical": "Imaging & Paraclinical Results (OCT, Visual Field, Ultrasound, AI)"
+          "paraclinical": "Imaging & Paraclinical Results (OCT, Visual Field, Ultrasound)"
         },
         "patientFields": {
           "fullName": "Full Name",

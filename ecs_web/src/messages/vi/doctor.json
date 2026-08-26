@@ -11,7 +11,7 @@
       "title": "Cận lâm sàng",
       "eyecareBadge": "Quản lý cận lâm sàng chuyên khoa Mắt",
       "pageTitle": "Danh sách & Chi tiết Cận lâm sàng",
-      "pageDescription": "Tra cứu hồ sơ chỉ định cận lâm sàng (Cắt lớp võng mạc OCT, Đo thị trường Visual Field, Siêu âm mắt, Xét nghiệm), xem chi tiết các chỉ số đo đạc và phân tích chẩn đoán AI.",
+      "pageDescription": "Tra cứu hồ sơ chỉ định cận lâm sàng (Cắt lớp võng mạc OCT, Đo thị trường Visual Field, Siêu âm mắt, Xét nghiệm) và xem chi tiết các chỉ số đo đạc.",
       "selectPatientTitle": "Chọn Hồ sơ Bệnh nhân để xem Cận lâm sàng",
       "selectPatientSubtitle": "Chọn bệnh nhân từ danh sách hoặc tìm kiếm theo tên / số điện thoại.",
       "searchPlaceholder": "Tìm theo tên bệnh nhân / SĐT...",
@@ -26,7 +26,7 @@
       "phoneShort": "SĐT:",
       "medicalRecordDefault": "Bệnh án",
       "samplePrefix": "Mẫu ",
-      "panelTitle": "Cận lâm sàng & Chẩn đoán AI",
+      "panelTitle": "Phiếu gửi xét nghiệm Cận lâm sàng",
       "requestCount": "{count} chỉ định",
       "collapse": "Thu gọn ▲",
       "expand": "Mở rộng ▼",
@@ -820,7 +820,7 @@
           "pediatric": "Bệnh án chuyên biệt: Mắt trẻ em (MS26_PEDIATRIC)",
           "diagnosis": "Chẩn đoán & Kế hoạch điều trị",
           "prescription": "Đơn thuốc đã kê",
-          "paraclinical": "Hình ảnh & Kết quả Cận lâm sàng (OCT, Thị trường, Siêu âm, AI)"
+          "paraclinical": "Hình ảnh & Kết quả Cận lâm sàng (OCT, Thị trường, Siêu âm)"
         },
         "patientFields": {
           "fullName": "Họ tên",

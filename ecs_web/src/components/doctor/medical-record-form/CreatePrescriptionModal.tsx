@@ -263,10 +263,10 @@ export default function CreatePrescriptionModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
-      <div className="relative w-full max-w-4xl rounded-2xl bg-white shadow-2xl my-6 border border-emerald-100 flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 !m-0 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
+      <div className="relative w-full max-w-4xl rounded-2xl bg-white shadow-2xl my-auto border border-emerald-100 flex flex-col max-h-[90vh] overflow-hidden">
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 bg-[#00658D] text-white rounded-t-2xl">
+        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 bg-[#00658D] text-white shrink-0">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-white/15 rounded-xl backdrop-blur-md">
               <Pill className="h-6 w-6 text-white/90" />
@@ -339,7 +339,7 @@ export default function CreatePrescriptionModal({
         )}
 
         {/* Modal Form Body */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="overflow-y-auto max-h-[calc(90vh-140px)] p-6 space-y-6">
           {/* SECTION 1: ĐƠN KÍNH KHÚC XẠ */}
           {(activeTab === "both" || activeTab === "glasses") && (
             <div className="rounded-2xl border border-slate-200 bg-slate-50/40 p-5 space-y-4 shadow-2xs">

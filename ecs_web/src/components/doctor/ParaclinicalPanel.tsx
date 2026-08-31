@@ -60,6 +60,7 @@ import paraclinicalService, {
   type LabResultSummary,
 } from "@/services/paraclinical.service"
 import { uploadService } from "@/services/upload.service"
+import OctAiAnalysisCard from "./OctAiAnalysisCard"
 
 const inputClass =
   "w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-[#00658D] focus:outline-none focus:ring-1 focus:ring-[#00658D]"
@@ -179,6 +180,7 @@ export default function ParaclinicalPanel({
   const [loading, setLoading] = useState(false)
   const [listError, setListError] = useState<string | null>(null)
   const [showCreate, setShowCreate] = useState(false)
+  const [showAiOctModal, setShowAiOctModal] = useState(false)
 
   // Selected item for Detail Modal & Update Modal
   const [selectedDetail, setSelectedDetail] = useState<LabResultSummary | null>(null)
@@ -337,6 +339,14 @@ export default function ParaclinicalPanel({
             </div>
 
             <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowAiOctModal(true)}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-sky-50 border border-sky-200 text-[#00658D] hover:bg-sky-100 px-3 py-1.5 text-xs font-bold transition-all shadow-2xs cursor-pointer"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-amber-500" /> Nhận định AI máy OCT
+              </button>
+
               <button
                 type="button"
                 onClick={refresh}
@@ -543,6 +553,46 @@ export default function ParaclinicalPanel({
           t={t}
         />
       )}
+
+      {/* ── OCT AI ANALYSIS MODAL ── */}
+      {showAiOctModal && (
+        <div className="fixed inset-0 z-50 !m-0 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
+          <div className="relative w-full max-w-3xl rounded-3xl bg-white shadow-2xl overflow-hidden my-auto max-h-[90vh] flex flex-col border border-slate-200">
+            {/* Fixed Header */}
+            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-6 py-4 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#00658D] text-white shadow-2xs">
+                  <Sparkles className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-slate-900">
+                    Phân Tích & Nhận Định Chẩn Đoán AI Máy OCT
+                  </h2>
+                  <p className="text-xs text-slate-500">
+                    Sử dụng trí tuệ nhân tạo nhận diện 4 nhóm tổn thương võng mạc (NORMAL, CNV, DME, DRUSEN)
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAiOctModal(false)}
+                className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Scrollable Body */}
+            <div className="overflow-y-auto max-h-[calc(90vh-80px)] p-6">
+              <OctAiAnalysisCard
+                onSelectConclusion={() => {
+                  setShowAiOctModal(false)
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -588,8 +638,8 @@ function ParaclinicalDetailModal({
   const measurementEntries = Object.entries(measurementsObj)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
-      <div className="relative w-full max-w-3xl rounded-2xl bg-white shadow-2xl overflow-hidden my-8 max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 !m-0 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
+      <div className="relative w-full max-w-3xl rounded-2xl bg-white shadow-2xl overflow-hidden my-auto max-h-[90vh] flex flex-col border border-gray-100">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-100 bg-linear-to-r from-sky-50/80 via-white to-slate-50/50 px-6 py-4">
           <div className="flex items-center gap-2.5">
@@ -680,6 +730,16 @@ function ParaclinicalDetailModal({
                   <ExternalLink className="h-3.5 w-3.5" /> {t("detail.openImageFull")}
                 </a>
               </div>
+            </div>
+          )}
+
+          {/* AI OCT Analysis Card inside Detail Modal */}
+          {item.labType === "OCT" && (
+            <div className="pt-3 border-t border-slate-200 space-y-2">
+              <h4 className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                <Sparkles className="h-4 w-4 text-[#00658D]" /> Nhận định Chẩn đoán AI tự động (Ảnh OCT):
+              </h4>
+              <OctAiAnalysisCard initialImageBase64={item.imageUrl ?? undefined} />
             </div>
           )}
 
@@ -1174,9 +1234,9 @@ function UpdateLabResultModal({
   const statusKeys: LabStatus[] = ["COMPLETED", "IN_PROGRESS", "REQUESTED", "CANCELLED"]
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
-      <div className="relative w-full max-w-3xl rounded-2xl bg-white shadow-2xl overflow-hidden my-8">
-        <div className="flex items-center justify-between border-b border-gray-100 bg-amber-50/60 px-6 py-4">
+    <div className="fixed inset-0 z-50 !m-0 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
+      <div className="relative w-full max-w-3xl rounded-2xl bg-white shadow-2xl overflow-hidden my-auto max-h-[90vh] flex flex-col border border-gray-100">
+        <div className="flex items-center justify-between border-b border-gray-100 bg-amber-50/60 px-6 py-4 shrink-0">
           <div className="flex items-center gap-2">
             <Edit3 className="h-5 w-5 text-amber-700" />
             <h3 className="text-base font-bold text-amber-950">
@@ -1419,6 +1479,42 @@ export function CreateLabRequestForm({
             imageUrl={imageUrl}
             setImageUrl={setImageUrl}
             label="Tải ảnh kết quả cận lâm sàng (Tự động chuyển đổi sang URL):"
+          />
+        </div>
+
+        {/* Integrated AI OCT Diagnosis Card */}
+        {labType === "OCT" && (
+          <div className="sm:col-span-2 space-y-2">
+            <label className="block text-xs font-bold text-gray-700 flex items-center gap-1.5">
+              <Sparkles className="h-4 w-4 text-amber-500" />
+              Chẩn đoán / Nhận định AI bằng máy OCT (Trí tuệ nhân tạo):
+            </label>
+            <OctAiAnalysisCard
+              initialImageBase64={imageUrl}
+              onAnalysisComplete={(aiRes) => {
+                if (aiRes) {
+                  const classLabelMap: Record<string, string> = {
+                    NORMAL: "Bình thường (NORMAL) — Lớp võng mạc bình thường",
+                    CNV: "Tân mạch màng mạch (CNV)",
+                    DME: "Phù hoàng điểm do đái tháo đường (DME)",
+                    DRUSEN: "Lắng tụ Drusen (Nguy cơ thoái hóa hoàng điểm)",
+                  }
+                  const text = `[Nhận định AI OCT]: ${classLabelMap[aiRes.predictedClass] || aiRes.predictedClass} (Mức độ nguy cơ: ${aiRes.riskLevel}, Độ chính xác: ${(aiRes.confidence * 100).toFixed(1)}%).`
+                  setClinicalConclusion(text)
+                }
+              }}
+            />
+          </div>
+        )}
+
+        <div className="sm:col-span-2">
+          <label className={labelClass}>Chẩn đoán / Kết luận lâm sàng kết quả cận lâm sàng:</label>
+          <textarea
+            rows={2}
+            value={clinicalConclusion}
+            onChange={(e) => setClinicalConclusion(e.target.value)}
+            className={inputClass}
+            placeholder="Nhập kết luận chuyên môn hoặc nhận định tự động từ AI OCT..."
           />
         </div>
 

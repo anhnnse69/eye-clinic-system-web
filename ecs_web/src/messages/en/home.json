@@ -7,7 +7,7 @@
     "clinicEfficiency": "Clinic Efficiency",
     "throughput": "Real-time throughput increased across 12 hub locations.",
     "bookAppointment": "Book Appointment",
-    "viewTour": "View Platform Tour"
+    "viewTour": "Register Account Now"
   },
   "features": {
     "title": "Specialized Tools for Modern Practices",
@@ -40,7 +40,7 @@
   "cta": {
     "title": "Ready to Scale Your Clinic?",
     "subtitle": "Join over 450 clinical practices using Eye Clinic Support to deliver world-class eye care with operational precision.",
-    "startTrial": "Start Free Trial",
+    "startTrial": "Register Clinic Now",
     "speakExpert": "Speak with an Expert"
   },
   "search": {

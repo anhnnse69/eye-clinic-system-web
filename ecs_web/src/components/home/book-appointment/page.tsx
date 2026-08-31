@@ -118,6 +118,10 @@ export default function BookAppointmentPage() {
     const [error, setError] = useState<string | null>(null)
     const [successResult, setSuccessResult] = useState<BookAppointmentResponse | null>(null)
 
+    // State quản lý Modal xác nhận chia sẻ dữ liệu
+    const [showConsentModal, setShowConsentModal] = useState(false)
+    const [consentAgreed, setConsentAgreed] = useState(false)
+
     const extractErrorMessage = (err: unknown): string => {
         if (err instanceof ApiError) {
             if (err.codeMessage === "APP_MESSAGE_4005") {
@@ -258,6 +262,7 @@ export default function BookAppointmentPage() {
         return slots.some(slot => slot.isAvailable && !isSlotInPast(slot))
     }
 
+    // Xử lý gửi Form: Bật Modal xác nhận chia sẻ dữ liệu y tế toàn hệ thống
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setError(null)
@@ -267,7 +272,18 @@ export default function BookAppointmentPage() {
             return
         }
 
+        // Mở Modal xác nhận chia sẻ dữ liệu bệnh án toàn hệ thống
+        setConsentAgreed(false)
+        setShowConsentModal(true)
+    }
+
+    // Thực thi gọi API đặt lịch sau khi bệnh nhân xác nhận đồng ý chia sẻ dữ liệu
+    const executeBooking = async () => {
+        if (!consentAgreed) return
+
         setSubmitting(true)
+        setShowConsentModal(false)
+
         try {
             const res = await patientAppointmentService.bookAppointment({
                 patientId, doctorId, slotId,
@@ -444,7 +460,7 @@ export default function BookAppointmentPage() {
 
                         <button
                             onClick={() => router.push(`/${locale}`)}
-                            className="mt-6 w-full py-3 bg-primary text-white text-xs font-bold rounded-xl shadow-sm hover:bg-blue-600 active:scale-98 transition block"
+                            className="mt-6 w-full py-3 bg-primary text-white text-xs font-bold rounded-xl shadow-sm hover:bg-blue-600 active:scale-98 transition block cursor-pointer"
                         >
                             {isVI ? "Quay về trang chủ" : "Return to Homepage"}
                         </button>
@@ -736,10 +752,10 @@ export default function BookAppointmentPage() {
                                     <button
                                         type="submit"
                                         disabled={submitting || !selectedDate || !slotId}
-                                        className="w-full py-3 bg-primary text-white text-xs font-bold rounded-xl shadow-md hover:bg-blue-600 active:scale-98 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="w-full py-3 bg-primary text-white text-xs font-bold rounded-xl shadow-md hover:bg-blue-600 active:scale-98 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                                     >
                                         {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                                        <span>{submitting ? (isVI ? "Đang xử lý đặt lịch..." : "Processing...") : (isVI ? "Xác nhận Đặt Lịch Hẹn" : "Confirm Booking")}</span>
+                                        <span>{submitting ? (isVI ? "Đang xử lý..." : "Processing...") : (isVI ? "Xác nhận Đặt Lịch Hẹn" : "Confirm Booking")}</span>
                                     </button>
                                 </div>
                             </form>
@@ -747,6 +763,118 @@ export default function BookAppointmentPage() {
                     </div>
                 )}
             </main>
+
+            {/* Modal Xác nhận chia sẻ dữ liệu khám bệnh toàn hệ thống */}
+            {showConsentModal && (
+                <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <div className="bg-white border border-slate-200 rounded-3xl shadow-2xl max-w-3xl w-full overflow-hidden flex flex-col max-h-[90vh]">
+                        {/* Header Modal */}
+                        <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-primary text-white p-6 relative flex items-start gap-4 shrink-0">
+                            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0">
+                                <ShieldCheck className="w-6 h-6 text-white" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold leading-snug">
+                                    {isVI
+                                        ? "Yêu cầu chia sẻ dữ liệu y tế toàn hệ thống"
+                                        : "System-Wide Health Data Sharing Agreement"}
+                                </h3>
+                                <p className="text-xs text-white/80 mt-1">
+                                    {isVI
+                                        ? "Xác nhận điều khoản liên thông hồ sơ bệnh án, kết quả khám & đơn thuốc"
+                                        : "Confirm terms for electronic medical record & prescription interoperability"}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Nội dung Modal */}
+                        <div className="p-6 space-y-4 overflow-y-auto text-xs text-slate-700 leading-relaxed flex-1">
+                            <div className="bg-amber-50 border border-amber-200/80 rounded-2xl p-4 flex items-start gap-3 text-amber-900 font-medium">
+                                <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                                <p>
+                                    {isVI
+                                        ? "Để hoàn tất tạo lịch hẹn khám, hệ thống yêu cầu bệnh nhân đồng ý chia sẻ thông tin kết quả bệnh án, đơn thuốc và đơn kính cho toàn bộ các cơ sở y tế thuộc hệ thống."
+                                        : "To complete your booking, system regulation requires consenting to share medical records & prescriptions with all clinics in the network."}
+                                </p>
+                            </div>
+
+                            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-2.5">
+                                <h4 className="font-bold text-slate-800 text-xs flex items-center gap-2">
+                                    <FileText className="w-4 h-4 text-primary" />
+                                    {isVI ? "Nội dung chia sẻ dữ liệu bao gồm:" : "Shared Data Package Includes:"}
+                                </h4>
+                                <ul className="space-y-2 text-slate-600 pl-2">
+                                    <li className="flex items-start gap-2">
+                                        <span className="text-primary font-bold">•</span>
+                                        <span>
+                                            <strong>{isVI ? "Thông tin bệnh án & Kết quả tổng kết khám:" : "Medical Records & Diagnosis Summary:"}</strong>{" "}
+                                            {isVI
+                                                ? "Lịch sử khám, kết quả chẩn đoán tổng kết và ghi chú theo dõi từ bác sĩ chuyên khoa."
+                                                : "Clinical history, diagnostic results, and progress notes."}
+                                        </span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <span className="text-primary font-bold">•</span>
+                                        <span>
+                                            <strong>{isVI ? "Đơn thuốc điện tử & Đơn kính:" : "E-Prescriptions & Optical Prescriptions:"}</strong>{" "}
+                                            {isVI
+                                                ? "Chi tiết đơn thuốc được kê và thông số đo thị lực, đơn kính để phục vụ tái khám ở bất kỳ cơ sở nào trong hệ thống."
+                                                : "Prescribed medicines and refraction details accessible at any clinic."}
+                                        </span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <span className="text-primary font-bold">•</span>
+                                        <span>
+                                            <strong>{isVI ? "Quy định bảo mật & Pháp lý:" : "Legal Compliance & Privacy:"}</strong>{" "}
+                                            {isVI
+                                                ? "Dữ liệu được bảo vệ nghiêm ngặt theo Nghị định 13/2023/NĐ-CP và Luật Khám bệnh, chữa bệnh, chỉ sử dụng cho mục đích khám chữa bệnh hợp pháp."
+                                                : "Strictly protected under healthcare data privacy regulations for authorized clinical care only."}
+                                        </span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            {/* Khung tích chọn đồng ý */}
+                            <label className="flex items-start gap-3 p-4 rounded-2xl bg-blue-50/80 border border-blue-200/80 cursor-pointer hover:bg-blue-50 transition-colors">
+                                <input
+                                    type="checkbox"
+                                    checked={consentAgreed}
+                                    onChange={(e) => setConsentAgreed(e.target.checked)}
+                                    className="w-5 h-5 rounded-lg border-slate-300 text-primary focus:ring-primary accent-primary shrink-0 mt-0.5 cursor-pointer"
+                                />
+                                <span className="text-xs font-bold text-slate-800 leading-snug">
+                                    {isVI
+                                        ? "Tôi hiểu và đồng ý sẵn sàng chia sẻ thông tin kết quả bệnh án, đơn thuốc và đơn kính cho toàn bộ các cơ sở y tế trong hệ thống để thực hiện tạo lịch hẹn."
+                                        : "I understand and agree to share my medical record summary, drug prescriptions, and optical prescriptions with all clinics across the system to proceed with booking."}
+                                </span>
+                            </label>
+                        </div>
+
+                        {/* Footer Modal với Nút bấm */}
+                        <div className="p-4 bg-slate-50 border-t border-slate-200/80 flex items-center justify-end gap-3 shrink-0 rounded-b-3xl">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowConsentModal(false)
+                                    setConsentAgreed(false)
+                                }}
+                                className="px-5 py-2.5 border border-slate-300 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                            >
+                                {isVI ? "Hủy bỏ" : "Cancel"}
+                            </button>
+                            <button
+                                type="button"
+                                disabled={!consentAgreed || submitting}
+                                onClick={executeBooking}
+                                className="px-6 py-2.5 bg-primary text-white rounded-xl text-xs font-bold shadow-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition flex items-center gap-2 cursor-pointer"
+                            >
+                                {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                                <span>{isVI ? "Đồng ý & Đặt lịch hẹn" : "Agree & Confirm Booking"}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <Footer />
         </div>

@@ -966,24 +966,44 @@ export default function CreateMedicalRecordClient({
 
         {/* Modal: Paraclinical Order */}
         {showLabRequestForm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
-            <div className="relative w-full max-w-3xl rounded-2xl bg-white shadow-2xl my-8">
-              <button
-                type="button"
-                onClick={() => setShowLabRequestForm(false)}
-                className="absolute right-3 top-3 rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
-                aria-label={tParaclinical("closeModal")}
-              >
-                <X className="h-5 w-5" />
-              </button>
-              <CreateLabRequestForm
-                recordId={successInfo.recordId}
-                onCreated={() => {
-                  setShowLabRequestForm(false)
-                  setRefreshKey((k) => k + 1)
-                }}
-                t={tParaclinical}
-              />
+          <div className="fixed inset-0 z-50 !m-0 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
+            <div className="relative w-full max-w-3xl rounded-3xl bg-white shadow-2xl overflow-hidden my-auto max-h-[90vh] flex flex-col border border-gray-100">
+              {/* Fixed Header */}
+              <div className="flex items-center justify-between border-b border-gray-200 bg-linear-to-r from-sky-50 via-white to-slate-50 px-6 py-4 shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#00658D] text-white shadow-xs">
+                    <Microscope className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold text-gray-900">
+                      Tạo phiếu chỉ định Cận lâm sàng mới
+                    </h2>
+                    <p className="text-xs text-gray-500">
+                      OCT, Thị trường, Siêu âm và Chụp ảnh cận lâm sàng
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowLabRequestForm(false)}
+                  className="rounded-full p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                  aria-label={tParaclinical("closeModal")}
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Scrollable Body */}
+              <div className="overflow-y-auto max-h-[calc(90vh-80px)] p-6 space-y-4">
+                <CreateLabRequestForm
+                  recordId={successInfo.recordId}
+                  onCreated={() => {
+                    setShowLabRequestForm(false)
+                    setRefreshKey((k) => k + 1)
+                  }}
+                  t={tParaclinical}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -998,7 +1018,7 @@ export default function CreateMedicalRecordClient({
               setRefreshKey((k) => k + 1)
             }}
             onNavigateToPrescription={() => {
-              router.push(`/doctor/prescriptions?recordId=${successInfo.recordId}&patientId=${targetPatientId}&appointmentId=${appointmentId}`)
+              setShowPrescriptionModal(true)
             }}
           />
         )}
@@ -1015,9 +1035,6 @@ export default function CreateMedicalRecordClient({
             onOpenSummaryModal={() => setShowSummaryModal(true)}
           />
         )}
-
-        {/* Paraclinical Panel */}
-        <ParaclinicalPanel key={refreshKey} recordId={successInfo.recordId} />
 
         {/* Navigation & Print Actions Footer */}
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 pt-6 print:hidden">

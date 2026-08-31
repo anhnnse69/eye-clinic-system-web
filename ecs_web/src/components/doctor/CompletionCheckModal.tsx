@@ -151,7 +151,7 @@ export default function CompletionCheckModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 !m-0 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity"
@@ -159,7 +159,7 @@ export default function CompletionCheckModal({
       />
 
       {/* Modal Card */}
-      <div className="relative z-10 w-full max-w-3xl rounded-3xl bg-white p-6 shadow-2xl border border-gray-100 space-y-5 my-8">
+      <div className="relative z-10 w-full max-w-3xl rounded-3xl bg-white p-6 shadow-2xl border border-gray-100 space-y-5 my-auto max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-100 pb-4">
           <div className="flex items-center gap-3">

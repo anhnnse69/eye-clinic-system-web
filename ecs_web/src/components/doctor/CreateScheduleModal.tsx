@@ -336,7 +336,7 @@ export default function BatchCreateScheduleModal({
                 value={doctorSearch}
                 onChange={(e) => setDoctorSearch(e.target.value)}
                 placeholder={t("searchDoctorPlaceholder")}
-                className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-slate-700"
+                className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#00658d] text-slate-700"
               />
             </div>
 
@@ -349,7 +349,7 @@ export default function BatchCreateScheduleModal({
             <div className="space-y-2 max-h-[420px] overflow-y-auto">
               {loadingData ? (
                 <div className="flex items-center justify-center py-10 text-slate-400 gap-2">
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="w-5 h-5 animate-spin" style={{ color: "#00658D" }} />
                   <span className="text-sm">{t("loadingData")}</span>
                 </div>
               ) : filteredDoctors.length === 0 ? (
@@ -365,7 +365,7 @@ export default function BatchCreateScheduleModal({
                       key={d.doctorId}
                       className={`rounded-xl border transition ${
                         isChecked
-                          ? "border-blue-400 bg-blue-50/50"
+                          ? "border-[#00658d] bg-[#00658d]/5"
                           : "border-slate-200"
                       }`}
                     >
@@ -374,9 +374,9 @@ export default function BatchCreateScheduleModal({
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => toggleDoctor(d.doctorId)}
-                          className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 shrink-0"
+                          className="w-4 h-4 rounded border-slate-300 text-[#00658d] focus:ring-[#00658d] accent-[#00658d] shrink-0"
                         />
-                        <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold shrink-0 text-sm">
+                        <div className="w-9 h-9 rounded-full bg-[#00658d]/10 text-[#00658d] flex items-center justify-center font-bold shrink-0 text-sm">
                           {d.fullName?.charAt(0)?.toUpperCase() ?? "?"}
                         </div>
                         <div className="min-w-0">
@@ -396,7 +396,7 @@ export default function BatchCreateScheduleModal({
                             <select
                               value={roomId}
                               onChange={(e) => setDoctorRoom(d.doctorId, e.target.value)}
-                              className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500 text-slate-700"
+                              className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#00658d] text-slate-700"
                             >
                               {rooms.length === 0 ? (
                                 <option value="">{t("noRoomsAvailable")}</option>
@@ -418,7 +418,7 @@ export default function BatchCreateScheduleModal({
             </div>
 
             {selection.size > 0 && (
-              <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-700">
+              <div className="bg-[#00658d]/10 border border-[#00658d]/20 rounded-xl px-4 py-3 text-sm text-[#00658d] font-medium">
                 {t("selectedCount", { count: selection.size })}
               </div>
             )}
@@ -433,7 +433,8 @@ export default function BatchCreateScheduleModal({
               <button
                 onClick={handleGoToStep2}
                 disabled={selection.size === 0}
-                className="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition disabled:opacity-50"
+                className="px-5 py-2.5 text-sm font-medium text-white rounded-xl transition disabled:opacity-50"
+                style={{ backgroundColor: "#00658D" }}
               >
                 {t("continue")}
               </button>
@@ -558,7 +559,7 @@ export default function BatchCreateScheduleModal({
                       className={`
                         flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition
                         ${isAllMonthSelected 
-                          ? "bg-blue-100 text-blue-700 hover:bg-blue-200" 
+                          ? "bg-[#00658d]/10 text-[#00658d] hover:bg-[#00658d]/20" 
                           : "bg-slate-100 text-slate-600 hover:bg-slate-200"}
                       `}
                     >
@@ -609,10 +610,11 @@ export default function BatchCreateScheduleModal({
                             onClick={() => toggleDate(date)}
                             className={`
                               aspect-square rounded-lg text-sm font-medium transition-all
-                              ${isPast ? "text-slate-300 cursor-not-allowed" : "cursor-pointer hover:bg-blue-50"}
-                              ${isSelected ? "bg-blue-600 text-white hover:bg-blue-700" : "text-slate-700"}
-                              ${isToday && !isSelected ? "ring-2 ring-blue-300" : ""}
+                              ${isPast ? "text-slate-300 cursor-not-allowed" : "cursor-pointer hover:bg-[#00658d]/10"}
+                              ${isSelected ? "text-white hover:opacity-90" : "text-slate-700"}
+                              ${isToday && !isSelected ? "ring-2 ring-[#00658d]/40" : ""}
                             `}
+                            style={isSelected ? { backgroundColor: "#00658D" } : undefined}
                           >
                             {date.getDate()}
                           </button>
@@ -628,7 +630,7 @@ export default function BatchCreateScheduleModal({
                   </label>
                   {loadingShifts ? (
                     <div className="flex items-center justify-center py-6 text-slate-400 gap-2">
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-4 h-4 animate-spin" style={{ color: "#00658D" }} />
                       <span className="text-sm">{t("loadingShiftRanges")}</span>
                     </div>
                   ) : shiftOptions.length === 0 ? (
@@ -646,13 +648,13 @@ export default function BatchCreateScheduleModal({
                             className={`
                               px-4 py-3 rounded-xl border text-sm font-medium transition-all text-left
                               ${isSelected
-                                ? "bg-blue-50 border-blue-400 text-blue-700 ring-1 ring-blue-400"
+                                ? "bg-[#00658d]/10 border-[#00658d] text-[#00658d] ring-1 ring-[#00658d]"
                                 : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"}
                             `}
                           >
                             <div className="flex items-center justify-between">
                               <span>{s.label}</span>
-                              {isSelected && <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />}
+                              {isSelected && <CheckCircle2 className="w-4 h-4 text-[#00658d] shrink-0" />}
                             </div>
                           </button>
                         );
@@ -662,7 +664,7 @@ export default function BatchCreateScheduleModal({
                 </div>
 
                 {totalCombinations > 0 && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-700">
+                  <div className="bg-[#00658d]/10 border border-[#00658d]/20 rounded-xl px-4 py-3 text-sm text-[#00658d] font-medium">
                     {t("willCreateSchedule", { 
                       count: totalCombinations,
                       doctorCount: selection.size,
@@ -689,7 +691,8 @@ export default function BatchCreateScheduleModal({
                   <button
                     onClick={handleSubmit}
                     disabled={submitting || totalCombinations === 0}
-                    className="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition disabled:opacity-50 flex items-center gap-2"
+                    className="px-5 py-2.5 text-sm font-medium text-white rounded-xl transition disabled:opacity-50 flex items-center gap-2"
+                    style={{ backgroundColor: "#00658D" }}
                   >
                     {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
                     {totalCombinations > 0 ? `${t("create")} ${totalCombinations}` : t("create")}

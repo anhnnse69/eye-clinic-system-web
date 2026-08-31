@@ -152,5 +152,42 @@
       "MS25_STRABISMUS_PTOSIS": "MS25 - Strabismus & Ptosis",
       "MS26_PEDIATRIC": "MS26 - Pediatric Ophthalmology"
     }
+  },
+  "octAnalysis": {
+    "title": "AI Diagnostic Assessment (OCT Scan)",
+    "subtitle": "Automated 4-class retinal disease classification using MobileNetV3 AI",
+    "uploadPrompt": "Upload OCT Retinal Scan Image",
+    "clickOrDrag": "Click to select or drag and drop OCT image file here (PNG, JPG)",
+    "analyzeBtn": "Analyze OCT with AI",
+    "analyzing": "Analyzing retinal image...",
+    "confidence": "AI Confidence",
+    "disclaimer": "Medical Disclaimer: AI diagnostic assessment is intended for clinical decision support only. Ophthalmologists must verify clinical scans before finalizing a diagnosis.",
+    "lowConfidenceWarning": "Warning: AI model confidence is low (< 80%). Manual expert verification is strongly recommended.",
+    "classes": {
+      "NORMAL": {
+        "label": "Normal Retina",
+        "description": "Normal retinal layer architecture with no visible subretinal fluid accumulation or drusen deposits.",
+        "recommendation": "Maintain routine annual comprehensive eye examinations.",
+        "riskLevel": "LOW"
+      },
+      "CNV": {
+        "label": "Choroidal Neovascularization (CNV)",
+        "description": "Abnormal subretinal blood vessel growth with risk of fluid/blood leakage (wet Age-related Macular Degeneration sign).",
+        "recommendation": "Recommend in-depth fundus examination and evaluation for Anti-VEGF therapy or photocoagulation.",
+        "riskLevel": "HIGH"
+      },
+      "DME": {
+        "label": "Diabetic Macular Edema (DME)",
+        "description": "Retinal thickening and intraretinal fluid accumulation secondary to diabetic microvascular changes.",
+        "recommendation": "Check glycemic control (HbA1c) and refer to a retinal specialist for therapeutic intervention.",
+        "riskLevel": "HIGH"
+      },
+      "DRUSEN": {
+        "label": "Drusen Deposits",
+        "description": "Extracellular yellow waste deposits beneath the retinal pigment epithelium (early sign of dry AMD).",
+        "recommendation": "Monitor visual acuity every 3-6 months and consider dietary antioxidant supplementation.",
+        "riskLevel": "MODERATE"
+      }
+    }
   }
 }

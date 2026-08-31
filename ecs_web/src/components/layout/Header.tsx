@@ -132,8 +132,6 @@ export default function Header({
             
             {/* Menu chữ điều hướng */}
             <div className="hidden lg:flex items-center gap-4 border-r border-outline-variant pr-4">
-          
-              {/* Thêm mục Đối tác */}
               <a 
                 className="text-on-surface-variant font-medium text-sm hover:text-primary transition-colors whitespace-nowrap" 
                 href={`/${locale}/register-clinic-application`}

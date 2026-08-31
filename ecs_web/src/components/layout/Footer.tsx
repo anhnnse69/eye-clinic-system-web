@@ -46,10 +46,10 @@ export default function Footer() {
               {t("footer.product")}
             </h4>
             <ul className="space-y-xs">
-              <li><a className="text-body-sm font-body-sm text-on-surface-variant hover:text-primary" href="#">{t("footer.features")}</a></li>
-              <li><a className="text-body-sm font-body-sm text-on-surface-variant hover:text-primary" href="#">{t("footer.integrations")}</a></li>
-              <li><a className="text-body-sm font-body-sm text-on-surface-variant hover:text-primary" href="#">{t("footer.pricing")}</a></li>
-              <li><a className="text-body-sm font-body-sm text-on-surface-variant hover:text-primary" href="#">{t("footer.changelog")}</a></li>
+              <li><span className="text-body-sm font-body-sm text-on-surface-variant cursor-default select-none">{t("footer.features")}</span></li>
+              <li><span className="text-body-sm font-body-sm text-on-surface-variant cursor-default select-none">{t("footer.integrations")}</span></li>
+              <li><span className="text-body-sm font-body-sm text-on-surface-variant cursor-default select-none">{t("footer.pricing")}</span></li>
+              <li><span className="text-body-sm font-body-sm text-on-surface-variant cursor-default select-none">{t("footer.changelog")}</span></li>
             </ul>
           </div>
 
@@ -58,10 +58,10 @@ export default function Footer() {
               {t("footer.company")}
             </h4>
             <ul className="space-y-xs">
-              <li><a className="text-body-sm font-body-sm text-on-surface-variant hover:text-primary" href="#">{t("footer.aboutUs")}</a></li>
-              <li><a className="text-body-sm font-body-sm text-on-surface-variant hover:text-primary" href="#">{t("footer.careers")}</a></li>
-              <li><a className="text-body-sm font-body-sm text-on-surface-variant hover:text-primary" href="#">{t("footer.contact")}</a></li>
-              <li><a className="text-body-sm font-body-sm text-on-surface-variant hover:text-primary" href="#">{t("footer.partners")}</a></li>
+              <li><span className="text-body-sm font-body-sm text-on-surface-variant cursor-default select-none">{t("footer.aboutUs")}</span></li>
+              <li><span className="text-body-sm font-body-sm text-on-surface-variant cursor-default select-none">{t("footer.careers")}</span></li>
+              <li><span className="text-body-sm font-body-sm text-on-surface-variant cursor-default select-none">{t("footer.contact")}</span></li>
+              <li><span className="text-body-sm font-body-sm text-on-surface-variant cursor-default select-none">{t("footer.partners")}</span></li>
             </ul>
           </div>
 
@@ -70,10 +70,10 @@ export default function Footer() {
               {t("footer.legal")}
             </h4>
             <ul className="space-y-xs">
-              <li><a className="text-body-sm font-body-sm text-on-surface-variant hover:text-primary" href="#">{t("footer.privacy")}</a></li>
-              <li><a className="text-body-sm font-body-sm text-on-surface-variant hover:text-primary" href="#">{t("footer.terms")}</a></li>
-              <li><a className="text-body-sm font-body-sm text-on-surface-variant hover:text-primary" href="#">{t("footer.hipaaCompliance")}</a></li>
-              <li><a className="text-body-sm font-body-sm text-on-surface-variant hover:text-primary" href="#">{t("footer.accessibility")}</a></li>
+              <li><span className="text-body-sm font-body-sm text-on-surface-variant cursor-default select-none">{t("footer.privacy")}</span></li>
+              <li><span className="text-body-sm font-body-sm text-on-surface-variant cursor-default select-none">{t("footer.terms")}</span></li>
+              <li><span className="text-body-sm font-body-sm text-on-surface-variant cursor-default select-none">{t("footer.hipaaCompliance")}</span></li>
+              <li><span className="text-body-sm font-body-sm text-on-surface-variant cursor-default select-none">{t("footer.accessibility")}</span></li>
             </ul>
           </div>
         </div>

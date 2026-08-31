@@ -13,6 +13,7 @@ import {
 import Link from "next/link"
 import { accountService } from "@/services/account.service"
 import { clinicsService } from "@/services/clinic.service"
+import { clinicApplicationsService } from "@/services/clinic-applications.service"
 // Thay đổi import type để dùng đúng Interface cho Dropdown Lookup
 import type { GetClinicLookupResponse } from "@/services/clinic.service"
 
@@ -30,36 +31,157 @@ export default function CreateClinicAdminPage() {
     const [clinics, setClinics] = useState<GetClinicLookupResponse[]>([])
     const [loadingClinics, setLoadingClinics] = useState<boolean>(true)
     const [clinicFetchError, setClinicFetchError] = useState<string | null>(null)
+    const [loadingDetails, setLoadingDetails] = useState<boolean>(false)
 
     // Giao diện điều khiển trạng thái lỗi/thành công khi gửi form
     const [submitting, setSubmitting] = useState<boolean>(false)
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState<string | null>(null)
 
+    const fetchClinics = async () => {
+        try {
+            setLoadingClinics(true)
+            setClinicFetchError(null)
+
+            const response = await clinicsService.getClinicLookup()
+
+            if (response && response.data) {
+                setClinics(response.data)
+            }
+        } catch (err: any) {
+            console.error("Lỗi khi tải danh sách phòng khám:", err)
+            const statusCode = err?.statusCode || err?.response?.status
+            const errMsg = err?.message || ""
+
+            if (statusCode === 401 || err?.codeMessage === "APP_MESSAGE_4001") {
+                setClinicFetchError("Phiên làm việc đã hết hạn hoặc bạn chưa đăng nhập. Vui lòng đăng nhập lại tài khoản Quản trị hệ thống.")
+            } else if (errMsg.includes("Network Error") || err?.codeMessage === "APP_MESSAGE_5000") {
+                setClinicFetchError("Không thể kết nối đến máy chủ Backend (Lỗi kết nối mạng / Network Error). Vui lòng kiểm tra lại dịch vụ Backend.")
+            } else {
+                setClinicFetchError(t("clinicLookupError"))
+            }
+        } finally {
+            setLoadingClinics(false)
+        }
+    }
+
     // Tự động load danh sách phòng khám bằng API Lookup
     useEffect(() => {
-        async function fetchClinics() {
-            try {
-                setLoadingClinics(true)
-                setClinicFetchError(null)
-
-                // Gọi đúng hàm lookup thay vì hàm getClinics phân trang cũ
-                const response = await clinicsService.getClinicLookup()
-
-                // Kiểm tra cấu trúc bọc dữ liệu (ApiResponse) để lấy mảng data chính xác
-                if (response && response.data) {
-                    setClinics(response.data)
-                }
-            } catch (err: any) {
-                console.error("Lỗi khi tải danh sách phòng khám:", err)
-                setClinicFetchError(t("clinicLookupError"))
-            } finally {
-                setLoadingClinics(false)
-            }
-        }
-
         fetchClinics()
     }, [])
+
+    // Helper chuẩn hóa số điện thoại & email để so sánh chính xác giữa DB và Form
+    const normalizePhone = (p?: string) => (p ? p.replace(/\D/g, "") : "")
+    const normalizeEmail = (e?: string) => (e ? e.trim().toLowerCase() : "")
+
+    // Xử lý tự động mapping thông tin liên hệ từ clinic_registration_request (contact_name, contact_phone, contact_email) khi chọn phòng khám
+    const handleSelectClinic = async (selectedId: string) => {
+        setClinicId(selectedId)
+        setError(null)
+
+        if (!selectedId) {
+            setPhone("")
+            setEmail("")
+            setFullName("")
+            return
+        }
+
+        try {
+            setLoadingDetails(true)
+            const selectedClinicObj = clinics.find((c) => c.id === selectedId)
+
+            // Gọi đồng thời: chi tiết phòng khám, tìm kiếm đơn đăng ký theo tên và danh sách tổng hợp
+            const [clinicDetailRes, searchAppsRes, allAppsRes] = await Promise.allSettled([
+                clinicsService.getClinicById(selectedId),
+                selectedClinicObj ? clinicApplicationsService.getApplications({ searchTerm: selectedClinicObj.name.trim(), pageSize: 100 }) : Promise.reject(),
+                clinicApplicationsService.getApplications({ pageSize: 500 })
+            ])
+
+            let mappedName = ""
+            let mappedPhone = ""
+            let mappedEmail = ""
+
+            // Tập hợp danh sách các đơn đăng ký ứng viên
+            const candidateApps = [
+                ...(searchAppsRes.status === "fulfilled" && searchAppsRes.value?.data ? searchAppsRes.value.data : []),
+                ...(allAppsRes.status === "fulfilled" && allAppsRes.value?.data ? allAppsRes.value.data : [])
+            ]
+
+            const clinicDetailData = clinicDetailRes.status === "fulfilled" ? clinicDetailRes.value?.data : null
+
+            const cPhoneClean = normalizePhone(clinicDetailData?.phone)
+            const cEmailClean = normalizeEmail(clinicDetailData?.email)
+
+            // 1. ƯU TIÊN 1: Khớp chính xác theo ProvisionedClinicId (Mã FK liên kết trực tiếp trong DB)
+            let matchedApp = candidateApps.find(
+                (app) => app.provisionedClinicId && app.provisionedClinicId.toLowerCase() === selectedId.toLowerCase()
+            )
+
+            // 2. ƯU TIÊN 2: Khớp theo Số điện thoại chuẩn hóa (bỏ dấu cách, dấu chấm, ký tự đặc biệt)
+            if (!matchedApp && cPhoneClean) {
+                matchedApp = candidateApps.find(
+                    (app) => normalizePhone(app.contactPhone) === cPhoneClean
+                )
+            }
+
+            // 3. ƯU TIÊN 3: Khớp theo Email chuẩn hóa
+            if (!matchedApp && cEmailClean) {
+                matchedApp = candidateApps.find(
+                    (app) => normalizeEmail(app.contactEmail) === cEmailClean
+                )
+            }
+
+            // 4. ƯU TIÊN 4: Khớp theo tên phòng khám hoặc tên người liên hệ nằm trong tên phòng khám
+            if (!matchedApp && selectedClinicObj) {
+                const targetNameLower = selectedClinicObj.name.trim().toLowerCase()
+                matchedApp = candidateApps.find((app) => {
+                    const appNameLower = app.clinicName.trim().toLowerCase()
+                    const contactLower = (app.contactName || "").trim().toLowerCase()
+                    return (
+                        appNameLower.includes(targetNameLower) ||
+                        targetNameLower.includes(appNameLower) ||
+                        (contactLower.length > 2 && targetNameLower.includes(contactLower))
+                    )
+                })
+            }
+
+            // Nếu tìm thấy đơn đăng ký tương ứng trong clinic_registration_request
+            if (matchedApp) {
+                mappedName = matchedApp.contactName || ""
+                mappedPhone = matchedApp.contactPhone || ""
+                mappedEmail = matchedApp.contactEmail || ""
+
+                // Nếu contactName chưa có sẵn trong danh sách DTO, gọi getApplicationById để lấy chi tiết
+                if (!mappedName && matchedApp.id_clinic_registration) {
+                    try {
+                        const appDetailRes = await clinicApplicationsService.getApplicationById(matchedApp.id_clinic_registration)
+                        if (appDetailRes?.data) {
+                            mappedName = appDetailRes.data.contactName || ""
+                            if (!mappedPhone) mappedPhone = appDetailRes.data.contactPhone || ""
+                            if (!mappedEmail) mappedEmail = appDetailRes.data.contactEmail || ""
+                        }
+                    } catch (err) {
+                        console.error("Lỗi khi lấy chi tiết đơn đăng ký từ clinic_registration_request:", err)
+                    }
+                }
+            }
+
+            // Dự phòng Phone/Email từ thông tin phòng khám nếu rỗng (Tuyệt đối KHÔNG tự điền tên phòng khám vào contactName)
+            if (clinicDetailData) {
+                if (!mappedPhone && clinicDetailData.phone) mappedPhone = clinicDetailData.phone
+                if (!mappedEmail && clinicDetailData.email) mappedEmail = clinicDetailData.email
+            }
+
+            // Cập nhật chính xác dữ liệu vào các field của Form (nếu không có contactName thì để trống)
+            setFullName(mappedName)
+            setPhone(mappedPhone)
+            setEmail(mappedEmail)
+        } catch (err) {
+            console.error("Lỗi khi tự động mapping thông tin từ đơn đăng ký:", err)
+        } finally {
+            setLoadingDetails(false)
+        }
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -94,7 +216,6 @@ export default function CreateClinicAdminPage() {
             })
 
             if (response.codeMessage === "APP_MESSAGE_2000") {
-                // CẬP NHẬT: Thay đổi nội dung thông báo thành công khớp với luồng nghiệp vụ bảo mật mới chỉ gửi về email cá nhân
                 setSuccess(t("createClinicAdminSuccess"))
                 setClinicId("")
                 setPhone("")
@@ -104,7 +225,6 @@ export default function CreateClinicAdminPage() {
         } catch (err: any) {
             const errCode = err?.response?.data?.codeMessage || err?.codeMessage || err?.data?.codeMessage
 
-            // CẬP NHẬT: Thay đổi các mã Key Mapping khớp chính xác với mã GeneralCode ném ra từ backend thực tế
             const errorMessages: Record<string, string> = {
                 "APP_MESSAGE_4001": t("sessionExpired"),
                 "APP_MESSAGE_4008": t("clinicNotFound"),
@@ -146,9 +266,27 @@ export default function CreateClinicAdminPage() {
 
                 {/* Thông báo lỗi tải danh sách phòng khám */}
                 {clinicFetchError && (
-                    <div className="p-4 bg-amber-50 text-amber-900 rounded-xl flex items-center gap-2 text-body-md font-medium border border-amber-200/70 w-full">
-                        <AlertCircle className="h-5 w-5 text-amber-600 shrink-0" />
-                        <span className="wrap-break-word">{clinicFetchError}</span>
+                    <div className="p-4 bg-amber-50 text-amber-900 rounded-xl flex items-center justify-between gap-3 text-body-md font-medium border border-amber-200/70 w-full flex-wrap">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <AlertCircle className="h-5 w-5 text-amber-600 shrink-0" />
+                            <span className="wrap-break-word">{clinicFetchError}</span>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                            <button
+                                type="button"
+                                onClick={() => router.push("/login")}
+                                className="px-3 py-1.5 bg-primary text-on-primary rounded-lg text-xs font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+                            >
+                                Đăng nhập lại
+                            </button>
+                            <button
+                                type="button"
+                                onClick={fetchClinics}
+                                className="px-3 py-1.5 bg-amber-600 text-white rounded-lg text-xs font-semibold hover:bg-amber-700 transition-colors cursor-pointer"
+                            >
+                                Thử lại
+                            </button>
+                        </div>
                     </div>
                 )}
 
@@ -173,14 +311,19 @@ export default function CreateClinicAdminPage() {
 
                     {/* Hộp lựa chọn (Select) phòng khám từ DB */}
                     <div className="flex flex-col space-y-2 w-full">
-                        <label className="text-label-md font-semibold text-on-surface">
-                            {t("selectClinicLabel")} <span className="text-error">*</span>
+                        <label className="text-label-md font-semibold text-on-surface flex items-center justify-between">
+                            <span>{t("selectClinicLabel")} <span className="text-error">*</span></span>
+                            {loadingDetails && (
+                                <span className="text-xs text-primary flex items-center gap-1 font-normal">
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> Đang tải thông tin liên hệ...
+                                </span>
+                            )}
                         </label>
                         <div className="relative w-full">
                             <select
                                 value={clinicId}
-                                onChange={(e) => setClinicId(e.target.value)}
-                                disabled={submitting || loadingClinics}
+                                onChange={(e) => handleSelectClinic(e.target.value)}
+                                disabled={submitting || loadingClinics || loadingDetails}
                                 className="w-full px-4 py-2.5 bg-surface-container-low text-on-surface border border-outline-variant/60 rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors disabled:opacity-60 block cursor-pointer appearance-none pr-10 font-medium"
                             >
                                 <option value="">
@@ -211,8 +354,8 @@ export default function CreateClinicAdminPage() {
                             placeholder={t("adminFullNamePlaceholder")}
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
-                            disabled={submitting}
-                            className="w-full px-4 py-2.5 bg-surface-container-low text-on-surface border border-outline-variant/60 rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors disabled:opacity-60 block"
+                            disabled={submitting || loadingDetails}
+                            className="w-full px-4 py-2.5 bg-surface-container-low text-on-surface border border-outline-variant/60 rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors disabled:opacity-60 block font-medium"
                         />
                     </div>
 
@@ -227,8 +370,8 @@ export default function CreateClinicAdminPage() {
                                 placeholder={t("phonePlaceholder")}
                                 value={phone}
                                 onChange={(e) => setPhone(e.target.value)}
-                                disabled={submitting}
-                                className="w-full px-4 py-2.5 bg-surface-container-low text-on-surface border border-outline-variant/60 rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors disabled:opacity-60 block"
+                                disabled={submitting || loadingDetails}
+                                className="w-full px-4 py-2.5 bg-surface-container-low text-on-surface border border-outline-variant/60 rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors disabled:opacity-60 block font-medium"
                             />
                         </div>
 
@@ -241,8 +384,8 @@ export default function CreateClinicAdminPage() {
                                 placeholder={t("emailPlaceholder")}
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                disabled={submitting}
-                                className="w-full px-4 py-2.5 bg-surface-container-low text-on-surface border border-outline-variant/60 rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors disabled:opacity-60 block"
+                                disabled={submitting || loadingDetails}
+                                className="w-full px-4 py-2.5 bg-surface-container-low text-on-surface border border-outline-variant/60 rounded-xl text-body-md focus:outline-none focus:border-primary transition-colors disabled:opacity-60 block font-medium"
                             />
                         </div>
                     </div>
@@ -257,7 +400,7 @@ export default function CreateClinicAdminPage() {
                         </Link>
                         <button
                             type="submit"
-                            disabled={submitting || loadingClinics}
+                            disabled={submitting || loadingClinics || loadingDetails}
                             className="flex items-center justify-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-xl hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-label-md font-medium shadow-xs whitespace-nowrap cursor-pointer"
                         >
                             {submitting ? (

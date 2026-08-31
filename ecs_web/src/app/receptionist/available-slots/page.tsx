@@ -503,7 +503,7 @@ export default function RealShiftTimeSchedulerPage() {
       )}
       {deleteTarget && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl p-6 space-y-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4">
             <h3 className="font-bold text-lg text-slate-800">{t("deleteConfirmTitle")}</h3>
             <p className="text-sm text-slate-600">
               {t("deleteConfirmBody", { doctor: deleteTarget.doctorName, date: dateFilter })}
@@ -519,7 +519,8 @@ export default function RealShiftTimeSchedulerPage() {
               <button
                 onClick={handleDeleteConfirm}
                 disabled={deleting}
-                className="px-5 py-2.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-xl transition disabled:opacity-50 flex items-center gap-2"
+                className="px-5 py-2.5 text-sm font-medium text-white rounded-xl transition disabled:opacity-50 flex items-center gap-2"
+                style={{ backgroundColor: "#ba1a1a" }}
               >
                 {deleting && <Loader2 className="w-4 h-4 animate-spin" />}
                 {t("confirmDelete")}

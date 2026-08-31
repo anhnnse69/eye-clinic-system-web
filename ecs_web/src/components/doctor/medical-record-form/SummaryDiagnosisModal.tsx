@@ -138,10 +138,10 @@ export default function SummaryDiagnosisModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
-      <div className="relative w-full max-w-3xl rounded-3xl bg-white shadow-2xl my-8 overflow-hidden">
+    <div className="fixed inset-0 z-50 !m-0 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
+      <div className="relative w-full max-w-3xl rounded-3xl bg-white shadow-2xl my-auto max-h-[90vh] flex flex-col overflow-hidden border border-gray-100">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 bg-linear-to-r from-sky-50 via-white to-slate-50 px-6 py-4">
+        <div className="flex items-center justify-between border-b border-gray-200 bg-linear-to-r from-sky-50 via-white to-slate-50 px-6 py-4 shrink-0">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#00658D] text-white shadow-xs">
               <FileText className="h-5 w-5" />
@@ -165,7 +165,7 @@ export default function SummaryDiagnosisModal({
         </div>
 
         {/* Content */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto max-h-[calc(90vh-80px)]">
           {successMsg ? (
             <div className="rounded-xl border border-green-200 bg-green-50 p-6 text-center space-y-4">
               <CheckCircle2 className="mx-auto h-12 w-12 text-green-600" />

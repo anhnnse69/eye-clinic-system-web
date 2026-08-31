@@ -152,5 +152,42 @@
       "MS25_STRABISMUS_PTOSIS": "MS25 - Lé / Sụp mi",
       "MS26_PEDIATRIC": "MS26 - Nhãn khoa Nhi"
     }
+  },
+  "octAnalysis": {
+    "title": "Nhận định Chẩn đoán AI (Ảnh cắt lớp OCT)",
+    "subtitle": "Phân tích tự động 4 nhóm bệnh võng mạc bằng model MobileNetV3 AI",
+    "uploadPrompt": "Tải ảnh cắt lớp võng mạc OCT để phân tích",
+    "clickOrDrag": "Nhấn để chọn ảnh hoặc kéo thả file ảnh OCT vào đây (PNG, JPG)",
+    "analyzeBtn": "Phân tích ảnh với AI",
+    "analyzing": "Đang phân tích hình ảnh võng mạc...",
+    "confidence": "Độ tin cậy AI",
+    "disclaimer": "Lưu ý y tế: Kết quả phân tích AI chỉ mang tính chất hỗ trợ chẩn đoán cận lâm sàng. Bác sĩ chuyên khoa cần kiểm tra hình ảnh lâm sàng trước khi đưa ra chẩn đoán chính thức.",
+    "lowConfidenceWarning": "Cảnh báo: Độ tin cậy của mô hình thấp (< 80%). Khuyến nghị bác sĩ kiểm tra thủ công kỹ lưỡng.",
+    "classes": {
+      "NORMAL": {
+        "label": "Mắt bình thường (Normal Retina)",
+        "description": "Cấu trúc các lớp võng mạc bình thường, không thấy sự xuất hiện của dịch bất thường hay lắng đọng màng mạch.",
+        "recommendation": "Tiếp tục duy trì thói quen khám mắt định kỳ hàng năm.",
+        "riskLevel": "LOW"
+      },
+      "CNV": {
+        "label": "Tân mạch màng mạch (Choroidal Neovascularization - CNV)",
+        "description": "Phát hiện mạch máu mới bất thường phát triển bên dưới võng mạc có nguy cơ gây rò rỉ dịch hoặc máu (dấu hiệu Thoái hóa hoàng điểm tuổi già thể ướt).",
+        "recommendation": "Đề xuất soi đáy mắt chuyên sâu và cân nhắc liệu pháp tiêm Anti-VEGF hoặc laser màng mạch.",
+        "riskLevel": "HIGH"
+      },
+      "DME": {
+        "label": "Phù hoàng điểm do đái tháo đường (Diabetic Macular Edema - DME)",
+        "description": "Hiện tượng tích tụ dịch gây sưng phù vùng hoàng điểm do tổn thương mạch máu võng mạc từ bệnh đái tháo đường.",
+        "recommendation": "Khuyến nghị kiểm tra chỉ số đường huyết (HbA1c) và hội chẩn chuyên khoa Võng mạc.",
+        "riskLevel": "HIGH"
+      },
+      "DRUSEN": {
+        "label": "Lắng đọng Drusen (Drusen Deposits)",
+        "description": "Xuất hiện các nốt lắng đọng chất thải màu vàng bên dưới biểu mô sắc tố võng mạc (Dấu hiệu cảnh báo sớm AMD thể khô).",
+        "recommendation": "Khuyên bệnh nhân theo dõi thị lực định kỳ 3-6 tháng và bổ sung vi chất chống oxy hóa cho mắt.",
+        "riskLevel": "MODERATE"
+      }
+    }
   }
 }

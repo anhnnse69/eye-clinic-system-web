@@ -120,11 +120,19 @@ export function HomePage() {
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-md pt-sm">
-                  <button className="px-2xl py-md bg-primary text-on-primary font-headline-md text-headline-md rounded-xl shadow-lg hover:shadow-primary/20 transition-all flex items-center justify-center gap-sm">
+                  <button 
+                    type="button"
+                    onClick={() => router.push(`/${locale}/search/doctors`)}
+                    className="px-2xl py-md bg-primary text-on-primary font-headline-md text-headline-md rounded-xl shadow-lg hover:shadow-primary/20 transition-all flex items-center justify-center gap-sm cursor-pointer"
+                  >
                     {t("hero.bookAppointment")}
                     <span className="material-symbols-outlined">arrow_forward</span>
                   </button>
-                  <button className="px-2xl py-md bg-white border border-outline-variant text-primary font-headline-md text-headline-md rounded-xl hover:bg-surface-container transition-all flex items-center justify-center gap-sm">
+                  <button 
+                    type="button"
+                    onClick={() => router.push(`/${locale}/register`)}
+                    className="px-2xl py-md bg-white border border-outline-variant text-primary font-headline-md text-headline-md rounded-xl hover:bg-surface-container transition-all flex items-center justify-center gap-sm cursor-pointer"
+                  >
                     {t("hero.viewTour")}
                   </button>
                 </div>
@@ -168,24 +176,38 @@ export function HomePage() {
                     <h3 className="text-headline-md font-headline-md mb-sm">{t("features.multiClinic.title")}</h3>
                     <p className="text-body-md font-body-md text-on-surface-variant max-w-3xl">{t("features.multiClinic.description")}</p>
                   </div>
-                  <div className="mt-xl flex items-center gap-md">
-                    <div className="flex -space-x-2">
-                      <div className="h-8 w-8 rounded-full border-2 border-white bg-primary-fixed flex items-center justify-center text-[10px] font-bold text-on-primary-fixed">NY</div>
-                      <div className="h-8 w-8 rounded-full border-2 border-white bg-secondary-fixed flex items-center justify-center text-[10px] font-bold text-on-secondary-fixed">LA</div>
-                      <div className="h-8 w-8 rounded-full border-2 border-white bg-tertiary-fixed flex items-center justify-center text-[10px] font-bold text-on-tertiary-fixed">CH</div>
+                  <div className="mt-xl flex items-center justify-between gap-md flex-wrap">
+                    <div className="flex items-center gap-md">
+                      <div className="flex -space-x-2">
+                        <div className="h-8 w-8 rounded-full border-2 border-white bg-primary-fixed flex items-center justify-center text-[10px] font-bold text-on-primary-fixed">NY</div>
+                        <div className="h-8 w-8 rounded-full border-2 border-white bg-secondary-fixed flex items-center justify-center text-[10px] font-bold text-on-secondary-fixed">LA</div>
+                        <div className="h-8 w-8 rounded-full border-2 border-white bg-tertiary-fixed flex items-center justify-center text-[10px] font-bold text-on-tertiary-fixed">CH</div>
+                      </div>
+                      <span className="text-label-md font-label-md text-on-surface-variant">+8 {t("features.multiClinic.connected")}</span>
                     </div>
-                    <span className="text-label-md font-label-md text-on-surface-variant">+8 {t("features.multiClinic.connected")}</span>
+                    <button
+                      type="button"
+                      onClick={() => router.push(`/${locale}/search/clinics`)}
+                      className="px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary font-bold text-xs rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>{locale === "vi" ? "Tìm phòng khám" : "Find Clinics"}</span>
+                      <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                    </button>
                   </div>
                 </div>
 
-                <div className="bg-primary-container p-2xl rounded-2xl text-on-primary-container flex flex-col justify-between transition-all duration-700 opacity-100 translate-y-0">
+                <div 
+                  onClick={() => router.push(`/${locale}/search/doctors`)}
+                  className="bg-primary-container p-2xl rounded-2xl text-on-primary-container flex flex-col justify-between transition-all duration-700 opacity-100 translate-y-0 cursor-pointer hover:opacity-95"
+                >
                   <div>
                     <span className="material-symbols-outlined text-white text-[40px] mb-lg">group</span>
                     <h3 className="text-headline-md font-headline-md mb-sm">{t("features.queue.title")}</h3>
                     <p className="text-body-md font-body-md opacity-90">{t("features.queue.description")}</p>
                   </div>
-                  <div className="bg-white/20 h-1 w-full rounded-full mt-xl">
-                    <div className="bg-white h-full w-3/4 rounded-full"></div>
+                  <div className="mt-xl flex items-center justify-between">
+                    <span className="text-xs font-bold underline">{locale === "vi" ? "Tìm bác sĩ ngay" : "Find Doctors Now"}</span>
+                    <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
                   </div>
                 </div>
 
@@ -205,9 +227,13 @@ export function HomePage() {
                     <div className="flex flex-col gap-sm">
                       <div className="h-3 w-3/4 bg-surface-container rounded"></div>
                       <div className="h-3 w-1/2 bg-surface-container rounded"></div>
-                      <div className="h-8 w-full bg-primary/10 rounded-lg border border-primary/20 flex items-center justify-center">
+                      <button
+                        type="button"
+                        onClick={() => router.push(`/${locale}/book-appointment`)}
+                        className="h-8 w-full bg-primary/10 rounded-lg border border-primary/20 flex items-center justify-center hover:bg-primary/20 transition-colors cursor-pointer"
+                      >
                         <span className="text-primary font-bold text-label-md">{t("features.portal.nextAppointment")}</span>
-                      </div>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -242,8 +268,20 @@ export function HomePage() {
                 <h2 className="text-display-lg font-display-lg text-white mb-lg">{t("cta.title")}</h2>
                 <p className="text-body-lg font-body-lg text-surface-container-highest max-w-3xl mx-auto mb-2xl">{t("cta.subtitle")}</p>
                 <div className="flex flex-wrap justify-center gap-md">
-                  <button className="px-2xl py-md bg-primary-container text-on-primary-container font-headline-md text-headline-md rounded-xl hover:bg-primary-container/90 transition-all">{t("cta.startTrial")}</button>
-                  <button className="px-2xl py-md bg-white/10 text-white border border-white/20 font-headline-md text-headline-md rounded-xl hover:bg-white/20 transition-all">{t("cta.speakExpert")}</button>
+                  <button 
+                    type="button"
+                    onClick={() => router.push(`/${locale}/register-clinic-application`)}
+                    className="px-2xl py-md bg-primary-container text-on-primary-container font-headline-md text-headline-md rounded-xl hover:bg-primary-container/90 transition-all cursor-pointer"
+                  >
+                    {t("cta.startTrial")}
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => router.push(`/${locale}/search/doctors`)}
+                    className="px-2xl py-md bg-white/10 text-white border border-white/20 font-headline-md text-headline-md rounded-xl hover:bg-white/20 transition-all cursor-pointer"
+                  >
+                    {t("cta.speakExpert")}
+                  </button>
                 </div>
               </div>
             </div>

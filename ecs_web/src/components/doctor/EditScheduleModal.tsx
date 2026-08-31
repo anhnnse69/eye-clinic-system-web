@@ -143,7 +143,7 @@ export default function EditScheduleModal({
               value={workDate}
               min={todayStr}
               onChange={(e) => setWorkDate(e.target.value)}
-              className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-slate-700"
+              className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#00658d] text-slate-700"
             />
           </div>
         </div>
@@ -158,7 +158,7 @@ export default function EditScheduleModal({
               value={roomId}
               onChange={(e) => setRoomId(e.target.value)}
               disabled={loadingRooms || rooms.length === 0}
-              className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 text-slate-700 disabled:opacity-50"
+              className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#00658d] text-slate-700 disabled:opacity-50"
             >
               {loadingRooms ? (
                 <option value="">{t("loading")}</option>
@@ -181,7 +181,7 @@ export default function EditScheduleModal({
           </div>
         )}
         {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl px-4 py-3">
+          <div className="bg-[#006c49]/10 border border-[#006c49]/30 text-[#006c49] font-medium text-sm rounded-xl px-4 py-3">
             {success}
           </div>
         )}
@@ -197,7 +197,8 @@ export default function EditScheduleModal({
           <button
             onClick={handleSubmit}
             disabled={submitting || loadingRooms || !roomId}
-            className="px-5 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition disabled:opacity-50 flex items-center gap-2"
+            className="px-5 py-2.5 text-sm font-medium text-white rounded-xl transition disabled:opacity-50 flex items-center gap-2"
+            style={{ backgroundColor: "#00658D" }}
           >
             {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
             {t("saveChanges")}

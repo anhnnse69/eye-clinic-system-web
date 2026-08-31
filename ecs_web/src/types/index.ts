@@ -614,65 +614,28 @@ export interface PaginatedResponse<T> {
 
 
 export interface ClinicApplication {
-
-
   id_clinic_registration: string
-
-
   clinicName: string
-
-
+  contactName?: string
   contactEmail: string
-
-
   contactPhone: string
-
-
   submissionDate: string
-
-
   status: "PENDING" | "APPROVED" | "REJECTED"
-
-
+  provisionedClinicId?: string
 }
 
-
-
-
-
 export interface GetClinicApplicationDetailResponse {
-
-
   id_clinic_registration: string
-
-
   clinicName: string
-
-
   clinicAddress: string
-
-
   contactName: string
-
-
   contactPhone: string
-
-
   contactEmail: string
-
-
   businessLicenseUrl?: string
-
-
   status: "PENDING" | "APPROVED" | "REJECTED"
-
-
   reviewNote?: string
-
-
-  requestedAt: string
-
-
+  requestedAt?: string
+  provisionedClinicId?: string
 }
 
 

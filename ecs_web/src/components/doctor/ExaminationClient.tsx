@@ -22,6 +22,8 @@ import {
   DISEASE_EXAMINATION_MAP,
   DISEASE_DISPLAY_NAMES,
   getDiseaseDisplayName,
+  MEDICAL_RECORD_TYPE_LABELS,
+  type MedicalRecordType,
 } from "@/types"
 
 type ExaminationStep = "ai-triage" | "ai-result" | "examination"
@@ -426,7 +428,18 @@ function AITriageResultView({
             {recordTypeOptionKeys.map((key) => {
               const isSelected = activeRecordType === key
               const isAiSuggested = suggestedRecordType === key
-              const labelText = t.has(`recordTypes.${key}`) ? t(`recordTypes.${key}`) : key
+              const localeTag = (t.has(`recordTypes.${key}`) ? "" : null)
+              const recordTypeLabels: Record<string, { vi: string; en: string }> = {
+                MS21_TRAUMA: { vi: "Mẫu 21: Bệnh án nhãn khoa chấn thương", en: "Form 21: Ophthalmic Trauma Record" },
+                MS22_ANTERIOR: { vi: "Mẫu 22: Bệnh án bán phần trước", en: "Form 22: Anterior Segment Record" },
+                MS23_FUNDUS: { vi: "Mẫu 23: Bệnh án Đáy mắt / Bán phần sau", en: "Form 23: Posterior Segment / Fundus Record" },
+                MS24_GLAUCOMA: { vi: "Mẫu 24: Bệnh án Glocom (Glaucoma)", en: "Form 24: Glaucoma Record" },
+                MS25_STRABISMUS_PTOSIS: { vi: "Mẫu 25: Bệnh án Lác & Sụp mi", en: "Form 25: Strabismus & Ptosis Record" },
+                MS26_PEDIATRIC: { vi: "Mẫu 26: Bệnh án Mắt Trẻ em", en: "Form 26: Pediatric Ophthalmic Record" },
+              }
+              const labelText = t.has(`recordTypes.${key}`)
+                ? t(`recordTypes.${key}`)
+                : recordTypeLabels[key]?.vi || MEDICAL_RECORD_TYPE_LABELS[key as MedicalRecordType] || key
 
               return (
                 <button

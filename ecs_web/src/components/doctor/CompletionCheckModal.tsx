@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useLocale } from "next-intl"
 import {
   CheckCircle2,
   XCircle,
@@ -43,6 +44,9 @@ export default function CompletionCheckModal({
   onOpenSummaryModal,
 }: CompletionCheckModalProps) {
   const router = useRouter()
+  const locale = useLocale()
+  const isEn = locale === "en"
+
   const [loading, setLoading] = useState(true)
   const [record, setRecord] = useState<GetMedicalRecordDetailResponse | null>(null)
   const [completingQueue, setCompletingQueue] = useState(false)
@@ -68,7 +72,7 @@ export default function CompletionCheckModal({
       })
       .catch((err) => {
         console.error("Error fetching record detail for completion check:", err)
-        if (isMounted) setError("Không thể tải thông tin hồ sơ bệnh án.")
+        if (isMounted) setError(isEn ? "Failed to load medical record details." : "Không thể tải thông tin hồ sơ bệnh án.")
       })
       .finally(() => {
         if (isMounted) setLoading(false)
@@ -77,7 +81,7 @@ export default function CompletionCheckModal({
     return () => {
       isMounted = false
     }
-  }, [isOpen, recordId])
+  }, [isOpen, recordId, isEn])
 
   if (!isOpen) return null
 
@@ -105,8 +109,8 @@ export default function CompletionCheckModal({
   // Step 2 (Paraclinical) is optional
   const isAllMandatoryDone = isStep1Done && isStep3Done && isStep4Done
   const pendingMandatorySteps: string[] = []
-  if (!isStep3Done) pendingMandatorySteps.push("Tổng kết bệnh án (Chẩn đoán + ICD-10)")
-  if (!isStep4Done) pendingMandatorySteps.push("Kê đơn thuốc/kính")
+  if (!isStep3Done) pendingMandatorySteps.push(isEn ? "Medical Record Summary (Diagnosis + ICD-10)" : "Tổng kết bệnh án (Chẩn đoán + ICD-10)")
+  if (!isStep4Done) pendingMandatorySteps.push(isEn ? "Prescription / Glasses Rx" : "Kê đơn thuốc/kính")
 
   const handleFinalComplete = async () => {
     const targetQueueId = queueId || appointmentId
@@ -114,8 +118,10 @@ export default function CompletionCheckModal({
     if (!targetQueueId) {
       setAlertState({
         type: "success",
-        title: "Hoàn Thành Ca Khám!",
-        message: `Hồ sơ bệnh án của bệnh nhân ${patientName || record?.patientFullName || ""} đã được ghi nhận hoàn tất.`,
+        title: isEn ? "Examination Completed!" : "Hoàn Thành Ca Khám!",
+        message: isEn
+          ? `Medical record for patient ${patientName || record?.patientFullName || ""} has been recorded as completed.`
+          : `Hồ sơ bệnh án của bệnh nhân ${patientName || record?.patientFullName || ""} đã được ghi nhận hoàn tất.`,
       })
       return
     }
@@ -125,14 +131,18 @@ export default function CompletionCheckModal({
       await queueCompleteService.completeQueue({ queueId: targetQueueId })
       setAlertState({
         type: "success",
-        title: "Xác Nhận Hoàn Thành Ca Khám!",
-        message: `Ca khám của bệnh nhân ${patientName || record?.patientFullName || "bệnh nhân"} đã được đóng và chuyển sang danh sách Đã hoàn thành.`,
+        title: isEn ? "Examination Completion Confirmed!" : "Xác Nhận Hoàn Thành Ca Khám!",
+        message: isEn
+          ? `Examination for patient ${patientName || record?.patientFullName || "patient"} has been closed and moved to Completed list.`
+          : `Ca khám của bệnh nhân ${patientName || record?.patientFullName || "bệnh nhân"} đã được đóng và chuyển sang danh sách Đã hoàn thành.`,
       })
     } catch (err: any) {
       console.error("Error completing queue item:", err)
       const code = err?.codeMessage || err?.response?.data?.codeMessage
       const rawMsg = err?.response?.data?.message || err?.message
-      let apiMsg = "Không thể xác nhận hoàn thành ca khám. Vui lòng kiểm tra lại thông tin bệnh án."
+      let apiMsg = isEn
+        ? "Failed to confirm examination completion. Please check medical record information."
+        : "Không thể xác nhận hoàn thành ca khám. Vui lòng kiểm tra lại thông tin bệnh án."
 
       if (code && MESSAGE_TRANSLATIONS[code]) {
         apiMsg = MESSAGE_TRANSLATIONS[code]
@@ -142,7 +152,7 @@ export default function CompletionCheckModal({
 
       setAlertState({
         type: "error",
-        title: "Không Thể Hoàn Thành Ca Khám",
+        title: isEn ? "Cannot Complete Examination" : "Không Thể Hoàn Thành Ca Khám",
         message: apiMsg,
       })
     } finally {
@@ -175,17 +185,17 @@ export default function CompletionCheckModal({
             </div>
             <div>
               <h3 className="text-base font-bold text-gray-900">
-                Kiểm Tra Tiến Trình Ca Khám
+                {isEn ? "Check Examination Workflow Progress" : "Kiểm Tra Tiến Trình Ca Khám"}
               </h3>
               <p className="text-xs text-gray-500">
-                Bệnh nhân: <strong className="text-gray-800">{patientName || record?.patientFullName || "Bệnh nhân"}</strong>
+                {isEn ? "Patient: " : "Bệnh nhân: "}<strong className="text-gray-800">{patientName || record?.patientFullName || (isEn ? "Patient" : "Bệnh nhân")}</strong>
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+            className="rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors cursor-pointer"
           >
             <X className="h-5 w-5" />
           </button>
@@ -194,10 +204,10 @@ export default function CompletionCheckModal({
         {loading ? (
           <div className="flex flex-col items-center justify-center py-10 text-xs text-gray-500 gap-2">
             <Loader2 className="h-6 w-6 animate-spin text-[#00658D]" />
-            <span>Đang kiểm tra tiến trình quy trình khám...</span>
+            <span>{isEn ? "Checking examination workflow progress..." : "Đang kiểm tra tiến trình quy trình khám..."}</span>
           </div>
         ) : error ? (
-          <div className="rounded-xl bg-rose-50 border border-rose-200 p-4 text-xs text-rose-700">
+          <div className="rounded-xl bg-rose-50 border border-rose-200 p-4 text-xs text-rose-700 font-medium">
             {error}
           </div>
         ) : (
@@ -218,16 +228,16 @@ export default function CompletionCheckModal({
                 <p className="font-bold text-sm flex items-center gap-1.5">
                   {isAllMandatoryDone ? (
                     <>
-                      Đủ điều kiện hoàn thành ca khám! <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                      {isEn ? "Eligible to complete examination!" : "Đủ điều kiện hoàn thành ca khám!"} <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
                     </>
                   ) : (
-                    "Chưa thể hoàn thành ca khám (Còn bước bắt buộc chưa làm)"
+                    isEn ? "Cannot complete examination (Mandatory steps pending)" : "Chưa thể hoàn thành ca khám (Còn bước bắt buộc chưa làm)"
                   )}
                 </p>
                 <p className="mt-1 leading-relaxed text-gray-700">
                   {isAllMandatoryDone
-                    ? "Tất cả các bước của quy trình khám (Lưu hồ sơ khám bệnh, Tổng kết bệnh án, Kê đơn thuốc/kính) đã hoàn tất thành công."
-                    : `Theo quy trình EMR, bác sĩ bắt buộc phải hoàn thành: Tổng kết bệnh án (chẩn đoán cuối + ICD-10) và Kê đơn thuốc/kính trước khi kết thúc ca khám. Đang thiếu: ${pendingMandatorySteps.join(" và ")}.`}
+                    ? (isEn ? "All examination workflow steps (Save Medical Record, Record Summary, Prescription / Glasses Rx) have been completed successfully." : "Tất cả các bước của quy trình khám (Lưu hồ sơ khám bệnh, Tổng kết bệnh án, Kê đơn thuốc/kính) đã hoàn tất thành công.")
+                    : (isEn ? `Per EMR workflow, doctor must complete: Medical Record Summary (Final diagnosis + ICD-10) and Prescription / Glasses Rx before finishing. Missing: ${pendingMandatorySteps.join(" and ")}.` : `Theo quy trình EMR, bác sĩ bắt buộc phải hoàn thành: Tổng kết bệnh án (chẩn đoán cuối + ICD-10) và Kê đơn thuốc/kính trước khi kết thúc ca khám. Đang thiếu: ${pendingMandatorySteps.join(" và ")}.`)}
                 </p>
               </div>
             </div>
@@ -235,7 +245,7 @@ export default function CompletionCheckModal({
             {/* Checklist */}
             <div className="space-y-2.5 rounded-2xl border border-slate-200 bg-slate-50/50 p-4">
               <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                Danh sách kiểm tra quy trình khám EMR:
+                {isEn ? "EMR Examination Workflow Checklist:" : "Danh sách kiểm tra quy trình khám EMR:"}
               </h4>
 
               {/* Step 1 */}
@@ -243,12 +253,12 @@ export default function CompletionCheckModal({
                 <div className="flex items-center gap-2.5">
                   <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
                   <div>
-                    <span className="font-bold text-gray-900">Bước 1: Lưu hồ sơ khám bệnh</span>
-                    <span className="ml-2 text-gray-500">(Hồ sơ bệnh án đã lưu thành công)</span>
+                    <span className="font-bold text-gray-900">{isEn ? "Step 1: Save Medical Record" : "Bước 1: Lưu hồ sơ khám bệnh"}</span>
+                    <span className="ml-2 text-gray-500">{isEn ? "(Medical record saved successfully)" : "(Hồ sơ bệnh án đã lưu thành công)"}</span>
                   </div>
                 </div>
                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 font-bold text-emerald-700 border border-emerald-200/80 text-[11px]">
-                  Hoàn thành <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                  {isEn ? "Completed" : "Hoàn thành"} <CheckCircle2 className="h-3 w-3 text-emerald-600" />
                 </span>
               </div>
 
@@ -257,17 +267,17 @@ export default function CompletionCheckModal({
                 <div className="flex items-center gap-2.5">
                   <Microscope className="h-4 w-4 text-slate-500 shrink-0" />
                   <div>
-                    <span className="font-bold text-gray-900">Bước 2: Chỉ định Cận lâm sàng</span>
-                    <span className="ml-2 text-gray-500">(OCT, Thị trường, Siêu âm — Tùy chọn)</span>
+                    <span className="font-bold text-gray-900">{isEn ? "Step 2: Paraclinical Order" : "Bước 2: Chỉ định Cận lâm sàng"}</span>
+                    <span className="ml-2 text-gray-500">{isEn ? "(OCT, Visual Field, Ultrasound — Optional)" : "(OCT, Thị trường, Siêu âm — Tùy chọn)"}</span>
                   </div>
                 </div>
                 <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 font-semibold text-slate-700 border border-slate-200 text-[11px]">
                   {isStep2Done ? (
                     <>
-                      Có xét nghiệm <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                      {isEn ? "Has lab tests" : "Có xét nghiệm"} <CheckCircle2 className="h-3 w-3 text-emerald-600" />
                     </>
                   ) : (
-                    "Không bắt buộc (Tùy chọn)"
+                    isEn ? "Not mandatory (Optional)" : "Không bắt buộc (Tùy chọn)"
                   )}
                 </span>
               </div>
@@ -284,13 +294,13 @@ export default function CompletionCheckModal({
                     <XCircle className="h-4 w-4 text-amber-600 shrink-0" />
                   )}
                   <div className="truncate">
-                    <span className="font-bold text-gray-900">Bước 3: Tổng kết bệnh án (Chẩn đoán + ICD-10)</span>
-                    <span className="ml-1.5 text-rose-600 font-semibold">(Bắt buộc)</span>
+                    <span className="font-bold text-gray-900">{isEn ? "Step 3: Record Summary (Diagnosis + ICD-10)" : "Bước 3: Tổng kết bệnh án (Chẩn đoán + ICD-10)"}</span>
+                    <span className="ml-1.5 text-rose-600 font-semibold">{isEn ? "(Mandatory)" : "(Bắt buộc)"}</span>
                   </div>
                 </div>
                 {isStep3Done ? (
                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 font-bold text-emerald-700 border border-emerald-200/80 text-[11px] shrink-0">
-                    Đã tổng kết <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                    {isEn ? "Summarized" : "Đã tổng kết"} <CheckCircle2 className="h-3 w-3 text-emerald-600" />
                   </span>
                 ) : (
                   <button
@@ -299,9 +309,9 @@ export default function CompletionCheckModal({
                       onClose()
                       if (onOpenSummaryModal) onOpenSummaryModal()
                     }}
-                    className="inline-flex items-center gap-1 rounded-lg bg-amber-600 px-3 py-1 text-xs font-bold text-white shadow-2xs hover:bg-amber-700 transition-colors shrink-0"
+                    className="inline-flex items-center gap-1 rounded-lg bg-amber-600 px-3 py-1 text-xs font-bold text-white shadow-2xs hover:bg-amber-700 transition-colors shrink-0 cursor-pointer"
                   >
-                    <Sparkles className="h-3.5 w-3.5" /> Tổng kết ngay
+                    <Sparkles className="h-3.5 w-3.5" /> {isEn ? "Summarize now" : "Tổng kết ngay"}
                   </button>
                 )}
               </div>
@@ -318,13 +328,13 @@ export default function CompletionCheckModal({
                     <XCircle className="h-4 w-4 text-[#00658D] shrink-0" />
                   )}
                   <div className="truncate">
-                    <span className="font-bold text-gray-900">Bước 4: Kê đơn thuốc hoặc đơn kính</span>
-                    <span className="ml-1.5 text-rose-600 font-semibold">(Bắt buộc)</span>
+                    <span className="font-bold text-gray-900">{isEn ? "Step 4: Prescribe Medications or Glasses" : "Bước 4: Kê đơn thuốc hoặc đơn kính"}</span>
+                    <span className="ml-1.5 text-rose-600 font-semibold">{isEn ? "(Mandatory)" : "(Bắt buộc)"}</span>
                   </div>
                 </div>
                 {isStep4Done ? (
                   <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 font-bold text-emerald-700 border border-emerald-200/80 text-[11px] shrink-0">
-                    Đã kê đơn <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                    {isEn ? "Prescribed" : "Đã kê đơn"} <CheckCircle2 className="h-3 w-3 text-emerald-600" />
                   </span>
                 ) : (
                   <button
@@ -335,9 +345,9 @@ export default function CompletionCheckModal({
                         `/doctor/prescriptions?recordId=${recordId}&patientId=${patientId}&appointmentId=${appointmentId}`
                       )
                     }}
-                    className="inline-flex items-center gap-1 rounded-lg bg-[#00658D] px-3 py-1 text-xs font-bold text-white shadow-2xs hover:bg-[#005273] transition-colors shrink-0"
+                    className="inline-flex items-center gap-1 rounded-lg bg-[#00658D] px-3 py-1 text-xs font-bold text-white shadow-2xs hover:bg-[#005273] transition-colors shrink-0 cursor-pointer"
                   >
-                    <Pill className="h-3.5 w-3.5" /> Kê đơn ngay
+                    <Pill className="h-3.5 w-3.5" /> {isEn ? "Prescribe now" : "Kê đơn ngay"}
                   </button>
                 )}
               </div>
@@ -348,9 +358,9 @@ export default function CompletionCheckModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                className="rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
               >
-                Đóng
+                {isEn ? "Close" : "Đóng"}
               </button>
 
               {isAllMandatoryDone && (
@@ -358,14 +368,14 @@ export default function CompletionCheckModal({
                   type="button"
                   onClick={handleFinalComplete}
                   disabled={completingQueue}
-                  className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-emerald-700 transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   {completingQueue ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <CheckCircle2 className="h-4 w-4" />
                   )}
-                  Xác Nhận Hoàn Thành Ca Khám
+                  {isEn ? "Confirm Completion of Examination" : "Xác Nhận Hoàn Thành Ca Khám"}
                 </button>
               )}
             </div>
@@ -408,17 +418,17 @@ export default function CompletionCheckModal({
                     onClose()
                     router.push("/doctor/queue")
                   }}
-                  className="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold text-xs shadow-md hover:bg-emerald-700 transition-all flex items-center justify-center gap-2"
+                  className="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold text-xs shadow-md hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <CheckCircle2 className="h-4 w-4" /> Trở Về Danh Sách Hàng Chờ
+                  <CheckCircle2 className="h-4 w-4" /> {isEn ? "Return to Patient Queue" : "Trở Về Danh Sách Hàng Chờ"}
                 </button>
               ) : (
                 <button
                   type="button"
                   onClick={() => setAlertState(null)}
-                  className="w-full py-3 rounded-xl bg-gray-900 text-white font-bold text-xs shadow-md hover:bg-gray-800 transition-all"
+                  className="w-full py-3 rounded-xl bg-gray-900 text-white font-bold text-xs shadow-md hover:bg-gray-800 transition-all cursor-pointer"
                 >
-                  Đã Hiểu, Kiểm Tra Lại
+                  {isEn ? "Understood, Re-check" : "Đã Hiểu, Kiểm Tra Lại"}
                 </button>
               )}
             </div>

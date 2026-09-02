@@ -39,6 +39,7 @@ import { getMessage } from "@/constants/messages"
 import {
   MEDICAL_RECORD_TYPES,
   MEDICAL_RECORD_TYPE_LABELS,
+  getMedicalRecordTypeLabel,
   type MedicalRecordType,
   type MedicalRecordFormDataPayload,
   type AITriageSymptomInput,
@@ -723,19 +724,30 @@ export default function CreateMedicalRecordClient({
             </div>
             <div className="flex-1">
               <h2 className="text-2xl font-bold text-amber-950">
-                {tWorkflow("title", { defaultValue: "QUY TRÌNH 6 BƯỚC KHÁM BỆNH EMR" })}
+                {tWorkflow("title", { defaultValue: isEn ? "EMR 6-STEP EXAMINATION WORKFLOW" : "QUY TRÌNH 6 BƯỚC KHÁM BỆNH EMR" })}
               </h2>
               <p className="mt-1 text-sm text-amber-900 leading-relaxed">
                 <strong className="font-bold">
                   {MEDICAL_RECORD_TYPE_LABELS[recordType ?? (recordDetail?.recordType as MedicalRecordType) ?? "MS21_TRAUMA"]}
                 </strong>{" "}
                 {successInfo?.aiTriage
-                  ? `(AI gợi ý: ${successInfo.aiTriage.predictedDisease})`
+                  ? `(AI ${isEn ? "Suggestion" : "gợi ý"}: ${successInfo.aiTriage.predictedDisease})`
                   : ""}{" "}
-                đã lưu thành công. <strong>Ca khám chưa kết thúc</strong> — theo quy trình EMR,
-                bác sĩ <u>cần hoàn thành thêm 2 bước bắt buộc</u>:
-                <strong> Tổng kết bệnh án (chẩn đoán cuối + ICD-10)</strong> và <strong>Kê đơn thuốc/kính</strong>,
-                trước khi có thể xác nhận hoàn thành ca khám.
+                {isEn ? (
+                  <>
+                    saved successfully. <strong>Examination is not finished yet</strong> — per EMR workflow,
+                    doctor <u>must complete 2 mandatory steps</u>:
+                    <strong> Medical Record Summary (Final diagnosis + ICD-10)</strong> and <strong>Prescription / Glasses Rx</strong>,
+                    before confirming completion of the examination.
+                  </>
+                ) : (
+                  <>
+                    đã lưu thành công. <strong>Ca khám chưa kết thúc</strong> — theo quy trình EMR,
+                    bác sĩ <u>cần hoàn thành thêm 2 bước bắt buộc</u>:
+                    <strong> Tổng kết bệnh án (chẩn đoán cuối + ICD-10)</strong> và <strong>Kê đơn thuốc/kính</strong>,
+                    trước khi có thể xác nhận hoàn thành ca khám.
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -814,8 +826,12 @@ export default function CreateMedicalRecordClient({
             <div className="flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
               <ArrowRight className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
               <div>
-                <strong className="font-bold">{tWorkflow("nextStep")}:</strong> Bấm nút <strong>"Tổng kết bệnh án & ICD-10"</strong> bên dưới
-                để điền chẩn đoán cuối, mã ICD-10, hướng điều trị tiếp theo. Đây là bước bắt buộc trước khi kê đơn.
+                <strong className="font-bold">{tWorkflow("nextStep")}:</strong>{" "}
+                {isEn ? (
+                  <>Click <strong>"Medical Record Summary & ICD-10"</strong> below to fill in final diagnosis, ICD-10 code, and next treatment plan. Mandatory before prescribing.</>
+                ) : (
+                  <>Bấm nút <strong>"Tổng kết bệnh án & ICD-10"</strong> bên dưới để điền chẩn đoán cuối, mã ICD-10, hướng điều trị tiếp theo. Đây là bước bắt buộc trước khi kê đơn.</>
+                )}
               </div>
             </div>
           )}
@@ -823,8 +839,12 @@ export default function CreateMedicalRecordClient({
             <div className="flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
               <ArrowRight className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
               <div>
-                <strong className="font-bold">{tWorkflow("nextStep")}:</strong> Bấm nút <strong>"Kê đơn thuốc/kính"</strong> bên dưới
-                để hoàn tất đơn thuốc hoặc đơn kính cho bệnh nhân. Sau đó bạn có thể xác nhận hoàn thành ca khám.
+                <strong className="font-bold">{tWorkflow("nextStep")}:</strong>{" "}
+                {isEn ? (
+                  <>Click <strong>"Prescribe Medications / Glasses"</strong> below to complete prescription or glasses prescription. Then you can confirm completion.</>
+                ) : (
+                  <>Bấm nút <strong>"Kê đơn thuốc/kính"</strong> bên dưới để hoàn tất đơn thuốc hoặc đơn kính cho bệnh nhân. Sau đó bạn có thể xác nhận hoàn thành ca khám.</>
+                )}
               </div>
             </div>
           )}
@@ -832,8 +852,12 @@ export default function CreateMedicalRecordClient({
             <div className="flex items-start gap-2 rounded-xl border border-green-300 bg-green-50 p-3 text-xs text-green-900">
               <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600 mt-0.5" />
               <div>
-                <strong className="font-bold">Đủ điều kiện hoàn thành ca khám!</strong> Tất cả các bước bắt buộc đã hoàn tất.
-                Bác sĩ có thể bấm nút <strong className="inline-flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> "Hoàn thành ca khám"</strong> ở dưới cùng trang để kết thúc và chuyển bệnh nhân ra viện.
+                <strong className="font-bold">{isEn ? "Eligible to complete examination!" : "Đủ điều kiện hoàn thành ca khám!"}</strong>{" "}
+                {isEn ? (
+                  <>All mandatory steps are complete. Doctor can click <strong className="inline-flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> "Complete Examination"</strong> at bottom of page to finish.</>
+                ) : (
+                  <>Tất cả các bước bắt buộc đã hoàn tất. Bác sĩ có thể bấm nút <strong className="inline-flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> "Hoàn thành ca khám"</strong> ở dưới cùng trang để kết thúc và chuyển bệnh nhân ra viện.</>
+                )}
               </div>
             </div>
           )}
@@ -842,16 +866,15 @@ export default function CreateMedicalRecordClient({
               <ArrowRight className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
               <div>
                 <strong className="font-bold">{tWorkflow("nextStep")}:</strong>{" "}
-                {currentStepNumber === 1 && "Tiếp tục chạy AI chẩn đoán sơ bộ nếu chưa xong."}
-                {currentStepNumber === 2 && "Chọn mẫu bệnh án phù hợp với chẩn đoán sơ bộ."}
-                {currentStepNumber === 3 && "Bổ sung các mục khám rồi bấm \"Hoàn tất & lưu bệnh án\" ở cuối form."}
-                {currentStepNumber === 4 && "Cận lâm sàng là bước tùy chọn — có thể bỏ qua nếu không cần thiết."}
+                {currentStepNumber === 1 && (isEn ? "Continue AI preliminary diagnosis if not done." : "Tiếp tục chạy AI chẩn đoán sơ bộ nếu chưa xong.")}
+                {currentStepNumber === 2 && (isEn ? "Select appropriate medical record template for preliminary diagnosis." : "Chọn mẫu bệnh án phù hợp với chẩn đoán sơ bộ.")}
+                {currentStepNumber === 3 && (isEn ? "Fill in examination sections then click \"Complete & Save Record\" at bottom of form." : "Bổ sung các mục khám rồi bấm \"Hoàn tất & lưu bệnh án\" ở cuối form.")}
+                {currentStepNumber === 4 && (isEn ? "Paraclinical is optional — can skip if not needed." : "Cận lâm sàng là bước tùy chọn — có thể bỏ qua nếu không cần thiết.")}
               </div>
             </div>
           )}
         </div>
 
-        {/* EMR Interactive Action Hub */}
         {/* EMR Interactive Action Hub */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {/* Card 1: Paraclinical (Optional) — Step 4 */}
@@ -859,11 +882,13 @@ export default function CreateMedicalRecordClient({
             <div>
               <div className="flex items-center gap-2 text-primary font-bold text-sm">
                 <Microscope className="h-5 w-5" />
-                <span>Bước 4 · Cận lâm sàng</span>
-                <span className="ml-auto rounded-full bg-surface-container-low border border-outline-variant/30 px-2 py-0.5 text-[10px] font-bold text-on-surface-variant">Tùy chọn</span>
+                <span>{isEn ? "Step 4 · Paraclinical" : "Bước 4 · Cận lâm sàng"}</span>
+                <span className="ml-auto rounded-full bg-surface-container-low border border-outline-variant/30 px-2 py-0.5 text-[10px] font-bold text-on-surface-variant">
+                  {isEn ? "Optional" : "Tùy chọn"}
+                </span>
               </div>
               <p className="mt-2 text-xs text-on-surface-variant leading-relaxed">
-                Tạo phiếu chỉ định OCT võng mạc, Thị trường, Siêu âm hoặc xét nghiệm cho bệnh nhân này.
+                {isEn ? "Create orders for Retinal OCT, Visual Field, Ultrasound, or Lab tests for this patient." : "Tạo phiếu chỉ định OCT võng mạc, Thị trường, Siêu âm hoặc xét nghiệm cho bệnh nhân này."}
               </p>
             </div>
             <button
@@ -871,7 +896,7 @@ export default function CreateMedicalRecordClient({
               onClick={() => setShowLabRequestForm(true)}
               className="w-full inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-on-primary shadow-xs hover:opacity-90 transition-colors cursor-pointer"
             >
-              <Plus className="h-4 w-4" /> {isStep4Done ? "Xem / Thêm cận lâm sàng" : "Tạo phiếu cận lâm sàng"}
+              <Plus className="h-4 w-4" /> {isStep4Done ? (isEn ? "View / Add Paraclinical" : "Xem / Thêm cận lâm sàng") : (isEn ? "Create Paraclinical Order" : "Tạo phiếu cận lâm sàng")}
             </button>
           </div>
 
@@ -880,11 +905,17 @@ export default function CreateMedicalRecordClient({
             <div>
               <div className="flex items-center gap-2 text-amber-800 font-bold text-sm">
                 <FileText className="h-5 w-5" />
-                <span>Bước 5 · Tổng kết bệnh án</span>
-                <span className="ml-auto rounded-full bg-amber-100 border border-amber-200/70 px-2 py-0.5 text-[10px] font-bold text-amber-800">BẮT BUỘC</span>
+                <span>{isEn ? "Step 5 · Medical Record Summary" : "Bước 5 · Tổng kết bệnh án"}</span>
+                <span className="ml-auto rounded-full bg-amber-100 border border-amber-200/70 px-2 py-0.5 text-[10px] font-bold text-amber-800">
+                  {isEn ? "MANDATORY" : "BẮT BUỘC"}
+                </span>
               </div>
               <p className="mt-2 text-xs text-on-surface-variant leading-relaxed">
-                Điền <strong>Chẩn đoán chính</strong>, gắn <strong>Mã ICD-10</strong>, <strong>Hướng điều trị tiếp theo</strong> & tình trạng ra viện.
+                {isEn ? (
+                  <>Enter <strong>Main Diagnosis</strong>, attach <strong>ICD-10 Code</strong>, <strong>Next Treatment Plan</strong> & Discharge status.</>
+                ) : (
+                  <>Điền <strong>Chẩn đoán chính</strong>, gắn <strong>Mã ICD-10</strong>, <strong>Hướng điều trị tiếp theo</strong> & tình trạng ra viện.</>
+                )}
               </p>
             </div>
             <button
@@ -895,10 +926,10 @@ export default function CreateMedicalRecordClient({
               <Sparkles className="h-4 w-4 text-amber-200" />
               {isStep5Done ? (
                 <>
-                  Sửa tổng kết bệnh án <CheckCircle2 className="h-3.5 w-3.5 text-emerald-100" />
+                  {isEn ? "Edit Record Summary" : "Sửa tổng kết bệnh án"} <CheckCircle2 className="h-3.5 w-3.5 text-emerald-100" />
                 </>
               ) : (
-                "Tổng kết bệnh án & ICD-10 (Cần làm)"
+                isEn ? "Medical Record Summary & ICD-10 (Required)" : "Tổng kết bệnh án & ICD-10 (Cần làm)"
               )}
             </button>
           </div>
@@ -908,13 +939,13 @@ export default function CreateMedicalRecordClient({
             <div>
               <div className="flex items-center gap-2 text-primary font-bold text-sm">
                 <Pill className="h-5 w-5" />
-                <span>Bước 6 · Kê đơn thuốc/kính</span>
+                <span>{isEn ? "Step 6 · Prescription / Glasses Rx" : "Bước 6 · Kê đơn thuốc/kính"}</span>
                 <span className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold ${isStep6Done ? "bg-emerald-100 text-emerald-800 border border-emerald-200/70" : "bg-[#c6e7ff]/40 text-primary border border-[#81cfff]/40"}`}>
-                  {isStep6Done ? "ĐÃ HOÀN THÀNH" : "BẮT BUỘC"}
+                  {isStep6Done ? (isEn ? "COMPLETED" : "ĐÃ HOÀN THÀNH") : (isEn ? "MANDATORY" : "BẮT BUỘC")}
                 </span>
               </div>
               <p className="mt-2 text-xs text-on-surface-variant leading-relaxed">
-                Mở cửa sổ kê <strong>đơn thuốc điện tử</strong> hoặc <strong>đơn kính khúc xạ</strong> EMR. Hoàn tất bước này để có thể kết thúc ca khám.
+                {isEn ? "Open EMR electronic prescription or refraction glasses prescription window. Complete this step to finish examination." : "Mở cửa sổ kê đơn thuốc điện tử hoặc đơn kính khúc xạ EMR. Hoàn tất bước này để có thể kết thúc ca khám."}
               </p>
 
               {/* Summary Chip when done */}
@@ -922,12 +953,12 @@ export default function CreateMedicalRecordClient({
                 <div className="mt-2 rounded-xl bg-white p-2.5 border border-green-200 text-xs text-green-900 space-y-1 shadow-2xs">
                   {recordDetail?.formData?.glassesPrescription?.sphOd && (
                     <p className="font-semibold text-[11px] text-indigo-800 flex items-center gap-1">
-                      <Glasses className="h-3.5 w-3.5" /> Đơn kính: OD {recordDetail.formData.glassesPrescription.sphOd}D / OS {recordDetail.formData.glassesPrescription.sphOs || "—"}D
+                      <Glasses className="h-3.5 w-3.5" /> {isEn ? "Glasses Rx" : "Đơn kính"}: OD {recordDetail.formData.glassesPrescription.sphOd}D / OS {recordDetail.formData.glassesPrescription.sphOs || "—"}D
                     </p>
                   )}
                   {(recordDetail?.formData?.prescription?.drugs?.length > 0 || recordDetail?.formData?.keDonThuoc?.danhSachThuoc?.length > 0) && (
                     <p className="font-semibold text-[11px] text-emerald-800 flex items-center gap-1">
-                      <Pill className="h-3.5 w-3.5" /> Đơn thuốc: {recordDetail?.formData?.prescription?.drugs?.length || recordDetail?.formData?.keDonThuoc?.danhSachThuoc?.length} loại thuốc
+                      <Pill className="h-3.5 w-3.5" /> {isEn ? "Prescription" : "Đơn thuốc"}: {recordDetail?.formData?.prescription?.drugs?.length || recordDetail?.formData?.keDonThuoc?.danhSachThuoc?.length} {isEn ? "medicines" : "loại thuốc"}
                     </p>
                   )}
                 </div>
@@ -941,10 +972,10 @@ export default function CreateMedicalRecordClient({
               <Pill className="h-4 w-4" />
               {isStep6Done ? (
                 <>
-                  Xem / Sửa đơn thuốc & kính <CheckCircle2 className="h-3.5 w-3.5 text-emerald-100" />
+                  {isEn ? "View / Edit Prescription & Glasses" : "Xem / Sửa đơn thuốc & kính"} <CheckCircle2 className="h-3.5 w-3.5 text-emerald-100" />
                 </>
               ) : (
-                "Kê đơn thuốc/kính (Cần làm)"
+                isEn ? "Prescribe Medications / Glasses (Required)" : "Kê đơn thuốc/kính (Cần làm)"
               )}
             </button>
           </div>
@@ -976,10 +1007,10 @@ export default function CreateMedicalRecordClient({
                   </div>
                   <div>
                     <h2 className="text-base font-bold text-gray-900">
-                      Tạo phiếu chỉ định Cận lâm sàng mới
+                      {isEn ? "Create New Paraclinical Order" : "Tạo phiếu chỉ định Cận lâm sàng mới"}
                     </h2>
                     <p className="text-xs text-gray-500">
-                      OCT, Thị trường, Siêu âm và Chụp ảnh cận lâm sàng
+                      {isEn ? "OCT, Visual Field, Ultrasound, and Paraclinical Imaging" : "OCT, Thị trường, Siêu âm và Chụp ảnh cận lâm sàng"}
                     </p>
                   </div>
                 </div>
@@ -1041,9 +1072,9 @@ export default function CreateMedicalRecordClient({
           <button
             type="button"
             onClick={() => router.push("/doctor/queue")}
-            className="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-xs"
+            className="inline-flex items-center gap-2 rounded-xl border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-xs cursor-pointer"
           >
-            <ArrowLeft className="h-4 w-4" /> Quay lại Hàng chờ bác sĩ
+            <ArrowLeft className="h-4 w-4" /> {isEn ? "Back to Doctor Queue" : "Quay lại Hàng chờ bác sĩ"}
           </button>
 
           <div className="flex items-center gap-3">
@@ -1058,20 +1089,20 @@ export default function CreateMedicalRecordClient({
               type="button"
               onClick={() => setShowCompletionCheckModal(true)}
               disabled={!isStep5Done || !isStep6Done}
-              className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-colors shadow-md hover:shadow-lg ${(!isStep5Done || !isStep6Done) ? "bg-slate-400 cursor-not-allowed" : "bg-emerald-600 hover:bg-emerald-700"}`}
+              className={`inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white transition-colors shadow-md hover:shadow-lg ${(!isStep5Done || !isStep6Done) ? "bg-slate-400 cursor-not-allowed" : "bg-emerald-600 hover:bg-emerald-700 cursor-pointer"}`}
               title={(!isStep5Done || !isStep6Done)
-                ? "Vui lòng hoàn thành Tổng kết bệnh án (Bước 5) và Kê đơn thuốc/kính (Bước 6) trước khi kết thúc ca khám."
-                : "Xác nhận hoàn thành các bước bắt buộc và kết thúc ca khám"}
+                ? (isEn ? "Please complete Medical Record Summary (Step 5) and Prescription / Glasses Rx (Step 6) before completing examination." : "Vui lòng hoàn thành Tổng kết bệnh án (Bước 5) và Kê đơn thuốc/kính (Bước 6) trước khi kết thúc ca khám.")
+                : (isEn ? "Confirm completion of mandatory steps and finish examination" : "Xác nhận hoàn thành các bước bắt buộc và kết thúc ca khám")}
             >
               {(!isStep5Done || !isStep6Done) ? (
                 <>
                   <Lock className="h-4 w-4 text-slate-200 shrink-0" />
-                  Hoàn thành ca khám (chưa đủ điều kiện)
+                  {isEn ? "Complete Examination (Ineligible)" : "Hoàn thành ca khám (chưa đủ điều kiện)"}
                 </>
               ) : (
                 <>
                   <CheckCircle2 className="h-4 w-4 text-emerald-200 shrink-0" />
-                  Hoàn thành ca khám
+                  {isEn ? "Complete Examination" : "Hoàn thành ca khám"}
                 </>
               )}
             </button>
@@ -1547,26 +1578,26 @@ export default function CreateMedicalRecordClient({
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
               <p className={`text-sm font-medium ${accentTextClass(accent)}`}>
-                {recordType ? recordType.replace("MS", "MS ") : "BỆNH ÁN NHÃN KHOA"}
+                {recordType ? recordType.replace("MS", "MS ") : (isEn ? "OPHTHALMIC RECORD" : "BỆNH ÁN NHÃN KHOA")}
               </p>
               <h1 className="mt-1 text-2xl font-bold text-gray-900">
-                {recordType ? MEDICAL_RECORD_TYPE_LABELS[recordType] : "Bệnh án khám mắt"}
+                {getMedicalRecordTypeLabel(recordType, locale)}
               </h1>
             </div>
             <div className="flex items-center gap-2 print:hidden">
               <button
                 type="button"
                 onClick={handleQuickFill}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800 transition hover:bg-amber-100 shadow-xs"
-                title="Điền mẫu dữ liệu test nhanh trong 1 click"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800 transition hover:bg-amber-100 shadow-xs cursor-pointer"
+                title={isEn ? "Prefill sample test data in 1 click" : "Điền mẫu dữ liệu test nhanh trong 1 click"}
               >
                 <Sparkles className="h-4 w-4 text-amber-600" />
-                Điền mẫu test nhanh
+                {isEn ? "Quick test prefill" : "Điền mẫu test nhanh"}
               </button>
               <button
                 type="button"
                 onClick={handlePrint}
-                className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
+                className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 cursor-pointer"
                 title={t("printA4")}
               >
                 <Printer className="h-4 w-4" />
@@ -1581,7 +1612,13 @@ export default function CreateMedicalRecordClient({
           {checkingHistory ? (
             <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-3.5 text-xs text-blue-700 flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-              <span>Đang kiểm tra lịch sử khám mẫu <strong>{recordType ? MEDICAL_RECORD_TYPE_LABELS[recordType] : ""}</strong> cho bệnh nhân này...</span>
+              <span>
+                {isEn ? (
+                  <>Checking examination history for <strong>{getMedicalRecordTypeLabel(recordType, locale)}</strong> for this patient...</>
+                ) : (
+                  <>Đang kiểm tra lịch sử khám mẫu <strong>{getMedicalRecordTypeLabel(recordType, locale)}</strong> cho bệnh nhân này...</>
+                )}
+              </span>
             </div>
           ) : historyStatus === "found" && historyRecord ? (
             <div className="rounded-xl border border-sky-200 bg-linear-to-r from-sky-50/90 via-white to-slate-50/90 p-4 shadow-xs">
@@ -1593,14 +1630,16 @@ export default function CreateMedicalRecordClient({
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-slate-900 text-sm">
-                        Phát hiện lịch sử khám mẫu {recordType ? MEDICAL_RECORD_TYPE_LABELS[recordType] : ""} ngày {historyRecord.date}
+                        {isEn
+                          ? `Found examination history for ${getMedicalRecordTypeLabel(recordType, locale)} on ${historyRecord.date}`
+                          : `Phát hiện lịch sử khám mẫu ${getMedicalRecordTypeLabel(recordType, locale)} ngày ${historyRecord.date}`}
                       </span>
                       <span className="rounded-full bg-sky-100 px-2.5 py-0.5 text-[11px] font-semibold text-[#00658D]">
-                        Lần khám trước
+                        {isEn ? "Previous Visit" : "Lần khám trước"}
                       </span>
                     </div>
                     <p className="text-xs text-slate-600 mt-0.5">
-                      Bác sĩ thực hiện: <strong className="text-slate-800">{historyRecord.doctorName}</strong>. Bạn có muốn sao chép lại chỉ số khám để điền nhanh không?
+                      {isEn ? "Attending Doctor: " : "Bác sĩ thực hiện: "}<strong className="text-slate-800">{historyRecord.doctorName}</strong>. {isEn ? "Would you like to copy examination parameters for quick filling?" : "Bạn có muốn sao chép lại chỉ số khám để điền nhanh không?"}
                     </p>
                   </div>
                 </div>
@@ -1611,14 +1650,14 @@ export default function CreateMedicalRecordClient({
                     className="inline-flex items-center gap-1.5 rounded-lg bg-[#00658D] px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-[#005273] transition-colors cursor-pointer"
                   >
                     <Sparkles className="h-4 w-4 text-amber-300" />
-                    Sao chép khám gần nhất
+                    {isEn ? "Copy latest examination" : "Sao chép khám gần nhất"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setHistoryStatus("none")}
-                    className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                    className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 cursor-pointer"
                   >
-                    Bỏ qua (Điền mới)
+                    {isEn ? "Skip (Fill new)" : "Bỏ qua (Điền mới)"}
                   </button>
                 </div>
               </div>
@@ -1632,10 +1671,14 @@ export default function CreateMedicalRecordClient({
                   </div>
                   <div>
                     <span className="font-bold text-amber-950 text-sm">
-                      Lần đầu khám bằng mẫu {recordType ? MEDICAL_RECORD_TYPE_LABELS[recordType] : ""} cho bệnh nhân này
+                      {isEn
+                        ? `First visit using ${getMedicalRecordTypeLabel(recordType, locale)} for this patient`
+                        : `Lần đầu khám bằng mẫu ${getMedicalRecordTypeLabel(recordType, locale)} cho bệnh nhân này`}
                     </span>
                     <p className="text-xs text-amber-800 mt-0.5">
-                      Hệ thống có thể hỗ trợ bác sĩ tự động điền các chỉ số khám mắt bình thường (10/10, nhãn áp 15mmHg, mắt trong) chỉ với 1 click.
+                      {isEn
+                        ? "The system can auto-fill normal eye examination parameters (10/10, IOP 15mmHg, clear media) with 1 click."
+                        : "Hệ thống có thể hỗ trợ bác sĩ tự động điền các chỉ số khám mắt bình thường (10/10, nhãn áp 15mmHg, mắt trong) chỉ với 1 click."}
                     </p>
                   </div>
                 </div>
@@ -1643,15 +1686,15 @@ export default function CreateMedicalRecordClient({
                   <button
                     type="button"
                     onClick={handleApplyStandardDefaults}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-amber-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-amber-700 transition-colors"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-amber-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-amber-700 transition-colors cursor-pointer"
                   >
                     <Zap className="h-4 w-4 text-amber-200" />
-                    Điền mẫu khám chuẩn (Bình thường)
+                    {isEn ? "Fill standard normal defaults" : "Điền mẫu khám chuẩn (Bình thường)"}
                   </button>
                   <button
                     type="button"
                     onClick={() => setHistoryStatus("none")}
-                    className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                    className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 cursor-pointer"
                   >
                     Bỏ qua
                   </button>

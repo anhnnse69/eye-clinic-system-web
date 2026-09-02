@@ -41,7 +41,7 @@ import {
 import { useState, type ReactNode } from "react"
 import { useLocale } from "next-intl"
 import type { MedicalRecordFormDataPayload, MedicalRecordType } from "@/types"
-import { MEDICAL_RECORD_TYPE_LABELS } from "@/types"
+import { MEDICAL_RECORD_TYPE_LABELS, getMedicalRecordTypeLabel } from "@/types"
 import { SectionHeading, getAccentForRecordType } from "./SectionHeading"
 import SubspecialtySections from "./SubspecialtySections"
 import GlaucomaFormSections from "./GlaucomaFormSections"
@@ -1578,6 +1578,8 @@ function CollapsibleSection({
     else setInternalOpen((v) => !v)
   }
 
+  const locale = useLocale()
+  const isEn = locale === "en"
   const accentBorder = "border-l-primary"
   const accentText = "text-primary font-bold"
   const accentBg = "bg-surface-container-lowest"
@@ -1613,7 +1615,7 @@ function CollapsibleSection({
             {open ? (
               <>
                 <ChevronUp className="h-4 w-4" />
-                Thu gọn
+                {isEn ? "Collapse" : "Thu gọn"}
               </>
             ) : (
               <>
@@ -1701,11 +1703,11 @@ export default function UniversalEyeExamSections({ recordType }: UniversalEyeExa
             <div>
               <div className="flex items-center gap-2">
                 <span className="bg-[#c6e7ff]/40 text-primary border border-[#81cfff]/40 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md tracking-wider">
-                  Sổ Tay Bệnh Án EMR
+                  {isEn ? "EMR Examination Binder" : "Sổ Tay Bệnh Án EMR"}
                 </span>
                 {recordType && (
                   <span className="bg-amber-50 text-amber-800 border border-amber-200/70 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md tracking-wider">
-                    {MEDICAL_RECORD_TYPE_LABELS[recordType]} ({recordType.replace("MS", "MS ")})
+                    {getMedicalRecordTypeLabel(recordType, locale)} ({recordType.replace("MS", "MS ")})
                   </span>
                 )}
               </div>
@@ -1725,7 +1727,7 @@ export default function UniversalEyeExamSections({ recordType }: UniversalEyeExa
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low text-xs font-bold text-on-surface border border-outline-variant/60 transition-all cursor-pointer shadow-xs"
             >
               <Maximize2 className="h-3.5 w-3.5 text-primary" />
-              Mở tất cả mục
+              {isEn ? "Expand all" : "Mở tất cả mục"}
             </button>
             <button
               type="button"
@@ -1733,7 +1735,7 @@ export default function UniversalEyeExamSections({ recordType }: UniversalEyeExa
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container-lowest hover:bg-surface-container-low text-xs font-bold text-on-surface border border-outline-variant/60 transition-all cursor-pointer shadow-xs"
             >
               <Minimize2 className="h-3.5 w-3.5 text-on-surface-variant" />
-              Gập gọn tất cả
+              {isEn ? "Collapse all" : "Gập gọn tất cả"}
             </button>
           </div>
         </div>
@@ -1742,7 +1744,7 @@ export default function UniversalEyeExamSections({ recordType }: UniversalEyeExa
         <div className="flex flex-wrap items-center gap-2 text-xs print:hidden">
           <span className="font-semibold text-on-surface-variant mr-1 flex items-center gap-1">
             <Bookmark className="h-3.5 w-3.5 text-primary" />
-            Chuyển nhanh Chương:
+            {isEn ? "Quick jump to Section:" : "Chuyển nhanh Chương:"}
           </span>
           <a
             href="#sec-thi-luc"
@@ -1771,7 +1773,7 @@ export default function UniversalEyeExamSections({ recordType }: UniversalEyeExa
               className="inline-flex items-center gap-1.5 rounded-lg bg-surface-container-low border border-outline-variant/40 px-3 py-1.5 font-bold text-on-surface hover:bg-primary hover:text-on-primary transition-all cursor-pointer"
             >
               <Stethoscope className="h-3.5 w-3.5 text-primary" />
-              4. Khám Chuyên Khoa
+              4. {isEn ? "Specialty Examination" : "Khám Chuyên Khoa"}
             </a>
           )}
           <a
@@ -1779,7 +1781,7 @@ export default function UniversalEyeExamSections({ recordType }: UniversalEyeExa
             className="inline-flex items-center gap-1.5 rounded-lg bg-surface-container-low border border-outline-variant/40 px-3 py-1.5 font-bold text-on-surface hover:bg-primary hover:text-on-primary transition-all cursor-pointer"
           >
             <HeartPulse className="h-3.5 w-3.5 text-primary" />
-            5. Khám Toàn Thân
+            5. {isEn ? "Systemic Examination" : "Khám Toàn Thân"}
           </a>
         </div>
       </div>
@@ -1929,7 +1931,9 @@ export default function UniversalEyeExamSections({ recordType }: UniversalEyeExa
         <div id="sec-chuyen-khoa" className="space-y-4">
           <div className="border-b border-outline-variant/30 pb-1.5 text-xs font-extrabold text-primary uppercase tracking-wider flex items-center gap-2">
             <Stethoscope className="h-4 w-4 text-primary" />
-            Chương IV: Khám Chuyên Khoa Mắt — {MEDICAL_RECORD_TYPE_LABELS[recordType]} ({recordType.replace("MS", "MS ")})
+            {isEn
+              ? `Chapter IV: Specialty Eye Examination — ${getMedicalRecordTypeLabel(recordType, locale)} (${recordType.replace("MS", "MS ")})`
+              : `Chương IV: Khám Chuyên Khoa Mắt — ${getMedicalRecordTypeLabel(recordType, locale)} (${recordType.replace("MS", "MS ")})`}
           </div>
           <div className="rounded-2xl border border-outline-variant/40 bg-surface-container-lowest p-5 shadow-xs">
             {recordType === "MS24_GLAUCOMA" ? (

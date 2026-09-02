@@ -1625,26 +1625,32 @@ export type MedicalRecordType = (typeof MEDICAL_RECORD_TYPES)[number]
 
 
 export const MEDICAL_RECORD_TYPE_LABELS: Record<MedicalRecordType, string> = {
-
-
   MS21_TRAUMA: "Bệnh án mắt (Chấn thương)",
-
-
   MS22_ANTERIOR: "Bệnh án mắt (Bán phần trước)",
-
-
   MS23_FUNDUS: "Bệnh án mắt (Đáy mắt)",
-
-
   MS24_GLAUCOMA: "Bệnh án mắt (Glôcôm)",
-
-
   MS25_STRABISMUS_PTOSIS: "Bệnh án mắt (Lác, sụp mi)",
-
-
   MS26_PEDIATRIC: "Bệnh án mắt (Mắt trẻ em)",
+}
 
-
+export const getMedicalRecordTypeLabel = (type?: string | null, locale: string = "vi"): string => {
+  const isEn = locale === "en"
+  switch (type) {
+    case "MS21_TRAUMA":
+      return isEn ? "Ophthalmic Trauma Record" : "Bệnh án mắt (Chấn thương)"
+    case "MS22_ANTERIOR":
+      return isEn ? "Anterior Segment Record" : "Bệnh án mắt (Bán phần trước)"
+    case "MS23_FUNDUS":
+      return isEn ? "Posterior Segment / Fundus Record" : "Bệnh án mắt (Đáy mắt)"
+    case "MS24_GLAUCOMA":
+      return isEn ? "Glaucoma Record" : "Bệnh án mắt (Glôcôm)"
+    case "MS25_STRABISMUS_PTOSIS":
+      return isEn ? "Strabismus & Ptosis Record" : "Bệnh án mắt (Lác, sụp mi)"
+    case "MS26_PEDIATRIC":
+      return isEn ? "Pediatric Ophthalmic Record" : "Bệnh án mắt (Mắt trẻ em)"
+    default:
+      return (type && MEDICAL_RECORD_TYPE_LABELS[type as MedicalRecordType]) || type || ""
+  }
 }
 
 

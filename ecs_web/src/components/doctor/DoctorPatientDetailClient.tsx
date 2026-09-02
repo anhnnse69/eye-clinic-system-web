@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 import {
   ChevronLeft,
   Loader2,
@@ -120,18 +121,18 @@ interface PatientDetail {
 
 // ── Helpers ───────────────────────────────────────────────
 
-const formatDate = (dateString: string) => {
+const formatDate = (dateString: string, locale: "vi" | "en" = "vi") => {
   if (!dateString) return "—";
   const date = dateString.includes("T") ? dateString.split("T")[0] : dateString;
   const parts = date.split("-");
   if (parts.length !== 3) return dateString;
-  return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  return locale === "en" ? `${parts[1]}/${parts[2]}/${parts[0]}` : `${parts[2]}/${parts[1]}/${parts[0]}`;
 };
 
-const formatDateTime = (dateTimeStr: string) => {
+const formatDateTime = (dateTimeStr: string, locale: "vi" | "en" = "vi") => {
   if (!dateTimeStr) return "—";
   const [datePart, timePart] = dateTimeStr.split("T");
-  return `${timePart?.substring(0, 5) ?? ""} — ${formatDate(datePart)}`;
+  return `${timePart?.substring(0, 5) ?? ""} — ${formatDate(datePart, locale)}`;
 };
 
 const calcAge = (dob: string) =>
@@ -139,7 +140,8 @@ const calcAge = (dob: string) =>
     (Date.now() - new Date(dob).getTime()) / (1000 * 60 * 60 * 24 * 365.25)
   );
 
-const genderLabel = (g: string) => {
+const genderLabel = (g: string, locale: "vi" | "en") => {
+  const isEn = locale === "en";
   if (g === "MALE" || g === "Male")
     return (
       <div className="inline-flex items-center gap-1.5 text-[#00658D] font-semibold bg-[#00658D]/10 border border-[#00658D]/20 px-3 py-1 rounded-full text-xs">
@@ -147,7 +149,7 @@ const genderLabel = (g: string) => {
           <circle cx="10" cy="14" r="5" />
           <path d="M14 10l7-7M15 3h6v6" />
         </svg>
-        <span>Nam</span>
+        <span>{isEn ? "Male" : "Nam"}</span>
       </div>
     );
   if (g === "FEMALE" || g === "Female")
@@ -157,48 +159,50 @@ const genderLabel = (g: string) => {
           <circle cx="12" cy="9" r="5" />
           <path d="M12 14v7M9 18h6" />
         </svg>
-        <span>Nữ</span>
+        <span>{isEn ? "Female" : "Nữ"}</span>
       </div>
     );
   return (
     <div className="inline-flex items-center gap-1.5 text-slate-600 font-medium bg-slate-100 border border-slate-200 px-3 py-1 rounded-full text-xs">
-      <span>Khác</span>
+      <span>{isEn ? "Other" : "Khác"}</span>
     </div>
   );
 };
 
-const formatStatusBadge = (status: AppointmentStatus) => {
+const formatStatusBadge = (status: AppointmentStatus, locale: "vi" | "en") => {
+  const isEn = locale === "en";
   switch (status) {
     case "PENDING":
-      return <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 font-semibold text-[11px] px-2.5 py-1 rounded-lg border border-amber-200/80"><Clock className="h-3 w-3" /> Chờ xử lý</span>;
+      return <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 font-semibold text-[11px] px-2.5 py-1 rounded-lg border border-amber-200/80"><Clock className="h-3 w-3" /> {isEn ? "Pending" : "Chờ xử lý"}</span>;
     case "DEPOSIT_PAID":
-      return <span className="inline-flex items-center gap-1 bg-[#00658D]/10 text-[#00658D] font-semibold text-[11px] px-2.5 py-1 rounded-lg border border-[#00658D]/20"><CreditCard className="h-3 w-3" /> Đã đặt cọc</span>;
+      return <span className="inline-flex items-center gap-1 bg-[#00658D]/10 text-[#00658D] font-semibold text-[11px] px-2.5 py-1 rounded-lg border border-[#00658D]/20"><CreditCard className="h-3 w-3" /> {isEn ? "Deposit Paid" : "Đã đặt cọc"}</span>;
     case "BOOKED":
-      return <span className="inline-flex items-center gap-1 bg-[#00658D]/10 text-[#00658D] font-semibold text-[11px] px-2.5 py-1 rounded-lg border border-[#00658D]/20"><Clock className="h-3 w-3" /> Đã đặt lịch</span>;
+      return <span className="inline-flex items-center gap-1 bg-[#00658D]/10 text-[#00658D] font-semibold text-[11px] px-2.5 py-1 rounded-lg border border-[#00658D]/20"><Clock className="h-3 w-3" /> {isEn ? "Booked" : "Đã đặt lịch"}</span>;
     case "ARRIVED":
-      return <span className="inline-flex items-center gap-1 bg-sky-50 text-sky-700 font-semibold text-[11px] px-2.5 py-1 rounded-lg border border-sky-200/80"><MapPin className="h-3 w-3" /> Đã đến viện</span>;
+      return <span className="inline-flex items-center gap-1 bg-sky-50 text-sky-700 font-semibold text-[11px] px-2.5 py-1 rounded-lg border border-sky-200/80"><MapPin className="h-3 w-3" /> {isEn ? "Arrived" : "Đã đến viện"}</span>;
     case "IN_PROGRESS":
-      return <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 font-semibold text-[11px] px-2.5 py-1 rounded-lg border border-amber-200/80"><Activity className="h-3 w-3" /> Đang khám</span>;
+      return <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 font-semibold text-[11px] px-2.5 py-1 rounded-lg border border-amber-200/80"><Activity className="h-3 w-3" /> {isEn ? "In Progress" : "Đang khám"}</span>;
     case "COMPLETED":
-      return <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 font-semibold text-[11px] px-2.5 py-1 rounded-lg border border-emerald-200/80"><CheckCircle2 className="h-3 w-3" /> Hoàn thành</span>;
+      return <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 font-semibold text-[11px] px-2.5 py-1 rounded-lg border border-emerald-200/80"><CheckCircle2 className="h-3 w-3" /> {isEn ? "Completed" : "Hoàn thành"}</span>;
     case "CANCELLED":
-      return <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-700 font-semibold text-[11px] px-2.5 py-1 rounded-lg border border-rose-200/80"><XCircle className="h-3 w-3" /> Đã hủy</span>;
+      return <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-700 font-semibold text-[11px] px-2.5 py-1 rounded-lg border border-rose-200/80"><XCircle className="h-3 w-3" /> {isEn ? "Cancelled" : "Đã hủy"}</span>;
     case "NOSHOW":
-      return <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-600 font-semibold text-[11px] px-2.5 py-1 rounded-lg border border-slate-200"><User className="h-3 w-3" /> Không đến</span>;
+      return <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-600 font-semibold text-[11px] px-2.5 py-1 rounded-lg border border-slate-200"><User className="h-3 w-3" /> {isEn ? "No Show" : "Không đến"}</span>;
     default:
       return <span className="inline-flex items-center gap-1 bg-slate-50 text-slate-400 font-semibold text-[11px] px-2.5 py-1 rounded-lg border border-slate-200">—</span>;
   }
 };
 
-const formatSourceBadge = (source?: string) => {
+const formatSourceBadge = (source?: string, locale: "vi" | "en" = "vi") => {
+  const isEn = locale === "en";
   switch (source) {
     case "MOBILE_APP":
-      return <span className="inline-flex items-center gap-1.5 text-slate-700 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md font-medium text-[11px]"><Smartphone className="h-3 w-3 text-[#00658D]" /> Ứng dụng di động</span>;
+      return <span className="inline-flex items-center gap-1.5 text-slate-700 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md font-medium text-[11px]"><Smartphone className="h-3 w-3 text-[#00658D]" /> {isEn ? "Mobile App" : "Ứng dụng di động"}</span>;
     case "WEBSITE":
     case "ONLINE":
-      return <span className="inline-flex items-center gap-1.5 text-slate-700 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md font-medium text-[11px]"><Globe className="h-3 w-3 text-[#00658D]" /> Hệ thống Online</span>;
+      return <span className="inline-flex items-center gap-1.5 text-slate-700 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md font-medium text-[11px]"><Globe className="h-3 w-3 text-[#00658D]" /> {isEn ? "Online System" : "Hệ thống Online"}</span>;
     default:
-      return <span className="inline-flex items-center gap-1.5 text-slate-700 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md font-medium text-[11px]"><UserPlus className="h-3 w-3 text-[#00658D]" /> Tại quầy</span>;
+      return <span className="inline-flex items-center gap-1.5 text-slate-700 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md font-medium text-[11px]"><UserPlus className="h-3 w-3 text-[#00658D]" /> {isEn ? "Walk-in Desk" : "Tại quầy"}</span>;
   }
 };
 
@@ -209,23 +213,25 @@ const RECORDS_PER_PAGE = 5;
 function AppointmentTableRow({
   ap,
   onOpenRecordModal,
+  currentLocale,
 }: {
   ap: AppointmentHistory;
   onOpenRecordModal: (mrId: string, apItem: AppointmentHistory) => void;
+  currentLocale: "vi" | "en";
 }) {
+  const t = (vi: string, en: string) => (currentLocale === "en" ? en : vi);
   const mr = ap.medicalRecord;
-  const clinicDisplay = ap.clinicName && ap.clinicName !== "N/A" ? ap.clinicName : "Phòng khám Mắt Sài Gòn";
-  const doctorDisplay = ap.doctorName && ap.doctorName !== "N/A" ? ap.doctorName : "BS. Nguyễn Văn An";
-  const specialtyDisplay = ap.specialtyName && ap.specialtyName !== "N/A" ? ap.specialtyName : "Chuyên khoa Nhãn khoa";
+  const clinicDisplay = ap.clinicName && ap.clinicName !== "N/A" ? ap.clinicName : t("Phòng khám Mắt Sài Gòn", "Saigon Eye Clinic");
+  const doctorDisplay = ap.doctorName && ap.doctorName !== "N/A" ? ap.doctorName : t("BS. Nguyễn Văn An", "Dr. Nguyen Van An");
+  const specialtyDisplay = ap.specialtyName && ap.specialtyName !== "N/A" ? ap.specialtyName : t("Chuyên khoa Nhãn khoa", "Ophthalmology Specialty");
 
-  // Combine symptom / chief complaint / reason for visit
-  const primaryReason = ap.medicalRecord?.chiefComplaint || ap.chiefComplaint || ap.symptoms || ap.noteReason || ap.serviceName || "Khám mắt tổng quát";
+  const primaryReason = ap.medicalRecord?.chiefComplaint || ap.chiefComplaint || ap.symptoms || ap.noteReason || ap.serviceName || t("Khám mắt tổng quát", "General Eye Examination");
   const secondaryReason = ap.serviceName && primaryReason !== ap.serviceName ? ap.serviceName : null;
 
   return (
     <tr className="hover:bg-slate-50/60 transition-colors group text-xs">
       <td className="px-6 py-4 font-bold text-slate-900 whitespace-nowrap">
-        {formatDateTime(ap.appointmentDate)}
+        {formatDateTime(ap.appointmentDate, currentLocale)}
       </td>
       <td className="px-6 py-4">
         <div className="font-bold text-slate-800 flex items-center gap-1.5">
@@ -239,7 +245,7 @@ function AppointmentTableRow({
         )}
         {ap.isOtherClinic && (
           <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-[#00658D]/10 text-[#00658D] border border-[#00658D]/20">
-            <Globe className="h-2.5 w-2.5" /> Cơ sở khác
+            <Globe className="h-2.5 w-2.5" /> {t("Cơ sở khác", "Other Facility")}
           </span>
         )}
       </td>
@@ -259,15 +265,15 @@ function AppointmentTableRow({
         </div>
         {secondaryReason && (
           <div className="text-[11px] text-slate-400 font-normal mt-0.5 pl-4">
-            Dịch vụ: {secondaryReason}
+            {t("Dịch vụ: ", "Service: ")}{secondaryReason}
           </div>
         )}
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
-        {formatSourceBadge(ap.bookingSource)}
+        {formatSourceBadge(ap.bookingSource, currentLocale)}
       </td>
       <td className="px-6 py-4 text-center whitespace-nowrap">
-        {formatStatusBadge(ap.status)}
+        {formatStatusBadge(ap.status, currentLocale)}
       </td>
       {/* Medical record view */}
       <td className="px-4 py-4 text-center whitespace-nowrap">
@@ -281,10 +287,10 @@ function AppointmentTableRow({
               }`}
           >
             <FileText className="h-3.5 w-3.5" />
-            {ap.isOtherClinic ? "Xem Tổng kết & Đơn" : "Xem bệnh án"}
+            {ap.isOtherClinic ? t("Xem Tổng kết & Đơn", "View Summary & Rx") : t("Xem bệnh án", "View Record")}
           </button>
         ) : (
-          <span className="text-[11px] text-slate-400 italic">Chưa có</span>
+          <span className="text-[11px] text-slate-400 italic">{t("Chưa có", "None")}</span>
         )}
       </td>
     </tr>
@@ -297,11 +303,14 @@ function CrossClinicRecordModal({
   recordId,
   appointmentItem,
   onClose,
+  currentLocale,
 }: {
   recordId: string;
   appointmentItem: AppointmentHistory;
   onClose: () => void;
+  currentLocale: "vi" | "en";
 }) {
+  const t = (vi: string, en: string) => (currentLocale === "en" ? en : vi);
   const [loading, setLoading] = useState(true);
   const [recordDetail, setRecordDetail] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -315,16 +324,16 @@ function CrossClinicRecordModal({
         if (res.data) {
           setRecordDetail(res.data);
         } else {
-          setError("Không thể tải chi tiết bệnh án.");
+          setError(t("Không thể tải chi tiết bệnh án.", "Failed to load medical record details."));
         }
       } catch {
-        setError("Lỗi kết nối khi tải bệnh án.");
+        setError(t("Lỗi kết nối khi tải bệnh án.", "Connection error loading medical record."));
       } finally {
         setLoading(false);
       }
     }
     load();
-  }, [recordId]);
+  }, [recordId, currentLocale]);
 
   if (!recordId) return null;
 
@@ -343,20 +352,20 @@ function CrossClinicRecordModal({
             <div className="flex items-center gap-2">
               <Building2 className="h-5 w-5 text-sky-200" />
               <h3 className="text-lg font-bold">
-                {appointmentItem.clinicName || "Hồ sơ bệnh án"}
+                {appointmentItem.clinicName || t("Hồ sơ bệnh án", "Medical Record")}
               </h3>
               {appointmentItem.isOtherClinic && (
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white border border-white/30">
-                  Hồ sơ luân chuyển liên cơ sở
+                  {t("Hồ sơ luân chuyển liên cơ sở", "Cross-Facility Transferred Record")}
                 </span>
               )}
             </div>
             <p className="text-xs text-sky-100 mt-1 flex items-center gap-3 flex-wrap">
-              <span>Bác sĩ: {appointmentItem.doctorName || "—"}</span>
+              <span>{t("Bác sĩ: ", "Doctor: ")}{appointmentItem.doctorName || "—"}</span>
               <span>•</span>
-              <span>Chuyên khoa: {appointmentItem.specialtyName || "—"}</span>
+              <span>{t("Chuyên khoa: ", "Specialty: ")}{appointmentItem.specialtyName || "—"}</span>
               <span>•</span>
-              <span>Ngày khám: {formatDateTime(appointmentItem.appointmentDate)}</span>
+              <span>{t("Ngày khám: ", "Visit Date: ")}{formatDateTime(appointmentItem.appointmentDate, currentLocale)}</span>
             </p>
           </div>
           <button
@@ -372,7 +381,10 @@ function CrossClinicRecordModal({
           <ShieldAlert className="h-4 w-4 shrink-0 text-[#00658D]" />
           <span>
             {recordDetail?.editRestrictionReason ||
-              "Bác sĩ đang xem hồ sơ bệnh án liên cơ sở ở chế độ Chỉ Xem Tổng kết & Đơn thuốc."}
+              t(
+                "Bác sĩ đang xem hồ sơ bệnh án liên cơ sở ở chế độ Chỉ Xem Tổng kết & Đơn thuốc.",
+                "Viewing cross-facility medical record in Read-Only Summary & Prescription mode."
+              )}
           </span>
         </div>
 
@@ -381,7 +393,7 @@ function CrossClinicRecordModal({
           {loading ? (
             <div className="py-16 text-center flex flex-col items-center justify-center gap-2">
               <Loader2 className="h-7 w-7 text-[#00658D] animate-spin" />
-              <p className="text-xs text-slate-500 font-medium">Đang tải dữ liệu bệnh án liên cơ sở...</p>
+              <p className="text-xs text-slate-500 font-medium">{t("Đang tải dữ liệu bệnh án liên cơ sở...", "Loading cross-facility medical record data...")}</p>
             </div>
           ) : error ? (
             <div className="py-12 text-center text-rose-600 font-medium">{error}</div>
@@ -391,19 +403,19 @@ function CrossClinicRecordModal({
               <div className="space-y-4 bg-slate-50 p-4.5 rounded-2xl border border-slate-200">
                 <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2 border-b border-slate-200 pb-2">
                   <FileText className="h-4 w-4 text-[#00658D]" />
-                  Phần I: Tổng kết khám bệnh & Chẩn đoán
+                  {t("Phần I: Tổng kết khám bệnh & Chẩn đoán", "Part I: Examination Summary & Diagnosis")}
                 </h4>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                   <div>
-                    <span className="font-bold text-slate-500 uppercase text-[10px]">Lý do khám / Triệu chứng</span>
+                    <span className="font-bold text-slate-500 uppercase text-[10px]">{t("Lý do khám / Triệu chứng", "Reason for Visit / Symptoms")}</span>
                     <p className="mt-1 font-semibold text-slate-800">
                       {recordDetail.chiefComplaint || appointmentItem.symptoms || "—"}
                     </p>
                   </div>
 
                   <div>
-                    <span className="font-bold text-slate-500 uppercase text-[10px]">Chẩn đoán chính</span>
+                    <span className="font-bold text-slate-500 uppercase text-[10px]">{t("Chẩn đoán chính", "Main Diagnosis")}</span>
                     <p className="mt-1 font-bold text-[#00658D]">
                       {recordDetail.summary || benhAn?.summary || "—"}
                     </p>
@@ -412,7 +424,7 @@ function CrossClinicRecordModal({
 
                 {recordDetail.notes && (
                   <div className="text-xs pt-2 border-t border-slate-200/60">
-                    <span className="font-bold text-slate-500 uppercase text-[10px]">Lời dặn / Ghi chú bác sĩ</span>
+                    <span className="font-bold text-slate-500 uppercase text-[10px]">{t("Lời dặn / Ghi chú bác sĩ", "Doctor Notes / Advice")}</span>
                     <p className="mt-1 text-slate-700 italic font-medium whitespace-pre-line">
                       {recordDetail.notes}
                     </p>
@@ -424,21 +436,23 @@ function CrossClinicRecordModal({
               <div className="space-y-4 bg-slate-50 p-4.5 rounded-2xl border border-slate-200">
                 <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2 border-b border-slate-200 pb-2">
                   <Pill className="h-4 w-4 text-[#00658D]" />
-                  Phần II: Đơn thuốc & Đơn kính đã kê
+                  {t("Phần II: Đơn thuốc & Đơn kính đã kê", "Part II: Prescribed Medications & Glasses")}
                 </h4>
 
                 {/* Thuốc */}
                 {rxDrugs.length > 0 ? (
                   <div className="space-y-2">
-                    <span className="text-[11px] font-bold text-slate-700 uppercase">Thuốc kê đơn ({rxDrugs.length} thuốc)</span>
+                    <span className="text-[11px] font-bold text-slate-700 uppercase">
+                      {t("Thuốc kê đơn (", "Prescribed Drugs (")}{rxDrugs.length} {t("thuốc)", "items)")}
+                    </span>
                     <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
                       <table className="w-full text-left text-xs">
                         <thead className="bg-slate-100/80 text-slate-600 font-bold border-b border-slate-200">
                           <tr>
-                            <th className="p-2.5">Tên thuốc</th>
-                            <th className="p-2.5">Hàm lượng</th>
-                            <th className="p-2.5">Số lượng</th>
-                            <th className="p-2.5">Hướng dẫn / Cách dùng</th>
+                            <th className="p-2.5">{t("Tên thuốc", "Medicine Name")}</th>
+                            <th className="p-2.5">{t("Hàm lượng", "Dosage")}</th>
+                            <th className="p-2.5">{t("Số lượng", "Quantity")}</th>
+                            <th className="p-2.5">{t("Hướng dẫn / Cách dùng", "Instructions / Usage")}</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 font-medium">
@@ -446,7 +460,7 @@ function CrossClinicRecordModal({
                             <tr key={idx} className="hover:bg-slate-50">
                               <td className="p-2.5 font-bold text-slate-800">{d.medicineName || d.tenThuoc || "—"}</td>
                               <td className="p-2.5 text-slate-600">{d.dosage || d.hamLuong || "—"}</td>
-                              <td className="p-2.5 font-semibold text-[#00658D]">{d.quantity || d.soLuong} {d.unit || d.donViTinh || "viên"}</td>
+                              <td className="p-2.5 font-semibold text-[#00658D]">{d.quantity || d.soLuong} {d.unit || d.donViTinh || t("viên", "tabs")}</td>
                               <td className="p-2.5 text-slate-600">{d.instruction || d.cachDung || "—"}</td>
                             </tr>
                           ))}
@@ -455,7 +469,7 @@ function CrossClinicRecordModal({
                     </div>
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-400 italic">Không phát sinh đơn thuốc trong lượt khám này.</p>
+                  <p className="text-xs text-slate-400 italic">{t("Không phát sinh đơn thuốc trong lượt khám này.", "No prescriptions issued for this visit.")}</p>
                 )}
 
                 {/* Đơn kính */}
@@ -463,19 +477,19 @@ function CrossClinicRecordModal({
                   <div className="space-y-2 pt-3 border-t border-slate-200/60">
                     <span className="text-[11px] font-bold text-slate-700 uppercase flex items-center gap-1.5">
                       <Glasses className="h-3.5 w-3.5 text-[#00658D]" />
-                      Đơn kính khúc xạ (OD / OS)
+                      {t("Đơn kính khúc xạ (OD / OS)", "Refraction Glasses Prescription (OD / OS)")}
                     </span>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                       {/* OD */}
                       <div className="bg-white p-3 rounded-xl border border-slate-200">
-                        <span className="font-bold text-[#00658D]">Mắt Phải (OD)</span>
+                        <span className="font-bold text-[#00658D]">{t("Mắt Phải (OD)", "Right Eye (OD)")}</span>
                         <p className="text-[11px] text-slate-600 mt-1 font-medium">
                           SPH: {rxGlasses.odSph || "—"} | CYL: {rxGlasses.odCyl || "—"} | AXIS: {rxGlasses.odAxis || "—"} | ADD: {rxGlasses.odAdd || "—"}
                         </p>
                       </div>
                       {/* OS */}
                       <div className="bg-white p-3 rounded-xl border border-slate-200">
-                        <span className="font-bold text-[#00658D]">Mắt Trái (OS)</span>
+                        <span className="font-bold text-[#00658D]">{t("Mắt Trái (OS)", "Left Eye (OS)")}</span>
                         <p className="text-[11px] text-slate-600 mt-1 font-medium">
                           SPH: {rxGlasses.osSph || "—"} | CYL: {rxGlasses.osCyl || "—"} | AXIS: {rxGlasses.osAxis || "—"} | ADD: {rxGlasses.osAdd || "—"}
                         </p>
@@ -490,12 +504,12 @@ function CrossClinicRecordModal({
 
         {/* Footer */}
         <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-between items-center text-xs font-semibold shrink-0">
-          <span className="text-slate-500">Mã bệnh án: {recordId}</span>
+          <span className="text-slate-500">{t("Mã bệnh án: ", "Record ID: ")}{recordId}</span>
           <button
             onClick={onClose}
             className="px-4 py-2 bg-[#00658D] text-white rounded-xl hover:bg-[#005273] transition-colors shadow-2xs"
           >
-            Đóng
+            {t("Đóng", "Close")}
           </button>
         </div>
 
@@ -512,10 +526,38 @@ export default function DoctorPatientDetailClient({
   patientId: string;
 }) {
   const router = useRouter();
+  const initialLocale = useLocale();
+
   const [data, setData] = useState<PatientDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+
+  const [currentLocale, setCurrentLocale] = useState<"vi" | "en">(() => {
+    if (typeof window !== "undefined") {
+      const match = window.location.pathname.match(/^\/(vi|en)(\/|$)/);
+      if (match) return match[1] as "vi" | "en";
+      const cookieMatch = document.cookie.match(/(?:^|;\s*)NEXT_LOCALE=([^;]+)/);
+      if (cookieMatch && (cookieMatch[1] === "vi" || cookieMatch[1] === "en")) {
+        return cookieMatch[1] as "vi" | "en";
+      }
+      const stored = localStorage.getItem("locale");
+      if (stored === "vi" || stored === "en") return stored;
+    }
+    return initialLocale === "en" ? "en" : "vi";
+  });
+
+  useEffect(() => {
+    const handleLocaleChanged = (e: any) => {
+      if (e?.detail?.locale === "vi" || e?.detail?.locale === "en") {
+        setCurrentLocale(e.detail.locale);
+      }
+    };
+    window.addEventListener("ecs-locale-changed", handleLocaleChanged);
+    return () => window.removeEventListener("ecs-locale-changed", handleLocaleChanged);
+  }, []);
+
+  const t = (vi: string, en: string) => (currentLocale === "en" ? en : vi);
 
   // Cross-clinic record viewing state
   const [selectedRecordModal, setSelectedRecordModal] = useState<{
@@ -534,21 +576,23 @@ export default function DoctorPatientDetailClient({
           setData(json.data);
           setCurrentPage(1);
         } else {
-          setError("Không tìm thấy thông tin bệnh nhân.");
+          setError(t("Không tìm thấy thông tin bệnh nhân.", "Patient information not found."));
         }
       } catch {
-        setError("Lỗi kết nối. Vui lòng thử lại.");
+        setError(t("Lỗi kết nối. Vui lòng thử lại.", "Connection error. Please try again."));
       } finally {
         setIsLoading(false);
       }
     };
     fetchDetail();
-  }, [patientId]);
+  }, [patientId, currentLocale]);
 
   const hasAllergy =
     data?.allergies &&
     data.allergies.toLowerCase() !== "không" &&
-    data.allergies.toLowerCase() !== "không có";
+    data.allergies.toLowerCase() !== "không có" &&
+    data.allergies.toLowerCase() !== "none" &&
+    data.allergies.toLowerCase() !== "no";
 
   // Pagination
   const sortedAppointments = [...(data?.appointments ?? [])].sort(
@@ -596,7 +640,7 @@ export default function DoctorPatientDetailClient({
           onClick={() => router.back()}
           className="px-4 py-2 bg-[#00658D] text-white rounded-xl text-xs font-semibold hover:bg-[#005273] transition-colors"
         >
-          Quay lại danh sách
+          {t("Quay lại danh sách", "Back to list")}
         </button>
       </div>
     );
@@ -621,7 +665,7 @@ export default function DoctorPatientDetailClient({
           onClick={() => router.back()}
           className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-2xs"
         >
-          <ChevronLeft className="h-4 w-4" /> Quay lại
+          <ChevronLeft className="h-4 w-4" /> {t("Quay lại", "Back")}
         </button>
       </div>
 
@@ -638,15 +682,15 @@ export default function DoctorPatientDetailClient({
           <div className="space-y-1">
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{data.fullName}</h1>
-              {genderLabel(data.gender)}
+              {genderLabel(data.gender, currentLocale)}
             </div>
             <p className="text-xs text-slate-500 font-medium flex items-center gap-4 flex-wrap">
-              <span>{calcAge(data.dob)} tuổi ({formatDate(data.dob)})</span>
+              <span>{calcAge(data.dob)} {t("tuổi", "yrs")} ({formatDate(data.dob, currentLocale)})</span>
               {data.phoneNumber && (
                 <span className="flex items-center gap-1"><Phone className="h-3.5 w-3.5 text-slate-400" /> {data.phoneNumber}</span>
               )}
               {data.identityNumber && (
-                <span className="flex items-center gap-1"><Fingerprint className="h-3.5 w-3.5 text-slate-400" /> CCCD: {data.identityNumber}</span>
+                <span className="flex items-center gap-1"><Fingerprint className="h-3.5 w-3.5 text-slate-400" /> {t("CCCD: ", "ID: ")}{data.identityNumber}</span>
               )}
             </p>
           </div>
@@ -655,16 +699,16 @@ export default function DoctorPatientDetailClient({
         {/* Quick Cross-Clinic Stats Cards */}
         <div className="grid grid-cols-3 gap-3 w-full lg:w-auto text-xs shrink-0">
           <div className="bg-slate-50 border border-slate-200 p-3 rounded-2xl text-center min-w-[105px]">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Tổng số lần khám</span>
-            <span className="text-base font-bold text-[#00658D] mt-0.5 block">{totalRecords} lượt</span>
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">{t("Tổng số lần khám", "Total Visits")}</span>
+            <span className="text-base font-bold text-[#00658D] mt-0.5 block">{totalRecords} {t("lượt", "visits")}</span>
           </div>
           <div className="bg-slate-50 border border-slate-200 p-3 rounded-2xl text-center min-w-[105px]">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Cơ sở đã khám</span>
-            <span className="text-base font-bold text-emerald-600 mt-0.5 block">{uniqueClinicsCount} cơ sở</span>
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">{t("Cơ sở đã khám", "Visited Facilities")}</span>
+            <span className="text-base font-bold text-emerald-600 mt-0.5 block">{uniqueClinicsCount} {t("cơ sở", "facilities")}</span>
           </div>
           <div className="bg-slate-50 border border-slate-200 p-3 rounded-2xl text-center min-w-[105px]">
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Bác sĩ thăm khám</span>
-            <span className="text-base font-bold text-sky-700 mt-0.5 block">{uniqueDoctorsCount} bác sĩ</span>
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">{t("Bác sĩ thăm khám", "Attending Doctors")}</span>
+            <span className="text-base font-bold text-sky-700 mt-0.5 block">{uniqueDoctorsCount} {t("bác sĩ", "doctors")}</span>
           </div>
         </div>
       </div>
@@ -673,17 +717,17 @@ export default function DoctorPatientDetailClient({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-2.5">
           <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-            <FileText className="h-4 w-4 text-[#00658D]" /> Tiền sử bệnh lý mắt chuyên khoa
+            <FileText className="h-4 w-4 text-[#00658D]" /> {t("Tiền sử bệnh lý mắt chuyên khoa", "Specialty Ophthalmic Medical History")}
           </h4>
           <div className="text-xs text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-xl border border-dashed border-slate-200 font-medium whitespace-pre-line">
-            {data.medicalHistory || "Chưa ghi nhận dữ liệu tiền sử bệnh lý."}
+            {data.medicalHistory || t("Chưa ghi nhận dữ liệu tiền sử bệnh lý.", "No medical history recorded.")}
           </div>
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-2.5">
           <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
             <AlertTriangle className={cn("h-4 w-4", hasAllergy ? "text-rose-500" : "text-slate-400")} />
-            Dị ứng thuốc / Vật liệu
+            {t("Dị ứng thuốc / Vật liệu", "Medication / Material Allergies")}
           </h4>
           <div
             className={cn(
@@ -693,7 +737,7 @@ export default function DoctorPatientDetailClient({
                 : "bg-slate-50 border-dashed border-slate-200 text-slate-500"
             )}
           >
-            {data.allergies || "Không ghi nhận dị ứng."}
+            {data.allergies || t("Không ghi nhận dị ứng.", "No allergies recorded.")}
           </div>
         </div>
       </div>
@@ -703,10 +747,14 @@ export default function DoctorPatientDetailClient({
         <div className="px-6 py-4 border-b border-slate-200 bg-slate-50">
           <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
             <Stethoscope className="h-4 w-4 text-[#00658D]" />
-            Lịch sử tất cả lượt khám & Bệnh án toàn hệ thống ({totalRecords} lượt)
+            {t("Lịch sử tất cả lượt khám & Bệnh án toàn hệ thống (", "System-wide Visit History & Medical Records (")}
+            {totalRecords} {t("lượt)", "visits)")}
           </h4>
           <p className="text-[11px] text-slate-500 font-medium mt-0.5">
-            Bao gồm bác sĩ tại phòng khám hiện tại và các bác sĩ từ các cơ sở khác trên cùng hệ thống đã khám cho bệnh nhân này
+            {t(
+              "Bao gồm bác sĩ tại phòng khám hiện tại và các bác sĩ từ các cơ sở khác trên cùng hệ thống đã khám cho bệnh nhân này",
+              "Includes doctors from the current clinic and other facilities across the system who have examined this patient"
+            )}
           </p>
         </div>
 
@@ -716,7 +764,7 @@ export default function DoctorPatientDetailClient({
               <Clock className="h-6 w-6 text-slate-400" />
             </div>
             <p className="text-xs text-slate-400 italic font-medium">
-              Bệnh nhân này hiện chưa phát sinh lịch hẹn khám nào.
+              {t("Bệnh nhân này hiện chưa phát sinh lịch hẹn khám nào.", "This patient currently has no appointment records.")}
             </p>
           </div>
         ) : (
@@ -724,13 +772,13 @@ export default function DoctorPatientDetailClient({
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                  <th className="px-6 py-4 w-[170px]">Thời gian hẹn</th>
-                  <th className="px-6 py-4 w-[180px]">Cơ sở / Phòng khám</th>
-                  <th className="px-6 py-4 w-[180px]">Bác sĩ & Chuyên khoa</th>
-                  <th className="px-6 py-4">Triệu chứng / Lý do khám</th>
-                  <th className="px-6 py-4 w-[150px]">Kênh đặt lịch</th>
-                  <th className="px-6 py-4 text-center w-[130px]">Trạng thái</th>
-                  <th className="px-4 py-4 text-center w-[150px]">Bệnh án</th>
+                  <th className="px-6 py-4 w-[170px]">{t("Thời gian hẹn", "Appointment Time")}</th>
+                  <th className="px-6 py-4 w-[180px]">{t("Cơ sở / Phòng khám", "Facility / Clinic")}</th>
+                  <th className="px-6 py-4 w-[180px]">{t("Bác sĩ & Chuyên khoa", "Doctor & Specialty")}</th>
+                  <th className="px-6 py-4">{t("Triệu chứng / Lý do khám", "Symptoms / Reason")}</th>
+                  <th className="px-6 py-4 w-[150px]">{t("Kênh đặt lịch", "Booking Channel")}</th>
+                  <th className="px-6 py-4 text-center w-[130px]">{t("Trạng thái", "Status")}</th>
+                  <th className="px-4 py-4 text-center w-[150px]">{t("Bệnh án", "Medical Record")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -741,6 +789,7 @@ export default function DoctorPatientDetailClient({
                     onOpenRecordModal={(mrId, apItem) =>
                       setSelectedRecordModal({ recordId: mrId, appointment: apItem })
                     }
+                    currentLocale={currentLocale}
                   />
                 ))}
               </tbody>
@@ -752,21 +801,21 @@ export default function DoctorPatientDetailClient({
         {totalRecords > 0 && (
           <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-medium text-slate-500">
             <div>
-              Hiển thị{" "}
+              {t("Hiển thị", "Showing")}{" "}
               <span className="text-slate-800 font-bold">{indexOfFirst + 1}</span>
               {" "}–{" "}
               <span className="text-slate-800 font-bold">
                 {Math.min(indexOfLast, totalRecords)}
               </span>{" "}
-              trên{" "}
+              {t("trên", "of")}{" "}
               <span className="text-slate-800 font-bold">{totalRecords}</span>{" "}
-              lịch hẹn
+              {t("lịch hẹn", "appointments")}
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                 disabled={currentPage === 1}
-                className="p-2 border border-slate-200 rounded-xl bg-white text-slate-600 hover:bg-slate-50 disabled:opacity-40 transition-colors shadow-2xs"
+                className="p-2 border border-slate-200 rounded-xl bg-[#00658D]/5 border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 transition-colors shadow-2xs"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
@@ -789,6 +838,7 @@ export default function DoctorPatientDetailClient({
           recordId={selectedRecordModal.recordId}
           appointmentItem={selectedRecordModal.appointment}
           onClose={() => setSelectedRecordModal(null)}
+          currentLocale={currentLocale}
         />
       )}
     </div>

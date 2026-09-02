@@ -78,8 +78,7 @@ export default function AccountInfoView({
   const [tempAvatarUrl, setTempAvatarUrl] = useState<string | null>(null)
 
   // Edit account state
-  // Default to edit mode (form open on first load) - reverses the previous detail-first flow.
-  const [isEditing, setIsEditing] = useState(true)
+  const [isEditing, setIsEditing] = useState(false)
   const [editFullName, setEditFullName] = useState("")
   const [editPhone, setEditPhone] = useState("")
   const [editEmail, setEditEmail] = useState("")
@@ -87,15 +86,13 @@ export default function AccountInfoView({
   const [editErrorMsg, setEditErrorMsg] = useState<string | null>(null)
   const [editSuccessMsg, setEditSuccessMsg] = useState<string | null>(null)
 
-  // When account data first arrives and edit mode is the default,
-  // prefill the form so users don't see empty inputs on page load.
   useEffect(() => {
-    if (account && isEditing) {
-      setEditFullName((prev) => (prev ? prev : account.fullName || ""))
-      setEditPhone((prev) => (prev ? prev : account.phone || ""))
-      setEditEmail((prev) => (prev ? prev : account.email || ""))
+    if (account) {
+      setEditFullName(account.fullName || "")
+      setEditPhone(account.phone || "")
+      setEditEmail(account.email || "")
     }
-  }, [account, isEditing])
+  }, [account])
 
   useEffect(() => {
     const handleAvatarUpdated = (e: Event) => {
@@ -289,7 +286,13 @@ export default function AccountInfoView({
 
           {!isLoading && !error && account && (
             <button
-              onClick={() => setIsEditing((prev) => !prev)}
+              onClick={() => {
+                if (isEditing) {
+                  setIsEditing(false)
+                } else {
+                  handleStartEdit()
+                }
+              }}
               className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-white text-sm font-semibold rounded-xl hover:bg-primary/90 transition-all shadow-sm active:scale-95 shrink-0 cursor-pointer"
             >
               {isEditing ? (

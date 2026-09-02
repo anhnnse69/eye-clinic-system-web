@@ -13,7 +13,7 @@
  */
 
 import { useState, useMemo } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import {
   Brain,
   AlertTriangle,
@@ -152,6 +152,8 @@ export default function AITriageStep({
   onBack,
 }: AITriageStepProps) {
   const t = useTranslations("aiTriage");
+  const locale = useLocale();
+  const isEn = locale === "en";
 
   const [symptoms, setSymptoms] = useState<AITriageSymptomInput>(DEFAULT_AI_TRIAGE_INPUT);
   const [loading, setLoading] = useState(false);
@@ -517,7 +519,11 @@ export default function AITriageStep({
                         <div>
                           {selectFields.length > 0 && (
                             <p className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-3">
-                              Triệu chứng chi tiết
+                              {t.has("categories.detailedSymptoms")
+                                ? t("categories.detailedSymptoms")
+                                : isEn
+                                  ? "Detailed Symptoms"
+                                  : "Triệu chứng chi tiết"}
                             </p>
                           )}
                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">

@@ -24,7 +24,13 @@ import type {
 const PAGE_SIZE = 10;
 
 function getStatusBadgeClass(status: string): string {
-  switch (status) {
+  switch (status?.toUpperCase()) {
+    case "PENDING":
+      return "bg-amber-50 text-amber-700 border-amber-200/80";
+    case "DEPOSIT_PAID":
+      return "bg-sky-50 text-sky-700 border-sky-200/80";
+    case "CONFIRMED":
+      return "bg-indigo-50 text-indigo-700 border-indigo-200/80";
     case "SCHEDULED":
     case "BOOKED":
       return "bg-[#00658D]/10 text-[#00658D] border-[#00658D]/20";
@@ -70,8 +76,11 @@ export default function DoctorPatientListClient() {
 
   const STATUS_OPTIONS = [
     { value: "", label: t("allStatuses") },
-    { value: "ARRIVED", label: t("statusOptions.arrived") },
+    { value: "PENDING", label: t("statusOptions.pending") },
+    { value: "DEPOSIT_PAID", label: t("statusOptions.depositPaid") },
+    { value: "CONFIRMED", label: t("statusOptions.confirmed") },
     { value: "BOOKED", label: t("statusOptions.booked") },
+    { value: "ARRIVED", label: t("statusOptions.arrived") },
     { value: "SCHEDULED", label: t("statusOptions.scheduled") },
     { value: "CHECKED_IN", label: t("statusOptions.checkedIn") },
     { value: "IN_PROGRESS", label: t("statusOptions.inProgress") },
@@ -83,6 +92,7 @@ export default function DoctorPatientListClient() {
   const STATUS_LABELS: Record<string, string> = {
     SCHEDULED: t("statusOptions.scheduled"),
     BOOKED: t("statusOptions.booked"),
+    CONFIRMED: t("statusOptions.confirmed"),
     ARRIVED: t("statusOptions.arrived"),
     WAITING: t("statusOptions.waiting"),
     CALLING: t("statusOptions.calling"),

@@ -675,6 +675,7 @@
       "statusOptions": {
         "scheduled": "Đã lên lịch",
         "booked": "Đã đặt lịch",
+        "confirmed": "Đã xác nhận",
         "arrived": "Đã đến viện",
         "waiting": "Đang chờ khám",
         "calling": "Đang gọi khám",

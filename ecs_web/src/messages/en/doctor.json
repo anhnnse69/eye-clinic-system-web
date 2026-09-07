@@ -673,6 +673,7 @@
       "statusOptions": {
         "scheduled": "Scheduled",
         "booked": "Booked",
+        "confirmed": "Confirmed",
         "arrived": "Arrived",
         "waiting": "Waiting",
         "calling": "Calling",

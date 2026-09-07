@@ -511,6 +511,8 @@
       "searchPlaceholder": "Tìm theo tên bệnh nhân, tên bác sĩ...",
       "statusAll": "Tất cả trạng thái",
       "statusPending": "Chờ xử lý (Pending)",
+      "statusDepositPaid": "Đã cọc tiền (Deposit Paid)",
+      "statusConfirmed": "Đã xác nhận (Confirmed)",
       "statusBooked": "Đã đặt lịch (Booked)",
       "statusArrived": "Đã đến nơi (Arrived)",
       "statusInProgress": "Đang khám (In Progress)",

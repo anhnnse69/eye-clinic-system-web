@@ -45,12 +45,14 @@ import medicalRecordsService from "@/services/medical-records.service";
 type AppointmentStatus =
   | "PENDING"
   | "DEPOSIT_PAID"
+  | "CONFIRMED"
   | "BOOKED"
   | "ARRIVED"
   | "IN_PROGRESS"
   | "COMPLETED"
   | "CANCELLED"
-  | "NOSHOW";
+  | "NOSHOW"
+  | "NO_SHOW";
 
 interface PrescriptionItem {
   id: string;
@@ -169,13 +171,15 @@ const genderLabel = (g: string, locale: "vi" | "en") => {
   );
 };
 
-const formatStatusBadge = (status: AppointmentStatus, locale: "vi" | "en") => {
+const formatStatusBadge = (status: AppointmentStatus | string, locale: "vi" | "en") => {
   const isEn = locale === "en";
-  switch (status) {
+  switch (status?.toUpperCase()) {
     case "PENDING":
       return <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 font-semibold text-[11px] px-2.5 py-1 rounded-lg border border-amber-200/80"><Clock className="h-3 w-3" /> {isEn ? "Pending" : "Chờ xử lý"}</span>;
     case "DEPOSIT_PAID":
       return <span className="inline-flex items-center gap-1 bg-[#00658D]/10 text-[#00658D] font-semibold text-[11px] px-2.5 py-1 rounded-lg border border-[#00658D]/20"><CreditCard className="h-3 w-3" /> {isEn ? "Deposit Paid" : "Đã đặt cọc"}</span>;
+    case "CONFIRMED":
+      return <span className="inline-flex items-center gap-1 bg-indigo-50 text-indigo-700 font-semibold text-[11px] px-2.5 py-1 rounded-lg border border-indigo-200/80"><CheckCircle2 className="h-3 w-3" /> {isEn ? "Confirmed" : "Đã xác nhận"}</span>;
     case "BOOKED":
       return <span className="inline-flex items-center gap-1 bg-[#00658D]/10 text-[#00658D] font-semibold text-[11px] px-2.5 py-1 rounded-lg border border-[#00658D]/20"><Clock className="h-3 w-3" /> {isEn ? "Booked" : "Đã đặt lịch"}</span>;
     case "ARRIVED":
@@ -187,6 +191,7 @@ const formatStatusBadge = (status: AppointmentStatus, locale: "vi" | "en") => {
     case "CANCELLED":
       return <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-700 font-semibold text-[11px] px-2.5 py-1 rounded-lg border border-rose-200/80"><XCircle className="h-3 w-3" /> {isEn ? "Cancelled" : "Đã hủy"}</span>;
     case "NOSHOW":
+    case "NO_SHOW":
       return <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-600 font-semibold text-[11px] px-2.5 py-1 rounded-lg border border-slate-200"><User className="h-3 w-3" /> {isEn ? "No Show" : "Không đến"}</span>;
     default:
       return <span className="inline-flex items-center gap-1 bg-slate-50 text-slate-400 font-semibold text-[11px] px-2.5 py-1 rounded-lg border border-slate-200">—</span>;
@@ -281,13 +286,10 @@ function AppointmentTableRow({
           <button
             type="button"
             onClick={() => onOpenRecordModal(mr.id, ap)}
-            className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all shadow-2xs active:scale-95 ${ap.isOtherClinic
-                ? "bg-[#00658D]/10 text-[#00658D] border-[#00658D]/30 hover:bg-[#00658D]/20"
-                : "bg-[#00658D] text-white border-[#00658D] hover:bg-[#005273]"
-              }`}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all shadow-2xs active:scale-95 bg-[#00658D]/10 text-[#00658D] border-[#00658D]/30 hover:bg-[#00658D]/20"
           >
             <FileText className="h-3.5 w-3.5" />
-            {ap.isOtherClinic ? t("Xem Tổng kết & Đơn", "View Summary & Rx") : t("Xem bệnh án", "View Record")}
+            {t("Xem Tổng kết & Đơn", "View Summary & Rx")}
           </button>
         ) : (
           <span className="text-[11px] text-slate-400 italic">{t("Chưa có", "None")}</span>

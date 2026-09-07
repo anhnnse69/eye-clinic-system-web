@@ -510,6 +510,8 @@
       "searchPlaceholder": "Search by patient name, doctor name...",
       "statusAll": "All Statuses",
       "statusPending": "Pending",
+      "statusDepositPaid": "Deposit Paid",
+      "statusConfirmed": "Confirmed",
       "statusBooked": "Booked",
       "statusArrived": "Arrived",
       "statusInProgress": "In Progress",

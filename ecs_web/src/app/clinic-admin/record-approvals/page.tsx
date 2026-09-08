@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { useTranslations } from "next-intl"
 import {
   Search,
   CheckCircle2,
@@ -12,14 +13,15 @@ import {
   Stethoscope,
   Building2,
   FileText,
-  Loader2,
 } from "lucide-react"
 import {
   recordApprovalService,
   type MedicalRecordEditRequestItem,
 } from "@/services/record-approval.service"
+import clinicsService from "@/services/clinic.service"
 
 export default function ClinicAdminRecordApprovalsPage() {
+  const t = useTranslations("clinicAdmin.recordApproval")
   const [requests, setRequests] = useState<MedicalRecordEditRequestItem[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
@@ -32,7 +34,15 @@ export default function ClinicAdminRecordApprovalsPage() {
   const loadRequests = async () => {
     setLoading(true)
     try {
-      const res = await recordApprovalService.getRequests()
+      const profileRes = await clinicsService.getProfile().catch(() => null)
+      const clinicId = profileRes?.data?.id || (profileRes?.data as any)?.id_clinic || (profileRes?.data as any)?.clinicId
+      
+      if (!clinicId) {
+        setRequests([])
+        return
+      }
+
+      const res = await recordApprovalService.getRequests(undefined, undefined, clinicId)
       if (res.data) {
         setRequests(res.data)
       } else {
@@ -67,20 +77,20 @@ export default function ClinicAdminRecordApprovalsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-outline-variant/30 pb-5">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-primary mb-1 uppercase tracking-wider">
-            <Building2 className="w-4 h-4 text-primary" /> Quản Lý Phòng Khám
+            <Building2 className="w-4 h-4 text-primary" /> {t("category")}
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-on-surface tracking-tight flex items-center gap-3">
-            Phê Duyệt Hồ Sơ Bệnh Án
+            {t("title")}
           </h1>
           <p className="text-on-surface-variant mt-1 text-sm">
-            Danh sách và thẩm định đơn đề nghị cấp quyền chỉnh sửa bệnh án từ bác sĩ chuyên khoa
+            {t("subtitle")}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <div className="bg-amber-50 border border-amber-200/70 px-4 py-2 rounded-2xl text-xs font-bold text-amber-800 flex items-center gap-2 shadow-xs">
             <Clock className="w-4 h-4 text-amber-700 animate-pulse" />
-            <span>{pendingCount} đơn chờ phê duyệt</span>
+            <span>{t("pendingCountBanner", { count: pendingCount })}</span>
           </div>
         </div>
       </div>
@@ -94,7 +104,7 @@ export default function ClinicAdminRecordApprovalsPage() {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Tìm theo Bệnh nhân, Bác sĩ, Mã giấy phép..."
+            placeholder={t("searchPlaceholder")}
             className="w-full text-xs pl-10 pr-4 py-2.5 bg-surface-container-lowest border border-outline-variant/60 rounded-xl focus:border-primary focus:ring-1 focus:ring-primary outline-hidden transition-all text-on-surface font-medium"
           />
         </div>
@@ -109,7 +119,7 @@ export default function ClinicAdminRecordApprovalsPage() {
                 : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container border border-outline-variant/40"
             }`}
           >
-            Tất cả ({requests.length})
+            {t("filter.all", { count: requests.length })}
           </button>
           <button
             onClick={() => setStatusFilter("PENDING")}
@@ -119,7 +129,7 @@ export default function ClinicAdminRecordApprovalsPage() {
                 : "bg-amber-50 text-amber-800 hover:bg-amber-100/70 border border-amber-200/70"
             }`}
           >
-            Chờ duyệt ({pendingCount})
+            {t("filter.pending", { count: pendingCount })}
           </button>
           <button
             onClick={() => setStatusFilter("APPROVED")}
@@ -129,7 +139,7 @@ export default function ClinicAdminRecordApprovalsPage() {
                 : "bg-emerald-50 text-emerald-800 hover:bg-emerald-100/70 border border-emerald-200/70"
             }`}
           >
-            Đã duyệt ({approvedCount})
+            {t("filter.approved", { count: approvedCount })}
           </button>
           <button
             onClick={() => setStatusFilter("REJECTED")}
@@ -139,7 +149,7 @@ export default function ClinicAdminRecordApprovalsPage() {
                 : "bg-rose-50 text-rose-800 hover:bg-rose-100/70 border border-rose-200/70"
             }`}
           >
-            Đã từ chối ({rejectedCount})
+            {t("filter.rejected", { count: rejectedCount })}
           </button>
         </div>
       </div>
@@ -149,8 +159,8 @@ export default function ClinicAdminRecordApprovalsPage() {
         {filteredRequests.length === 0 ? (
           <div className="p-12 text-center text-on-surface-variant/60 text-sm">
             <FileText className="w-12 h-12 mx-auto mb-3 text-on-surface-variant/40" />
-            <p className="font-bold text-on-surface">Không tìm thấy yêu cầu phê duyệt phù hợp</p>
-            <p className="text-xs text-on-surface-variant mt-1">Vui lòng thay đổi từ khóa hoặc bộ lọc trạng thái</p>
+            <p className="font-bold text-on-surface">{t("empty.title")}</p>
+            <p className="text-xs text-on-surface-variant mt-1">{t("empty.subtitle")}</p>
           </div>
         ) : (
           <div className="divide-y divide-outline-variant/30">
@@ -162,31 +172,31 @@ export default function ClinicAdminRecordApprovalsPage() {
                 <div className="space-y-2 flex-1">
                   <div className="flex flex-wrap items-center gap-3">
                     <span className="font-mono bg-[#c6e7ff]/40 text-primary border border-[#81cfff]/40 px-2.5 py-1 rounded-lg text-xs font-bold">
-                      Mã GP: {req.permissionDoc}
+                      {t("item.permissionDoc", { code: req.permissionDoc })}
                     </span>
                     {req.status === "PENDING" && (
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200/70">
-                        <Clock className="w-3.5 h-3.5 text-amber-700 animate-pulse" /> Chờ phê duyệt
+                        <Clock className="w-3.5 h-3.5 text-amber-700 animate-pulse" /> {t("item.statusPending")}
                       </span>
                     )}
                     {req.status === "APPROVED" && (
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/70">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" /> Đã phê duyệt
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" /> {t("item.statusApproved")}
                       </span>
                     )}
                     {req.status === "REJECTED" && (
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-800 border border-rose-200/70">
-                        <XCircle className="w-3.5 h-3.5 text-rose-700" /> Đã từ chối
+                        <XCircle className="w-3.5 h-3.5 text-rose-700" /> {t("item.statusRejected")}
                       </span>
                     )}
                   </div>
 
                   <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-xs text-on-surface-variant font-medium">
                     <span className="flex items-center gap-1.5">
-                      <User className="w-3.5 h-3.5 text-on-surface-variant" /> Bệnh nhân: <strong className="text-on-surface">{req.patientName}</strong>
+                      <User className="w-3.5 h-3.5 text-on-surface-variant" /> {t("item.patient")} <strong className="text-on-surface">{req.patientName}</strong>
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <Stethoscope className="w-3.5 h-3.5 text-on-surface-variant" /> Bác sĩ yêu cầu: <strong className="text-on-surface">{req.doctorName}</strong>
+                      <Stethoscope className="w-3.5 h-3.5 text-on-surface-variant" /> {t("item.doctor")} <strong className="text-on-surface">{req.doctorName}</strong>
                     </span>
                   </div>
 
@@ -200,7 +210,7 @@ export default function ClinicAdminRecordApprovalsPage() {
                     href={`/clinic-admin/record-approvals/${req.recordId}`}
                     className="inline-flex items-center gap-2 px-4 py-2.5 bg-primary text-on-primary font-bold text-xs rounded-xl hover:opacity-90 active:scale-95 transition-all shadow-xs cursor-pointer"
                   >
-                    <span>Xem Chi Tiết & Phê Duyệt</span>
+                    <span>{t("item.viewDetails")}</span>
                     <ChevronRight className="w-4 h-4" />
                   </Link>
                 </div>
@@ -212,3 +222,4 @@ export default function ClinicAdminRecordApprovalsPage() {
     </div>
   )
 }
+

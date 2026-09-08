@@ -42,7 +42,8 @@
       "editService": "Edit Service",
       "feedback": "Feedback",
       "accountInfo": "Account Info",
-      "recordTransfers": "Record Transfers"
+      "recordTransfers": "Record Transfers",
+      "recordApprovals": "Record Approvals"
     },
     "common": {
       "add": "Add New",
@@ -588,6 +589,86 @@
       "receiverPlaceholder": "Branch Confirmation",
       "close": "Close",
       "printNow": "Print Now"
+    },
+    "recordApproval": {
+      "title": "Medical Record Approvals",
+      "subtitle": "List and evaluate medical record edit permission requests from specialist doctors",
+      "category": "Clinic Management",
+      "pendingCountBanner": "{count} requests pending approval",
+      "searchPlaceholder": "Search by Patient, Doctor, Permission Doc...",
+      "filter": {
+        "all": "All ({count})",
+        "pending": "Pending ({count})",
+        "approved": "Approved ({count})",
+        "rejected": "Rejected ({count})"
+      },
+      "empty": {
+        "title": "No matching approval requests found",
+        "subtitle": "Please change your search term or status filter"
+      },
+      "item": {
+        "permissionDoc": "Doc Code: {code}",
+        "statusPending": "Pending approval",
+        "statusApproved": "Approved",
+        "statusRejected": "Rejected",
+        "patient": "Patient:",
+        "doctor": "Requesting Doctor:",
+        "viewDetails": "View Details & Approve"
+      },
+      "detail": {
+        "backLink": "Back to approval list",
+        "category": "EMR Record Edit Request",
+        "title": "Record Approval Request Details",
+        "licenseNo": "License No: {code}",
+        "statusPendingBadge": "Pending Clinic Admin Approval",
+        "statusApprovedBadge": "Approved & Granted",
+        "statusRejectedBadge": "Request Rejected",
+        "approveSuccess": "Approved successfully! Doctor has been granted permission to update medical records.",
+        "rejectSuccess": "Rejected medical record edit request.",
+        "close": "Close",
+        "targetInfoTitle": "Target Information",
+        "patient": "Patient:",
+        "doctor": "Requesting Doctor:",
+        "requestedAt": "Requested At:",
+        "reasonTitle": "Professional Reason & License",
+        "reasonLabel": "Reason & professional justification for adjustment:",
+        "permissionCodeLabel": "License Code / Authorization Doc No:",
+        "attachedDocLabel": "Attached license document:",
+        "viewPdf": "View PDF",
+        "rejectBtn": "Reject Request",
+        "approveBtn": "Approve & Grant Permission",
+        "approvedNotice": "Granted Edit Permission to Doctor",
+        "rejectedNotice": "Rejected Edit Request",
+        "pdfModal": {
+          "title": "Authorization License Document (PDF Document)",
+          "docNo": "Doc No: {code}",
+          "healthDept": "HO CHI MINH CITY DEPARTMENT OF HEALTH",
+          "clinicName": "ECS EYE SPECIALTY CLINIC",
+          "docNoLine": "No: {code}",
+          "republicHeader": "SOCIALIST REPUBLIC OF VIETNAM",
+          "motto": "Independence - Freedom - Happiness",
+          "locationDate": "Ho Chi Minh City, August 18, 2026",
+          "docTitle": "DECISION / AUTHORIZATION LICENSE",
+          "docSubtitle": "Regarding permission for adjustment & updating of EMR electronic medical records",
+          "basis1": "Pursuant to the Regulations on Management & Storage of EMR Electronic Medical Records at ECS Eye Specialty Clinic;",
+          "basis2": "Pursuant to the Request for Professional Adjustment submitted on {date};",
+          "patientLabel": "Patient:",
+          "doctorLabel": "Requesting Doctor:",
+          "codeLabel": "Granted License Code:",
+          "explanationHeader": "EXPLANATION & PROFESSIONAL JUSTIFICATION:",
+          "approvalConclusion": "Clinic Admin Board approves granting edit permission for the above record. The specialist doctor is allowed to update clinical progress, diagnostic summary, and prescriptions/eyeglass prescriptions according to medical standards.",
+          "recipientsHeader": "Recipients:",
+          "recipientDoctor": "- Treating specialist doctor",
+          "recipientArchive": "- EMR Archive Department",
+          "authorityHeader": "FOR CLINIC ADMIN BOARD",
+          "authorityTitle": "Clinic Managing Director",
+          "signedBadge": "DIGITALLY SIGNED & VALIDLY APPROVED",
+          "directorName": "Dr. Nguyen Van Quan",
+          "printBtn": "Print PDF Document",
+          "closeBtn": "Close",
+          "approveNowBtn": "Approve Now"
+        }
+      }
     },
     "errors": {
       "loadFailed": "Failed to load data",

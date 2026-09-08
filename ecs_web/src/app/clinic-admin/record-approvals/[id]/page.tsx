@@ -2,6 +2,7 @@
 
 import { use, useEffect, useState } from "react"
 import Link from "next/link"
+import { useTranslations } from "next-intl"
 import {
   ArrowLeft,
   Building2,
@@ -17,7 +18,6 @@ import {
   Eye,
   Printer,
   X,
-  Loader2,
 } from "lucide-react"
 import {
   recordApprovalService,
@@ -29,6 +29,7 @@ export default function RecordApprovalDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  const t = useTranslations("clinicAdmin.recordApproval.detail")
   const resolvedParams = use(params)
   const recordId = resolvedParams.id
 
@@ -63,7 +64,7 @@ export default function RecordApprovalDetailPage({
       const res = await recordApprovalService.approveRequest(recordId)
       if (res.data) {
         setRequestDetail(res.data)
-        setActionSuccess("Đã phê duyệt thành công! Bác sĩ đã được mở quyền cập nhật hồ sơ bệnh án.")
+        setActionSuccess(t("approveSuccess"))
       }
     } catch {
       // ignore
@@ -75,7 +76,7 @@ export default function RecordApprovalDetailPage({
       const res = await recordApprovalService.rejectRequest(recordId)
       if (res.data) {
         setRequestDetail(res.data)
-        setActionSuccess("Đã từ chối đơn đề nghị chỉnh sửa hồ sơ.")
+        setActionSuccess(t("rejectSuccess"))
       }
     } catch {
       // ignore
@@ -103,74 +104,74 @@ export default function RecordApprovalDetailPage({
           {/* Header of PDF */}
           <div className="grid grid-cols-2 text-center border-b-2 border-gray-900 pb-4 gap-4 w-full">
             <div className="flex flex-col items-center">
-              <p className="font-bold uppercase text-xs tracking-tight text-gray-900">SỞ Y TẾ THÀNH PHỐ HỒ CHÍ MINH</p>
-              <p className="font-bold uppercase text-xs text-blue-950 tracking-tight">PHÒNG KHÁM CHUYÊN KHOA MẮT ECS</p>
-              <p className="italic text-xs text-gray-600 mt-1">Số: {requestDetail.permissionDoc}</p>
+              <p className="font-bold uppercase text-xs tracking-tight text-gray-900">{t("pdfModal.healthDept")}</p>
+              <p className="font-bold uppercase text-xs text-blue-950 tracking-tight">{t("pdfModal.clinicName")}</p>
+              <p className="italic text-xs text-gray-600 mt-1">{t("pdfModal.docNoLine", { code: requestDetail.permissionDoc })}</p>
             </div>
             <div className="flex flex-col items-center">
-              <p className="font-bold uppercase text-xs tracking-tight text-gray-900">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
-              <p className="font-bold text-xs text-gray-900">Độc lập - Tự do - Hạnh phúc</p>
-              <p className="text-xs text-gray-600 mt-1">TP. Hồ Chí Minh, ngày 18 tháng 08 năm 2026</p>
+              <p className="font-bold uppercase text-xs tracking-tight text-gray-900">{t("pdfModal.republicHeader")}</p>
+              <p className="font-bold text-xs text-gray-900">{t("pdfModal.motto")}</p>
+              <p className="text-xs text-gray-600 mt-1">{t("pdfModal.locationDate")}</p>
             </div>
           </div>
 
           {/* Document Title */}
           <div className="text-center space-y-1.5 py-2">
             <h2 className="text-lg font-bold uppercase tracking-wide text-red-900">
-              QUYẾT ĐỊNH / GIẤY PHÉP ỦY QUYỀN
+              {t("pdfModal.docTitle")}
             </h2>
             <p className="font-bold italic text-sm text-gray-800">
-              Về việc cho phép điều chỉnh & cập nhật thông tin hồ sơ bệnh án điện tử EMR
+              {t("pdfModal.docSubtitle")}
             </p>
           </div>
 
           {/* Document Content Body */}
           <div className="space-y-4 text-sm text-gray-900 leading-relaxed">
             <p className="font-semibold">
-              Căn cứ Quy chế Quản lý & Lưu trữ Hồ sơ bệnh án điện tử EMR tại Phòng khám Chuyên khoa Mắt ECS;
+              {t("pdfModal.basis1")}
             </p>
             <p className="font-semibold">
-              Căn cứ Đơn đề nghị điều chỉnh chuyên môn bài bản gửi ngày <strong>{requestDetail.requestedAt}</strong>;
+              {t("pdfModal.basis2", { date: requestDetail.requestedAt })}
             </p>
 
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2 my-4">
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <p><strong>Bệnh nhân sở hữu:</strong> <span className="font-bold text-gray-900">{requestDetail.patientName}</span></p>
-                <p><strong>Bác sĩ xin điều chỉnh:</strong> <span className="font-bold text-gray-900">{requestDetail.doctorName}</span></p>
-                <p className="col-span-2"><strong>Mã Giấy Phép Cấp:</strong> <span className="font-bold font-mono text-blue-800">{requestDetail.permissionDoc}</span></p>
+                <p><strong>{t("pdfModal.patientLabel")}</strong> <span className="font-bold text-gray-900">{requestDetail.patientName}</span></p>
+                <p><strong>{t("pdfModal.doctorLabel")}</strong> <span className="font-bold text-gray-900">{requestDetail.doctorName}</span></p>
+                <p className="col-span-2"><strong>{t("pdfModal.codeLabel")}</strong> <span className="font-bold font-mono text-blue-800">{requestDetail.permissionDoc}</span></p>
               </div>
             </div>
 
             <div className="space-y-2">
-              <p className="font-bold text-gray-900 uppercase">NỘI DUNG GIẢI TRÌNH LÝ DO CHUYÊN MÔN BÀI BẢN:</p>
+              <p className="font-bold text-gray-900 uppercase">{t("pdfModal.explanationHeader")}</p>
               <p className="p-4 bg-amber-50/80 border border-amber-200 rounded-xl text-gray-900 italic leading-relaxed text-sm">
                 "{requestDetail.reason}"
               </p>
             </div>
 
             <p className="pt-2 leading-relaxed">
-              Ban Giám đốc Clinic Admin phê duyệt cấp quyền chỉnh sửa hồ sơ nêu trên. Bác sĩ chuyên khoa được phép cập nhật diễn biến lâm sàng, tổng kết chẩn đoán và đơn thuốc/đơn kính chính xác theo đúng quy chuẩn y tế.
+              {t("pdfModal.approvalConclusion")}
             </p>
           </div>
 
           {/* Signature Block */}
           <div className="grid grid-cols-2 pt-6 border-t border-gray-200 text-sm gap-4">
             <div className="space-y-1">
-              <p className="font-bold text-gray-800">Nơi nhận:</p>
-              <p className="text-xs text-gray-600">- Bác sĩ chuyên khoa điều trị</p>
-              <p className="text-xs text-gray-600">- Bộ phận Lưu trữ EMR</p>
+              <p className="font-bold text-gray-800">{t("pdfModal.recipientsHeader")}</p>
+              <p className="text-xs text-gray-600">{t("pdfModal.recipientDoctor")}</p>
+              <p className="text-xs text-gray-600">{t("pdfModal.recipientArchive")}</p>
             </div>
 
             <div className="text-center space-y-2">
-              <p className="font-bold uppercase text-gray-900">TM. BAN GIÁM ĐỐC CLINIC ADMIN</p>
-              <p className="text-xs text-gray-600">Giám đốc Quản lý Phòng khám</p>
+              <p className="font-bold uppercase text-gray-900">{t("pdfModal.authorityHeader")}</p>
+              <p className="text-xs text-gray-600">{t("pdfModal.authorityTitle")}</p>
               <div className="py-3">
                 <div className="inline-block p-2.5 border-2 border-dashed border-emerald-600 rounded-xl bg-emerald-50 text-emerald-800 text-xs font-bold">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 inline mr-1" />
-                  ĐÃ KÝ SỐ VÀ PHÊ DUYỆT HỢP LỆ (DIGITAL SIGNED)
+                  {t("pdfModal.signedBadge")}
                 </div>
               </div>
-              <p className="font-bold text-gray-900">Bs. Nguyễn Văn Quân</p>
+              <p className="font-bold text-gray-900">{t("pdfModal.directorName")}</p>
             </div>
           </div>
         </div>
@@ -183,7 +184,7 @@ export default function RecordApprovalDetailPage({
           href="/clinic-admin/record-approvals"
           className="inline-flex items-center gap-2 text-xs font-bold text-on-surface-variant hover:text-on-surface transition-colors mb-2 cursor-pointer"
         >
-          <ArrowLeft className="w-4 h-4" /> Quay lại danh sách phê duyệt
+          <ArrowLeft className="w-4 h-4" /> {t("backLink")}
         </Link>
       </div>
 
@@ -191,30 +192,30 @@ export default function RecordApprovalDetailPage({
       <div className="bg-surface-container-lowest rounded-3xl border border-outline-variant/40 p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-wider mb-1">
-            <Building2 className="w-4 h-4 text-primary" /> Đơn Đề Nghị Chỉnh Sửa Hồ Sơ EMR
+            <Building2 className="w-4 h-4 text-primary" /> {t("category")}
           </div>
           <h1 className="text-xl sm:text-2xl font-bold text-on-surface">
-            Chi Tiết Đơn Phê Duyệt Hồ Sơ
+            {t("title")}
           </h1>
           <p className="text-xs text-on-surface-variant mt-1 font-mono">
-            Giấy Phép Số: <span className="font-bold text-primary font-mono">{requestDetail.permissionDoc}</span>
+            {t("licenseNo", { code: requestDetail.permissionDoc })}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           {requestDetail.status === "PENDING" && (
             <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200/70">
-              <Clock className="w-4 h-4 text-amber-700 animate-pulse" /> Chờ Clinic Admin Phê Duyệt
+              <Clock className="w-4 h-4 text-amber-700 animate-pulse" /> {t("statusPendingBadge")}
             </span>
           )}
           {requestDetail.status === "APPROVED" && (
             <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200/70">
-              <CheckCircle2 className="w-4 h-4 text-emerald-700" /> Đã Phê Duyệt Cấp Quyền
+              <CheckCircle2 className="w-4 h-4 text-emerald-700" /> {t("statusApprovedBadge")}
             </span>
           )}
           {requestDetail.status === "REJECTED" && (
             <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-rose-50 text-rose-800 border border-rose-200/70">
-              <AlertCircle className="w-4 h-4 text-rose-700" /> Đã Từ Chối Đơn
+              <AlertCircle className="w-4 h-4 text-rose-700" /> {t("statusRejectedBadge")}
             </span>
           )}
         </div>
@@ -230,7 +231,7 @@ export default function RecordApprovalDetailPage({
             onClick={() => setActionSuccess(null)}
             className="text-[#003925] hover:opacity-80 font-bold cursor-pointer"
           >
-            Đóng
+            {t("close")}
           </button>
         </div>
       )}
@@ -240,22 +241,22 @@ export default function RecordApprovalDetailPage({
         {/* Patient & Doctor Card */}
         <div className="bg-surface-container-lowest rounded-3xl border border-outline-variant/40 p-6 shadow-xs space-y-4 md:col-span-1">
           <h3 className="font-bold text-sm text-on-surface border-b border-outline-variant/30 pb-3 flex items-center gap-2">
-            <User className="w-4 h-4 text-primary" /> Thông Tin Đối Tượng
+            <User className="w-4 h-4 text-primary" /> {t("targetInfoTitle")}
           </h3>
           <div className="space-y-3 text-xs">
             <div>
-              <span className="text-on-surface-variant block text-[11px] font-medium">Bệnh nhân:</span>
+              <span className="text-on-surface-variant block text-[11px] font-medium">{t("patient")}</span>
               <span className="font-bold text-on-surface text-sm">{requestDetail.patientName}</span>
             </div>
             <div>
-              <span className="text-on-surface-variant block text-[11px] font-medium">Bác sĩ đề nghị:</span>
+              <span className="text-on-surface-variant block text-[11px] font-medium">{t("doctor")}</span>
               <span className="font-semibold text-on-surface flex items-center gap-1.5">
                 <Stethoscope className="w-3.5 h-3.5 text-on-surface-variant" />
                 {requestDetail.doctorName}
               </span>
             </div>
             <div>
-              <span className="text-on-surface-variant block text-[11px] font-medium">Thời gian gửi đơn:</span>
+              <span className="text-on-surface-variant block text-[11px] font-medium">{t("requestedAt")}</span>
               <span className="text-on-surface font-medium">{requestDetail.requestedAt}</span>
             </div>
           </div>
@@ -264,13 +265,13 @@ export default function RecordApprovalDetailPage({
         {/* Edit Reason & Document Details */}
         <div className="bg-surface-container-lowest rounded-3xl border border-outline-variant/40 p-6 shadow-xs space-y-5 md:col-span-2">
           <h3 className="font-bold text-sm text-on-surface border-b border-outline-variant/30 pb-3 flex items-center gap-2">
-            <FileText className="w-4 h-4 text-primary" /> Lý Do Chuyên Môn & Giấy Phép
+            <FileText className="w-4 h-4 text-primary" /> {t("reasonTitle")}
           </h3>
 
           <div className="space-y-4 text-xs">
             <div>
               <label className="block text-on-surface-variant text-[11px] font-medium mb-1">
-                Lý do & Nguyên nhân điều chỉnh chuyên môn bài bản:
+                {t("reasonLabel")}
               </label>
               <div className="p-4 bg-surface-container-low rounded-2xl border border-outline-variant/40 text-on-surface leading-relaxed font-medium italic">
                 "{requestDetail.reason}"
@@ -279,12 +280,12 @@ export default function RecordApprovalDetailPage({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
               <div className="p-4 bg-[#c6e7ff]/30 rounded-2xl border border-[#81cfff]/40 space-y-1">
-                <span className="text-primary text-[11px] font-bold block">Mã Giấy Phép / Số VB Ủy Quyền:</span>
+                <span className="text-primary text-[11px] font-bold block">{t("permissionCodeLabel")}</span>
                 <span className="font-bold text-primary font-mono text-sm block">{requestDetail.permissionDoc}</span>
               </div>
 
               <div className="p-4 bg-[#c6e7ff]/30 rounded-2xl border border-[#81cfff]/40 space-y-2">
-                <span className="text-primary text-[11px] font-bold block">Tệp văn bản giấy phép đính kèm:</span>
+                <span className="text-primary text-[11px] font-bold block">{t("attachedDocLabel")}</span>
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-semibold text-on-surface flex items-center gap-1.5 truncate">
                     <Paperclip className="w-3.5 h-3.5 text-primary shrink-0" />
@@ -294,7 +295,7 @@ export default function RecordApprovalDetailPage({
                     onClick={() => setShowPdfModal(true)}
                     className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-primary hover:opacity-90 text-on-primary rounded-xl font-bold text-xs transition-colors shrink-0 cursor-pointer shadow-xs"
                   >
-                    <Eye className="w-3.5 h-3.5" /> Xem PDF
+                    <Eye className="w-3.5 h-3.5" /> {t("viewPdf")}
                   </button>
                 </div>
               </div>
@@ -313,27 +314,27 @@ export default function RecordApprovalDetailPage({
                 onClick={handleReject}
                 className="px-5 py-2.5 bg-surface-container-lowest border border-outline-variant/60 text-on-surface font-bold text-xs rounded-xl hover:bg-surface-container-low transition-all cursor-pointer"
               >
-                Từ Chối Yêu Cầu
+                {t("rejectBtn")}
               </button>
               <button
                 type="button"
                 onClick={handleApprove}
                 className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#006c49] text-white font-bold text-xs rounded-xl hover:bg-[#005237] active:scale-95 transition-all shadow-xs cursor-pointer"
               >
-                <Check className="w-4 h-4" /> Phê Duyệt Cấp Quyền
+                <Check className="w-4 h-4" /> {t("approveBtn")}
               </button>
             </>
           )}
 
           {requestDetail.status === "APPROVED" && (
             <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-50 border border-emerald-200/70 text-emerald-800 font-bold text-xs rounded-xl">
-              <ShieldCheck className="w-4 h-4 text-emerald-700" /> Đã Phê Duyệt Cấp Quyền Cho Bác Sĩ
+              <ShieldCheck className="w-4 h-4 text-emerald-700" /> {t("approvedNotice")}
             </div>
           )}
 
           {requestDetail.status === "REJECTED" && (
             <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-rose-50 border border-rose-200/70 text-rose-800 font-bold text-xs rounded-xl">
-              Đã Từ Chối Yêu Cầu Chỉnh Sửa
+              {t("rejectedNotice")}
             </div>
           )}
         </div>
@@ -350,8 +351,8 @@ export default function RecordApprovalDetailPage({
                   PDF
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-white">Văn Bản Giấy Phép Ủy Quyền (PDF Document)</h3>
-                  <p className="text-xs text-slate-300 font-mono">Số VB: {requestDetail.permissionDoc}</p>
+                  <h3 className="font-bold text-sm text-white">{t("pdfModal.title")}</h3>
+                  <p className="text-xs text-slate-300 font-mono">{t("pdfModal.docNo", { code: requestDetail.permissionDoc })}</p>
                 </div>
               </div>
               <button
@@ -371,74 +372,74 @@ export default function RecordApprovalDetailPage({
                 {/* Header of PDF */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 text-center border-b-2 border-gray-900 pb-4 gap-4 w-full">
                   <div className="flex flex-col items-center">
-                    <p className="font-bold uppercase text-xs tracking-tight text-gray-900">SỞ Y TẾ THÀNH PHỐ HỒ CHÍ MINH</p>
-                    <p className="font-bold uppercase text-xs text-blue-950 tracking-tight">PHÒNG KHÁM CHUYÊN KHOA MẮT ECS</p>
-                    <p className="italic text-xs text-gray-600 mt-1">Số: {requestDetail.permissionDoc}</p>
+                    <p className="font-bold uppercase text-xs tracking-tight text-gray-900">{t("pdfModal.healthDept")}</p>
+                    <p className="font-bold uppercase text-xs text-blue-950 tracking-tight">{t("pdfModal.clinicName")}</p>
+                    <p className="italic text-xs text-gray-600 mt-1">{t("pdfModal.docNoLine", { code: requestDetail.permissionDoc })}</p>
                   </div>
                   <div className="flex flex-col items-center">
-                    <p className="font-bold uppercase text-xs tracking-tight text-gray-900">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>
-                    <p className="font-bold text-xs text-gray-900">Độc lập - Tự do - Hạnh phúc</p>
-                    <p className="text-xs text-gray-600 mt-1">TP. Hồ Chí Minh, ngày 18 tháng 08 năm 2026</p>
+                    <p className="font-bold uppercase text-xs tracking-tight text-gray-900">{t("pdfModal.republicHeader")}</p>
+                    <p className="font-bold text-xs text-gray-900">{t("pdfModal.motto")}</p>
+                    <p className="text-xs text-gray-600 mt-1">{t("pdfModal.locationDate")}</p>
                   </div>
                 </div>
 
                 {/* Document Title */}
                 <div className="text-center space-y-1.5 py-2">
                   <h2 className="text-base sm:text-xl font-bold uppercase tracking-wide text-red-900">
-                    QUYẾT ĐỊNH / GIẤY PHÉP ỦY QUYỀN
+                    {t("pdfModal.docTitle")}
                   </h2>
                   <p className="font-bold italic text-xs sm:text-sm text-gray-800">
-                    Về việc cho phép điều chỉnh & cập nhật thông tin hồ sơ bệnh án điện tử EMR
+                    {t("pdfModal.docSubtitle")}
                   </p>
                 </div>
 
                 {/* Document Content Body */}
                 <div className="space-y-4 text-xs sm:text-sm text-gray-900 leading-relaxed">
                   <p className="font-semibold">
-                    Căn cứ Quy chế Quản lý & Lưu trữ Hồ sơ bệnh án điện tử EMR tại Phòng khám Chuyên khoa Mắt ECS;
+                    {t("pdfModal.basis1")}
                   </p>
                   <p className="font-semibold">
-                    Căn cứ Đơn đề nghị điều chỉnh chuyên môn bài bản gửi ngày <strong>{requestDetail.requestedAt}</strong>;
+                    {t("pdfModal.basis2", { date: requestDetail.requestedAt })}
                   </p>
 
                   <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2 my-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
-                      <p><strong>Bệnh nhân sở hữu:</strong> <span className="font-bold text-gray-900">{requestDetail.patientName}</span></p>
-                      <p><strong>Bác sĩ xin điều chỉnh:</strong> <span className="font-bold text-gray-900">{requestDetail.doctorName}</span></p>
-                      <p className="sm:col-span-2"><strong>Mã Giấy Phép Cấp:</strong> <span className="font-bold font-mono text-blue-800">{requestDetail.permissionDoc}</span></p>
+                      <p><strong>{t("pdfModal.patientLabel")}</strong> <span className="font-bold text-gray-900">{requestDetail.patientName}</span></p>
+                      <p><strong>{t("pdfModal.doctorLabel")}</strong> <span className="font-bold text-gray-900">{requestDetail.doctorName}</span></p>
+                      <p className="sm:col-span-2"><strong>{t("pdfModal.codeLabel")}</strong> <span className="font-bold font-mono text-blue-800">{requestDetail.permissionDoc}</span></p>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <p className="font-bold text-gray-900 uppercase">NỘI DUNG GIẢI TRÌNH LÝ DO CHUYÊN MÔN BÀI BẢN:</p>
+                    <p className="font-bold text-gray-900 uppercase">{t("pdfModal.explanationHeader")}</p>
                     <p className="p-4 bg-amber-50/80 border border-amber-200 rounded-xl text-gray-900 italic leading-relaxed text-xs sm:text-sm">
                       "{requestDetail.reason}"
                     </p>
                   </div>
 
                   <p className="pt-2 leading-relaxed">
-                    Ban Giám đốc Clinic Admin phê duyệt cấp quyền chỉnh sửa hồ sơ nêu trên. Bác sĩ chuyên khoa được phép cập nhật diễn biến lâm sàng, tổng kết chẩn đoán và đơn thuốc/đơn kính chính xác theo đúng quy chuẩn y tế.
+                    {t("pdfModal.approvalConclusion")}
                   </p>
                 </div>
 
                 {/* Signature Block */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 pt-6 border-t border-gray-200 text-xs sm:text-sm gap-4">
                   <div className="space-y-1">
-                    <p className="font-bold text-gray-800">Nơi nhận:</p>
-                    <p className="text-xs text-gray-600">- Bác sĩ chuyên khoa điều trị</p>
-                    <p className="text-xs text-gray-600">- Bộ phận Lưu trữ EMR</p>
+                    <p className="font-bold text-gray-800">{t("pdfModal.recipientsHeader")}</p>
+                    <p className="text-xs text-gray-600">{t("pdfModal.recipientDoctor")}</p>
+                    <p className="text-xs text-gray-600">{t("pdfModal.recipientArchive")}</p>
                   </div>
 
                   <div className="text-center space-y-2">
-                    <p className="font-bold uppercase text-gray-900">TM. BAN GIÁM ĐỐC CLINIC ADMIN</p>
-                    <p className="text-xs text-gray-600">Giám đốc Quản lý Phòng khám</p>
+                    <p className="font-bold uppercase text-gray-900">{t("pdfModal.authorityHeader")}</p>
+                    <p className="text-xs text-gray-600">{t("pdfModal.authorityTitle")}</p>
                     <div className="py-3">
                       <div className="inline-block p-2.5 border-2 border-dashed border-emerald-600 rounded-xl bg-emerald-50 text-emerald-800 text-xs font-bold">
                         <CheckCircle2 className="w-4 h-4 text-emerald-600 inline mr-1" />
-                        ĐÃ KÝ SỐ VÀ PHÊ DUYỆT HỢP LỆ (DIGITAL SIGNED)
+                        {t("pdfModal.signedBadge")}
                       </div>
                     </div>
-                    <p className="font-bold text-gray-900">Bs. Nguyễn Văn Quân</p>
+                    <p className="font-bold text-gray-900">{t("pdfModal.directorName")}</p>
                   </div>
                 </div>
               </div>
@@ -450,7 +451,7 @@ export default function RecordApprovalDetailPage({
                 onClick={handlePrintPdf}
                 className="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold text-xs rounded-xl transition-colors cursor-pointer"
               >
-                <Printer className="w-4 h-4" /> In Văn Bản PDF
+                <Printer className="w-4 h-4" /> {t("pdfModal.printBtn")}
               </button>
 
               <div className="flex items-center gap-2">
@@ -458,7 +459,7 @@ export default function RecordApprovalDetailPage({
                   onClick={() => setShowPdfModal(false)}
                   className="px-4 py-2 bg-white border border-gray-200 text-gray-700 font-bold text-xs rounded-xl hover:bg-gray-100 transition-colors cursor-pointer"
                 >
-                  Đóng
+                  {t("pdfModal.closeBtn")}
                 </button>
                 {requestDetail.status === "PENDING" && (
                   <button
@@ -468,7 +469,7 @@ export default function RecordApprovalDetailPage({
                     }}
                     className="inline-flex items-center gap-1.5 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
                   >
-                    <Check className="w-4 h-4" /> Phê Duyệt Ngay
+                    <Check className="w-4 h-4" /> {t("pdfModal.approveNowBtn")}
                   </button>
                 )}
               </div>
@@ -479,3 +480,4 @@ export default function RecordApprovalDetailPage({
     </div>
   )
 }
+

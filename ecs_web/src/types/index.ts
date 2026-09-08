@@ -5147,6 +5147,9 @@ export interface GetMedicalRecordDetailResponse {
   doctorId: string
 
 
+  clinicId?: string | null
+
+
   recordType: string
 
 

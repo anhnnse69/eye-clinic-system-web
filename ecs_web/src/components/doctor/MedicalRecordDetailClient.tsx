@@ -462,6 +462,7 @@ export default function MedicalRecordDetailClient({
         patientName: actualPatientName,
         doctorId: record?.doctorId || "doctor-1",
         doctorName: actualDoctorName,
+        clinicId: record?.clinicId || (record as any)?.clinicId || undefined,
         reason: requestReason.trim(),
         permissionDoc: requestDoc.trim(),
         attachedFileName,

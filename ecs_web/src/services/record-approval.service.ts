@@ -7,6 +7,7 @@ export interface MedicalRecordEditRequestItem {
   patientName: string
   doctorId: string
   doctorName: string
+  clinicId?: string
   reason: string
   permissionDoc: string
   attachedFileName?: string | null
@@ -22,6 +23,7 @@ export interface CreateRecordApprovalRequestPayload {
   patientName: string
   doctorId: string
   doctorName: string
+  clinicId?: string
   reason: string
   permissionDoc: string
   attachedFileName?: string | null
@@ -42,11 +44,13 @@ class RecordApprovalService {
   /** GET /api/v1/record-approvals - List all requests */
   async getRequests(
     status?: string,
-    search?: string
+    search?: string,
+    clinicId?: string
   ): Promise<ApiResponse<MedicalRecordEditRequestItem[]>> {
     const params = new URLSearchParams()
     if (status && status !== "ALL") params.append("status", status)
     if (search) params.append("search", search)
+    if (clinicId) params.append("clinicId", clinicId)
 
     const response = await apiClient.get<ApiResponse<MedicalRecordEditRequestItem[]>>(
       `/record-approvals?${params.toString()}`
